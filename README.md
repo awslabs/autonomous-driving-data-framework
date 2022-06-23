@@ -46,10 +46,10 @@ DataLake Buckets Module: Deploys shared datalake buckets such as input, intermed
 
 [Deployment Guide Readme.](docs/deployment_guide.md)
 
-## Support
+## Reporting Issues
 
-If you notice a defect, or need support with deployment or demonstrating the kit, create an Issue here: 
+If you notice a defect, feel free to create an [Issue](https://github.com/awslabs/autonomous-driving-data-framework/issues)
 
-### Deployment FAQ (optional)
+### Deployment FAQ
 
 If you are deploying any of these modulesin a cloud9 environment, the EBS volume used by the environment needs to be resized (increased). Please use this [link]( https://docs.aws.amazon.com/cloud9/latest/user-guide/move-environment.html)
