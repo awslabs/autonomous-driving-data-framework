@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "This template deploys Project deployment policy"
+Parameters:
+  ProjectName:
+    Type: String
+    Description: The name of the project
+  DeploymentName:
+    Type: String
+    Description: The name of the deployment
+Resources:
+  ProjectPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Managed Policy granting access to build a project
+      Path: /
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "cloudformation:Describe*"
+              - "cloudformation:GetTemplate"
+              - "ec2:Describe*"
+              - "ec2:Get*"
+              - "ecr:Describe*"
+              - "ecr:Get*"
+              - "ecr:List*"
+              - "elasticloadbalancing:Describe*"
+              - "iam:Get*"
+              - "iam:List*"
+              - "logs:CreateLogGroup"
+              - "logs:Describe*"
+              - "logs:DescribeLogGroups"
+              - "s3:List*"
+              - 'kms:CreateKey'
+              - 'kms:Describe*'
+              - 'kms:List*'
+              - 'kms:TagResource'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - ssm:Get*
+              - ssm:Describe*
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+              - ssm:DeleteParameters
+            Resource:
+              -  !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}*"
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:GetLogEvents
+              - logs:GetLogRecord
+              - logs:GetLogGroupFields
+              - logs:GetQueryResults
+            Resource:
+              - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/codeseeder-${ProjectName}*"
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              -  !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cdk-bootstrap*"
+          - Effect: Allow
+            Action:
+              - iam:UpdateAssumeRolePolicy
+            Resource:
+              -  !Sub "arn:aws:iam::${AWS::AccountId}:role/${ProjectName}*"
+          - Effect: Allow
+            Action:
+              - "iam:PassRole"
+              - "sts:AssumeRole"
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/cdk*"
+        Version: '2012-10-17'
+
+Outputs:
+  ProjectPolicyARN:
+    Value: !Ref 'ProjectPolicy'
+

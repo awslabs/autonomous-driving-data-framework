@@ -1,0 +1,33 @@
+deploy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.20.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - >
+        echo "ADDF_MODULE_METADATA: ${ADDF_MODULE_METADATA}"
+      - >
+        echo "ADDF_PARAMETER_DAG_BUCKET_NAME: ${ADDF_PARAMETER_DAG_BUCKET_NAME}"
+      - >
+        echo "ADDF_PARAMETER_DAG_PATH: ${ADDF_PARAMETER_DAG_PATH}"
+      - >
+        echo "ADDF_PARAMETER_MWAA_EXEC_ROLE_ARN: ${ADDF_PARAMETER_MWAA_EXEC_ROLE_ARN}"
+      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - export DAG_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".DagRoleArn")
+      - >
+        echo "DAG_ROLE: ${DAG_ROLE}"
+      - echo "DAG_ROLE = '${DAG_ROLE}'" >> example_dags/dag_config.py
+      - aws s3 cp --recursive example_dags/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/example_dags/
+destroy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.20.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/example_dags
+      - cdk destroy --force --app "python app.py"

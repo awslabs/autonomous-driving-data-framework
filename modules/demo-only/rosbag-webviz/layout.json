@@ -1,0 +1,115 @@
+{
+  "layout": {
+    "direction": "row",
+    "first": {
+      "first": {
+        "first": "RawMessages!2tjtuhx",
+        "second": "Plot!19fho35",
+        "direction": "row"
+      },
+      "second": "3D Panel!46mz67l",
+      "direction": "column",
+      "splitPercentage": 37.850467289719624
+    },
+    "second": {
+      "first": {
+        "first": "ImageViewPanel!2fopb77",
+        "second": "ImageViewPanel!4hzgmns",
+        "direction": "row"
+      },
+      "second": "ImageViewPanel!33lyeph",
+      "direction": "column"
+    }
+  },
+  "savedProps": {
+    "RawMessages!2tjtuhx": {
+      "topicPath": "/vehicle/brake_report",
+      "diffTopicPath": "",
+      "diffMethod": "custom",
+      "diffEnabled": false,
+      "showFullMessageForDiff": false
+    },
+    "3D Panel!46mz67l": {
+      "checkedKeys": [
+        "name:Topics",
+        "ns:/metadata:height",
+        "t:/os1_cloud_node/points"
+      ],
+      "expandedKeys": ["t:/tf", "name:Topics"],
+      "followTf": "os1_lidar",
+      "cameraState": {
+        "targetOffset": [0, 0, 0],
+        "distance": 75,
+        "perspective": true,
+        "phi": 0.7853981633974483,
+        "thetaOffset": 0,
+        "fovy": 0.7853981633974483,
+        "near": 0.01,
+        "far": 5000,
+        "target": [0, 0, 0]
+      },
+      "modifiedNamespaceTopics": ["/metadata"],
+      "pinTopics": false,
+      "settingsByKey": {},
+      "autoSyncCameraState": true,
+      "autoTextBackgroundColor": true,
+      "followOrientation": true,
+      "flattenMarkers": false
+    },
+    "ImageViewPanel!2fopb77": {
+      "cameraTopic": "/flir_adk/rgb_front_left/image_raw",
+      "enabledMarkerTopics": [],
+      "customMarkerTopicOptions": [],
+      "scale": 0.2,
+      "transformMarkers": true,
+      "synchronize": false,
+      "mode": "fit",
+      "zoomPercentage": 44.75,
+      "offset": [0, 25.25]
+    },
+    "ImageViewPanel!4hzgmns": {
+      "cameraTopic": "/flir_adk/rgb_front_right/image_raw",
+      "enabledMarkerTopics": [],
+      "customMarkerTopicOptions": [],
+      "scale": 0.2,
+      "transformMarkers": true,
+      "synchronize": false,
+      "mode": "fit",
+      "zoomPercentage": 22.375,
+      "offset": [0, 25.25]
+    },
+    "ImageViewPanel!33lyeph": {
+      "cameraTopic": "/flir_adk/thermal/image_raw",
+      "enabledMarkerTopics": [],
+      "customMarkerTopicOptions": [],
+      "scale": 0.2,
+      "transformMarkers": true,
+      "synchronize": false,
+      "mode": "fit",
+      "zoomPercentage": 62.3046875,
+      "offset": [159.625, 0]
+    },
+    "Plot!19fho35": {
+      "paths": [
+        {
+          "value": "/vehicle/brake_report.pedal_input",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        }
+      ],
+      "minYValue": "",
+      "maxYValue": "",
+      "showLegend": true,
+      "xAxisVal": "timestamp"
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "linkedGlobalVariables": [],
+  "playbackConfig": {
+    "speed": 0.2,
+    "messageOrder": "receiveTime",
+    "timeDisplayMethod": "ROS"
+  },
+  "version": 16
+}

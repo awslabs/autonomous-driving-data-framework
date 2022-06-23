@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys a Module specific IAM permissions
+
+Parameters:
+  DeploymentName:
+    Type: String
+    Description: The name of the deployment
+  ModuleName:
+    Type: String
+    Description: The name of the Module
+  RoleName:
+    Type: String
+    Description: The name of the IAM Role
+
+Resources:

@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys a sample Permission Boundary Managed policy
+Parameters:
+  ManagedPolicyName:
+    Type: String
+    Description: The name of the ManagedPolicy for Permission Boundary
+Resources:
+  ProjectPolicy:
+    Properties:
+      ManagedPolicyName: !Ref ManagedPolicyName
+      Description: Permission Boundary Managed policy
+      Path: /
+      PolicyDocument:
+        Statement:
+          - Action: '*'
+            Effect: Allow
+            Resource: '*'
+            Sid: ServiceBoundaries
+          - Action:
+              - 'iam:CreateRole'
+              - 'iam:DeleteRolePolicy'
+              - 'iam:AttachRolePolicy'
+              - 'iam:DetachRolePolicy'
+              - 'iam:PutRolePermissionsBoundary'
+              - 'iam:PutRolePolicy'
+            Condition:
+              StringEquals:
+                'iam:PermissionsBoundary': !Sub 'arn:aws:iam::${AWS::AccountId}:policy/${ManagedPolicyName}'
+            Effect: Allow
+            Resource: '*'
+            Sid: CreateOrChangeOnlyWithBoundary
+          - Action:
+              - 'iam:CreatePolicyVersion'
+              - 'iam:DeletePolicy'
+              - 'iam:DeletePolicyVersion'
+              - 'iam:SetDefaultPolicyVersion'
+            Effect: Deny
+            Resource:
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:policy/${ManagedPolicyName}'
+            Sid: DenyPermBoundaryIAMPolicyAlteration
+          - Action:
+              - 'iam:DeleteUserPermissionsBoundary'
+              - 'iam:DeleteRolePermissionsBoundary'
+            Condition:
+              StringEquals:
+                'iam:PermissionsBoundary': !Sub 'arn:aws:iam::${AWS::AccountId}:policy/${ManagedPolicyName}'
+            Effect: Deny
+            Resource:
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:user/*'
+              - !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+            Sid: DenyRemovalOfPermBoundaryFromAnyUserOrRole
+          - Action: 'iam:PassRole'
+            Effect: Deny
+            Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+            Sid: DenyIAMPassRoleEscalation
+        Version: 2012-10-17
+    Type: 'AWS::IAM::ManagedPolicy'

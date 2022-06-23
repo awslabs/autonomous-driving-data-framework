@@ -1,0 +1,95 @@
+name: k8s-managed-simulations
+path: modules/simulations/k8s-managed
+parameters:
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: dag-path
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: DagPath
+  - name: mwaa-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: MwaaExecRoleArn
+  - name: eks-cluster-name
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: eks-oidc-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: eks-cluster-admin-role-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterAdminRoleArn
+---
+name: batch-managed
+path: modules/simulations/batch-managed
+parameters:
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: dag-path
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: DagPath
+  - name: mwaa-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: MwaaExecRoleArn
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: batch-compute
+    value:
+      batch_compute_config:
+        - env_name: ng1
+          compute_type: ON_DEMAND
+          max_vcpus: 256
+          desired_vcpus: 0
+          order: 1
+          instance_types:
+            - "m5.large"
+        - env_name: ng2
+          max_vcpus: 256
+          desired_vcpus: 0
+          compute_type: SPOT
+          order: 1
+          # instance_types: #if not set, the code defaults to "optimal"
+          #   - "m5.large"
+        - env_name: ng3
+          max_vcpus: 256
+          desired_vcpus: 0
+          compute_type: FARGATE
+          order: 1

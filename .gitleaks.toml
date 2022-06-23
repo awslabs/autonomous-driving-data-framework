@@ -1,0 +1,10 @@
+title = "gitleaks allowlist"
+[allowlist]
+files = [
+    "(.*?)(jpg|gif|doc|pdf|bin)$",
+    "^vendor/(.*?)$",
+    ".gitleaks.toml",
+]
+commits = [
+    "e049a91bf280b5bb7cdc01c0fbb70ccf3c5de979",
+]

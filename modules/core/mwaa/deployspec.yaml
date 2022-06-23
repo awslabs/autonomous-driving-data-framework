@@ -1,0 +1,26 @@
+deploy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.20.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - pushd requirements/ && pwd && popd
+      - aws iam create-service-linked-role --aws-service-name airflow.amazonaws.com || true
+      - aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com || true
+      - export UNIQUE_REQUIREMENTS_FILE="requirements.txt-$(date +%s)"
+      - mv requirements/requirements.txt requirements/${UNIQUE_REQUIREMENTS_FILE}
+      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+destroy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.20.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - cdk destroy --force --app "python app.py"
+
+
