@@ -4,7 +4,6 @@ description: A Helm chart for coder/code-server
 
 type: application
 
-
 version: 2.3.0
 
 appVersion: 4.2.0

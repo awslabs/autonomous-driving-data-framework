@@ -1,22 +1,22 @@
 # Deploying JupyterHub
 
-
 ## Description
 
-This module deploys VSCode IDE onto the Amazon EKS Cluster.  See here for:
- - [git repo](https://github.com/coder/code-server)
- - [helm-chart reference](https://coder.com/docs/code-server/latest/helm)
-> This is not a production ready `VSCode` IDE, as it currently runs on port 80.  Use at your own risk (for now).
+This module deploys VSCode IDE onto the Amazon EKS Cluster. See here for:
+
+- [git repo](https://github.com/coder/code-server)
+- [helm-chart reference](https://coder.com/docs/code-server/latest/helm)
+  > This is not a production ready `VSCode` IDE, as it currently runs on port 80. Use at your own risk (for now).
 
 ### Prerequisistes
 
 A password is required to access the IDE, stored in `AWS Secrets Manager` with the below json representation:
 
 ```json
-{"password": "testpassword"}
+{ "password": "testpassword" }
 ```
 
-The name of the  `AWS Secrets Manager`  is a parameter that is passed in to ADDF.
+The name of the `AWS Secrets Manager` is a parameter that is passed in to ADDF.
 
 #### Required
 

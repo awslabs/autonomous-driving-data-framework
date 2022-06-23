@@ -5,9 +5,9 @@ Parameters:
   DeploymentName:
     Type: String
     Description: The name of the deployment
-  ModuleName:
-    Type: String
-    Description: The name of the Module
+  # ModuleName:
+  #   Type: String
+  #   Description: The name of the Module
   RoleName:
     Type: String
     Description: The name of the IAM Role
