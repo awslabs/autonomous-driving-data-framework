@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: This template deploys a Module specific IAM permissions
+Description: This stack deploys a Module specific IAM permissions
 
 Parameters:
   # DeploymentName:

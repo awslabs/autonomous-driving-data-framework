@@ -28,7 +28,7 @@ class NetworkingStack(Stack):  # type: ignore
     def __init__(self, scope: Construct, id: str, **kwargs: Any) -> None:
         self.deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
         self.internet_accessible = os.getenv("ADDF_PARAMETER_INTERNET_ACCESSIBLE", True)
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, description="This stack deploys Networking resources for ADDF", **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
         self.vpc: ec2.Vpc = self._create_vpc()
 

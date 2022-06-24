@@ -40,7 +40,7 @@ class MetadataStorageStack(Stack):  # type: ignore
 
         dep_mod = f"addf-{deployment}-{module}"
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, description="This stack deploys Metadata resources for ADDF", **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         rosbag_bagfile_p_key = "bag_file_prefix"

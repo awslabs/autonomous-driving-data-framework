@@ -46,7 +46,7 @@ class NeptuneStack(Stack):
         # account: str = aws_cdk.Aws.ACCOUNT_ID
         # region: str = aws_cdk.Aws.REGION
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, description="This stack deploys Neptune Cluster resources for ADDF", **kwargs)
         # Tagging all resources
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 

@@ -48,7 +48,7 @@ class OpenSearchStack(Stack):  # type: ignore
         dep_mod = f"addf-{deployment}-{module}"
         dep_mod = dep_mod[:27]
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, description="This stack deploys Opensearch cluster resources for ADDF", **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         # ###  OpenSearch Starts Here!!

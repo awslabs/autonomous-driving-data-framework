@@ -57,7 +57,7 @@ class MWAAStack(Stack):  # type: ignore
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, description="This stack deploys MWAA resources for ADDF", **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
 
         self.vpc_id = vpc_id

@@ -54,7 +54,7 @@ const stack = new WebvizStack(app, `addf-${deploymentName}-${moduleName}`, {
   sceneMetadataPartitionKey,
   sceneMetadataSortKey,
   stageName,
-  description: "(SO9013) - Autonomous Vehicle Datalake-V2.0.0 - Template",
+  description: "This stack deploys Webviz resources for Visualization",
   env: { account, region },
 });
 
