@@ -111,21 +111,21 @@ parameters:
       cloudwatch_container_insights_logs_retention_days: 7
       deploy_amp: False
       deploy_grafana_for_amp: False
----
-name: neptune
-path: modules/core/neptune/
-parameters:
-  - name: number-instances
-    value: 1
-  - name: vpc-id
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: VpcId
-  - name: private-subnet-ids
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: PrivateSubnetIds
+# ---
+# name: neptune
+# path: modules/core/neptune/
+# parameters:
+#   - name: number-instances
+#     value: 1
+#   - name: vpc-id
+#     valueFrom:
+#       moduleMetadata:
+#         group: optionals
+#         name: networking
+#         key: VpcId
+#   - name: private-subnet-ids
+#     valueFrom:
+#       moduleMetadata:
+#         group: optionals
+#         name: networking
+#         key: PrivateSubnetIds
