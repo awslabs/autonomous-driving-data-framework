@@ -22,30 +22,6 @@ parameters:
   - name: secrets-manager-name
     value: jh-credentials
 ---
-name: vscode
-path: modules/demo-only/vscode-on-eks/
-parameters:
-  - name: eks-cluster-admin-role-arn
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: eks
-        key: EksClusterAdminRoleArn
-  - name: eks-cluster-name
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: eks
-        key: EksClusterName
-  - name: eks-oidc-arn
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: eks
-        key: EksOidcArn
-  - name: secrets-manager-name
-    value: vscode-credentials
----
 name: emrstudio-on-eks
 path: modules/beta/emrstudio-on-eks/
 parameters:
@@ -92,6 +68,30 @@ parameters:
         name: datalake-buckets
         key: ArtifactsBucketName
   - name: sso-username
-    value: ssriche
+    value: replace-me
   - name: emr-eks-namespace
     value: emr-studio
+# ---
+# name: vscode
+# path: modules/demo-only/vscode-on-eks/
+# parameters:
+#   - name: eks-cluster-admin-role-arn
+#     valueFrom:
+#       moduleMetadata:
+#         group: core
+#         name: eks
+#         key: EksClusterAdminRoleArn
+#   - name: eks-cluster-name
+#     valueFrom:
+#       moduleMetadata:
+#         group: core
+#         name: eks
+#         key: EksClusterName
+#   - name: eks-oidc-arn
+#     valueFrom:
+#       moduleMetadata:
+#         group: core
+#         name: eks
+#         key: EksOidcArn
+#   - name: secrets-manager-name
+#     value: vscode-credentials
