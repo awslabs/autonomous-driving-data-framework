@@ -42,7 +42,12 @@ class Eks(Stack):  # type: ignore
         config: Dict[str, Any],
         **kwargs: Any,
     ) -> None:
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys EKS Cluster, Managed Nodegroup(s) with standard plugins for ADDF",
+            **kwargs,
+        )
 
         for k, v in config.items():
             setattr(self, k, v)

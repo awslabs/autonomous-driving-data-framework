@@ -39,7 +39,7 @@ class DataLakeBucketsStack(Stack):  # type: ignore
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, description="This stack deploys Storage resources for ADDF", **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
 
         raw_bucket = aws_s3.Bucket(

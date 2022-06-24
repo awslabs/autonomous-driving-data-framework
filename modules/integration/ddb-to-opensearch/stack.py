@@ -44,7 +44,9 @@ class DDBtoOpensearch(Stack):  # type: ignore
         **kwargs: Any,
     ) -> None:
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope, id, description="This stack integrates DynamoDB with Opensearch cluster for ADDF", **kwargs
+        )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         dep_mod = f"addf-{deployment}-{module}"

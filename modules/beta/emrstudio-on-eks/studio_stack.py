@@ -38,7 +38,7 @@ class StudioLiveStack(Stack):
         sso_username: str,
         **kwargs,
     ) -> None:
-        super().__init__(scope, id, **kwargs)
+        super().__init__(scope, id, description="This stack deploys EMR Studio for ADDF", **kwargs)
         dep_mod = f"addf-{deployment}-{module}"
         dep_mod = dep_mod[:27]
 

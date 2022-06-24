@@ -42,7 +42,12 @@ class SimulationDags(Stack):
         self.module_name = module_name
         self.mwaa_exec_role = mwaa_exec_role
 
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys Kubernetes based Simulation environment(s) on AWS EKS for ADDF",
+            **kwargs,
+        )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
 
         # Create Dag IAM Role and policy

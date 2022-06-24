@@ -76,7 +76,7 @@ def fargate(config):
         environment_vars=default_environment_vars,
         ecr_repository_name=ecr_repository_name,
         cpu=cpu,
-        description="(SO9013) - Autonomous Vehicle Datalake-V2.0.0 - Template",
+        description="This stack deploys Rosbag Scene Detecton resources for ADDF",
         memory_limit_mib=memory_limit_mib,
         timeout_minutes=timeout_minutes,
         s3_filters=s3_filters,

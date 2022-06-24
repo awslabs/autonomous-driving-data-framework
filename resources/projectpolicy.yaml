@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: "This template deploys Project deployment policy"
+Description: "This stack deploys Project deployment policy"
 Parameters:
   ProjectName:
     Type: String
