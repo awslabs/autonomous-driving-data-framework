@@ -1,5 +1,7 @@
 # Autonomous Driving Data Framework(ADDF)
 
+![Logo](docs/images/logo.png)
+
 ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualization, Compute, Storage, Centralized logging etc, deployed using [Seed-Farmer](https://github.com/awslabs/seed-farmer) orchestration tool. ADDF allows you to build distinct, stand alone Infrastructure as code (IAAC) modules and exchange information about dependencies using metadata which can be exported from one module and imported into another. Each module can be found under the `modules` directory of this repository.
 
 ## Scene Detection
