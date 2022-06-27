@@ -54,9 +54,15 @@ cdk bootstrap aws://<account>/<region>
 
 Create a copy of your target manifests directory using the below command, where you will locate sample manifests in the name of `example-dev` and `example-prod`. You should create a directory with your desired deployment names like `uat`, `demo`. Below example uses `demo` as the deployment name
 
+If running on a Mac instance:
 ```bash
 cp -R manifests/example-dev manifests/demo
 sed -i .bak "s/example-dev/demo/g" manifests/demo/deployment.yaml
+```
+If running in a Linux instance (such as Cloud9), this the command for a `sed` replace:
+```bash
+cp -R manifests/example-dev manifests/demo
+sed -i "s/example-dev/demo/g" manifests/demo/deployment.yaml
 ```
 
 #### Prepare the AWS SecretsManager
@@ -81,7 +87,7 @@ File `deployment.yaml` is the top level manifest, which should include the modul
 
 #### Dockerhub Support
 
-To avoid throttling from `DockerHub` when building images, you should create a parameter/re-use an existing parameter in `AWS Secrets Manager` to store your DockerHub username and password.
+To avoid throttling from `DockerHub` when building images, you should create a parameter/re-use an existing parameter in `AWS Secrets Manager` to store your DockerHub username and password.  NOTE: This is optional, but you may experience throttling at DockerHub.  To create an account, see [DockerHub](https://hub.docker.com/signup).
 
 To create/update the default secret (aws-addf-docker-credentials) run:
 
