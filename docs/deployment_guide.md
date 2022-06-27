@@ -54,11 +54,12 @@ cdk bootstrap aws://<account>/<region>
 
 Create a copy of your target manifests directory using the below command, where you will locate sample manifests in the name of `example-dev` and `example-prod`. You should create a directory with your desired deployment names like `uat`, `demo`. Below example uses `demo` as the deployment name
 
+If running on a Mac instance:
 ```bash
 cp -R manifests/example-dev manifests/demo
 sed -i .bak "s/example-dev/demo/g" manifests/demo/deployment.yaml
 ```
-If running in a Cloud9 instance, this the command for a `sed` replace:
+If running in a Linux instance (such as Cloud9), this the command for a `sed` replace:
 ```bash
 cp -R manifests/example-dev manifests/demo
 sed -i "s/example-dev/demo/g" manifests/demo/deployment.yaml
