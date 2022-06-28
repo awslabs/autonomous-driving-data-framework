@@ -40,6 +40,7 @@ do
 done
 
 VENV_PATH="${DIR}/venv-$(date +%s)"
+deactivate || echo "No active virtualenv"
 python3 -m venv ${VENV_PATH}
 . ${VENV_PATH}/bin/activate
 echo "Created and activated virtualenv at ${VENV_PATH}"
