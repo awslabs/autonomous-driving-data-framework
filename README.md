@@ -4,49 +4,65 @@
 
 ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualization, Compute, Storage, Centralized logging etc, deployed using [Seed-Farmer](https://github.com/awslabs/seed-farmer) orchestration tool. ADDF allows you to build distinct, stand alone Infrastructure as code (IAAC) modules and exchange information about dependencies using metadata which can be exported from one module and imported into another. Each module can be found under the `modules` directory of this repository.
 
-## Scene Detection
+## Different types of modules supported by ADDF
 
-Rosbag Scene Detection Module: Building an automated scene detection pipeline for Autonomous Driving
+### Use-case specific Modules
 
-[Rosbag Scene Detection Module Readme.](modules/analysis/README.md)
+| Type | Description |
+| --- | --- |
+|  [Rosbag Scene Detection Module](modules/analysis/README.md)  |  Deploys a Rosbag Scene Detection pipeline for use in ADDF  |  
+|  [Rosbag WebViz Module](modules/demo-only/rosbag-webviz/README.md) |  Deploys and Visualizes Rosbag Data on AWS using Webviz for use in ADDF  |
 
-## Visualization
+### Optional Modules
 
-Rosbag WebViz Module: Deploy and Visualize ROS Bag Data on AWS using Webviz for Autonomous Driving
+| Type | Description |
+| --- | --- |
+|  [Networking Module](modules/optionals/networking/README.md)  |  Deploys standard networking resources such as VPC, Public and Private subnets, endpoints for use in ADDF  |
+|  [DataLake Buckets Module](modules/optionals/datalake-buckets/README.md) |  Deploys shared datalake buckets such as input, intermediate, output, logging, artifact buckets for use in ADDF  |
 
-[Rosbag WebViz Readme.](modules/demo-only/rosbag-webviz/README.md)
+### Core Modules
 
-## Shared Core
+| Type | Description |
+| --- | --- |
+|  [EKS Compute Module](modules/core/eks/README.md)  |  Deploys shared EKS Cluster with commonly preferred addons for use in ADDF  |
+|  [Metadata Storage Module](modules/core/metadata-storage/README.md) |  Deploys shared Metadata storage module which deploys metadata resources like Glue, DDB etc for use in ADDF  |
+|  [Amazon Managed Workflows for Apache Airflow (MWAA) Module](modules/core/mwaa/README.md)  |  Deploys shared MWAA module for use in ADDF   |
+|  [Opensearch Module](modules/core/opensearch/README.md)  |  Deploys Amazon Opensearch Cluster for use in ADDF   |
+|  [Neptune Module](modules/core/neptune/README.md)  |  Deploys Amazon Managed Neptune Cluster for use in ADDF   |
 
-EKS Compute Module: Deploys shared EKS Cluster with commonly preferred addons for use in ADDF
+### Integration Modules
 
-[EKS Module Readme.](modules/core/eks/README.md)
+| Type | Description |
+| --- | --- |
+|  [DDB to Opensearch Module](modules/integration/ddb-to-opensearch/README.md)  |  This module integrates DynamoDB table with Opensearch cluster  |
+|  [EKS to Opensearch Module](modules/integration/eks-to-opensearch/README.md) |  This module integrates EKS Cluster with Opensearch cluster  |
+|  [EMR to Opensearch Module](modules/integration/emr-to-opensearch/README.md)  |  This module integrates EMR Cluster with Opensearch cluster  |
+|  [Opensearch Proxy Module](modules/demo-only/opensearch-proxy/README.md)  |  This module deploys a Proxy server to access Opensearch cluster   |
 
-Metadata Storage Module: Deploys shared Metadata storage module which deploys metadata resources like Glue, DDB etc
+### Simulation Modules
 
-[Metadata Storage Module Readme.](modules/core/metadata-storage/README.md)
+| Type | Description |
+| --- | --- |
+|  [K8s-Managed Module](modules/simulations/k8s-managed/README.md)  |  This module helps running simulations on AWS EKS, when triggered by KubernetesJob Operator from airflow environment   |
+|  [AWS Batch Module](modules/simulations/batch-managed/README.md) |  This module helps running simulations on AWS Batch, when triggered by Batch Operator from airflow environment  |
 
-Amazon Managed Workflows for Apache Airflow (MWAA) Module: Deploys shared MWAA module.
+### IDE Modules
 
-[MWAA Module Readme.](modules/core/mwaa/README.md)
+| Type | Description |
+| --- | --- |
+|  [Self Managed JupyterHub Module](modules/demo-only/jupyter-hub/README.md)  |  This module deploys self managed JupyterHub environment on AWS EKS  |
+|  [Self Managed VSCode Module](modules/demo-only/vscode-on-eks/README.md) |  This module deploys self managed VSCode environment on AWS EKS  |
+|  [AWS Managed EMR Studio Module](modules/beta/emrstudio-on-eks/README.md)  |  This module deploys AWS managed EMR Studio with EMR on EKS  |
 
-Opensearch Module: Deploys Amazon Opensearch Cluster for use in ADDF
+### Example Modules
 
-[Opensearch Module Readme.](modules/core/opensearch/README.md)
-
-## Optionals
-
-Networking Module: Deploys standard networking resources such as VPC, Public and Private subnets, endpoints
-
-[Networking Module Readme.](modules/optionals/networking/README.md)
-
-DataLake Buckets Module: Deploys shared datalake buckets such as input, intermediate, output, logging, artifact buckets.
-
-[DataLake Buckets Module Readme.](modules/optionals/datalake-buckets/README.md)
+| Type | Description |
+| --- | --- |
+|  [Example DAG Module](modules/examples/example-dags/README.md)  |  This module deploys a pattern to integrate a target DAG module to work with shared MWAA Cluster  |
 
 ## Deployment Instructions
 
-[Deployment Guide Readme.](docs/deployment_guide.md)
+You can follow instructions in the Deployment Guide [Readme](docs/deployment_guide.md)
 
 ## Reporting Issues
 
@@ -54,4 +70,4 @@ If you notice a defect, feel free to create an [Issue](https://github.com/awslab
 
 ### Deployment FAQ
 
-If you are deploying any of these modulesin a cloud9 environment, the EBS volume used by the environment needs to be resized (increased). Please use this [link]( https://docs.aws.amazon.com/cloud9/latest/user-guide/move-environment.html)
+If you need to debug a deployment in ADDF, here are few things you can checkout [Readme](docs/faq.md)
