@@ -18,6 +18,7 @@
 set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." >/dev/null 2>&1 && pwd )"
+UPGRADE=""
 
 while [ $# -gt 0 ]
 do
@@ -26,6 +27,10 @@ do
         MODULE_PATH="${DIR}/${2}"
         shift # Remove --path from processing
         shift # Remove $2 from processing
+        ;;
+        --upgrade)
+        UPGRADE="--upgrade"
+        shift # Remove --upgrade from processing
         ;;
         -*|--*)
         echo "Unknown option $1"
@@ -48,7 +53,7 @@ pushd ${MODULE_PATH}
 
 if [[ -f requirements.in ]]; then
     echo "Found requirements.in"
-    pip-compile requirements.in
+    pip-compile ${UPGRADE} requirements.in
 fi
 
 echo "Deactivating and removing virtualenv"
