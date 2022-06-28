@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Changed**
 
 - fixed the missing modules info in readme
+- added details to the contributing guide
 
 ### **Removed**
 

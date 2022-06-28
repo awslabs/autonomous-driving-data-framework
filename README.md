@@ -2,7 +2,13 @@
 
 <img src="https://github.com/awslabs/autonomous-driving-data-framework/blob/main/docs/images/logo.png?raw=true" width="300" alt="ADDF logo">
 
-ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualization, Compute, Storage, Centralized logging etc, deployed using [Seed-Farmer](https://github.com/awslabs/seed-farmer) orchestration tool. ADDF allows you to build distinct, stand alone Infrastructure as code (IAAC) modules and exchange information about dependencies using metadata which can be exported from one module and imported into another. Each module can be found under the `modules` directory of this repository.
+ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualization, Compute, Storage, Centralized logging etc, deployed using [SeedFarmer](https://github.com/awslabs/seed-farmer) orchestration tool. ADDF allows you to build distinct, stand alone Infrastructure as code (IAAC) modules and exchange information about dependencies using metadata which can be exported from one module and imported into another. Each module can be found under the `modules` directory of this repository.
+
+## Deployment Instructions
+
+You can refer to the SeedFarmer [guide](https://seed-farmer.readthedocs.io/en/latest/usage.html) to understand how SeedFarmer CLI can be used to bootstrap and deploy ADDF.
+
+You can follow instructions in the Deployment Guide [Readme](docs/deployment_guide.md). You can also follow the [blogpost](https://aws.amazon.com/blogs/industries/develop-and-deploy-a-customized-workflow-using-autonomous-driving-data-framework-addf-on-aws/) for understanding ADDF in detail.
 
 ## Different types of modules supported by ADDF
 
@@ -59,10 +65,6 @@ ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualiz
 | Type | Description |
 | --- | --- |
 |  [Example DAG Module](modules/examples/example-dags/README.md)  |  This module deploys a pattern to integrate a target DAG module to work with shared MWAA Cluster  |
-
-## Deployment Instructions
-
-You can follow instructions in the Deployment Guide [Readme](docs/deployment_guide.md)
 
 ## Reporting Issues
 

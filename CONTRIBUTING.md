@@ -1,6 +1,8 @@
 # Contributing Guidelines
 
-Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
+Thanks for your interest in contributing to ADDF :)
+
+Whether it's a bug report, new feature, correction, or additional
 documentation, we greatly value feedback and contributions from our community.
 
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
@@ -28,12 +30,60 @@ Contributions via pull requests are much appreciated. Before sending us a pull r
 
 To send us a pull request, please:
 
-1. Fork the repository.
-2. Modify the source; please focus on the specific change you are contributing. If you also reformat all the code, it will be hard for us to focus on your change.
-3. Ensure local tests pass.
-4. Commit to your fork using clear commit messages.
-5. Send us a pull request, answering any default questions in the pull request interface.
-6. Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
+Fork the repository and run the following commands to clone the repository locally.
+
+```sh
+$ git clone https://github.com/{your-account}/autonomous-driving-data-framework.git
+```
+
+Then, prepare your local environment before you move forward with the development.
+
+```sh
+$ cd autonomous-driving-data-framework
+$ git checkout -b <<BRANCH-NAME>>
+$ python3 -m venv .venv && source .venv/bin/activate
+$ pip install -r requirements.txt -r requirements-dev.txt
+```
+
+You can refer to the SeedFarmer [guide](https://seed-farmer.readthedocs.io/en/latest/usage.html) to understand how SeedFarmer CLI can be used to bootstrap and deploy ADDF.
+
+If you wish to create a new module, you can refer to the guide of [SeedFarmer](https://github.com/awslabs/seed-farmer/blob/bac754a1a66ca2a184fae691909f2e2bc6a115a6/docs/source/usage.md#create-a-new-module) else you can continue to make changes to the existing modules using standard Git process.
+
+```sh
+$ seedfarmer init module -g <<GROUP-NAME> -m <<MY-MODULE>>
+$ cd modules/<<GROUP-NAME>/<<MY-MODULE>>
+```
+
+If you wish to generate the requirements.txt for your module(s) using `pip-compile` for CDK modules in python, then you can run the below command:
+
+```sh
+$ scripts/pip-compile.sh --path modules/optionals/networking/
+```
+
+>Note: To upgrade requirements, you can add `--upgrade` at the end of the above instruction
+
+Modify the source; please focus on the specific change you are contributing. If you also reformat all the code, it will be hard for us to focus on your change.
+
+Ensure you perform local checks on your change(s) to ADDF modules. From the root of the ADDF repo, you should run the below script to perform code formatting and sort imports:
+
+```sh
+scripts/fix.sh --language python --path modules/optionals/networking/
+
+```
+
+>Note: If the CDK language is typescript, you should replace it in the above command at `--language`
+
+From the root of the ADDF repo, you should run the below script to perform validation checks:
+
+```sh
+scripts/validate.sh --language python --path modules/optionals/networking/
+```
+
+>Note: If the CDK language is typescript, you should replace it in the above command at `--language`.   If you wish to skip the static checks during the validation step, you can supply an argument as --skip-static-checks.
+
+Commit to your fork using clear commit messages and send us a pull request, answering any default questions in the pull request interface.
+
+Pay attention to any automated CI failures reported in the pull request, and stay involved in the conversation.
 
 GitHub provides additional document on [forking a repository](https://help.github.com/articles/fork-a-repo/) and
 [creating a pull request](https://help.github.com/articles/creating-a-pull-request/).
