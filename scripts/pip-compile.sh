@@ -39,6 +39,11 @@ do
     esac
 done
 
+if [[ ! -f ${MODULE_PATH}/requirements.in ]]; then
+    echo "No requirements.in found in ${MODULE_PATH}"
+    exit 1
+fi
+
 VENV_PATH="${DIR}/venv-$(date +%s)"
 deactivate || echo "No active virtualenv"
 python3 -m venv ${VENV_PATH}
