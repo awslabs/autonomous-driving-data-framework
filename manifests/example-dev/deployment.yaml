@@ -5,13 +5,13 @@ groups:
     path: manifests/example-dev/optional-modules.yaml
   - name: core
     path: manifests/example-dev/core-modules.yaml
-  - name: examples
-    path: manifests/example-dev/example-modules.yaml
-  - name: rosbag
-    path: manifests/example-dev/rosbag-modules.yaml
-  - name: simulations
-    path: manifests/example-dev/simulation-modules.yaml
-  - name: integration
-    path: manifests/example-dev/integration-modules.yaml
-  - name: ide
-    path: manifests/example-dev/ide-modules.yaml
+#  - name: examples
+#    path: manifests/example-dev/example-modules.yaml
+#  - name: rosbag
+#    path: manifests/example-dev/rosbag-modules.yaml
+#  - name: simulations
+#    path: manifests/example-dev/simulation-modules.yaml
+#  - name: integration
+#    path: manifests/example-dev/integration-modules.yaml
+#  - name: ide
+#    path: manifests/example-dev/ide-modules.yaml
