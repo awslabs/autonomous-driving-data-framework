@@ -2,6 +2,7 @@ import json
 import os
 
 from aws_cdk import App, CfnOutput, Environment
+
 from stack import AwsBatch
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
@@ -13,8 +14,8 @@ def _param(name: str) -> str:
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
-batch_compute = json.loads(os.getenv(_param("BATCH_COMPUTE")))  # required
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS"), ""))  # required
+batch_compute = json.loads(os.getenv(_param("BATCH_COMPUTE"), ""))  # required
 
 if not vpc_id:
     raise Exception("Missing input parameter vpc-id")
@@ -67,5 +68,3 @@ CfnOutput(
 )
 
 app.synth(force=True)
-
-

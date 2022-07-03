@@ -13,13 +13,13 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, cast
 
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import RemovalPolicy, Aspects, Stack, Tags, Duration
+from aws_cdk import Aspects, Stack, Tags
 from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -28,7 +28,7 @@ _logger: logging.Logger = logging.getLogger(__name__)
 DEFAULT_MAX_VCPUS_PER_QUEUE = str(256)
 
 
-class AwsBatch(Stack):
+class AwsBatch(Stack):  # type: ignore
     def __init__(
         self,
         scope: Construct,
@@ -59,9 +59,7 @@ class AwsBatch(Stack):
 
         self.private_subnets = []
         for idx, subnet_id in enumerate(self.private_subnet_ids):
-            self.private_subnets.append(
-                ec2.Subnet.from_subnet_id(scope=self, id=f"subnet{idx}", subnet_id=subnet_id)
-            )
+            self.private_subnets.append(ec2.Subnet.from_subnet_id(scope=self, id=f"subnet{idx}", subnet_id=subnet_id))
 
         # Create IAM Policy for Airflow Dags to use Batch
         policy_statements = [
@@ -128,7 +126,8 @@ class AwsBatch(Stack):
                         compute_resources=batch.ComputeResources(
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus")
+                            maxv_cpus=batchenv.get("max_vcpus")
+                            if batchenv.get("max_vcpus")
                             else DEFAULT_MAX_VCPUS_PER_QUEUE,
                             minv_cpus=0,
                             type=batch.ComputeResourceType.ON_DEMAND,
@@ -155,7 +154,8 @@ class AwsBatch(Stack):
                         compute_resources=batch.ComputeResources(
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus")
+                            maxv_cpus=batchenv.get("max_vcpus")
+                            if batchenv.get("max_vcpus")
                             else DEFAULT_MAX_VCPUS_PER_QUEUE,
                             minv_cpus=0,
                             type=batch.ComputeResourceType.SPOT,
@@ -176,7 +176,8 @@ class AwsBatch(Stack):
                         f"{dep_mod}-FargateJobEnv-{batchenv.get('env_name')}",
                         compute_resources=batch.ComputeResources(
                             vpc=self.vpc,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus")
+                            maxv_cpus=batchenv.get("max_vcpus")
+                            if batchenv.get("max_vcpus")
                             else DEFAULT_MAX_VCPUS_PER_QUEUE,
                             type=batch.ComputeResourceType.FARGATE,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
