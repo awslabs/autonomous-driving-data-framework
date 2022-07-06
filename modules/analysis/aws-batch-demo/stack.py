@@ -46,7 +46,8 @@ class AwsBatchPipeline(Stack):  # type: ignore
             setattr(self, k, v)
 
         Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"aws",
+            key="Deployment",
+            value="aws",
         )
 
         dep_mod = f"addf-{self.deployment_name}-{self.module_name}"

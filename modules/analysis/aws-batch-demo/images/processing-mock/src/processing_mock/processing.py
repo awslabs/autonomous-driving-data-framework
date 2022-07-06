@@ -13,11 +13,9 @@
 #    limitations under the License.
 
 import argparse
-import json
 import sys
 
 import boto3
-from boto3.dynamodb.conditions import Key
 from processing_mock import get_logger
 
 LOGGER = get_logger()
@@ -33,7 +31,7 @@ def main(table_name, index, batch_id, s3bucketout) -> int:
     table = dynamodb.Table(table_name)
 
     item = table.get_item(
-        Key={'pk': batch_id, 'sk': index},
+        Key={"pk": batch_id, "sk": index},
     ).get("Item", {})
 
     if not item:
@@ -48,13 +46,13 @@ def main(table_name, index, batch_id, s3bucketout) -> int:
     table.update_item(
         Key={"pk": item["drive_id"], "sk": item["file_id"]},
         UpdateExpression="SET "
-                         "job_status = :status, "
-                         "output_key = :output_key, "
-                         "output_bucket = :output_bucket,"
-                         "s3_key = :s3_key, "
-                         "s3_bucket = :s3_bucket,"
-                         "batch_id = :batch_id,"
-                         "array_index = :index",
+        "job_status = :status, "
+        "output_key = :output_key, "
+        "output_bucket = :output_bucket,"
+        "s3_key = :s3_key, "
+        "s3_bucket = :s3_bucket,"
+        "batch_id = :batch_id,"
+        "array_index = :index",
         ExpressionAttributeValues={
             ":status": "success",
             ":output_key": output_key,
@@ -68,12 +66,11 @@ def main(table_name, index, batch_id, s3bucketout) -> int:
     table.update_item(
         Key={"pk": batch_id, "sk": index},
         UpdateExpression="SET job_status = :status, output_key = :output_key, output_bucket = :output_bucket,"
-                         "s3_bucket = :s3_bucket, s3_key = :s3_key",
+        "s3_bucket = :s3_bucket, s3_key = :s3_key",
         ExpressionAttributeValues={
             ":status": "success",
             ":output_key": output_key,
             ":output_bucket": s3bucketout,
-            ":s3_bucket": s3_bucket,
         },
     )
 

@@ -13,7 +13,6 @@
 #    limitations under the License.
 
 
-import importlib
 import json
 import logging
 import os
@@ -33,27 +32,27 @@ from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
-from mypy_boto3_batch.client import BatchClient
 from demo_dags import batch_creation_and_tracking
 from demo_dags.dag_config import (
+    CONTAINER_TIMEOUT,
     DAG_ROLE,
+    DEPLOYMENT_NAME,
+    DYNAMODB_TABLE,
+    ECR_REPO_NAME,
+    FARGATE_JOB_QUEUE_ARN,
+    FILE_SUFFIX,
+    MAX_NUM_FILES_PER_BATCH,
+    MEMORY,
+    MODULE_NAME,
+    ON_DEMAND_JOB_QUEUE_ARN,
+    PROVIDER,
+    REGION,
+    SPOT_JOB_QUEUE_ARN,
     SRC_BUCKET,
     TARGET_BUCKET,
-    DYNAMODB_TABLE,
-    MAX_NUM_FILES_PER_BATCH,
-    FILE_SUFFIX,
-    PROVIDER,
-    ON_DEMAND_JOB_QUEUE_ARN,
-    SPOT_JOB_QUEUE_ARN,
-    FARGATE_JOB_QUEUE_ARN,
     VCPU,
-    MEMORY,
-    CONTAINER_TIMEOUT,
-    ECR_REPO_NAME,
-    REGION,
-    DEPLOYMENT_NAME,
-    MODULE_NAME,
 )
+from mypy_boto3_batch.client import BatchClient
 
 ValueType = TypeVar("ValueType")
 
@@ -93,23 +92,20 @@ def create_batch_of_drives(ti, **kwargs):
     Put them in Dynamo and Assign to a batch if not assigned already
     Add Drives until reaching max files allowed in 1 batch (hard limit of 10k)
     """
-    sts_client = boto3.client('sts')
-    assumed_role_object = sts_client.assume_role(
-        RoleArn=DAG_ROLE,
-        RoleSessionName="AssumeRoleSession1"
-    )
-    credentials = assumed_role_object['Credentials']
+    sts_client = boto3.client("sts")
+    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    credentials = assumed_role_object["Credentials"]
     dynamodb = boto3.resource(
         "dynamodb",
-        aws_access_key_id=credentials['AccessKeyId'],
-        aws_secret_access_key=credentials['SecretAccessKey'],
-        aws_session_token=credentials['SessionToken'],
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
     )
     s3_client = boto3.client(
         "s3",
-        aws_access_key_id=credentials['AccessKeyId'],
-        aws_secret_access_key=credentials['SecretAccessKey'],
-        aws_session_token=credentials['SessionToken'],
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
     )
 
     table = dynamodb.Table(DYNAMODB_TABLE)
@@ -137,7 +133,7 @@ def create_batch_of_drives(ti, **kwargs):
             files_in_batch=files_in_batch,
             next_continuation=None if files_in_batch == 0 else next_continuation,
             file_suffix=FILE_SUFFIX,
-            s3_client=s3_client
+            s3_client=s3_client,
         )
         if next_continuation is None or files_in_batch > MAX_NUM_FILES_PER_BATCH:
             print(f"Final Batch Size = {files_in_batch} files")
@@ -157,7 +153,6 @@ def get_job_name() -> str:
 
 
 def get_job_def_name() -> str:
-    v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
     return f"addf-{DEPLOYMENT_NAME}-{MODULE_NAME}-jobdef"
 
 

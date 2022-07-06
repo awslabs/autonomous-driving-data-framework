@@ -27,7 +27,9 @@ def add_drives_to_batch(
     s3_client,
 ):
     drives_and_files = {}
-    drive_id_batch, drive_continuation = get_batch_of_drive_ids(src_bucket, s3_client, next_continuation=next_continuation)
+    drive_id_batch, drive_continuation = get_batch_of_drive_ids(
+        src_bucket, s3_client, next_continuation=next_continuation
+    )
 
     for drive_id in drive_id_batch:
         if drive_id_exists(table, drive_id):
@@ -66,9 +68,7 @@ def get_batch_of_drive_ids(src_bucket, s3_client, next_continuation=None):
 
 def get_drive_files(drive_id, src_bucket, file_suffix, s3_client):
     MAX_KEYS = 1000
-    file_response = s3_client.list_objects_v2(
-        Bucket=src_bucket, Prefix=drive_id + "/", MaxKeys=MAX_KEYS, Delimiter="/"
-    )
+    file_response = s3_client.list_objects_v2(Bucket=src_bucket, Prefix=drive_id + "/", MaxKeys=MAX_KEYS, Delimiter="/")
     file_next_continuation = file_response.get("NextContinuationToken")
     files = [x["Key"] for x in file_response.get("Contents", []) if x["Key"].endswith(file_suffix)]
     while file_next_continuation is not None:
