@@ -52,6 +52,30 @@ def main(table_name, index, batch_id, s3bucketout) -> int:
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
         "batch_id = :batch_id,"
+        "array_index = :index,"
+        "drive_id = :drive_id,"
+        "file_id = :file_id",
+        ExpressionAttributeValues={
+            ":status": "success",
+            ":output_key": output_key,
+            ":output_bucket": s3bucketout,
+            ":batch_id": batch_id,
+            ":index": index,
+            ":s3_key": item["s3_key"],
+            ":s3_bucket": item["s3_bucket"],
+            ":drive_id": item["drive_id"],
+            ":file_id": item["file_id"],
+        },
+    )
+    table.update_item(
+        Key={"pk": batch_id, "sk": index},
+        UpdateExpression="SET "
+        "job_status = :status, "
+        "output_key = :output_key, "
+        "output_bucket = :output_bucket,"
+        "s3_key = :s3_key, "
+        "s3_bucket = :s3_bucket,"
+        "batch_id = :batch_id,"
         "array_index = :index",
         ExpressionAttributeValues={
             ":status": "success",
@@ -59,21 +83,10 @@ def main(table_name, index, batch_id, s3bucketout) -> int:
             ":output_bucket": s3bucketout,
             ":batch_id": batch_id,
             ":index": index,
-            "s3_key": item["s3_key"],
-            "s3_bucket": item["s3_bucket"],
+            ":s3_key": item["s3_key"],
+            ":s3_bucket": item["s3_bucket"],
         },
     )
-    table.update_item(
-        Key={"pk": batch_id, "sk": index},
-        UpdateExpression="SET job_status = :status, output_key = :output_key, output_bucket = :output_bucket,"
-        "s3_bucket = :s3_bucket, s3_key = :s3_key",
-        ExpressionAttributeValues={
-            ":status": "success",
-            ":output_key": output_key,
-            ":output_bucket": s3bucketout,
-        },
-    )
-
     return 0
 
 
