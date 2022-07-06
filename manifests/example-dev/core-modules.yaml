@@ -59,96 +59,58 @@ parameters:
         group: optionals
         name: networking
         key: PrivateSubnetIds
-#---
-#name: batch-compute
-#path: modules/core/aws-batch
-#parameters:
-#  - name: vpc-id
-#    valueFrom:
-#      moduleMetadata:
-#        group: optionals
-#        name: networking
-#        key: VpcId
-#  - name: private-subnet-ids
-#    valueFrom:
-#      moduleMetadata:
-#        group: optionals
-#        name: networking
-#        key: PrivateSubnetIds
-#  - name: batch-compute
-#    value:
-#      batch_compute_config:
-#        - env_name: ng1
-#          compute_type: ON_DEMAND
-#          max_vcpus: 4800
-#          desired_vcpus: 0
-#          order: 1
-#          instance_types:
-#             - "m5.xlarge"
-#        - env_name: ng2
-#          max_vcpus: 4800
-#          desired_vcpus: 0
-#          compute_type: SPOT
-#          order: 1
-#          # instance_types: #if not set, the code defaults to "optimal"
-#          #   - "m5.large"
-#        - env_name: ng3
-#          max_vcpus: 4800
-#          desired_vcpus: 0
-#          compute_type: FARGATE
-#          order: 1
-#---
-#name: eks
-#path: modules/core/eks/
-#parameters:
-#  - name: vpc-id
-#    valueFrom:
-#      moduleMetadata:
-#        group: optionals
-#        name: networking
-#        key: VpcId
-#  - name: private-subnet-ids
-#    valueFrom:
-#      moduleMetadata:
-#        group: optionals
-#        name: networking
-#        key: PrivateSubnetIds
-#  - name: eks-admin-role-name
-#    value: Admin
-#  - name: eks-compute
-#    value:
-#      eks_nodegroup_config:
-#        - eks_ng_name: ng1
-#          eks_node_quantity: 2
-#          eks_node_max_quantity: 5
-#          eks_node_min_quantity: 1
-#          eks_node_disk_size: 20
-#          eks_node_instance_types:
-#            - "m5.large"
-#        - eks_ng_name: ng2
-#          eks_node_quantity: 2
-#          eks_node_max_quantity: 5
-#          eks_node_min_quantity: 1
-#          eks_node_disk_size: 20
-#          eks_node_instance_types:
-#            - "m5.xlarge"
-#      eks_version: 1.21
-#      eks_node_spot: False
-#  - name: eks-addons
-#    value:
-#      deploy_aws_lb_controller: True # We deploy it unless set to False
-#      deploy_external_dns: True # We deploy it unless set to False
-#      deploy_aws_ebs_csi: True # We deploy it unless set to False
-#      deploy_aws_efs_csi: True # We deploy it unless set to False
-#      deploy_cluster_autoscaler: True # We deploy it unless set to False
-#      deploy_metrics_server: True # We deploy it unless set to False
-#      deploy_secretsmanager_csi: True # We deploy it unless set to False
-#      deploy_external_secrets: False
-#      deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
-#      deploy_cloudwatch_container_insights_logs: False
-#      cloudwatch_container_insights_logs_retention_days: 7
-#      deploy_amp: False
-#      deploy_grafana_for_amp: False
+---
+name: eks
+path: modules/core/eks/
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: eks-admin-role-name
+    value: Admin
+  - name: eks-compute
+    value:
+      eks_nodegroup_config:
+        - eks_ng_name: ng1
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_types:
+            - "m5.large"
+        - eks_ng_name: ng2
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_types:
+            - "m5.xlarge"
+      eks_version: 1.21
+      eks_node_spot: False
+  - name: eks-addons
+    value:
+      deploy_aws_lb_controller: True # We deploy it unless set to False
+      deploy_external_dns: True # We deploy it unless set to False
+      deploy_aws_ebs_csi: True # We deploy it unless set to False
+      deploy_aws_efs_csi: True # We deploy it unless set to False
+      deploy_cluster_autoscaler: True # We deploy it unless set to False
+      deploy_metrics_server: True # We deploy it unless set to False
+      deploy_secretsmanager_csi: True # We deploy it unless set to False
+      deploy_external_secrets: False
+      deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
+      deploy_cloudwatch_container_insights_logs: False
+      cloudwatch_container_insights_logs_retention_days: 7
+      deploy_amp: False
+      deploy_grafana_for_amp: False
 # ---
 # name: neptune
 # path: modules/core/neptune/

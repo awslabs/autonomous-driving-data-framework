@@ -21,7 +21,7 @@
 # DUMP THESE PARAMETERS IN ../deployspec.yaml like:
 # - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> demo_dags/dag_config.py
 
-PROVIDER = "FARGATE"
+PROVIDER = "FARGATE"  # One of ON_DEMAND, SPOT, FARGATE
 MAX_NUM_FILES_PER_BATCH = 1000
 FILE_SUFFIX = ".bag"
 VCPU = "4"

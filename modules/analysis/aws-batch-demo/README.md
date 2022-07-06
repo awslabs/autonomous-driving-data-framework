@@ -2,12 +2,16 @@
 
 ## Description
 
-This module:
+This module deploys:
 
-- deploys an IAM Role assumed by the DAG with permissions to execute the Jobs
-- Creates different AWS Batch Compute resources based on the user input
-- Creates AWS Batch Queue(s) based on the user input
-- Creates 2 sample dags (one gets executed on EC2 and the other on Fargate)
+- an IAM Role assumed by the DAG with permissions to execute the Jobs
+- an ECR Repository  
+- a DynamoDB table used for passing data to AWS Batch containers
+
+The deployspec also includes commands to:
+- build and publish images/processing-mock to ECR
+- upload demo_dags/ to S3 for MWAA
+- append deployment variables to demo_dags/dag_config.py for the DAG to use
 
 ## Inputs/Outputs
 

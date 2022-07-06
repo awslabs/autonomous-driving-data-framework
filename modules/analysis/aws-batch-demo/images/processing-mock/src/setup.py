@@ -15,12 +15,12 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="simulation-mock",
+    name="processing-mock",
     version="0.1.0",
     author="AWS Professional Services",
     author_email="aws-proserve-opensource@amazon.com",
     project_urls={"Org Site": "https://aws.amazon.com/professional-services/"},
-    packages=find_packages(include=["simulation_mock", "simulation_mock.*"]),
+    packages=find_packages(include=["processing_mock", "processing_mock.*"]),
     python_requires=">=3.7, <3.9",
     install_requires=["boto3~=1.21.19", "platonic-sqs~=1.2.8"],
     include_package_data=True,

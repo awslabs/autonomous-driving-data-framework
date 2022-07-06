@@ -78,12 +78,6 @@ class AwsBatchPipeline(Stack):  # type: ignore
             stream=dynamo.StreamViewType.NEW_AND_OLD_IMAGES,
         )
 
-        # tracking_table.add_global_secondary_index(
-        #     index_name="batch_file_lookup",
-        #     partition_key=dynamo.Attribute(name="batch_id", type=dynamo.AttributeType.STRING),
-        #     sort_key=dynamo.Attribute(name="array_index_id", type=dynamo.AttributeType.NUMBER)
-        # )
-
         # Create Dag IAM Role and policy
         policy_statements = [
             iam.PolicyStatement(
