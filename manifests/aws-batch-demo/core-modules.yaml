@@ -1,0 +1,63 @@
+name: mwaa
+path: modules/core/mwaa/
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: dag-path
+    value: dags
+  - name: airflow-version
+    value: "2.2.2"
+---
+name: batch-compute
+path: modules/core/aws-batch
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: batch-compute
+    value:
+      batch_compute_config:
+        - env_name: ng1
+          compute_type: ON_DEMAND
+          max_vcpus: 4800
+          desired_vcpus: 0
+          order: 1
+          instance_types:
+             - "m5.xlarge"
+        - env_name: ng2
+          max_vcpus: 4800
+          desired_vcpus: 0
+          compute_type: SPOT
+          order: 1
+          # instance_types: #if not set, the code defaults to "optimal"
+          #   - "m5.large"
+        - env_name: ng3
+          max_vcpus: 4800
+          desired_vcpus: 0
+          compute_type: FARGATE
+          order: 1

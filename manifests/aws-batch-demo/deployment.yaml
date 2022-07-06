@@ -1,0 +1,9 @@
+name: aws-batch-demo
+dockerCredentialsSecret: aws-addf-docker-credentials
+groups:
+  - name: optionals
+    path: manifests/aws-batch-demo/optional-modules.yaml
+  - name: core
+    path: manifests/aws-batch-demo/core-modules.yaml
+  - name: analysis
+    path: manifests/aws-batch-demo/analysis-modules.yaml

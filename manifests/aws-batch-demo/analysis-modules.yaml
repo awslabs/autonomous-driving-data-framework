@@ -1,0 +1,75 @@
+name: data-pipeline
+path: modules/analysis/aws-batch-demo
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: source-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: RawBucketName
+  - name: target-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: IntermediateBucketName
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: dag-path
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: DagPath
+  - name: full-access-policy-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: FullAccessPolicyArn
+  - name: on-demand-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: OnDemandJobQueueArn
+  - name: spot-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: SpotJobQueueArn
+  - name: fargate-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: FargateJobQueueArn
+  - name: mwaa-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: MwaaExecRoleArn
