@@ -55,11 +55,14 @@ cdk bootstrap aws://<account>/<region>
 Create a copy of your target manifests directory using the below command, where you will locate sample manifests in the name of `example-dev` and `example-prod`. You should create a directory with your desired deployment names like `uat`, `demo`. Below example uses `demo` as the deployment name
 
 If running on a Mac instance:
+
 ```bash
 cp -R manifests/example-dev manifests/demo
 sed -i .bak "s/example-dev/demo/g" manifests/demo/deployment.yaml
 ```
+
 If running in a Linux instance (such as Cloud9), this the command for a `sed` replace:
+
 ```bash
 cp -R manifests/example-dev manifests/demo
 sed -i "s/example-dev/demo/g" manifests/demo/deployment.yaml
@@ -80,7 +83,7 @@ source scripts/setup-secrets-example.sh
 
 For the below walkthrough, let us use the `manifests/demo/` directory for deployment, where the deploymemt name is set to `demo`.
 
-File `deployment.yaml` is the top level manifest, which should include the modules you wanted to deploy, grouped under logical containers called `group`.  Please see [manifests](https://seed-farmer.readthedocs.io/en/latest/manifests.html) for more details.
+File `deployment.yaml` is the top level manifest, which should include the modules you wanted to deploy, grouped under logical containers called `group`.  Please see [manifests](https://seed-farmer.readthedocs.io/en/latest/manifests.html) for understanding more details about a deployment manifest, the keys it supports(if mandatory/optional).
 
 > Note:
 > All paths inside the manifest files should be relative to the root of the project. For ex: if you want to include a module manifest `demo-modules.yaml` in your deplopyment.yaml, you should include the manifest in the path as `manifests/demo/demo-modules.yaml` and declare the path as `manifests/demo/demo-modules.yaml` in the deployment.yaml file.
