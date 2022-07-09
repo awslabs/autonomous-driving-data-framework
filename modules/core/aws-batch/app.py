@@ -29,18 +29,14 @@ if not batch_compute:
 
 app = App()
 
-config = {
-    "deployment_name": deployment_name,
-    "module_name": module_name,
-    "vpc_id": vpc_id,
-    "private_subnet_ids": private_subnet_ids,
-    "batch_compute": batch_compute,
-}
-
 stack = AwsBatch(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
-    config=config,
+    deployment_name=deployment_name,
+    module_name=module_name,
+    vpc_id=vpc_id,
+    private_subnet_ids=private_subnet_ids,
+    batch_compute=batch_compute,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

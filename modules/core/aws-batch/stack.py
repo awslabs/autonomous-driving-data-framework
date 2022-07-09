@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, Dict, cast
+from typing import Any, Dict, List, cast
 
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ec2 as ec2
@@ -34,7 +34,11 @@ class AwsBatch(Stack):  # type: ignore
         scope: Construct,
         id: str,
         *,
-        config: Dict[str, Any],
+        deployment_name: str,
+        module_name: str,
+        vpc_id: str,
+        private_subnet_ids: List[str],
+        batch_compute: Dict[str, Any],
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -44,8 +48,11 @@ class AwsBatch(Stack):  # type: ignore
             **kwargs,
         )
 
-        for k, v in config.items():
-            setattr(self, k, v)
+        self.deployment_name = deployment_name
+        self.module_name = module_name
+        self.vpc_id = vpc_id
+        self.private_subnet_ids = private_subnet_ids
+        self.batch_compute = batch_compute
 
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
 

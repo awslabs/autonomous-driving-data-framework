@@ -91,11 +91,6 @@ class AwsBatchPipeline(Stack):  # type: ignore
                 resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
             ),
             iam.PolicyStatement(
-                actions=["s3:*"],
-                effect=iam.Effect.ALLOW,
-                resources=["*"],
-            ),
-            iam.PolicyStatement(
                 actions=[
                     "batch:UntagResource",
                     "batch:DeregisterJobDefinition",
