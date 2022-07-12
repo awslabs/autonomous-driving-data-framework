@@ -1,6 +1,6 @@
 ## Introduction
 # Building an automated scene detection pipeline for Autonomous Driving – ADAS Workflow
-Many organizations face the challenge of ingesting, transforming, labeling, and cataloging massive amounts of data to develop automated driving systems. In this module, we explored an architecture to solve this problem using Amazon EMR, Amazon S3, Amazon SageMaker Ground Truth, and more. You learn how BMW Group collects 1 billion+ km of anonymized perception data from its worldwide connected fleet of customer vehicles to develop safe and performant automated driving systems.
+Many organizations face the challenge of ingesting, transforming, labeling, and cataloging massive amounts of data to develop automated driving systems. In this module, we explored an architecture to solve this problem using Amazon EMR, Amazon S3, Amazon SageMaker Ground Truth, and more. 
 
 ### Recording reuse
 
