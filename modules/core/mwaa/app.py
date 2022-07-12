@@ -9,7 +9,7 @@ from stack import MWAAStack
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
 module_name = os.getenv("ADDF_MODULE_NAME")
 vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")
-private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))
+private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # type: ignore
 dag_bucket_name = os.getenv("ADDF_PARAMETER_DAG_BUCKET_NAME")
 airflow_version = os.getenv("ADDF_PARAMETER_AIRFLOW_VERSION")
 dag_path = os.getenv("ADDF_PARAMETER_DAG_PATH")
@@ -36,23 +36,23 @@ if dag_path:
 if environment_class:
     optional_args["environment_class"] = environment_class
 if max_workers and max_workers.isnumeric():
-    optional_args["max_workers"] = int(max_workers)
+    optional_args["max_workers"] = int(max_workers)  # type: ignore
 optional_args["airflow_version"] = airflow_version if airflow_version else "2.2.2"
 
 
 stack = MWAAStack(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
-    deployment_name=deployment_name,
-    module_name=module_name,
+    deployment_name=deployment_name,  # type: ignore
+    module_name=module_name,  # type: ignore
     vpc_id=vpc_id,
     private_subnet_ids=private_subnet_ids,
-    unique_requirements_file=unique_requirements_file,
+    unique_requirements_file=unique_requirements_file,  # type: ignore
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
-    **optional_args,
+    **optional_args,  # type: ignore
 )
 
 CfnOutput(

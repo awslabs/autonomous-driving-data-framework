@@ -109,6 +109,11 @@ class MWAAStack(Stack):  # type: ignore
                     resources=[f"arn:aws:airflow:{region}:{account}:environment/addf-{deployment_name}-*"],
                 ),
                 aws_iam.PolicyStatement(
+                    actions=["batch:SubmitJob"],
+                    effect=aws_iam.Effect.ALLOW,
+                    resources=[f"arn:aws:airflow:{region}:{account}:environment/addf-{deployment_name}-*"],
+                ),
+                aws_iam.PolicyStatement(
                     actions=["eks:DescribeCluster"],
                     effect=aws_iam.Effect.ALLOW,
                     resources=[f"arn:aws:eks:{region}:{account}:cluster/addf-{deployment_name}-*"],
@@ -180,6 +185,13 @@ class MWAAStack(Stack):  # type: ignore
                     effect=aws_iam.Effect.ALLOW,
                     resources=[f"arn:aws:iam::{account}:role/addf-*"],
                 ),
+                aws_iam.PolicyStatement(
+                    actions=["dynamodb:*"],
+                    effect=aws_iam.Effect.ALLOW,
+                    resources=[
+                        f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf-{deployment_name}-{module_name}*"
+                    ],
+                ),
             ]
         )
 
@@ -191,6 +203,10 @@ class MWAAStack(Stack):  # type: ignore
                 aws_iam.ServicePrincipal("airflow-env.amazonaws.com"),
             ),
             inline_policies={"CDKmwaaPolicyDocument": mwaa_policy_document},
+            managed_policies=[
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSBatchFullAccess"),
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSXRayDaemonWriteAccess"),
+            ],
             path="/service-role/",
         )
 
