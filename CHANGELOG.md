@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fixed the missing modules info in readme
 - added details to the contributing guide
+- modifed text in modules/analysis/rosbag-scene-detection
 
 ### **Removed**
 
