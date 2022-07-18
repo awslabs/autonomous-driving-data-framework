@@ -105,6 +105,7 @@ class OpenSearchStack(Stack):  # type: ignore
             ebs=os_ebs,
             access_policies=[iam.PolicyStatement.from_json(os_access_policy)],
             domain_name=dep_mod,
+            enforce_https=True,
         )
 
         url = f"https://{os_domain.domain_endpoint}/_dashboards/"
