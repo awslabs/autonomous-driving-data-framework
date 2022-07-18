@@ -120,34 +120,28 @@ class Fargate(aws_cdk.Stack):
             performance_mode=efs.PerformanceMode.MAX_IO,
         )
         cfn_fs = cast(efs.CfnFileSystem, fs.node.default_child)
-        cfn_fs.file_system_policy = aws_iam.PolicyDocument(statements=[
-            aws_iam.PolicyStatement(
-                effect=aws_iam.Effect.ALLOW,
-                principals=[aws_iam.AnyPrincipal()],
-                actions=[
-                    "elasticfilesystem:ClientMount",
-                    "elasticfilesystem:ClientWrite",
-                    "elasticfilesystem:ClientRootAccess"
-                ],
-                resources=["*"],
-                conditions={
-                    "Bool": {
-                        "elasticfilesystem:AccessedViaMountTarget": "true"
-                    }
-                }
-            ),
-            aws_iam.PolicyStatement(
-                effect=aws_iam.Effect.DENY,
-                principals=[aws_iam.AnyPrincipal()],
-                actions=["*"],
-                resources=["*"],
-                conditions={
-                    "Bool": {
-                        "aws:SecureTransport": "false"
-                    }
-                }
-            ),
-        ])
+        cfn_fs.file_system_policy = aws_iam.PolicyDocument(
+            statements=[
+                aws_iam.PolicyStatement(
+                    effect=aws_iam.Effect.ALLOW,
+                    principals=[aws_iam.AnyPrincipal()],
+                    actions=[
+                        "elasticfilesystem:ClientMount",
+                        "elasticfilesystem:ClientWrite",
+                        "elasticfilesystem:ClientRootAccess",
+                    ],
+                    resources=["*"],
+                    conditions={"Bool": {"elasticfilesystem:AccessedViaMountTarget": "true"}},
+                ),
+                aws_iam.PolicyStatement(
+                    effect=aws_iam.Effect.DENY,
+                    principals=[aws_iam.AnyPrincipal()],
+                    actions=["*"],
+                    resources=["*"],
+                    conditions={"Bool": {"aws:SecureTransport": "false"}},
+                ),
+            ]
+        )
 
         access_point = fs.add_access_point(
             "AccessPoint",
