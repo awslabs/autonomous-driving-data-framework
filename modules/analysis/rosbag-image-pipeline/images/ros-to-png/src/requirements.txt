@@ -1,0 +1,5 @@
+boto3
+roslib
+rosbag
+rospy
+opencv-python

@@ -1,0 +1,7 @@
+*.png
+*.jpg
+*.jpeg
+*.mp4
+*.bag
+.DS_STore
+.venv/
