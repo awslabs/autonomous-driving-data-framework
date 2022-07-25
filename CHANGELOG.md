@@ -11,11 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - aws-batch-demo pipeline and manifest
 - image extraction (png) pipeline and manifest for rosbag files ingested to raw bucket
 
+- added docker module to build container images
+
 ### **Changed**
 
 - fixed the missing modules info in readme
 - added details to the contributing guide
 - modifed text in modules/analysis/rosbag-scene-detection
+- enforce HTTPS on OpenSearch
+- EFS FileSystemPolicies to improve security
 
 ### **Removed**
 

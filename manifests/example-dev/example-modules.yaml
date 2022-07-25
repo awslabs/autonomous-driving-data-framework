@@ -25,3 +25,9 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: FullAccessPolicyArn
+---
+name: docker-build
+path: modules/examples/docker-build/
+parameters:
+  - name: ecr-repo-name
+    value: python-sample-app
