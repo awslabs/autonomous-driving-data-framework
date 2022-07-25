@@ -342,6 +342,29 @@ class Eks(Stack):  # type: ignore
                 security_group=efs_security_group,
                 removal_policy=RemovalPolicy.DESTROY,
             )
+            cfn_efs_filesystem = cast(efs.CfnFileSystem, efs_filesystem.node.default_child)
+            cfn_efs_filesystem.file_system_policy = iam.PolicyDocument(
+                statements=[
+                    iam.PolicyStatement(
+                        effect=iam.Effect.ALLOW,
+                        principals=[iam.AnyPrincipal()],
+                        actions=[
+                            "elasticfilesystem:ClientMount",
+                            "elasticfilesystem:ClientWrite",
+                            "elasticfilesystem:ClientRootAccess",
+                        ],
+                        resources=["*"],
+                        conditions={"Bool": {"elasticfilesystem:AccessedViaMountTarget": "true"}},
+                    ),
+                    iam.PolicyStatement(
+                        effect=iam.Effect.DENY,
+                        principals=[iam.AnyPrincipal()],
+                        actions=["*"],
+                        resources=["*"],
+                        conditions={"Bool": {"aws:SecureTransport": "false"}},
+                    ),
+                ]
+            )
 
             # Set up the StorageClass pointing at the new CSI Driver
             # https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/examples/kubernetes/dynamic_provisioning/specs/storageclass.yaml

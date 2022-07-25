@@ -1,27 +1,17 @@
-## Introduction
-# Building an automated scene detection pipeline for Autonomous Driving – ADAS Workflow
-Many organizations face the challenge of ingesting, transforming, labeling, and cataloging massive amounts of data to develop automated driving systems. In this module, we explored an architecture to solve this problem using Amazon EMR, Amazon S3, Amazon SageMaker Ground Truth, and more. 
+# Introduction
 
-### Recording reuse
+## Building an automated scene detection pipeline for Autonomous Driving – ADAS Workflow
 
-The Industry Kit Program team reports on the impact that industry kits have for the AWS field and our customers. Don't forget to record reuse for every customer you show this to.
-
-In order to do so, click the "Record project reuse" button on this kit’s BuilderSpace page and enter the SFDC opportunity ID or paste the link to your SFDC opportunity.
-
-![reuse](/assets/reuse.png)
-
-## Support
-
-If you notice a defect, or need support with deployment or demonstrating the kit, create an Issue here: [https://gitlab.aws.dev/industry-kits/automotive/autonomous-vehicle-datalake/-/issues]
+Many organizations face the challenge of ingesting, transforming, labeling, and cataloging massive amounts of data to develop automated driving systems. In this module, we explored an architecture to solve this problem using Amazon EMR, Amazon S3, Amazon SageMaker Ground Truth, and more.
 
 ## Prerequisities
 
-* This post uses an AWS Cloud Development Kit (CDK) stack written in Python. You should follow the instructions in the AWS CDK Getting Started guide to set up your environment so you are ready to begin.
+* You can use the `config.json` available within the module to declare the parameters which are standard to the entire module irrespective of the deployment(s).
 
-* You can use the `config.json` available within the module to declare the parameters which are standard to the entire module irrespective of the deployment(s).   
-> Example: to customize the ROS bag topics to be extracted   
+> Example: to customize the ROS bag topics to be extracted
 
-* You can use the manifest file for the `rosbag-scene-detection` module available within the manifests directory `manifests/ENVIRONMENT_TYPE/blog-modules.yaml`  to declare the parameters which should change for every deployment.   
+* You can use the manifest file for the `rosbag-scene-detection` module available within the manifests directory `manifests/ENVIRONMENT_TYPE/blog-modules.yaml`  to declare the parameters which should change for every deployment.
+
 > Example: to set the sizing of your EMR cluster  
 
 #### Required Parameters which should be configured in the `manifests/ENVIRONMENT_TYPE/blog-modules.yaml`
@@ -38,10 +28,7 @@ If you notice a defect, or need support with deployment or demonstrating the kit
 - `emr`: The Cluster Configuration to be used for creating the EMR environment
 - `fargate`: The Cluster Configuration/details to used for creating ECS Fargate environment
 
-
-* You will also need to be authenticated into an AWS account with permissions to deploy resources before executing the deploy script.
-
-* This kit works in any region where the deployed resources are available/supported.   
+* This module works in any region where the deployed resources are available/supported.
 
 ## Architecture
 
@@ -159,7 +146,7 @@ We hope you found this interesting and helpful and invite your comments on the s
 
 ## Troubleshooting and FAQs
 
-- **How to customize input and add complex transformational logic?**
+**How to customize input and add complex transformational logic?**
 
 Edit the topics-to-extract list in the config.json:
 These topics should all be in each rosbag file, as the emr pipeline will wait for all topics to arrive on s3 before processing the next batch
@@ -168,34 +155,19 @@ Extend the ./service/app/engine.py file to add more complex transformation logic
 Customizing Input:
     Add prefix and suffix filters for the S3 notifications in config.json
 
-- **What to do if automatic creation of the virtualenv fails?**
+**How to add additional dependencies such as cdk libraries etc?**
 
-This project is set up like a standard Python project.  The initialization process also creates a virtualenv within this project, stored under the .env directory.  To create the virtualenv it assumes that there is a python3 (or python for Windows) executable in your path with access to the venv
-package. If for any reason the automatic creation of the virtualenv fails,you can create the virtualenv manually.
+To add additional dependencies, for example other CDK libraries, just add them to your requirements.txt or setup.py file and rerun the command:
 
-To manually create a virtualenv on MacOS and Linux:
+```bash
+pip install -r requirements.txt
+```
 
-$ python3 -m venv .env
-
-After the init process completes and the virtualenv is created, you can use the following step to test deployment
-
-
-$ bash deploy.sh deploy true
-
-- **How to add additoinal dependencies such as cdk libraries etc.?**
-
-To add additional dependencies, for example other CDK libraries, just add them to your requirements.txt or setup.py file and rerun the pip install -r requirements.txt command.
-
-- **What to do when encountered with this error (Terminated with errors: The request to create the EMR cluster or add EC2 instances to it failed. )?**
+**What to do when encountered with this error (Terminated with errors: The request to create the EMR cluster or add EC2 instances to it failed. )?**
 
 The number of vCPUs for instance type m5.4xlarge exceeds the EC2 service quota for that type. Request a service quota increase for your AWS account or choose a different instance type and retry the request. For more information, see https://docs.aws.amazon.com/console/elasticmapreduce/vcpu-limit. You can ask for limit increase to 80.
 
-- **What to do when encountered with this error - (Service-linked role 'AWSServiceRoleForEMRCleanup' for EMR is required. Please create this role directly or add permission to create it in your IAM entity)?**
-
-Creating a service-linked role for Amazon EMR
-You don't need to manually create the AWSServiceRoleForEMRCleanup role. When you launch a cluster, either for the first time or when a service-linked role is not present, Amazon EMR creates the service-linked role for you. You must have permissions to create the service-linked role. For an example statement that adds this capability to the permissions policy of an IAM entity (such as a user, group, or role), see Service-linked role permissions for Amazon EMR https://docs.aws.amazon.com/emr/latest/ManagementGuide/using-service-linked-roles.html#service-linked-role-permissions
-
-- **What are the topics in VSI Rosbag Files Data?**
+**What are the topics in VSI Rosbag Files Data?**
          /as_tx/objects                         197 msgs    : derived_object_msgs/ObjectWithCovarianceArray
          /flir_adk/rgb_front_left/image_raw     198 msgs    : sensor_msgs/Image                            
          /flir_adk/rgb_front_right/image_raw    197 msgs    : sensor_msgs/Image                            
@@ -226,25 +198,3 @@ You don't need to manually create the AWSServiceRoleForEMRCleanup role. When you
          /vehicle/twist                         988 msgs    : geometry_msgs/TwistStamped                   
          /vehicle/wheel_position_report         491 msgs    : dbw_mkz_msgs/WheelPositionReport             
          /vehicle/wheel_speed_report            981 msgs    : dbw_mkz_msgs/WheelSpeedReport
-
-
-- What are some useful CDK commands?
-
-bash deploy.sh ls false      -    list all stacks in the app
-
-bash deploy.sh synth false    -   emits the synthesized CloudFormation template
-
-bash deploy.sh deploy true   -   build and deploy this stack to your default AWS account/region
-
-bash deploy.sh diff true    -    compare deployed stack with current state
-
-bash deploy.sh docs false     -   open CDK documentation
-
-
-### CFN Nag
-cfn_nag_scan --input-path deployment/module1-scene-detection-emr-orchestration.yaml  --deny-list-path cfn-nag-suppress.txt
-
-
-### Deployment Video (optional)
-
-### Deployment FAQ (optional)

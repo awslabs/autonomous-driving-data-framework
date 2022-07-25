@@ -137,7 +137,43 @@ Below is the command to deploy the modules using the `SeedFarmer` CLI using the 
 seedfarmer apply manifests/demo/deployment.yaml
 ```
 
-#### Destroy
+## Steps to Update ADDF deployment when there is a new change from ADDF team (if a new release is published)
+
+Below is the command to fetch the ADDF remote
+
+```bash
+git fetch upstream
+```
+
+Then, you should be merging the remote release branch of interest into your locally working/deployable branch
+
+```bash
+git merge release/MAJOR.MINOR.PATCH
+```
+
+> You would need to resolve any conflicts which happens during the merge of release branch into your local branch
+
+Then, you would need to commit the changes locally
+
+```bash
+git commit <<CHANGES>
+```
+
+If you are operating ADDF deployments by running `SeedFarmer` locally from your workstation, then below is the command to deploy the modules using the `SeedFarmer` CLI using the main manifest `deployment.yaml`:
+
+```bash
+seedfarmer apply manifests/demo/deployment.yaml
+```
+
+Alternatively, if you have setup a CICD process to handle updates/deployments of ADDF, then you would need to push the changes into your specific remote (user/customer specific remote) maintained for ADDF.
+
+```bash
+git push -u origin BRANCH_NAME
+```
+
+> Note: you should replace the `BRANCH_NAME` in the above command.
+
+## Steps to Destroy ADDF
 
 Below is the command to destroy all the modules related to a deployment:
 
