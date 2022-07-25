@@ -41,6 +41,18 @@ if debug:
     logging.getLogger('s3transfer').setLevel(logging.CRITICAL)
 
 
+class VideoFromBag():
+    def __init__(self, topic, images_path):
+        self.bridge = CvBridge()
+        output_dir = os.path.join(images_path, topic.replace("/", "_"))
+        self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
+        logger.info("Get video for topic ".format(topic))
+        logger.info(
+            f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png 
+            -vcodec libx264 -crf 25  -pix_fmt yuv420p {self.video}"""
+        )
+
+
 class ImageFromBag():
     def __init__(self, topic, encoding, bag_path, output_path):
         self.bridge = CvBridge()
@@ -119,6 +131,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
             bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
             all_files += bag_obj.files
             logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
+            # video_file = VideoFromBag(topic, images_path)
         except rospy.ROSInterruptException:
             pass
 
@@ -132,6 +145,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         UpdateExpression="SET "
         "job_status = :status, "
         "raw_images_dir = :raw_images_dir, "
+        "raw_images_bucket = :raw_images_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
         "batch_id = :batch_id,"
@@ -141,6 +155,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         ExpressionAttributeValues={
             ":status": "success",
             ":raw_images_dir": s3_bucket_prefix,
+            ":raw_images_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,
             ":s3_key": item["s3_key"],
@@ -154,6 +169,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         UpdateExpression="SET "
         "job_status = :status, "
         "raw_images_dir = :raw_images_dir, "
+        "raw_images_bucket = :raw_images_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
         "batch_id = :batch_id,"
@@ -161,12 +177,14 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         ExpressionAttributeValues={
             ":status": "success",
             ":raw_images_dir": s3_bucket_prefix,
+            ":raw_images_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,
             ":s3_key": item["s3_key"],
             ":s3_bucket": item["s3_bucket"],
         },
     )
+
     return 0
 
 

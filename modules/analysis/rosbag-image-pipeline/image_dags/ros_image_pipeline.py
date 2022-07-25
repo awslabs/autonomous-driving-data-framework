@@ -46,7 +46,7 @@ PROVIDER = "FARGATE"  # One of ON_DEMAND, SPOT, FARGATE
 FILE_SUFFIX = ".bag"
 VCPU = "4"
 MEMORY = "16384"
-CONTAINER_TIMEOUT = 1800  # Seconds - must be at least 60 seconds
+CONTAINER_TIMEOUT = 300  # Seconds - must be at least 60 seconds
 IMAGE_TOPICS = ["/flir_adk/rgb_front_left/image_raw"]
 DESIRED_ENCODING = "bgr8"
 
@@ -59,11 +59,10 @@ ECR_REPO_NAME = addf_module_metadata['EcrRepoName']
 FARGATE_JOB_QUEUE_ARN = addf_module_metadata['FargateJobQueueArn']
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata['OnDemandJobQueueArn']
 SPOT_JOB_QUEUE_ARN = addf_module_metadata['SpotJobQueueArn']
-SRC_BUCKET = addf_module_metadata['SourceBucketName']
 TARGET_BUCKET = addf_module_metadata['TargetBucketName']
-RAW_INPUT_PREFIX = addf_module_metadata['RawInputPrefix']
 PNG_OUTPUT_PREFIX = addf_module_metadata['PngOutputPrefix']
 MP4_OUTPUT_PREFIX = addf_module_metadata['Mp4OutputPrefix']
+
 
 ValueType = TypeVar("ValueType")
 
@@ -124,8 +123,8 @@ def create_batch_of_drives(ti, **kwargs):
     drives_to_process = kwargs['dag_run'].conf["drives_to_process"]
     example_input = {
         "drives_to_process": {
-            "drive1": {"bucket": "addf-example-dev-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive1/"},
-            "drive2": {"bucket": "addf-example-dev-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive2/"}
+            "drive1": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d299", "prefix": "rosbag-scene-detection/drive1/"},
+            "drive2": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive2/"}
         }
     }
 
@@ -306,12 +305,6 @@ with DAG(
                                 --desiredencoding $DESIRED_ENCODING \
                                 --targetbucket $TARGET_BUCKET \
                                 --targetprefix $TARGET_PREFIX 
-                                
-                                
-                                
-                            #ffmpeg -r 20 -f image2 -i $LOCAL_IMAGES_PATH/frame_%06d.png \
-                            #    -vcodec libx264 -crf 25  -pix_fmt yuv420p $LOCAL_VIDEO_PATH
-                            
                             """
                     ),
                 ],
@@ -330,7 +323,7 @@ with DAG(
                     {"name": "IMAGE_TOPICS", "value": json.dumps(IMAGE_TOPICS)},
                     {"name": "DESIRED_ENCODING", "value": DESIRED_ENCODING},
                     {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
-                    {"name": "TARGET_PREFIX", "value": "ros-images"},
+                    {"name": "TARGET_PREFIX", "value": PNG_OUTPUT_PREFIX},
                 ],
             },
         )

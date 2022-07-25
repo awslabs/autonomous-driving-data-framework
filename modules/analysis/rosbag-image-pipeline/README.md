@@ -1,59 +1,145 @@
-# AWS Batch Managed demo
+# Ros Image Extraction Pipeline
 
 ## Description
 
 This module deploys:
 
-- an IAM Role assumed by the DAG with permissions to execute the Jobs
-- an ECR Repository  
+- IAM Role for Batch Job and Airflow Dag
 - a DynamoDB table used for passing data to AWS Batch containers
 
 The deployspec also includes commands to:
-- build and publish images/processing-mock to ECR
-- upload demo_dags/ to S3 for MWAA
+- build and publish images/ros-to-png to ECR
+- upload image_dags/ to S3 for MWAA
 - append deployment variables to demo_dags/dag_config.py for the DAG to use
 
+## Testing module
+
+Trigger ros_image_pipeline dag in Airflow with this config"
+{
+    "drives_to_process": {
+        "drive1": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive1/"},
+        "drive2": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive2/"}
+    }
+}
+
+where files exist in:
+    s3://addf-ros-image-demo-raw-bucket-d2be7d29/rosbag-scene-detection/drive1/*.bag
+    s3://addf-ros-image-demo-raw-bucket-d2be7d29/rosbag-scene-detection/drive2/*.bag
+    
 ## Inputs/Outputs
 
 ### Input Parameters
 
 #### Required
 
+
+vpc_id = os.getenv(_param("VPC_ID"))  # required
+mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
+full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
+source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
+target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
+on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
+spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
+fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
+
+raw_input_prefix = os.getenv(_param("RAW_INPUT_PREFIX"))
+png_output_prefix = os.getenv(_param("PNG_OUTPUT_PREFIX"))
+mp4_output_prefix = os.getenv(_param("MP4_OUTPUT_PREFIX"))
+
+
 - `dag-bucket-name`: name of the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `dag-path`: name of the path in the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `mwaa-exec-role`: ARN of the MWAA Execution Role
 - `vpc-id`: The VPC-ID that the cluster will be created in
 - `private-subnet-ids`: The Private Subnets that the AWS Batch Compute resources will be deployed to
-- `batch-compute`: The Configuration Map for creating AWS Batch Compute environment(s). Below is a sample snippet for providing `batch-compute` input
 
+- `png-output-prefix`: Prefix in the intermediate bucket for the image output
+- `mp4-output-prefix`: Prefix in the intermediate bucket for the video output
+- `source-bucket`: Bucket containing the raw recording data
+- `intermediate-bucket`: Output bucket for saving images
+- `full-access-policy-arn`: Access policy from Datalake Bucket Core Module
+- `on-demand-job-queue-arn`: Job Queue ARN from Batch Compute Core Module
+- `spot-job-queue-arn`: Job Queue ARN from Batch Compute Core Module
+- `fargate-job-queue-arn`: Job Queue ARN from Batch Compute Core Module
+    
 ### Sample declaration of AWS Batch Compute Configuration
 
 ```yaml
-- name: batch-compute
-  value:
-    batch_compute_config:
-    - env_name: ng1
-      compute_type: ON_DEMAND
-      max_vcpus: 256
-      desired_vcpus: 0
-      order: 1
-      instance_types: #Example of providing explicit instance type(s)
-        - "m5.large"
-    - env_name: ng2
-      max_vcpus: 256
-      desired_vcpus: 0
-      compute_type: SPOT
-      order: 1
-      # instance_types: #if not set, the code defaults to "optimal", where AWS Batch launches the right instance type based on the job definition requirement
-      #   - "m5.large"
-    - env_name: ng3
-      max_vcpus: 256
-      desired_vcpus: 0
-      compute_type: FARGATE
-      order: 1
-```
+name: image-pipeline
+path: modules/analysis/rosbag-image-pipeline
+parameters:
+  - name: png-output-prefix
+    value: raw-images
+  - name: mp4-output-prefix
+    value: raw-videos
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: source-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: RawBucketName
+  - name: intermediate-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: IntermediateBucketName
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: dag-path
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: DagPath
+  - name: full-access-policy-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: FullAccessPolicyArn
+  - name: on-demand-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: OnDemandJobQueueArn
+  - name: spot-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: SpotJobQueueArn
+  - name: fargate-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: FargateJobQueueArn
+  - name: mwaa-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: MwaaExecRoleArn
 
-> The above example provides 3 different compute types (ON_DEMAND, SPOT, FARGATE)
+```
 
 #### Optional
 
@@ -63,14 +149,27 @@ The deployspec also includes commands to:
 - `OnDemandJobQueueArn`: ARN of the ON_DEMAND AWS Batch Queue
 - `SpotJobQueueArn`: ARN of the SPOT AWS Batch Queue
 - `FargateJobQueueArn`: ARN of the FARGATE AWS Batch Queue
+- `EcrRepoName`: ECR Repo of the Container
+- `DynamoDbTableName`: Table for orchestrating AWS Batch job
+- `SourceBucketName`: Bucket containing raw data
+- `TargetBucketName`: Bucket to save images and video to
+- `PngOutputPrefix`: Prefix to save images to 
+- `Mp4OutputPrefix`: Prefix to save videos to
 
+            
 #### Output Example
 
 ```json
 {
-    "DagRoleArn": "arn::::",
-    "OnDemandJobQueueArn": "arn::::",
-    "SpotJobQueueArn": "arn::::",
-    "FargateJobQueueArn": "arn::::"
+  "DagRoleArn":"arn:aws:iam::...",
+  "EcrRepoName":"addf-ros-image-demo-analysis-image-pipeline",
+  "DynamoDbTableName":"addf-ros-image-demo-analysis-image-pipeline-drive-tracking",
+  "SourceBucketName":"addf-ros-image-demo-raw-bucket-xyz",
+  "TargetBucketName":"addf-ros-image-demo-intermediate-bucket-xyz",
+  "OnDemandJobQueueArn":"arn:aws:batch:...",
+  "SpotJobQueueArn":"arn:aws:batch:...",
+  "FargateJobQueueArn":"arn:aws:batch:...",
+  "PngOutputPrefix":"raw-images",
+  "Mp4OutputPrefix":"raw-videos"
 }
 ```

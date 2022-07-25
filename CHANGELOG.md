@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [V0.2.0] - [UNRELEASED]
 
 ### **Added**
+- aws-batch-demo pipeline and manifest
+- image extraction (png) pipeline and manifest for rosbag files ingested to raw bucket
 
 ### **Changed**
 

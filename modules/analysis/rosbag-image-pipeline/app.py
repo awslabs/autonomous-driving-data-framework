@@ -19,8 +19,6 @@ target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
 fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
-
-raw_input_prefix = os.getenv(_param("RAW_INPUT_PREFIX"))
 png_output_prefix = os.getenv(_param("PNG_OUTPUT_PREFIX"))
 mp4_output_prefix = os.getenv(_param("MP4_OUTPUT_PREFIX"))
 
@@ -36,8 +34,8 @@ if not full_access_policy:
 if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
     raise ValueError("Requires at least one job queue.")
 
-if not raw_input_prefix or not png_output_prefix or not mp4_output_prefix:
-    raise ValueError("Requires output prefix for raw_input_prefix and png and mp4 output prefixes")
+if not png_output_prefix or not mp4_output_prefix:
+    raise ValueError("Requires png and mp4 output prefixes")
 
 
 app = App()
@@ -73,7 +71,6 @@ CfnOutput(
             "OnDemandJobQueueArn": on_demand_job_queue,
             "SpotJobQueueArn": spot_job_queue,
             "FargateJobQueueArn": fargate_job_queue,
-            "RawInputPrefix": raw_input_prefix,
             "PngOutputPrefix": png_output_prefix,
             "Mp4OutputPrefix": mp4_output_prefix,
         }

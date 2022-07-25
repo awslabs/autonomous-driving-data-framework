@@ -1,8 +1,6 @@
 name: image-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
-  - name: raw-input-prefix
-    value: rosbag-scene-detection
   - name: png-output-prefix
     value: raw-images
   - name: mp4-output-prefix
@@ -31,18 +29,6 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: IntermediateBucketName
-  - name: curated-bucket
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: datalake-buckets
-        key: CuratedBucketName
-  - name: logs-bucket-name
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: datalake-buckets
-        key: LogsBucketName
   - name: dag-bucket-name
     valueFrom:
       moduleMetadata:
@@ -85,21 +71,3 @@ parameters:
         group: core
         name: mwaa
         key: MwaaExecRoleArn
-  - name: glue-db-name
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: metadata-storage
-        key: GlueDBName
-  - name: rosbag-bagfile-table
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: metadata-storage
-        key: RosbagBagFileTable
-  - name: rosbag-scene-metadata-table
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: metadata-storage
-        key: RosbagSceneMetadataTable
