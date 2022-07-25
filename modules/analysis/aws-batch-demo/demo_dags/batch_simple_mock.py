@@ -32,6 +32,8 @@ from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
+from mypy_boto3_batch.client import BatchClient
+
 from demo_dags import batch_creation_and_tracking
 from demo_dags.dag_config import (
     CONTAINER_TIMEOUT,
@@ -52,7 +54,6 @@ from demo_dags.dag_config import (
     TARGET_BUCKET,
     VCPU,
 )
-from mypy_boto3_batch.client import BatchClient
 
 ValueType = TypeVar("ValueType")
 

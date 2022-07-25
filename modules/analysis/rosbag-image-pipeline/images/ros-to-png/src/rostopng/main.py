@@ -13,16 +13,16 @@
 #    limitations under the License.
 
 import argparse
-import sys
 import json
-import boto3
 import logging
+import os
+import sys
+
+import boto3
+import cv2
 import rosbag
 import rospy
-import cv2
 from cv_bridge import CvBridge
-from cv_bridge import CvBridgeError
-import os
 
 DEBUG_LOGGING_FORMAT = "[%(asctime)s][%(filename)-13s:%(lineno)3d][%(levelname)s][%(threadName)s] %(message)s"
 debug = os.environ.get("DEBUG", "False").lower() in [
@@ -38,22 +38,22 @@ if debug:
     logging.getLogger("boto3").setLevel(logging.ERROR)
     logging.getLogger("botocore").setLevel(logging.ERROR)
     logging.getLogger("urllib3").setLevel(logging.ERROR)
-    logging.getLogger('s3transfer').setLevel(logging.CRITICAL)
+    logging.getLogger("s3transfer").setLevel(logging.CRITICAL)
 
 
-class VideoFromBag():
+class VideoFromBag:
     def __init__(self, topic, images_path):
         self.bridge = CvBridge()
         output_dir = os.path.join(images_path, topic.replace("/", "_"))
         self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
-        logger.info("Get video for topic ".format(topic))
+        logger.info("Get video for topic {}".format(topic))
         logger.info(
-            f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png 
+            f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png \
             -vcodec libx264 -crf 25  -pix_fmt yuv420p {self.video}"""
         )
 
 
-class ImageFromBag():
+class ImageFromBag:
     def __init__(self, topic, encoding, bag_path, output_path):
         self.bridge = CvBridge()
         output_dir = os.path.join(output_path, topic.replace("/", "_"))
@@ -63,16 +63,14 @@ class ImageFromBag():
             for idx, (topic, msg, t) in enumerate(bag.read_messages(topics=[topic])):
                 timestamp = "{}_{}".format(msg.header.stamp.secs, msg.header.stamp.nsecs)
                 seq = "{:07d}".format(msg.header.seq)
-                logger.info("Get image for frame seq ".format(seq))
+                logger.info("Get image for frame seq {}".format(seq))
                 logger.info("Get image for frame stamp {}".format(timestamp))
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
-                image_name = 'frame_{}.png'.format(seq)
+                image_name = "frame_{}.png".format(seq)
                 im_out_path = os.path.join(output_dir, image_name)
                 logger.info("Write image: {} to {}".format(image_name, im_out_path))
                 cv2.imwrite(im_out_path, cv_image)
-                files.append(
-                    (im_out_path, timestamp, seq)
-                )
+                files.append((im_out_path, timestamp, seq))
         self.files = files
 
 
@@ -82,12 +80,7 @@ def upload(client, local_path, bucket_name, s3_bucket_prefix, drive_id, file_id,
         src = file[0]
         timestamp = file[1]
         topic_and_file = src.replace(local_path, "").replace(".png", f"_{timestamp}.png")
-        target = os.path.join(
-            s3_bucket_prefix,
-            drive_id,
-            file_id.replace(".bag", ""),
-            topic_and_file
-        )
+        target = os.path.join(s3_bucket_prefix, drive_id, file_id.replace(".bag", ""), topic_and_file)
         print("Uploading {} to s3://{}/{}".format(src, bucket_name, target))
         client.upload_file(src, bucket_name, target)
 
@@ -136,7 +129,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
             pass
 
     # Sync results
-    logger.info(f"Uploading results")
+    logger.info("Uploading results")
     upload(s3, images_path, target_bucket, s3_bucket_prefix, drive_id, file_id, all_files)
     logger.setLevel(level)
 
@@ -214,6 +207,6 @@ if __name__ == "__main__":
             topics=json.loads(args.imagetopics),
             encoding=args.desiredencoding,
             target_bucket=args.targetbucket,
-            target_prefix=args.targetprefix
+            target_prefix=args.targetprefix,
         )
     )

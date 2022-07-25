@@ -23,7 +23,6 @@ from datetime import timedelta
 from typing import TypeVar
 
 import boto3
-from mypy_boto3_batch.client import BatchClient
 from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
@@ -33,13 +32,10 @@ from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
+from mypy_boto3_batch.client import BatchClient
+
 from image_dags import batch_creation_and_tracking
-from image_dags.dag_config import (
-    ADDF_MODULE_METADATA,
-    DEPLOYMENT_NAME,
-    MODULE_NAME,
-    REGION,
-)
+from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
 
 # SET MODULE VARIABLES
 PROVIDER = "FARGATE"  # One of ON_DEMAND, SPOT, FARGATE
@@ -53,15 +49,15 @@ DESIRED_ENCODING = "bgr8"
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
 
-DAG_ROLE = addf_module_metadata['DagRoleArn']
-DYNAMODB_TABLE = addf_module_metadata['DynamoDbTableName']
-ECR_REPO_NAME = addf_module_metadata['EcrRepoName']
-FARGATE_JOB_QUEUE_ARN = addf_module_metadata['FargateJobQueueArn']
-ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata['OnDemandJobQueueArn']
-SPOT_JOB_QUEUE_ARN = addf_module_metadata['SpotJobQueueArn']
-TARGET_BUCKET = addf_module_metadata['TargetBucketName']
-PNG_OUTPUT_PREFIX = addf_module_metadata['PngOutputPrefix']
-MP4_OUTPUT_PREFIX = addf_module_metadata['Mp4OutputPrefix']
+DAG_ROLE = addf_module_metadata["DagRoleArn"]
+DYNAMODB_TABLE = addf_module_metadata["DynamoDbTableName"]
+ECR_REPO_NAME = addf_module_metadata["EcrRepoName"]
+FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
+ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
+SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
+TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
+PNG_OUTPUT_PREFIX = addf_module_metadata["PngOutputPrefix"]
+MP4_OUTPUT_PREFIX = addf_module_metadata["Mp4OutputPrefix"]
 
 
 ValueType = TypeVar("ValueType")
@@ -120,20 +116,23 @@ def create_batch_of_drives(ti, **kwargs):
     )
 
     # Validate Config
-    drives_to_process = kwargs['dag_run'].conf["drives_to_process"]
+    drives_to_process = kwargs["dag_run"].conf["drives_to_process"]
     example_input = {
         "drives_to_process": {
-            "drive1": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d299", "prefix": "rosbag-scene-detection/drive1/"},
-            "drive2": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive2/"}
+            "drive1": {
+                "bucket": "addf-ros-image-demo-raw-bucket-d2be7d299",
+                "prefix": "rosbag-scene-detection/drive1/",
+            },
+            "drive2": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive2/"},
         }
     }
 
-    for k,v in drives_to_process.items():
-        assert isinstance(k, str), \
-            f"expecting config to be like {example_input}, received: {drives_to_process}"
-        assert "bucket" in v.keys() and "prefix" in v.keys(), \
-            f"expecting config to be like {example_input}, received: {drives_to_process}"
-        assert v['prefix'][-1] == "/"
+    for k, v in drives_to_process.items():
+        assert isinstance(k, str), f"expecting config to be like {example_input}, received: {drives_to_process}"
+        assert (
+            "bucket" in v.keys() and "prefix" in v.keys()
+        ), f"expecting config to be like {example_input}, received: {drives_to_process}"
+        assert v["prefix"][-1] == "/"
 
     table = dynamodb.Table(DYNAMODB_TABLE)
     batch_id = kwargs["dag_run"].run_id

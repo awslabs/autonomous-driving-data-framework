@@ -12,8 +12,9 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from boto3.dynamodb.conditions import Key
 import typing
+
+from boto3.dynamodb.conditions import Key
 
 
 def add_drives_to_batch(
@@ -43,13 +44,13 @@ def add_drives_to_batch(
     for drive_id, s3_path in drives_to_process.items():
         files = get_drive_files(
             drive_id=drive_id,
-            src_bucket=s3_path['bucket'],
-            src_prefix=s3_path['prefix'],
+            src_bucket=s3_path["bucket"],
+            src_prefix=s3_path["prefix"],
             file_suffix=file_suffix,
-            s3_client=s3_client
+            s3_client=s3_client,
         )
 
-        drives_and_files[drive_id] = {"files": files, "bucket": s3_path['bucket']}
+        drives_and_files[drive_id] = {"files": files, "bucket": s3_path["bucket"]}
         files_in_batch += len(files)
         print(f"files_in_batch {files_in_batch}")
 
@@ -58,7 +59,7 @@ def add_drives_to_batch(
 
 
 def get_drive_files(drive_id, src_bucket, src_prefix, file_suffix, s3_client):
-    """ For a given bucket, prefix, and suffix, lists all files found on S3 and returns a list of the files
+    """For a given bucket, prefix, and suffix, lists all files found on S3 and returns a list of the files
 
     @param drive_id:
     @param src_bucket:
@@ -70,12 +71,7 @@ def get_drive_files(drive_id, src_bucket, src_prefix, file_suffix, s3_client):
     MAX_KEYS = 1000
     print(src_bucket)
     print(src_prefix)
-    file_response = s3_client.list_objects_v2(
-        Bucket=src_bucket,
-        Prefix=src_prefix,
-        MaxKeys=MAX_KEYS,
-        Delimiter="/"
-    )
+    file_response = s3_client.list_objects_v2(Bucket=src_bucket, Prefix=src_prefix, MaxKeys=MAX_KEYS, Delimiter="/")
     print(file_response)
     file_next_continuation = file_response.get("NextContinuationToken")
     files = [x["Key"] for x in file_response.get("Contents", []) if x["Key"].endswith(file_suffix)]
@@ -98,17 +94,15 @@ def batch_write_files_to_dynamo(table, drives_and_files, batch_id):
     with table.batch_writer() as batch:
         idx = 0
         for drive_id, files in drives_and_files.items():
-            for file in files['files']:
+            for file in files["files"]:
                 item = {
-                        "drive_id": drive_id,
-                        "file_id": file.split("/")[-1],
-                        "s3_bucket": files['bucket'],
-                        "s3_key": file,
-                        "pk": batch_id,
-                        "sk": str(idx),
-                    }
+                    "drive_id": drive_id,
+                    "file_id": file.split("/")[-1],
+                    "s3_bucket": files["bucket"],
+                    "s3_key": file,
+                    "pk": batch_id,
+                    "sk": str(idx),
+                }
                 print(item)
-                batch.put_item(
-                    Item=item
-                )
+                batch.put_item(Item=item)
                 idx += 1
