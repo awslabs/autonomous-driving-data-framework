@@ -4,7 +4,7 @@ from datetime import datetime
 from glob import glob as get_files
 from argparse import ArgumentParser
 import torch
-
+from pandas import concat
 
 def get_yolov5_prediction(model, image, input_size=1280, confidence = 0.25,  iou = 0.45):
     
@@ -66,6 +66,7 @@ if __name__ == "__main__":
     images_list = [file for file in get_files(input_data_path + '*.png')]
 
     output = {}
+    dfs = []
     for image in images_list:
 
         output_json, output_pandas = get_yolov5_prediction(model, image)
@@ -77,16 +78,10 @@ if __name__ == "__main__":
         with open(f"{output_data_path}{image_json_name}", 'w') as file:
             dump_json(output_json, file, indent=2, separators=(',', ': '), sort_keys=False)
 
-        output_pandas.to_csv(f"{output_data_path}{image_csv_name}", encoding="utf-8")
+        output_pandas['source_image'] = image_file_name
+        dfs.append(output_pandas)
 
-    with open(f"{output_data_path}_all_predictions.json", 'w') as file:
-        dump_json(output, file, indent=2, separators=(',', ': '), sort_keys=False)
+    # with open(f"{output_data_path}all_predictions.json", 'w') as file:
+    #     dump_json(output, file, indent=2, separators=(',', ': '), sort_keys=False)
 
-
-        
-        
-
-    
-    
-    
-    
+    concat(dfs).to_csv(f"{output_data_path}all_predictions.csv", encoding="utf-8")

@@ -393,7 +393,8 @@ with DAG(
                     )
                 ],
                 arguments=['--model', MODEL],
-                wait=False
+                wait=False,
+                logs=False,
             )
 
         logger.info("Waiting on all jobs to finish")
