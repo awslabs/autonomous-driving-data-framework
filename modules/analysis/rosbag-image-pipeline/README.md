@@ -33,28 +33,11 @@ where files exist in:
 #### Required
 
 
-vpc_id = os.getenv(_param("VPC_ID"))  # required
-mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
-full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
-source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
-target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
-on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
-spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
-fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
-
-raw_input_prefix = os.getenv(_param("RAW_INPUT_PREFIX"))
-png_output_prefix = os.getenv(_param("PNG_OUTPUT_PREFIX"))
-mp4_output_prefix = os.getenv(_param("MP4_OUTPUT_PREFIX"))
-
-
 - `dag-bucket-name`: name of the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `dag-path`: name of the path in the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `mwaa-exec-role`: ARN of the MWAA Execution Role
 - `vpc-id`: The VPC-ID that the cluster will be created in
 - `private-subnet-ids`: The Private Subnets that the AWS Batch Compute resources will be deployed to
-
-- `png-output-prefix`: Prefix in the intermediate bucket for the image output
-- `mp4-output-prefix`: Prefix in the intermediate bucket for the video output
 - `source-bucket`: Bucket containing the raw recording data
 - `intermediate-bucket`: Output bucket for saving images
 - `full-access-policy-arn`: Access policy from Datalake Bucket Core Module
@@ -68,10 +51,6 @@ mp4_output_prefix = os.getenv(_param("MP4_OUTPUT_PREFIX"))
 name: image-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
-  - name: png-output-prefix
-    value: raw-images
-  - name: mp4-output-prefix
-    value: raw-videos
   - name: vpc-id
     valueFrom:
       moduleMetadata:
@@ -153,8 +132,6 @@ parameters:
 - `DynamoDbTableName`: Table for orchestrating AWS Batch job
 - `SourceBucketName`: Bucket containing raw data
 - `TargetBucketName`: Bucket to save images and video to
-- `PngOutputPrefix`: Prefix to save images to 
-- `Mp4OutputPrefix`: Prefix to save videos to
 
             
 #### Output Example
@@ -168,8 +145,6 @@ parameters:
   "TargetBucketName":"addf-ros-image-demo-intermediate-bucket-xyz",
   "OnDemandJobQueueArn":"arn:aws:batch:...",
   "SpotJobQueueArn":"arn:aws:batch:...",
-  "FargateJobQueueArn":"arn:aws:batch:...",
-  "PngOutputPrefix":"raw-images",
-  "Mp4OutputPrefix":"raw-videos"
+  "FargateJobQueueArn":"arn:aws:batch:..."
 }
 ```

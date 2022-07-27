@@ -38,6 +38,7 @@ Resources:
               - "ecr:Describe*"
               - "ecr:Get*"
               - "ecr:List*"
+              - "ecr:BatchGetImage"
             Resource: '*'
           - Effect: Allow
             Action:
