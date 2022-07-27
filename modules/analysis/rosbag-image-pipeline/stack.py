@@ -137,6 +137,8 @@ class AwsBatchPipeline(Stack):  # type: ignore
             assumed_by=iam.CompositePrincipal(
                 iam.ArnPrincipal(self.mwaa_exec_role),
                 iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+                iam.ServicePrincipal("sagemaker.amazonaws.com"),
+
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
@@ -144,6 +146,7 @@ class AwsBatchPipeline(Stack):  # type: ignore
                 iam.ManagedPolicy.from_managed_policy_arn(
                     self, id="fullaccess", managed_policy_arn=self.full_access_policy
                 ),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSageMakerFullAccess"),
             ],
             role_name=batch_role_name,
             max_session_duration=Duration.hours(12),

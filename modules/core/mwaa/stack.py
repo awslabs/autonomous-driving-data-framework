@@ -192,6 +192,20 @@ class MWAAStack(Stack):  # type: ignore
                         f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf-{deployment_name}-{module_name}*"
                     ],
                 ),
+                aws_iam.PolicyStatement(
+                    actions=["sagemaker:*"],
+                    effect=aws_iam.Effect.ALLOW,
+                    resources=[
+                        f"arn:aws:sagemaker:{self.region}:{self.account}:*"
+                    ],
+                ),
+                aws_iam.PolicyStatement(
+                    actions=["iam:PassRole"],
+                    effect=aws_iam.Effect.ALLOW,
+                    resources=[
+                        f"*"
+                    ],
+                ),
             ]
         )
 

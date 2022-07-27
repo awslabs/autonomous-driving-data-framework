@@ -29,6 +29,10 @@ from airflow.exceptions import AirflowException
 from airflow.models import Connection
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
+from sagemaker.processing import Processor, ProcessingInput, ProcessingOutput
+from sagemaker.pytorch.processing import PyTorchProcessor
+from sagemaker.session import Session
+
 from airflow.utils.dates import days_ago
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
@@ -37,14 +41,19 @@ from mypy_boto3_batch.client import BatchClient
 from image_dags import batch_creation_and_tracking
 from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
 
-# SET MODULE VARIABLES
+# SET MODULE VARIABLES FOR IMAGE EXTRACTION
 PROVIDER = "FARGATE"  # One of ON_DEMAND, SPOT, FARGATE
 FILE_SUFFIX = ".bag"
 VCPU = "4"
 MEMORY = "16384"
 CONTAINER_TIMEOUT = 300  # Seconds - must be at least 60 seconds
-IMAGE_TOPICS = ["/flir_adk/rgb_front_left/image_raw"]
+IMAGE_TOPICS = ["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]
 DESIRED_ENCODING = "bgr8"
+
+# SET MODULE VARIABLES FOR OBJECT DETECTION
+MODEL = "yolov5s"
+YOLO_INSTANCE_TYPE = "ml.m5.xlarge"
+
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
@@ -56,9 +65,8 @@ FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
 SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
 TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
-PNG_OUTPUT_PREFIX = addf_module_metadata["PngOutputPrefix"]
-MP4_OUTPUT_PREFIX = addf_module_metadata["Mp4OutputPrefix"]
 
+account = boto3.client("sts").get_caller_identity().get("Account")
 
 ValueType = TypeVar("ValueType")
 
@@ -191,11 +199,9 @@ def get_batch_client() -> BatchClient:
 
 def register_job_definition_on_demand(ti, job_def_name: str) -> str:
     client = get_batch_client()
-    region = REGION
-    account = boto3.client("sts").get_caller_identity().get("Account")
 
     container_properties = {
-        "image": f"{account}.dkr.ecr.{region}.amazonaws.com/{ECR_REPO_NAME}:latest",
+        "image": f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:rostopng",
         "jobRoleArn": DAG_ROLE,
         "environment": [
             {
@@ -265,7 +271,7 @@ with DAG(
         op_kwargs={"job_def_name": job_definition_name},
     )
 
-    def my_func(**kwargs):
+    def batch_operation(**kwargs):
         ti = kwargs["ti"]
         ds = kwargs["ds"]
         array_size = ti.xcom_pull(task_ids="create_batch_of_drives_task", key="return_value")
@@ -303,7 +309,7 @@ with DAG(
                                 --imagetopics $IMAGE_TOPICS \
                                 --desiredencoding $DESIRED_ENCODING \
                                 --targetbucket $TARGET_BUCKET \
-                                --targetprefix $TARGET_PREFIX 
+                                --targetprefix $TARGET_PREFIX
                             """
                     ),
                 ],
@@ -322,14 +328,84 @@ with DAG(
                     {"name": "IMAGE_TOPICS", "value": json.dumps(IMAGE_TOPICS)},
                     {"name": "DESIRED_ENCODING", "value": DESIRED_ENCODING},
                     {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
-                    {"name": "TARGET_PREFIX", "value": PNG_OUTPUT_PREFIX},
                 ],
             },
         )
 
         op.execute(ds)
 
-    submit_batch_job = PythonOperator(task_id="submit_batch_job", python_callable=my_func)
+    submit_batch_job = PythonOperator(task_id="submit_batch_job", python_callable=batch_operation)
+
+    def sagemaker_yolo_operation(**kwargs):
+
+        # Establish AWS API Connections
+        sts_client = boto3.client("sts")
+        assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+        credentials = assumed_role_object["Credentials"]
+        dynamodb = boto3.resource(
+            "dynamodb",
+            aws_access_key_id=credentials["AccessKeyId"],
+            aws_secret_access_key=credentials["SecretAccessKey"],
+            aws_session_token=credentials["SessionToken"],
+        )
+        table = dynamodb.Table(DYNAMODB_TABLE)
+        batch_id = kwargs["dag_run"].run_id
+
+        # Get Image Directories per Recording File to Label
+        image_directory_items = table.query(
+            KeyConditionExpression=Key("pk").eq(batch_id),
+            Select="SPECIFIC_ATTRIBUTES",
+            ProjectionExpression="raw_image_dirs"
+        )['Items']
+
+        image_directories = []
+        for item in image_directory_items:
+            image_directories += item['raw_image_dirs']
+
+        logger.info(f"Starting object detection job for {len(image_directories)} directories")
+
+        processor = Processor(
+            image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:yolo",
+            role=DAG_ROLE,
+            instance_count=1,
+            instance_type=YOLO_INSTANCE_TYPE,
+            base_job_name=f"YOLO"
+        )
+
+        for image_directory in image_directories:
+            logger.info(f"Starting object detection job for {image_directory}")
+            logger.info(
+                "Job details available at: "
+                f"https://{REGION}.console.aws.amazon.com/sagemaker/home?region={REGION}#/processing-jobs"
+            )
+            processor.run(
+                inputs=[
+                    ProcessingInput(
+                        input_name='data',
+                        source=f"s3://{TARGET_BUCKET}/{image_directory}/",
+                        destination='/opt/ml/processing/input/')
+                ],
+                outputs=[
+                    ProcessingOutput(
+                        output_name='output',
+                        source='/opt/ml/processing/output/',
+                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/"
+                    )
+                ],
+                arguments=['--model', MODEL],
+                wait=False
+            )
+
+        logger.info("Waiting on all jobs to finish")
+        logger.info(f"Jobs: {processor.jobs}")
+        for job in processor.jobs:
+            logger.info(f"Waiting on: {job} - logs from job:")
+            job.wait(logs=True)
+
+        logger.info(f"All object detection jobs complete")
+
+
+    submit_yolo_job = PythonOperator(task_id="submit_yolo_job", python_callable=sagemaker_yolo_operation)
 
     deregister_batch_job_definition = PythonOperator(
         task_id="deregister_batch_job_definition",
@@ -345,4 +421,5 @@ with DAG(
         >> register_batch_job_defintion
         >> submit_batch_job
         >> deregister_batch_job_definition
+        >> submit_yolo_job
     )

@@ -66,23 +66,37 @@ class ImageFromBag:
                 logger.info("Get image for frame seq {}".format(seq))
                 logger.info("Get image for frame stamp {}".format(timestamp))
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
-                image_name = "frame_{}.png".format(seq)
-                im_out_path = os.path.join(output_dir, image_name)
-                logger.info("Write image: {} to {}".format(image_name, im_out_path))
+                local_image_name = "frame_{}.png".format(seq)
+                s3_image_name = "frame_{}_{}.png".format(seq, timestamp)
+                im_out_path = os.path.join(output_dir, local_image_name)
+                logger.info("Write image: {} to {}".format(local_image_name, im_out_path))
                 cv2.imwrite(im_out_path, cv_image)
-                files.append((im_out_path, timestamp, seq))
+
+                files.append(
+                    {
+                        "local_image_path": im_out_path,
+                        "timestamp": timestamp,
+                        "seq": seq,
+                        "topic": topic,
+                        "s3_image_name": s3_image_name
+                    }
+                )
         self.files = files
 
 
-def upload(client, local_path, bucket_name, s3_bucket_prefix, drive_id, file_id, files):
+def upload(client, bucket_name, drive_id, file_id, files):
+    uploaded_files = []
+    target_prefixes = set()
     for file in files:
         print(file)
-        src = file[0]
-        timestamp = file[1]
-        topic_and_file = src.replace(local_path, "").replace(".png", f"_{timestamp}.png")
-        target = os.path.join(s3_bucket_prefix, drive_id, file_id.replace(".bag", ""), topic_and_file)
-        print("Uploading {} to s3://{}/{}".format(src, bucket_name, target))
-        client.upload_file(src, bucket_name, target)
+        topic = file["topic"].replace("/", "_")
+        target_prefix = os.path.join(drive_id, file_id.replace(".bag", ""), topic)
+        target = os.path.join(target_prefix, file["s3_image_name"])
+        print("Uploading {} to s3://{}/{}".format(file["local_image_path"], bucket_name, target))
+        client.upload_file(file["local_image_path"], bucket_name, target)
+        uploaded_files.append(target)
+        target_prefixes.add(target_prefix)
+    return uploaded_files, target_prefixes
 
 
 def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket, target_prefix) -> int:
@@ -110,7 +124,6 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
 
     drive_id = item["drive_id"]
     file_id = item["file_id"]
-    s3_bucket_prefix = f"{target_prefix}/"
     s3 = boto3.client("s3")
 
     logger.info("Downloading Bag")
@@ -130,15 +143,16 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
 
     # Sync results
     logger.info("Uploading results")
-    upload(s3, images_path, target_bucket, s3_bucket_prefix, drive_id, file_id, all_files)
-    logger.setLevel(level)
+    uploaded_files, uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
+    logger.info("Uploaded results")
 
+    logger.info("Writing job status to DynamoDB")
     table.update_item(
         Key={"pk": item["drive_id"], "sk": item["file_id"]},
         UpdateExpression="SET "
         "job_status = :status, "
-        "raw_images_dir = :raw_images_dir, "
-        "raw_images_bucket = :raw_images_bucket, "
+        "raw_image_dirs = :raw_image_dirs, "
+        "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
         "batch_id = :batch_id,"
@@ -147,8 +161,8 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         "file_id = :file_id",
         ExpressionAttributeValues={
             ":status": "success",
-            ":raw_images_dir": s3_bucket_prefix,
-            ":raw_images_bucket": target_bucket,
+            ":raw_image_dirs": uploaded_directories,
+            ":raw_image_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,
             ":s3_key": item["s3_key"],
@@ -157,20 +171,21 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
             ":file_id": item["file_id"],
         },
     )
+
     table.update_item(
         Key={"pk": batch_id, "sk": index},
         UpdateExpression="SET "
         "job_status = :status, "
-        "raw_images_dir = :raw_images_dir, "
-        "raw_images_bucket = :raw_images_bucket, "
+        "raw_image_dirs = :raw_image_dirs, "
+        "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
         "batch_id = :batch_id,"
         "array_index = :index",
         ExpressionAttributeValues={
             ":status": "success",
-            ":raw_images_dir": s3_bucket_prefix,
-            ":raw_images_bucket": target_bucket,
+            ":raw_image_dirs": uploaded_directories,
+            ":raw_image_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,
             ":s3_key": item["s3_key"],
