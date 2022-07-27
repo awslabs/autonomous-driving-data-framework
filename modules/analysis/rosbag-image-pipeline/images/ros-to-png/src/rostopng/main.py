@@ -78,7 +78,7 @@ class ImageFromBag:
                         "timestamp": timestamp,
                         "seq": seq,
                         "topic": topic,
-                        "s3_image_name": s3_image_name
+                        "s3_image_name": s3_image_name,
                     }
                 )
         self.files = files

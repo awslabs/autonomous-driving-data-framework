@@ -138,7 +138,6 @@ class AwsBatchPipeline(Stack):  # type: ignore
                 iam.ArnPrincipal(self.mwaa_exec_role),
                 iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
                 iam.ServicePrincipal("sagemaker.amazonaws.com"),
-
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[

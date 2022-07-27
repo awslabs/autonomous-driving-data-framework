@@ -29,14 +29,13 @@ from airflow.exceptions import AirflowException
 from airflow.models import Connection
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
-from sagemaker.processing import Processor, ProcessingInput, ProcessingOutput
-from sagemaker.pytorch.processing import PyTorchProcessor
-from sagemaker.session import Session
-
 from airflow.utils.dates import days_ago
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
 from mypy_boto3_batch.client import BatchClient
+from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
+from sagemaker.pytorch.processing import PyTorchProcessor
+from sagemaker.session import Session
 
 from image_dags import batch_creation_and_tracking
 from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
@@ -355,12 +354,12 @@ with DAG(
         image_directory_items = table.query(
             KeyConditionExpression=Key("pk").eq(batch_id),
             Select="SPECIFIC_ATTRIBUTES",
-            ProjectionExpression="raw_image_dirs"
-        )['Items']
+            ProjectionExpression="raw_image_dirs",
+        )["Items"]
 
         image_directories = []
         for item in image_directory_items:
-            image_directories += item['raw_image_dirs']
+            image_directories += item["raw_image_dirs"]
 
         logger.info(f"Starting object detection job for {len(image_directories)} directories")
 
@@ -369,7 +368,7 @@ with DAG(
             role=DAG_ROLE,
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
-            base_job_name=f"YOLO"
+            base_job_name=f"YOLO",
         )
 
         for image_directory in image_directories:
@@ -381,18 +380,19 @@ with DAG(
             processor.run(
                 inputs=[
                     ProcessingInput(
-                        input_name='data',
+                        input_name="data",
                         source=f"s3://{TARGET_BUCKET}/{image_directory}/",
-                        destination='/opt/ml/processing/input/')
+                        destination="/opt/ml/processing/input/",
+                    )
                 ],
                 outputs=[
                     ProcessingOutput(
-                        output_name='output',
-                        source='/opt/ml/processing/output/',
-                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/"
+                        output_name="output",
+                        source="/opt/ml/processing/output/",
+                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/",
                     )
                 ],
-                arguments=['--model', MODEL],
+                arguments=["--model", MODEL],
                 wait=False,
                 logs=False,
             )
@@ -404,7 +404,6 @@ with DAG(
             job.wait(logs=True)
 
         logger.info(f"All object detection jobs complete")
-
 
     submit_yolo_job = PythonOperator(task_id="submit_yolo_job", python_callable=sagemaker_yolo_operation)
 
