@@ -99,7 +99,7 @@ def upload(client, bucket_name, drive_id, file_id, files):
     return uploaded_files, target_prefixes
 
 
-def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket, target_prefix) -> int:
+def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket) -> int:
     logger.info("batch_id: %s", batch_id)
     logger.info("index: %s", index)
     logger.info("table_name: %s", table_name)
@@ -108,7 +108,6 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     logger.info("topics: %s", topics)
     logger.info("encoding: %s", encoding)
     logger.info("target_bucket: %s", target_bucket)
-    logger.info("target_prefix: %s", target_prefix)
 
     # Getting Item to Process
     dynamodb = boto3.resource("dynamodb")
@@ -208,7 +207,6 @@ if __name__ == "__main__":
     parser.add_argument("--imagetopics", required=True)
     parser.add_argument("--desiredencoding", required=True)
     parser.add_argument("--targetbucket", required=True)
-    parser.add_argument("--targetprefix", required=True)
     args = parser.parse_args()
 
     logger.debug("ARGS: %s", args)
@@ -222,6 +220,5 @@ if __name__ == "__main__":
             topics=json.loads(args.imagetopics),
             encoding=args.desiredencoding,
             target_bucket=args.targetbucket,
-            target_prefix=args.targetprefix,
         )
     )

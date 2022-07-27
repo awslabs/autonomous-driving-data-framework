@@ -307,8 +307,7 @@ with DAG(
                                 --localimagespath $LOCAL_IMAGES_PATH \
                                 --imagetopics $IMAGE_TOPICS \
                                 --desiredencoding $DESIRED_ENCODING \
-                                --targetbucket $TARGET_BUCKET \
-                                --targetprefix $TARGET_PREFIX
+                                --targetbucket $TARGET_BUCKET
                             """
                     ),
                 ],
