@@ -1,0 +1,45 @@
+deploy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.20.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+      # Here we export some env vars
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - export ECR_REPO_NAME=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EcrRepoName")
+      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
+      # - Here we write env values into the dag_config.py file for use by the DAGs
+      - export DAG_DIR="image_dags"
+      - echo "ADDF_MODULE_METADATA = '${ADDF_MODULE_METADATA}'" >> $DAG_DIR/dag_config.py
+      - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> $DAG_DIR/dag_config.py
+      - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> $DAG_DIR/dag_config.py
+      - echo "REGION = '${AWS_DEFAULT_REGION}'" >> $DAG_DIR/dag_config.py
+      - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - export IMAGE_TAG=${COMMIT_HASH:=latest}
+      # Copy DAG files to S3
+      - aws s3 cp --recursive $DAG_DIR/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$DAG_DIR/
+      # - Building the Docker image(s)...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - cd images/ros-to-png && docker build -t $REPOSITORY_URI:rostopng .
+      - docker tag $REPOSITORY_URI:rostopng $REPOSITORY_URI:$IMAGE_TAG
+      - cd ../object-detection && docker build -t $REPOSITORY_URI:yolo .
+      - docker tag $REPOSITORY_URI:yolo $REPOSITORY_URI:$IMAGE_TAG
+      - aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || aws ecr create-repository --repository-name ${ECR_REPO_NAME}
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - docker push $REPOSITORY_URI:rostopng && docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:yolo && docker push $REPOSITORY_URI:$IMAGE_TAG
+destroy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.20.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      # Remove DAG files
+      - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$DAG_DIR
+      - cdk destroy --force --app "python app.py"
+

@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [V0.2.0] - [UNRELEASED]
 
 ### **Added**
+- aws-batch-demo pipeline and manifest
+- image extraction (rosbag to png) pipeline with yolov5 object detection
 
 - added docker module to build container images
 

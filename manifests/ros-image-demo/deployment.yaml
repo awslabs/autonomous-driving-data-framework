@@ -1,0 +1,9 @@
+name: ros-image-demo
+dockerCredentialsSecret: aws-addf-docker-credentials
+groups:
+  - name: optionals
+    path: manifests/ros-image-demo/optional-modules.yaml
+  - name: core
+    path: manifests/ros-image-demo/core-modules.yaml
+  - name: analysis
+    path: manifests/ros-image-demo/analysis-modules.yaml

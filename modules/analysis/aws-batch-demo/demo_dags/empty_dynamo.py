@@ -4,6 +4,7 @@ python empty_dynamo.py
 
 """
 import boto3
+
 from dag_config import DYNAMODB_TABLE
 
 dynamo = boto3.resource("dynamodb")

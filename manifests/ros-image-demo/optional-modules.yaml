@@ -1,0 +1,11 @@
+name: networking
+path: modules/optionals/networking/
+parameters:
+  - name: internet-accessible
+    value: true
+---
+name: datalake-buckets
+path: modules/optionals/datalake-buckets
+parameters:
+  - name: encryption-type
+    value: SSE

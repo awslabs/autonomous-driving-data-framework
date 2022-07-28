@@ -29,6 +29,24 @@ jobs:
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-scene-detection/ --skip-static-checks
 
+  modules-analysis-rosbag-image-pipeline:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/analysis/rosbag-image-pipeline/ --skip-static-checks
+
   modules-core-eks:
     runs-on: ubuntu-latest
     strategy:

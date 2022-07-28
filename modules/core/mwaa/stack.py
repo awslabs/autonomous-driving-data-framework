@@ -192,6 +192,17 @@ class MWAAStack(Stack):  # type: ignore
                         f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf-{deployment_name}-{module_name}*"
                     ],
                 ),
+                aws_iam.PolicyStatement(
+                    actions=[
+                        "sagemaker:CreateProcessingJob",
+                        "sagemaker:DescribeProcessingJob",
+                        "sagemaker:ListProcessingJob",
+                    ],
+                    effect=aws_iam.Effect.ALLOW,
+                    resources=[
+                        f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/*",
+                    ],
+                ),
             ]
         )
 
@@ -208,6 +219,14 @@ class MWAAStack(Stack):  # type: ignore
                 aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSXRayDaemonWriteAccess"),
             ],
             path="/service-role/",
+        )
+
+        mwaa_service_role.add_to_policy(
+            aws_iam.PolicyStatement(
+                resources=["*"],
+                actions=["iam:PassRole"],
+                conditions={"StringEquals": {"iam:PassedToService": "sagemaker.amazonaws.com"}},
+            )
         )
 
         mwaa_logging_conf = aws_mwaa.CfnEnvironment.LoggingConfigurationProperty(

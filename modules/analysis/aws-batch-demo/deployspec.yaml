@@ -51,6 +51,6 @@ destroy:
     build:
       commands:
       # Remove DAG files
-      - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/poc2_batch_dags
+      - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/demo_dags
       - cdk destroy --force --app "python app.py"
 
