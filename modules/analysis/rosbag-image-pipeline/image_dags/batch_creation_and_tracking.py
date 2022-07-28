@@ -12,8 +12,9 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import typing
 import logging
+import typing
+
 from boto3.dynamodb.conditions import Key
 
 logger = logging.getLogger("airflow")

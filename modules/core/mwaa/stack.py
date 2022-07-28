@@ -225,9 +225,7 @@ class MWAAStack(Stack):  # type: ignore
             aws_iam.PolicyStatement(
                 resources=["*"],
                 actions=["iam:PassRole"],
-                conditions={
-                    "StringEquals": {"iam:PassedToService": "sagemaker.amazonaws.com"}
-                }
+                conditions={"StringEquals": {"iam:PassedToService": "sagemaker.amazonaws.com"}},
             )
         )
 

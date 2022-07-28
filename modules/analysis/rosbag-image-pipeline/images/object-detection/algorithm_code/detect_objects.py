@@ -1,6 +1,4 @@
-# from yolov5 import load as load_yolov5_model
 from argparse import ArgumentParser
-from datetime import datetime
 from glob import glob as get_files
 from json import dump as dump_json
 

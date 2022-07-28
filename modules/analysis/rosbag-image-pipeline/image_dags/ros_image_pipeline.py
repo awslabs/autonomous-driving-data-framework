@@ -33,10 +33,10 @@ from airflow.utils.dates import days_ago
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
 from mypy_boto3_batch.client import BatchClient
+from sagemaker import get_execution_role
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 from sagemaker.pytorch.processing import PyTorchProcessor
 from sagemaker.session import Session
-from sagemaker import get_execution_role
 
 from image_dags import batch_creation_and_tracking
 from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
