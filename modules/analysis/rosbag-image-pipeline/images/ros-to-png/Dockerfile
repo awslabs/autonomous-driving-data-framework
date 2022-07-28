@@ -14,7 +14,7 @@ RUN apt-get install -y python3-pip python-is-python3 ffmpeg
 WORKDIR /app
 RUN python --version
 COPY src/requirements.txt .
-RUN pip3 install -r requirements.txt --extra-index-url https://rospypi.github.io/simple/
+RUN pip3 install -r requirements.txt
 COPY src/rostopng rostopng
 RUN which python
 ENV PYTHONPATH="/usr/bin/python"

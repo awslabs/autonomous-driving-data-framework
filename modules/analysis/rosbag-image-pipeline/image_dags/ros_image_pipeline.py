@@ -36,6 +36,7 @@ from mypy_boto3_batch.client import BatchClient
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 from sagemaker.pytorch.processing import PyTorchProcessor
 from sagemaker.session import Session
+from sagemaker import get_execution_role
 
 from image_dags import batch_creation_and_tracking
 from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
@@ -150,10 +151,10 @@ def create_batch_of_drives(ti, **kwargs):
     )["Count"]
 
     if files_in_batch > 0:
-        print("Batch Id already exists in tracking table - using existing batch")
+        logger.info("Batch Id already exists in tracking table - using existing batch")
         return files_in_batch
 
-    print("New Batch Id - collecting unprocessed drives from S3 and adding to the batch")
+    logger.info("New Batch Id - collecting unprocessed drives from S3 and adding to the batch")
     files_in_batch = batch_creation_and_tracking.add_drives_to_batch(
         table=table,
         drives_to_process=drives_to_process,
@@ -364,7 +365,7 @@ with DAG(
 
         processor = Processor(
             image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:yolo",
-            role=DAG_ROLE,
+            role=get_execution_role(),
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
             base_job_name=f"YOLO",

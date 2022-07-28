@@ -2,15 +2,23 @@
 
 ## Description
 
+This module contains an end-to-end pipeline for extracting images from Rosbag recording files using AWS Batch.
+The module labels these extracted images with open-source object detection and lane detection models
+using Sagemaker Processing jobs. The entire pipeline is orchestrated with a single Airflow dag.
+
+The pipeline expects a config of a list of drives to process from S3.
+
 This module deploys:
 
 - IAM Role for Batch Job and Airflow Dag
-- a DynamoDB table used for passing data to AWS Batch containers
+- a DynamoDB table used for passing data to AWS Batch containers and Sagemaker Processing jobs.
 
 The deployspec also includes commands to:
-- build and publish images/ros-to-png to ECR
-- upload image_dags/ to S3 for MWAA
-- append deployment variables to demo_dags/dag_config.py for the DAG to use
+- build and publish images/ros-to-png to ECR for image extraction
+- build and publish images/yolo to ECR for object detection
+- upload image_dags/ to S3 for Managed Airflow
+- append deployment variables to image_dags/dag_config.py for the DAG to use
+
 
 ## Testing module
 

@@ -61,39 +61,3 @@ parameters:
           desired_vcpus: 0
           compute_type: FARGATE
           order: 1
-#---
-#name: metadata-storage
-#path: modules/core/metadata-storage/
-#parameters:
-#  - name: glue-db-suffix
-#    value: vsidata
-#  - name: rosbag-bagfile-table-suffix
-#    value: Rosbag-Image-BagFile-Metadata
-#  - name: rosbag-scene-table-suffix
-#    value: Rosbag-Image-Scene-Metadata
-#---
-#name: opensearch
-#path: modules/core/opensearch/
-#parameters:
-#  - name: opensearch_data_nodes
-#    value: 1
-#  - name: opensearch_data_nodes_instance_type
-#    value: r6g.large.search
-#  - name: opensearch_master_nodes
-#    value: 0
-#  - name: opensearch_master_nodes_instance_type
-#    value: r6g.large.search
-#  - name: opensearch_ebs_volume_size
-#    value: 50
-#  - name: vpc-id
-#    valueFrom:
-#      moduleMetadata:
-#        group: optionals
-#        name: networking
-#        key: VpcId
-#  - name: private-subnet-ids
-#    valueFrom:
-#      moduleMetadata:
-#        group: optionals
-#        name: networking
-#        key: PrivateSubnetIds

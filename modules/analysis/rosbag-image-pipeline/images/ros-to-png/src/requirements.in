@@ -1,0 +1,7 @@
+--extra-index-url https://rospypi.github.io/simple/
+boto3
+opencv-python
+roslib
+rosbag
+rospy
+

@@ -13,8 +13,11 @@
 #    limitations under the License.
 
 import typing
-
+import logging
 from boto3.dynamodb.conditions import Key
+
+logger = logging.getLogger("airflow")
+logger.setLevel("DEBUG")
 
 
 def add_drives_to_batch(
@@ -52,7 +55,7 @@ def add_drives_to_batch(
 
         drives_and_files[drive_id] = {"files": files, "bucket": s3_path["bucket"]}
         files_in_batch += len(files)
-        print(f"files_in_batch {files_in_batch}")
+        logger.info(f"files_in_batch {files_in_batch}")
 
     batch_write_files_to_dynamo(table, drives_and_files, batch_id)
     return files_in_batch
@@ -69,10 +72,10 @@ def get_drive_files(drive_id, src_bucket, src_prefix, file_suffix, s3_client):
     @return:
     """
     MAX_KEYS = 1000
-    print(src_bucket)
-    print(src_prefix)
+    logger.info(src_bucket)
+    logger.info(src_prefix)
     file_response = s3_client.list_objects_v2(Bucket=src_bucket, Prefix=src_prefix, MaxKeys=MAX_KEYS, Delimiter="/")
-    print(file_response)
+    logger.info(file_response)
     file_next_continuation = file_response.get("NextContinuationToken")
     files = [x["Key"] for x in file_response.get("Contents", []) if x["Key"].endswith(file_suffix)]
     while file_next_continuation is not None:
@@ -85,7 +88,7 @@ def get_drive_files(drive_id, src_bucket, src_prefix, file_suffix, s3_client):
         )
         file_next_continuation = file_response.get("NextContinuationToken")
         files += [x["Key"] for x in file_response.get("Contents", [])]
-        print(files)
+        logger.info(files)
     return files
 
 
@@ -103,6 +106,6 @@ def batch_write_files_to_dynamo(table, drives_and_files, batch_id):
                     "pk": batch_id,
                     "sk": str(idx),
                 }
-                print(item)
+                logger.info(item)
                 batch.put_item(Item=item)
                 idx += 1
