@@ -4,6 +4,8 @@
 #
 #    pip-compile /Users/soucyk/PycharmProjects/autonomous-driving-data-framework/modules/analysis/rosbag-image-pipeline/images/object-detection/requirements.in
 #
+--extra-index-url https://pypi.python.org/simple
+
 absl-py==1.2.0
     # via tensorboard
 appnope==0.1.3

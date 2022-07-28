@@ -1,3 +1,4 @@
+--extra-index-url https://pypi.python.org/simple boto3
 boto3
 
 # YOLOv5 requirements
