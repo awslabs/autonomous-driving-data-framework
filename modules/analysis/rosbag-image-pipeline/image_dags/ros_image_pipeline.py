@@ -399,7 +399,6 @@ with DAG(
                 logs=False,
             )
 
-
         logger.info("Waiting on all jobs to finish")
         logger.info(f"Jobs: {processor.jobs}")
         for job in processor.jobs:
