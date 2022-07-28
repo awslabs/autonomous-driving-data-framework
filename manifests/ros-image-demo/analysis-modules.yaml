@@ -1,10 +1,6 @@
 name: image-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
-  - name: png-output-prefix
-    value: raw-images
-  - name: mp4-output-prefix
-    value: raw-videos
   - name: vpc-id
     valueFrom:
       moduleMetadata:

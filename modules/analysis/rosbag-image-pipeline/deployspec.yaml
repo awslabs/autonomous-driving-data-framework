@@ -22,10 +22,12 @@ deploy:
       # Copy DAG files to S3
       - aws s3 cp --recursive $DAG_DIR/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$DAG_DIR/
       # - Building the Docker image(s)...
+      # - The region here matches the region used in the Dockerfile for pulling AWS Deep Learning Containers
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - export BASE_IMAGE=763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/pytorch-inference:1.7.1-gpu-py36-cu110-ubuntu18.04
       - cd images/ros-to-png && docker build -t $REPOSITORY_URI:rostopng .
       - docker tag $REPOSITORY_URI:rostopng $REPOSITORY_URI:$IMAGE_TAG
-      - cd ../object-detection && docker build -t $REPOSITORY_URI:yolo .
+      - cd ../object-detection && docker build -t $REPOSITORY_URI:yolo . --build-arg BASE_IMAGE=$BASE_IMAGE
       - docker tag $REPOSITORY_URI:yolo $REPOSITORY_URI:$IMAGE_TAG
       - aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || aws ecr create-repository --repository-name ${ECR_REPO_NAME}
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com

@@ -36,7 +36,6 @@ from mypy_boto3_batch.client import BatchClient
 from sagemaker import get_execution_role
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 from sagemaker.pytorch.processing import PyTorchProcessor
-from sagemaker.session import Session
 
 from image_dags import batch_creation_and_tracking
 from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
@@ -188,16 +187,18 @@ def get_batch_client() -> BatchClient:
         RoleArn=DAG_ROLE,
         RoleSessionName="AssumeRoleSession1",
     )
-
+    logging.info(response)
     session = Session(
-        aws_access_key_id=response["Credentials"]["AccessKeyId"],
-        aws_secret_access_key=response["Credentials"]["SecretAccessKey"],
-        aws_session_token=response["Credentials"]["SessionToken"],
+        response["Credentials"]["AccessKeyId"],
+        response["Credentials"]["SecretAccessKey"],
+        response["Credentials"]["SessionToken"],
+        REGION,
     )
     return session.client("batch")
 
 
 def register_job_definition_on_demand(ti, job_def_name: str) -> str:
+
     client = get_batch_client()
 
     container_properties = {
@@ -300,13 +301,14 @@ with DAG(
                             env
                             
                             echo "[$(date)] Start Image Extraction - batch $BATCH_ID, index: $AWS_BATCH_JOB_ARRAY_INDEX"
+                            echo "[$(date)] Start Image Extraction - $IMAGE_TOPICS"
                             python3 rostopng/main.py \
                                 --tablename $TABLE_NAME \
                                 --index $AWS_BATCH_JOB_ARRAY_INDEX \
                                 --batchid $BATCH_ID \
                                 --localbagpath $LOCAL_BAG_PATH \
                                 --localimagespath $LOCAL_IMAGES_PATH \
-                                --imagetopics $IMAGE_TOPICS \
+                                --imagetopics "$IMAGE_TOPICS" \
                                 --desiredencoding $DESIRED_ENCODING \
                                 --targetbucket $TARGET_BUCKET
                             """
@@ -365,7 +367,7 @@ with DAG(
 
         processor = Processor(
             image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:yolo",
-            role=get_execution_role(),
+            role=DAG_ROLE,
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
             base_job_name=f"YOLO",
