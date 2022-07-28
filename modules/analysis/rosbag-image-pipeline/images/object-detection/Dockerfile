@@ -9,8 +9,7 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /opt/program/requirements.txt
-RUN pip3 install --no-cache-dir -r /opt/program/requirements.txt
-RUN pip3 install boto3
+RUN pip3 install -r /opt/program/requirements.txt
 # Set some environment variables. PYTHONUNBUFFERED keeps Python from buffering our standard
 # output stream, which means that logs can be delivered to the user quickly. PYTHONDONTWRITEBYTECODE
 # keeps Python from writing the .pyc files which are unnecessary in this case. We also update

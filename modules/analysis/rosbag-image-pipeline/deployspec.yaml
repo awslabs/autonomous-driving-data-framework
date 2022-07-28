@@ -22,7 +22,8 @@ deploy:
       # Copy DAG files to S3
       - aws s3 cp --recursive $DAG_DIR/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$DAG_DIR/
       # - Building the Docker image(s)...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin 763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      # - The region here matches the region used in the Dockerfile for pulling AWS Deep Learning Containers
+      - aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 763104351884.dkr.ecr.eu-central-1.amazonaws.com
       - cd images/ros-to-png && docker build -t $REPOSITORY_URI:rostopng .
       - docker tag $REPOSITORY_URI:rostopng $REPOSITORY_URI:$IMAGE_TAG
       - cd ../object-detection && docker build -t $REPOSITORY_URI:yolo .
