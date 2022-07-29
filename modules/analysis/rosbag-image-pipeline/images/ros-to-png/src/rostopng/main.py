@@ -63,8 +63,6 @@ class ImageFromBag:
             for idx, (topic, msg, t) in enumerate(bag.read_messages(topics=[topic])):
                 timestamp = "{}_{}".format(msg.header.stamp.secs, msg.header.stamp.nsecs)
                 seq = "{:07d}".format(msg.header.seq)
-                logger.info("Get image for frame seq {}".format(seq))
-                logger.info("Get image for frame stamp {}".format(timestamp))
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
                 local_image_name = "frame_{}.png".format(seq)
                 s3_image_name = "frame_{}_{}.png".format(seq, timestamp)
@@ -88,15 +86,13 @@ def upload(client, bucket_name, drive_id, file_id, files):
     uploaded_files = []
     target_prefixes = set()
     for file in files:
-        print(file)
         topic = file["topic"].replace("/", "_")
         target_prefix = os.path.join(drive_id, file_id.replace(".bag", ""), topic)
         target = os.path.join(target_prefix, file["s3_image_name"])
-        print("Uploading {} to s3://{}/{}".format(file["local_image_path"], bucket_name, target))
         client.upload_file(file["local_image_path"], bucket_name, target)
         uploaded_files.append(target)
         target_prefixes.add(target_prefix)
-    return uploaded_files, target_prefixes
+    return uploaded_files, list(target_prefixes)
 
 
 def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket) -> int:
@@ -141,7 +137,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
             pass
 
     # Sync results
-    logger.info("Uploading results")
+    logger.info(f"Uploading results - {target_bucket}")
     uploaded_files, uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
     logger.info("Uploaded results")
 

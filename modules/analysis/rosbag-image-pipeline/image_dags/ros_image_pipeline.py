@@ -21,7 +21,7 @@ import string
 import textwrap
 from datetime import timedelta
 from typing import TypeVar
-
+from math import ceil
 import boto3
 from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
@@ -52,7 +52,7 @@ DESIRED_ENCODING = "bgr8"
 # SET MODULE VARIABLES FOR OBJECT DETECTION
 MODEL = "yolov5s"
 YOLO_INSTANCE_TYPE = "ml.m5.xlarge"
-
+YOLO_CONCURRENCY = 50
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
@@ -365,47 +365,54 @@ with DAG(
 
         logger.info(f"Starting object detection job for {len(image_directories)} directories")
 
-        processor = Processor(
-            image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:yolo",
-            role=DAG_ROLE,
-            instance_count=1,
-            instance_type=YOLO_INSTANCE_TYPE,
-            base_job_name=f"YOLO",
-        )
+        total_jobs = len(image_directories)
+        num_batches = ceil(total_jobs/YOLO_CONCURRENCY)
 
-        for image_directory in image_directories:
-            logger.info(f"Starting object detection job for {image_directory}")
-            logger.info(
-                "Job details available at: "
-                f"https://{REGION}.console.aws.amazon.com/sagemaker/home?region={REGION}#/processing-jobs"
-            )
-            processor.run(
-                inputs=[
-                    ProcessingInput(
-                        input_name="data",
-                        source=f"s3://{TARGET_BUCKET}/{image_directory}/",
-                        destination="/opt/ml/processing/input/",
-                    )
-                ],
-                outputs=[
-                    ProcessingOutput(
-                        output_name="output",
-                        source="/opt/ml/processing/output/",
-                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/",
-                    )
-                ],
-                arguments=["--model", MODEL],
-                wait=False,
-                logs=False,
+        for i in range(num_batches):
+            logger.info(f"Starting object detection job for batch {i + 1} of {num_batches}")
+            processor = Processor(
+                image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:yolo",
+                role=DAG_ROLE,
+                instance_count=1,
+                instance_type=YOLO_INSTANCE_TYPE,
+                base_job_name=f"YOLO",
             )
 
-        logger.info("Waiting on all jobs to finish")
-        logger.info(f"Jobs: {processor.jobs}")
-        for job in processor.jobs:
-            logger.info(f"Waiting on: {job} - logs from job:")
-            job.wait(logs=True)
+            idx_start = i * YOLO_CONCURRENCY
+            idx_end = (i+1) * YOLO_CONCURRENCY
+            for image_directory in image_directories[idx_start:idx_end]:
+                logger.info(f"Starting object detection job for {image_directory}")
+                logger.info(
+                    "Job details available at: "
+                    f"https://{REGION}.console.aws.amazon.com/sagemaker/home?region={REGION}#/processing-jobs"
+                )
+                processor.run(
+                    inputs=[
+                        ProcessingInput(
+                            input_name="data",
+                            source=f"s3://{TARGET_BUCKET}/{image_directory}/",
+                            destination="/opt/ml/processing/input/",
+                        )
+                    ],
+                    outputs=[
+                        ProcessingOutput(
+                            output_name="output",
+                            source="/opt/ml/processing/output/",
+                            destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/",
+                        )
+                    ],
+                    arguments=["--model", MODEL],
+                    wait=False,
+                    logs=False,
+                )
 
-        logger.info(f"All object detection jobs complete")
+                logger.info("Waiting on all jobs to finish")
+                logger.info(f"Jobs: {processor.jobs}")
+                for job in processor.jobs:
+                    logger.info(f"Waiting on: {job} - logs from job:")
+                    job.wait(logs=True)
+
+                logger.info(f"All object detection jobs complete")
 
     submit_yolo_job = PythonOperator(task_id="submit_yolo_job", python_callable=sagemaker_yolo_operation)
 
