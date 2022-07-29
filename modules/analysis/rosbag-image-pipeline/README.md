@@ -25,8 +25,7 @@ The deployspec also includes commands to:
 Trigger ros_image_pipeline dag in Airflow with this config"
 {
     "drives_to_process": {
-        "drive1": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive1/"},
-        "drive2": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive2/"}
+        "drive1": {"bucket": "addf-sample-rosbag-data", "prefix": "drive1/"}
     }
 }
 

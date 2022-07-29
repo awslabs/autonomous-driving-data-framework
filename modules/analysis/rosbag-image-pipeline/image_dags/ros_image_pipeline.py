@@ -45,7 +45,7 @@ PROVIDER = "FARGATE"  # One of ON_DEMAND, SPOT, FARGATE
 FILE_SUFFIX = ".bag"
 VCPU = "4"
 MEMORY = "16384"
-CONTAINER_TIMEOUT = 300  # Seconds - must be at least 60 seconds
+CONTAINER_TIMEOUT = 3600 * 2  # Seconds - must be at least 60 seconds
 IMAGE_TOPICS = ["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]
 DESIRED_ENCODING = "bgr8"
 

@@ -126,6 +126,18 @@ class AwsBatchPipeline(Stack):  # type: ignore
                     "*",
                 ],
             ),
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetObject",
+                    "s3:GetObjectAcl",
+                    "s3:ListBucket"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[
+                    "arn:aws:s3:::addf-*",
+                    "arn:aws:s3:::addf-*/*"
+                ],
+            ),
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 
