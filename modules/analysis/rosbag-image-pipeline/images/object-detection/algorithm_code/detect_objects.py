@@ -107,14 +107,11 @@ def get_yolov5_prediction(model, image, input_size=1280, confidence=0.25, iou=0.
         "toothbrush",
     ]
 
-    print(output["category_index"])
-
     output["category"] = [category_list[int(x)] for x in output["category_index"]]
 
-    print(output["category"])
     model_predictions = results.pandas().xyxy[0]
 
-    print(model_predictions.head())
+    print(model_predictions.head(1))
 
     return output, model_predictions
 

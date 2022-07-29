@@ -20,8 +20,9 @@ import random
 import string
 import textwrap
 from datetime import timedelta
-from typing import TypeVar
 from math import ceil
+from typing import TypeVar
+
 import boto3
 from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
@@ -252,13 +253,13 @@ with DAG(
     queue_name = get_job_queue_name()
 
     create_aws_conn = PythonOperator(
-        task_id="try_create_aws_conn",
+        task_id="try-create-aws-conn",
         python_callable=try_create_aws_conn,
         dag=dag,
     )
 
     create_batch_of_drives_task = PythonOperator(
-        task_id="create_batch_of_drives_task",
+        task_id="create-batch-of-drives",
         python_callable=create_batch_of_drives,
         dag=dag,
         provide_context=True,
@@ -335,7 +336,7 @@ with DAG(
 
         op.execute(ds)
 
-    submit_batch_job = PythonOperator(task_id="submit_batch_job", python_callable=batch_operation)
+    submit_batch_job = PythonOperator(task_id="image-extraction-batch-job", python_callable=batch_operation)
 
     def sagemaker_yolo_operation(**kwargs):
 
@@ -366,7 +367,7 @@ with DAG(
         logger.info(f"Starting object detection job for {len(image_directories)} directories")
 
         total_jobs = len(image_directories)
-        num_batches = ceil(total_jobs/YOLO_CONCURRENCY)
+        num_batches = ceil(total_jobs / YOLO_CONCURRENCY)
 
         for i in range(num_batches):
             logger.info(f"Starting object detection job for batch {i + 1} of {num_batches}")
@@ -379,7 +380,7 @@ with DAG(
             )
 
             idx_start = i * YOLO_CONCURRENCY
-            idx_end = (i+1) * YOLO_CONCURRENCY
+            idx_end = (i + 1) * YOLO_CONCURRENCY
             for image_directory in image_directories[idx_start:idx_end]:
                 logger.info(f"Starting object detection job for {image_directory}")
                 logger.info(
@@ -406,18 +407,17 @@ with DAG(
                     logs=False,
                 )
 
-                logger.info("Waiting on all jobs to finish")
-                logger.info(f"Jobs: {processor.jobs}")
-                for job in processor.jobs:
-                    logger.info(f"Waiting on: {job} - logs from job:")
-                    job.wait(logs=True)
+            logger.info("Waiting on batch of jobs to finish")
+            for job in processor.jobs:
+                logger.info(f"Waiting on: {job} - logs from job:")
+                job.wait(logs=True)
 
-                logger.info(f"All object detection jobs complete")
+            logger.info(f"All object detection jobs complete")
 
-    submit_yolo_job = PythonOperator(task_id="submit_yolo_job", python_callable=sagemaker_yolo_operation)
+    submit_yolo_job = PythonOperator(task_id="object-detection-sagemaker-job", python_callable=sagemaker_yolo_operation)
 
     deregister_batch_job_definition = PythonOperator(
-        task_id="deregister_batch_job_definition",
+        task_id="deregister-batch-job-definition",
         dag=dag,
         provide_context=True,
         op_kwargs={"job_def_arn": get_job_def_name()},

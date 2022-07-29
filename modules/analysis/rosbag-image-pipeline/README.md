@@ -26,6 +26,9 @@ Trigger ros_image_pipeline dag in Airflow with this config"
 {
     "drives_to_process": {
         "drive1": {"bucket": "addf-sample-rosbag-data", "prefix": "drive1/"},
+        "drive2": {"bucket": "addf-sample-rosbag-data", "prefix": "drive2/"},
+        "drive3": {"bucket": "addf-sample-rosbag-data", "prefix": "drive3/"},
+        "drive4": {"bucket": "addf-sample-rosbag-data", "prefix": "drive4/"},
         "smalldrive": {"bucket": "addf-sample-rosbag-data", "prefix": "small-demo/"}
     }
 }
