@@ -19,10 +19,10 @@ import os
 import random
 import string
 import textwrap
+import time
 from datetime import timedelta
 from math import ceil
 from typing import TypeVar
-import time
 
 import boto3
 from airflow import DAG, settings
@@ -32,6 +32,7 @@ from airflow.models import Connection
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
+from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
 from mypy_boto3_batch.client import BatchClient
@@ -276,6 +277,198 @@ def register_parquet_batch_job(ti, job_def_name: str) -> str:
     ti.xcom_push(key=TASK_DEF_XCOM_KEY, value=resp["jobDefinitionArn"])
 
 
+def batch_operation(**kwargs):
+    ti = kwargs["ti"]
+    ds = kwargs["ds"]
+    array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
+    batch_id = kwargs["dag_run"].run_id
+
+    if isinstance(array_size, dict):
+        array_size = array_size["files_in_batch"]
+
+    op = AwsBatchOperator(
+        task_id="submit_batch_job_op",
+        job_name=get_job_name("png"),
+        job_queue=queue_name,
+        aws_conn_id="aws_default",
+        job_definition=get_job_def_name("png"),
+        array_properties={"size": int(array_size)},
+        overrides={
+            "command": [
+                "bash",
+                "-c",
+                textwrap.dedent(
+                    """\
+                        #/usr/bin/env bash
+                        echo "Starting ROS"
+                        source /opt/ros/noetic/setup.bash
+                        export PYTHONPATH=$PYTHONPATH:$ROS_PACKAGE_PATH
+                        env
+
+                        echo "[$(date)] Start Image Extraction - batch $BATCH_ID, index: $AWS_BATCH_JOB_ARRAY_INDEX"
+                        echo "[$(date)] Start Image Extraction - $IMAGE_TOPICS"
+                        python3 rostopng/main.py \
+                            --tablename $TABLE_NAME \
+                            --index $AWS_BATCH_JOB_ARRAY_INDEX \
+                            --batchid $BATCH_ID \
+                            --localbagpath $LOCAL_BAG_PATH \
+                            --localimagespath $LOCAL_IMAGES_PATH \
+                            --imagetopics "$IMAGE_TOPICS" \
+                            --desiredencoding $DESIRED_ENCODING \
+                            --targetbucket $TARGET_BUCKET
+                        """
+                ),
+            ],
+            "environment": [
+                {"name": "TABLE_NAME", "value": DYNAMODB_TABLE},
+                {"name": "BATCH_ID", "value": batch_id},
+                {"name": "JOB_NAME", "value": batch_id},
+                {"name": "DEBUG", "value": "true"},
+                {
+                    "name": "AWS_ACCOUNT_ID",
+                    "value": boto3.client("sts").get_caller_identity().get("Account"),
+                },
+                {"name": "LOCAL_BAG_PATH", "value": "/tmp/input.bag"},
+                {"name": "LOCAL_IMAGES_PATH", "value": "/tmp/images/"},
+                {"name": "LOCAL_VIDEO_PATH", "value": "/tmp/output.mp4"},
+                {"name": "IMAGE_TOPICS", "value": json.dumps(IMAGE_TOPICS)},
+                {"name": "DESIRED_ENCODING", "value": DESIRED_ENCODING},
+                {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
+            ],
+        },
+    )
+
+    op.execute(ds)
+
+
+def parquet_operation(**kwargs):
+    ti = kwargs["ti"]
+    ds = kwargs["ds"]
+    array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
+    batch_id = kwargs["dag_run"].run_id
+
+    if isinstance(array_size, dict):
+        array_size = array_size["files_in_batch"]
+
+    op = AwsBatchOperator(
+        task_id="submit_parquet_job_op",
+        job_name=get_job_name("parq"),
+        job_queue=queue_name,
+        aws_conn_id="aws_default",
+        job_definition=get_job_def_name("parq"),
+        array_properties={"size": int(array_size)},
+        overrides={
+            "command": [
+                "bash",
+                "-c",
+                textwrap.dedent(
+                    """\
+                        #/usr/bin/env bash
+                        python3 main.py \
+                            --tablename $TABLE_NAME \
+                            --index $AWS_BATCH_JOB_ARRAY_INDEX \
+                            --batchid $BATCH_ID \
+                            --sensortopics "$TOPICS" \
+                            --targetbucket $TARGET_BUCKET
+                        """
+                ),
+            ],
+            "environment": [
+                {"name": "TABLE_NAME", "value": DYNAMODB_TABLE},
+                {"name": "BATCH_ID", "value": batch_id},
+                {"name": "JOB_NAME", "value": batch_id},
+                {"name": "DEBUG", "value": "true"},
+                {
+                    "name": "AWS_ACCOUNT_ID",
+                    "value": boto3.client("sts").get_caller_identity().get("Account"),
+                },
+                {"name": "TOPICS", "value": json.dumps(SENSOR_TOPICS)},
+                {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
+            ],
+        },
+    )
+
+    op.execute(ds)
+
+
+def sagemaker_yolo_operation(**kwargs):
+
+    # Establish AWS API Connections
+    sts_client = boto3.client("sts")
+    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    credentials = assumed_role_object["Credentials"]
+    dynamodb = boto3.resource(
+        "dynamodb",
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    )
+    table = dynamodb.Table(DYNAMODB_TABLE)
+    batch_id = kwargs["dag_run"].run_id
+
+    # Get Image Directories per Recording File to Label
+    image_directory_items = table.query(
+        KeyConditionExpression=Key("pk").eq(batch_id),
+        Select="SPECIFIC_ATTRIBUTES",
+        ProjectionExpression="raw_image_dirs",
+    )["Items"]
+
+    image_directories = []
+    for item in image_directory_items:
+        image_directories += item["raw_image_dirs"]
+
+    logger.info(f"Starting object detection job for {len(image_directories)} directories")
+
+    total_jobs = len(image_directories)
+    num_batches = ceil(total_jobs / YOLO_CONCURRENCY)
+
+    for i in range(num_batches):
+        logger.info(f"Starting object detection job for batch {i + 1} of {num_batches}")
+        processor = Processor(
+            image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:yolo",
+            role=DAG_ROLE,
+            instance_count=1,
+            instance_type=YOLO_INSTANCE_TYPE,
+            base_job_name=f"YOLO",
+        )
+
+        idx_start = i * YOLO_CONCURRENCY
+        idx_end = (i + 1) * YOLO_CONCURRENCY
+        for image_directory in image_directories[idx_start:idx_end]:
+            logger.info(f"Starting object detection job for {image_directory}")
+            logger.info(
+                "Job details available at: "
+                f"https://{REGION}.console.aws.amazon.com/sagemaker/home?region={REGION}#/processing-jobs"
+            )
+            processor.run(
+                inputs=[
+                    ProcessingInput(
+                        input_name="data",
+                        source=f"s3://{TARGET_BUCKET}/{image_directory}/",
+                        destination="/opt/ml/processing/input/",
+                    )
+                ],
+                outputs=[
+                    ProcessingOutput(
+                        output_name="output",
+                        source="/opt/ml/processing/output/",
+                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/",
+                    )
+                ],
+                arguments=["--model", MODEL],
+                wait=False,
+                logs=False,
+            )
+            time.sleep(1)  # Attempt at avoiding throttling exceptions
+
+        logger.info("Waiting on batch of jobs to finish")
+        for job in processor.jobs:
+            logger.info(f"Waiting on: {job} - logs from job:")
+            job.wait(logs=False)
+
+        logger.info(f"All object detection jobs complete")
+
+
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
@@ -300,236 +493,53 @@ with DAG(
         provide_context=True,
     )
 
-    register_batch_job_defintion = PythonOperator(
-        task_id="register-image-job-definition",
-        dag=dag,
-        provide_context=True,
-        python_callable=register_job_definition_on_demand,
-        op_kwargs={"job_def_name": get_job_def_name("png")},
-    )
+    # Start Task Group definition
+    with TaskGroup(group_id="image-extraction") as image_task_group:
 
-    register_parquet_job_defintion = PythonOperator(
-        task_id="register-parquet-job-definition",
-        dag=dag,
-        provide_context=True,
-        python_callable=register_parquet_batch_job,
-        op_kwargs={"job_def_name": get_job_def_name("parq")},
-    )
-
-    def batch_operation(**kwargs):
-        ti = kwargs["ti"]
-        ds = kwargs["ds"]
-        array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
-        batch_id = kwargs["dag_run"].run_id
-
-        if isinstance(array_size, dict):
-            array_size = array_size["files_in_batch"]
-
-        op = AwsBatchOperator(
-            task_id="submit_batch_job_op",
-            job_name=get_job_name("png"),
-            job_queue=queue_name,
-            aws_conn_id="aws_default",
-            job_definition=get_job_def_name("png"),
-            array_properties={"size": int(array_size)},
-            overrides={
-                "command": [
-                    "bash",
-                    "-c",
-                    textwrap.dedent(
-                        """\
-                            #/usr/bin/env bash
-                            echo "Starting ROS"
-                            source /opt/ros/noetic/setup.bash
-                            export PYTHONPATH=$PYTHONPATH:$ROS_PACKAGE_PATH
-                            env
-                            
-                            echo "[$(date)] Start Image Extraction - batch $BATCH_ID, index: $AWS_BATCH_JOB_ARRAY_INDEX"
-                            echo "[$(date)] Start Image Extraction - $IMAGE_TOPICS"
-                            python3 rostopng/main.py \
-                                --tablename $TABLE_NAME \
-                                --index $AWS_BATCH_JOB_ARRAY_INDEX \
-                                --batchid $BATCH_ID \
-                                --localbagpath $LOCAL_BAG_PATH \
-                                --localimagespath $LOCAL_IMAGES_PATH \
-                                --imagetopics "$IMAGE_TOPICS" \
-                                --desiredencoding $DESIRED_ENCODING \
-                                --targetbucket $TARGET_BUCKET
-                            """
-                    ),
-                ],
-                "environment": [
-                    {"name": "TABLE_NAME", "value": DYNAMODB_TABLE},
-                    {"name": "BATCH_ID", "value": batch_id},
-                    {"name": "JOB_NAME", "value": batch_id},
-                    {"name": "DEBUG", "value": "true"},
-                    {
-                        "name": "AWS_ACCOUNT_ID",
-                        "value": boto3.client("sts").get_caller_identity().get("Account"),
-                    },
-                    {"name": "LOCAL_BAG_PATH", "value": "/tmp/input.bag"},
-                    {"name": "LOCAL_IMAGES_PATH", "value": "/tmp/images/"},
-                    {"name": "LOCAL_VIDEO_PATH", "value": "/tmp/output.mp4"},
-                    {"name": "IMAGE_TOPICS", "value": json.dumps(IMAGE_TOPICS)},
-                    {"name": "DESIRED_ENCODING", "value": DESIRED_ENCODING},
-                    {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
-                ],
-            },
+        register_batch_job_definition = PythonOperator(
+            task_id="register-image-job-definition",
+            dag=dag,
+            provide_context=True,
+            python_callable=register_job_definition_on_demand,
+            op_kwargs={"job_def_name": get_job_def_name("png")},
         )
 
-        op.execute(ds)
+        submit_batch_job = PythonOperator(task_id="image-extraction-batch-job", python_callable=batch_operation)
 
-    submit_batch_job = PythonOperator(task_id="image-extraction-batch-job", python_callable=batch_operation)
+        deregister_batch_job_definition = PythonOperator(
+            task_id="deregister-image-job-definition",
+            dag=dag,
+            provide_context=True,
+            op_kwargs={"job_def_arn": get_job_def_name("png")},
+            python_callable=deregister_job_definition,
+        )
+        register_batch_job_definition >> submit_batch_job >> deregister_batch_job_definition
 
+    with TaskGroup(group_id="sensor-extraction") as parquet_task_group:
 
-    def parquet_operation(**kwargs):
-        ti = kwargs["ti"]
-        ds = kwargs["ds"]
-        array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
-        batch_id = kwargs["dag_run"].run_id
-
-        if isinstance(array_size, dict):
-            array_size = array_size["files_in_batch"]
-
-        op = AwsBatchOperator(
-            task_id="submit_parquet_job_op",
-            job_name=get_job_name("parq"),
-            job_queue=queue_name,
-            aws_conn_id="aws_default",
-            job_definition=get_job_def_name("parq"),
-            array_properties={"size": int(array_size)},
-            overrides={
-                "command": [
-                    "bash",
-                    "-c",
-                    textwrap.dedent(
-                        """\
-                            #/usr/bin/env bash
-                            python3 main.py \
-                                --tablename $TABLE_NAME \
-                                --index $AWS_BATCH_JOB_ARRAY_INDEX \
-                                --batchid $BATCH_ID \
-                                --sensortopics "$TOPICS" \
-                                --targetbucket $TARGET_BUCKET
-                            """
-                    ),
-                ],
-                "environment": [
-                    {"name": "TABLE_NAME", "value": DYNAMODB_TABLE},
-                    {"name": "BATCH_ID", "value": batch_id},
-                    {"name": "JOB_NAME", "value": batch_id},
-                    {"name": "DEBUG", "value": "true"},
-                    {
-                        "name": "AWS_ACCOUNT_ID",
-                        "value": boto3.client("sts").get_caller_identity().get("Account"),
-                    },
-                    {"name": "TOPICS", "value": json.dumps(SENSOR_TOPICS)},
-                    {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
-                ],
-            },
+        register_parquet_job_definition = PythonOperator(
+            task_id="register-parquet-job-definition",
+            dag=dag,
+            provide_context=True,
+            python_callable=register_parquet_batch_job,
+            op_kwargs={"job_def_name": get_job_def_name("parq")},
         )
 
-        op.execute(ds)
+        submit_parquet_job = PythonOperator(task_id="parquet-extraction-batch-job", python_callable=parquet_operation)
 
-    submit_parquet_job = PythonOperator(task_id="parquet-extraction-batch-job", python_callable=parquet_operation)
-
-    def sagemaker_yolo_operation(**kwargs):
-
-        # Establish AWS API Connections
-        sts_client = boto3.client("sts")
-        assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
-        credentials = assumed_role_object["Credentials"]
-        dynamodb = boto3.resource(
-            "dynamodb",
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
+        deregister_parquet_job_definition = PythonOperator(
+            task_id="deregister-parquet-job-definition",
+            dag=dag,
+            provide_context=True,
+            op_kwargs={"job_def_arn": get_job_def_name("parq")},
+            python_callable=deregister_job_definition,
         )
-        table = dynamodb.Table(DYNAMODB_TABLE)
-        batch_id = kwargs["dag_run"].run_id
+        register_parquet_job_definition >> submit_parquet_job >> deregister_parquet_job_definition
 
-        # Get Image Directories per Recording File to Label
-        image_directory_items = table.query(
-            KeyConditionExpression=Key("pk").eq(batch_id),
-            Select="SPECIFIC_ATTRIBUTES",
-            ProjectionExpression="raw_image_dirs",
-        )["Items"]
+    with TaskGroup(group_id="image-labelling") as image_labelling_task_group:
+        submit_yolo_job = PythonOperator(
+            task_id="object-detection-sagemaker-job", python_callable=sagemaker_yolo_operation
+        )
 
-        image_directories = []
-        for item in image_directory_items:
-            image_directories += item["raw_image_dirs"]
-
-        logger.info(f"Starting object detection job for {len(image_directories)} directories")
-
-        total_jobs = len(image_directories)
-        num_batches = ceil(total_jobs / YOLO_CONCURRENCY)
-
-        for i in range(num_batches):
-            logger.info(f"Starting object detection job for batch {i + 1} of {num_batches}")
-            processor = Processor(
-                image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:yolo",
-                role=DAG_ROLE,
-                instance_count=1,
-                instance_type=YOLO_INSTANCE_TYPE,
-                base_job_name=f"YOLO",
-            )
-
-            idx_start = i * YOLO_CONCURRENCY
-            idx_end = (i + 1) * YOLO_CONCURRENCY
-            for image_directory in image_directories[idx_start:idx_end]:
-                logger.info(f"Starting object detection job for {image_directory}")
-                logger.info(
-                    "Job details available at: "
-                    f"https://{REGION}.console.aws.amazon.com/sagemaker/home?region={REGION}#/processing-jobs"
-                )
-                processor.run(
-                    inputs=[
-                        ProcessingInput(
-                            input_name="data",
-                            source=f"s3://{TARGET_BUCKET}/{image_directory}/",
-                            destination="/opt/ml/processing/input/",
-                        )
-                    ],
-                    outputs=[
-                        ProcessingOutput(
-                            output_name="output",
-                            source="/opt/ml/processing/output/",
-                            destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/",
-                        )
-                    ],
-                    arguments=["--model", MODEL],
-                    wait=False,
-                    logs=False,
-                )
-                time.sleep(1)  # Attempt at avoiding throttling exceptions
-
-
-            logger.info("Waiting on batch of jobs to finish")
-            for job in processor.jobs:
-                logger.info(f"Waiting on: {job} - logs from job:")
-                job.wait(logs=False)
-
-            logger.info(f"All object detection jobs complete")
-
-    submit_yolo_job = PythonOperator(task_id="object-detection-sagemaker-job", python_callable=sagemaker_yolo_operation)
-
-    deregister_batch_job_definition = PythonOperator(
-        task_id="deregister-image-job-definition",
-        dag=dag,
-        provide_context=True,
-        op_kwargs={"job_def_arn": get_job_def_name("png")},
-        python_callable=deregister_job_definition,
-    )
-
-    deregister_parquet_job_definition = PythonOperator(
-        task_id="deregister-parquet-job-definition",
-        dag=dag,
-        provide_context=True,
-        op_kwargs={"job_def_arn": get_job_def_name("parq")},
-        python_callable=deregister_job_definition,
-    )
-
-    create_aws_conn >> create_batch_of_drives_task
-    create_batch_of_drives_task >> register_batch_job_defintion >> submit_batch_job >> deregister_batch_job_definition
-    create_batch_of_drives_task >> register_parquet_job_defintion >> submit_parquet_job >> deregister_parquet_job_definition
-    deregister_batch_job_definition >> submit_yolo_job
+    create_aws_conn >> create_batch_of_drives_task >> [image_task_group, parquet_task_group]
+    image_task_group >> submit_yolo_job

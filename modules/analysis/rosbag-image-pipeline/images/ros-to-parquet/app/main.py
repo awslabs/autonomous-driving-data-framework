@@ -23,7 +23,6 @@ import fastparquet
 import pandas as pd
 from bagpy import bagreader
 
-
 DEBUG_LOGGING_FORMAT = "[%(asctime)s][%(filename)-13s:%(lineno)3d][%(levelname)s][%(threadName)s] %(message)s"
 debug = os.environ.get("DEBUG", "False").lower() in [
     "true",
@@ -47,7 +46,6 @@ class ParquetFromBag:
         output_dir = os.path.join(output_path, clean_topic)
         os.makedirs(output_dir, exist_ok=True)
 
-        files = []
         local_parquet_name = os.path.join(output_dir, "data.parquet")
 
         bag = bagreader(bag_path)
@@ -119,11 +117,7 @@ def main(table_name, index, batch_id, topics, target_bucket) -> int:
     for topic in topics:
         logger.info(f"Getting data from topic: {topic}")
         bag_obj = ParquetFromBag(
-            topic=topic,
-            bag_path=bag_path,
-            output_path=local_output_path,
-            drive_id=drive_id,
-            file_id=file_id
+            topic=topic, bag_path=bag_path, output_path=local_output_path, drive_id=drive_id, file_id=file_id
         )
         all_files.append(bag_obj.file)
 
