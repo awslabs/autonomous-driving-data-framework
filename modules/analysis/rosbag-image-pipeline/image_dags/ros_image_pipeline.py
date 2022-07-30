@@ -22,6 +22,7 @@ import textwrap
 from datetime import timedelta
 from math import ceil
 from typing import TypeVar
+import time
 
 import boto3
 from airflow import DAG, settings
@@ -48,6 +49,7 @@ VCPU = "4"
 MEMORY = "16384"
 CONTAINER_TIMEOUT = 3600 * 2  # Seconds - must be at least 60 seconds
 IMAGE_TOPICS = ["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]
+SENSOR_TOPICS = ["/vehicle/gps/fix"]
 DESIRED_ENCODING = "bgr8"
 
 # SET MODULE VARIABLES FOR OBJECT DETECTION
@@ -172,13 +174,13 @@ def get_job_queue_name() -> str:
     return eval(f"{PROVIDER}_JOB_QUEUE_ARN")
 
 
-def get_job_name() -> str:
+def get_job_name(suffix="") -> str:
     v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
-    return f"ros-image-pipeline-{v}"
+    return f"ros-image-pipeline-{suffix}-{v}"
 
 
-def get_job_def_name() -> str:
-    return f"addf-{DEPLOYMENT_NAME}-{MODULE_NAME}-jobdef"
+def get_job_def_name(suffix) -> str:
+    return f"addf-{DEPLOYMENT_NAME}-{MODULE_NAME}-jobdef-{suffix}"
 
 
 def get_batch_client() -> BatchClient:
@@ -235,8 +237,43 @@ def register_job_definition_on_demand(ti, job_def_name: str) -> str:
 
 def deregister_job_definition(ti, job_def_arn: str) -> None:
     client = get_batch_client()
-    response = client.deregister_job_definition(jobDefinition=get_job_def_name())
+    response = client.deregister_job_definition(jobDefinition=job_def_arn)
     ti.xcom_push(key="TASK_DEF_DEREGISTER_XCOM_KEY", value=response["ResponseMetadata"])
+
+
+def register_parquet_batch_job(ti, job_def_name: str) -> str:
+
+    client = get_batch_client()
+
+    container_properties = {
+        "image": f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:rostoparq",
+        "jobRoleArn": DAG_ROLE,
+        "environment": [
+            {
+                "name": "AWS_DEFAULT_REGION",
+                "value": REGION,
+            }
+        ],
+        "resourceRequirements": [
+            {"value": VCPU, "type": "VCPU"},
+            {"value": MEMORY, "type": "MEMORY"},
+        ],
+    }
+    if PROVIDER == "FARGATE":
+        container_properties["executionRoleArn"] = DAG_ROLE
+
+    resp = client.register_job_definition(
+        jobDefinitionName=job_def_name,
+        type="container",
+        containerProperties=container_properties,
+        propagateTags=True,
+        timeout={"attemptDurationSeconds": CONTAINER_TIMEOUT},
+        retryStrategy={
+            "attempts": 1,
+        },
+        platformCapabilities=[PROVIDER if PROVIDER in ["EC2", "FARGATE"] else "EC2"],
+    )
+    ti.xcom_push(key=TASK_DEF_XCOM_KEY, value=resp["jobDefinitionArn"])
 
 
 with DAG(
@@ -248,8 +285,6 @@ with DAG(
     render_template_as_native_obj=True,
 ) as dag:
 
-    job_definition_name = get_job_def_name()
-    job_name = get_job_name()
     queue_name = get_job_queue_name()
 
     create_aws_conn = PythonOperator(
@@ -266,17 +301,25 @@ with DAG(
     )
 
     register_batch_job_defintion = PythonOperator(
-        task_id="register-batch-job-definition",
+        task_id="register-image-job-definition",
         dag=dag,
         provide_context=True,
         python_callable=register_job_definition_on_demand,
-        op_kwargs={"job_def_name": job_definition_name},
+        op_kwargs={"job_def_name": get_job_def_name("png")},
+    )
+
+    register_parquet_job_defintion = PythonOperator(
+        task_id="register-parquet-job-definition",
+        dag=dag,
+        provide_context=True,
+        python_callable=register_parquet_batch_job,
+        op_kwargs={"job_def_name": get_job_def_name("parq")},
     )
 
     def batch_operation(**kwargs):
         ti = kwargs["ti"]
         ds = kwargs["ds"]
-        array_size = ti.xcom_pull(task_ids="create_batch_of_drives_task", key="return_value")
+        array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
         batch_id = kwargs["dag_run"].run_id
 
         if isinstance(array_size, dict):
@@ -284,10 +327,10 @@ with DAG(
 
         op = AwsBatchOperator(
             task_id="submit_batch_job_op",
-            job_name=job_name,
+            job_name=get_job_name("png"),
             job_queue=queue_name,
             aws_conn_id="aws_default",
-            job_definition=get_job_def_name(),
+            job_definition=get_job_def_name("png"),
             array_properties={"size": int(array_size)},
             overrides={
                 "command": [
@@ -337,6 +380,58 @@ with DAG(
         op.execute(ds)
 
     submit_batch_job = PythonOperator(task_id="image-extraction-batch-job", python_callable=batch_operation)
+
+
+    def parquet_operation(**kwargs):
+        ti = kwargs["ti"]
+        ds = kwargs["ds"]
+        array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
+        batch_id = kwargs["dag_run"].run_id
+
+        if isinstance(array_size, dict):
+            array_size = array_size["files_in_batch"]
+
+        op = AwsBatchOperator(
+            task_id="submit_parquet_job_op",
+            job_name=get_job_name("parq"),
+            job_queue=queue_name,
+            aws_conn_id="aws_default",
+            job_definition=get_job_def_name("parq"),
+            array_properties={"size": int(array_size)},
+            overrides={
+                "command": [
+                    "bash",
+                    "-c",
+                    textwrap.dedent(
+                        """\
+                            #/usr/bin/env bash
+                            python3 main.py \
+                                --tablename $TABLE_NAME \
+                                --index $AWS_BATCH_JOB_ARRAY_INDEX \
+                                --batchid $BATCH_ID \
+                                --sensortopics "$TOPICS" \
+                                --targetbucket $TARGET_BUCKET
+                            """
+                    ),
+                ],
+                "environment": [
+                    {"name": "TABLE_NAME", "value": DYNAMODB_TABLE},
+                    {"name": "BATCH_ID", "value": batch_id},
+                    {"name": "JOB_NAME", "value": batch_id},
+                    {"name": "DEBUG", "value": "true"},
+                    {
+                        "name": "AWS_ACCOUNT_ID",
+                        "value": boto3.client("sts").get_caller_identity().get("Account"),
+                    },
+                    {"name": "TOPICS", "value": json.dumps(SENSOR_TOPICS)},
+                    {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
+                ],
+            },
+        )
+
+        op.execute(ds)
+
+    submit_parquet_job = PythonOperator(task_id="parquet-extraction-batch-job", python_callable=parquet_operation)
 
     def sagemaker_yolo_operation(**kwargs):
 
@@ -406,29 +501,35 @@ with DAG(
                     wait=False,
                     logs=False,
                 )
+                time.sleep(1)  # Attempt at avoiding throttling exceptions
+
 
             logger.info("Waiting on batch of jobs to finish")
             for job in processor.jobs:
                 logger.info(f"Waiting on: {job} - logs from job:")
-                job.wait(logs=True)
+                job.wait(logs=False)
 
             logger.info(f"All object detection jobs complete")
 
     submit_yolo_job = PythonOperator(task_id="object-detection-sagemaker-job", python_callable=sagemaker_yolo_operation)
 
     deregister_batch_job_definition = PythonOperator(
-        task_id="deregister-batch-job-definition",
+        task_id="deregister-image-job-definition",
         dag=dag,
         provide_context=True,
-        op_kwargs={"job_def_arn": get_job_def_name()},
+        op_kwargs={"job_def_arn": get_job_def_name("png")},
         python_callable=deregister_job_definition,
     )
 
-    (
-        create_aws_conn
-        >> create_batch_of_drives_task
-        >> register_batch_job_defintion
-        >> submit_batch_job
-        >> deregister_batch_job_definition
-        >> submit_yolo_job
+    deregister_parquet_job_definition = PythonOperator(
+        task_id="deregister-parquet-job-definition",
+        dag=dag,
+        provide_context=True,
+        op_kwargs={"job_def_arn": get_job_def_name("parq")},
+        python_callable=deregister_job_definition,
     )
+
+    create_aws_conn >> create_batch_of_drives_task
+    create_batch_of_drives_task >> register_batch_job_defintion >> submit_batch_job >> deregister_batch_job_definition
+    create_batch_of_drives_task >> register_parquet_job_defintion >> submit_parquet_job >> deregister_parquet_job_definition
+    deregister_batch_job_definition >> submit_yolo_job

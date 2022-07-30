@@ -145,7 +145,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     table.update_item(
         Key={"pk": item["drive_id"], "sk": item["file_id"]},
         UpdateExpression="SET "
-        "job_status = :status, "
+        "image_extraction_status = :status, "
         "raw_image_dirs = :raw_image_dirs, "
         "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
@@ -170,7 +170,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     table.update_item(
         Key={"pk": batch_id, "sk": index},
         UpdateExpression="SET "
-        "job_status = :status, "
+        "image_extraction_status = :status, "
         "raw_image_dirs = :raw_image_dirs, "
         "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
