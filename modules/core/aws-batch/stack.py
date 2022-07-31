@@ -198,6 +198,7 @@ class AwsBatch(Stack):  # type: ignore
                         )
                     )
 
+
         # Outputs
         if on_demand_compute_env_list:
             self.on_demand_jobqueue = batch.JobQueue(

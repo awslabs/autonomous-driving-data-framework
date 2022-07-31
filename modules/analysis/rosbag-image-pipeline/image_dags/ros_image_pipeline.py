@@ -57,6 +57,7 @@ DESIRED_ENCODING = "bgr8"
 MODEL = "yolov5s"
 YOLO_INSTANCE_TYPE = "ml.m5.xlarge"
 YOLO_CONCURRENCY = 50
+LANEDET_CONCURRENCY = 10
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
@@ -391,6 +392,95 @@ def parquet_operation(**kwargs):
     op.execute(ds)
 
 
+def sagemaker_lane_det_operation(**kwargs):
+
+    # Establish AWS API Connections
+    sts_client = boto3.client("sts")
+    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    credentials = assumed_role_object["Credentials"]
+    dynamodb = boto3.resource(
+        "dynamodb",
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    )
+    table = dynamodb.Table(DYNAMODB_TABLE)
+    batch_id = kwargs["dag_run"].run_id
+
+    # Get Image Directories per Recording File to Label
+    image_directory_items = table.query(
+        KeyConditionExpression=Key("pk").eq(batch_id),
+        Select="SPECIFIC_ATTRIBUTES",
+        ProjectionExpression="raw_image_dirs",
+    )["Items"]
+
+    image_directories = []
+    for item in image_directory_items:
+        image_directories += item["raw_image_dirs"]
+
+    total_jobs = len(image_directories)
+    num_batches = ceil(total_jobs / LANEDET_CONCURRENCY)
+
+    LOCAL_INPUT = "/opt/ml/processing/input/image"
+    LOCAL_OUTPUT = "/opt/ml/processing/output/image"
+    SRC_TAR_BUCKET = "addf-sample-rosbag-data"
+    SRC_TAR_KEY = "lanedet-model/"  ## Don't put the sourcedir.tar.gz name in the path
+
+    for i in range(num_batches):
+        logger.info(f"Starting lane detection job for batch {i + 1} of {num_batches}")
+        pytorch_processor = PyTorchProcessor(
+            framework_version="1.8",
+            role=DAG_ROLE,
+            instance_type="ml.p3.2xlarge",
+            instance_count=1,
+            base_job_name="Lanedet-testing",
+            image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:lanedet",
+        )
+
+        idx_start = i * LANEDET_CONCURRENCY
+        idx_end = (i + 1) * LANEDET_CONCURRENCY
+        for image_directory in image_directories[idx_start:idx_end]:
+            logger.info(f"Starting lane detection job for {image_directory}")
+            logger.info(
+                "Job details available at: "
+                f"https://{REGION}.console.aws.amazon.com/sagemaker/home?region={REGION}#/processing-jobs"
+            )
+            # Run the processing job
+            pytorch_processor.run(
+                code="tools/detect.py",  # within source.tar.gz file
+                source_dir=f"s3://{SRC_TAR_BUCKET}/{SRC_TAR_KEY}",  # this is sourcedir.tar.gz that needs staging
+                arguments=[
+                    "configs/laneatt/resnet34_tusimple.py",  # within source.tar.gz file
+                    "--img",
+                    LOCAL_INPUT,
+                    "--savedir",
+                    LOCAL_OUTPUT,
+                    "--load_from",
+                    "models/laneatt_r34_tusimple.pth",  # within source.tar.gz file
+                ],
+                inputs=[
+                    ProcessingInput(
+                        input_name="images", source=f"s3://{TARGET_BUCKET}/{image_directory}/", destination=LOCAL_INPUT
+                    )
+                ],
+                outputs=[
+                    ProcessingOutput(
+                        output_name="out",
+                        source=LOCAL_OUTPUT,
+                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
+                    )
+                ],
+            )
+            time.sleep(1)  # Attempt at avoiding throttling exceptions
+
+        logger.info("Waiting on batch of jobs to finish")
+        for job in pytorch_processor.jobs:
+            logger.info(f"Waiting on: {job} - logs from job:")
+            job.wait(logs=False)
+
+        logger.info(f"All lane detection jobs complete")
+
+
 def sagemaker_yolo_operation(**kwargs):
 
     # Establish AWS API Connections
@@ -540,6 +630,10 @@ with DAG(
         submit_yolo_job = PythonOperator(
             task_id="object-detection-sagemaker-job", python_callable=sagemaker_yolo_operation
         )
+        submit_lane_det_job = PythonOperator(
+            task_id="submit_lane_det_job", python_callable=sagemaker_lane_det_operation
+        )
 
     create_aws_conn >> create_batch_of_drives_task >> [image_task_group, parquet_task_group]
-    image_task_group >> submit_yolo_job
+    image_task_group >> [submit_yolo_job, submit_lane_det_job]
+

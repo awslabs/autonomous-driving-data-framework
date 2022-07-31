@@ -27,12 +27,18 @@ deploy:
       - export BASE_IMAGE=763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/pytorch-inference:1.7.1-gpu-py36-cu110-ubuntu18.04
       - cd images/ros-to-png && docker build -t $REPOSITORY_URI:rostopng .
       - docker tag $REPOSITORY_URI:rostopng $REPOSITORY_URI:$IMAGE_TAG
+      - cd ../lane-detection && docker build -t $REPOSITORY_URI:lanedet .
+      - docker tag $REPOSITORY_URI:lanedet $REPOSITORY_URI:$IMAGE_TAG
+      - cd ../ros-to-parquet && docker build -t $REPOSITORY_URI:rostoparq .
+      - docker tag $REPOSITORY_URI:rostoparq $REPOSITORY_URI:$IMAGE_TAG
       - cd ../object-detection && docker build -t $REPOSITORY_URI:yolo . --build-arg BASE_IMAGE=$BASE_IMAGE
       - docker tag $REPOSITORY_URI:yolo $REPOSITORY_URI:$IMAGE_TAG
       - aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || aws ecr create-repository --repository-name ${ECR_REPO_NAME}
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - docker push $REPOSITORY_URI:rostopng && docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:rostoparq && docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:yolo && docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:lanedet && docker push $REPOSITORY_URI:$IMAGE_TAG
 destroy:
   phases:
     install:
