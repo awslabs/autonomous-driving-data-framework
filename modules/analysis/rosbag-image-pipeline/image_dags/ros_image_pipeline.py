@@ -30,13 +30,13 @@ from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
 from airflow.operators.python import PythonOperator
+from airflow.operators.dummy_operator import DummyOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
 from mypy_boto3_batch.client import BatchClient
-from sagemaker import get_execution_role
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 from sagemaker.pytorch.processing import PyTorchProcessor
 
@@ -50,7 +50,7 @@ VCPU = "4"
 MEMORY = "16384"
 CONTAINER_TIMEOUT = 3600 * 2  # Seconds - must be at least 60 seconds
 IMAGE_TOPICS = ["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]
-SENSOR_TOPICS = ["/vehicle/gps/fix"]
+SENSOR_TOPICS = ["/vehicle/gps/fix", "/vehicle/gps/time", "/vehicle/gps/vel", "/imu_raw"]
 DESIRED_ENCODING = "bgr8"
 
 # SET MODULE VARIABLES FOR OBJECT DETECTION
@@ -410,8 +410,6 @@ def sagemaker_lane_det_operation(**kwargs):
     # Get Image Directories per Recording File to Label
     image_directory_items = table.query(
         KeyConditionExpression=Key("pk").eq(batch_id),
-        Select="SPECIFIC_ATTRIBUTES",
-        ProjectionExpression="raw_image_dirs",
     )["Items"]
 
     image_directories = []
@@ -424,7 +422,7 @@ def sagemaker_lane_det_operation(**kwargs):
     LOCAL_INPUT = "/opt/ml/processing/input/image"
     LOCAL_OUTPUT = "/opt/ml/processing/output/image"
     SRC_TAR_BUCKET = "addf-sample-rosbag-data"
-    SRC_TAR_KEY = "lanedet-model/"  ## Don't put the sourcedir.tar.gz name in the path
+    SRC_TAR_KEY = "lanedet-model/"  # Don't put the sourcedir.tar.gz name in the path
 
     for i in range(num_batches):
         logger.info(f"Starting lane detection job for batch {i + 1} of {num_batches}")
@@ -433,7 +431,7 @@ def sagemaker_lane_det_operation(**kwargs):
             role=DAG_ROLE,
             instance_type="ml.p3.2xlarge",
             instance_count=1,
-            base_job_name="Lanedet-testing",
+            base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-LANES",
             image_uri=f"{account}.dkr.ecr.{REGION}.amazonaws.com/{ECR_REPO_NAME}:lanedet",
         )
 
@@ -478,7 +476,7 @@ def sagemaker_lane_det_operation(**kwargs):
             logger.info(f"Waiting on: {job} - logs from job:")
             job.wait(logs=False)
 
-        logger.info(f"All lane detection jobs complete")
+        logger.info("All lane detection jobs complete")
 
 
 def sagemaker_yolo_operation(**kwargs):
@@ -519,7 +517,7 @@ def sagemaker_yolo_operation(**kwargs):
             role=DAG_ROLE,
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
-            base_job_name=f"YOLO",
+            base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-YOLO",
         )
 
         idx_start = i * YOLO_CONCURRENCY
@@ -556,7 +554,7 @@ def sagemaker_yolo_operation(**kwargs):
             logger.info(f"Waiting on: {job} - logs from job:")
             job.wait(logs=False)
 
-        logger.info(f"All object detection jobs complete")
+        logger.info("All object detection jobs complete")
 
 
 with DAG(
@@ -630,10 +628,12 @@ with DAG(
         submit_yolo_job = PythonOperator(
             task_id="object-detection-sagemaker-job", python_callable=sagemaker_yolo_operation
         )
-        submit_lane_det_job = PythonOperator(
-            task_id="submit_lane_det_job", python_callable=sagemaker_lane_det_operation
+        submit_lane_det_job = DummyOperator(
+            task_id="lane-detection-sagemaker-job"
         )
+        # submit_lane_det_job = PythonOperator(
+        #     task_id="lane-detection-sagemaker-job", python_callable=sagemaker_lane_det_operation
+        # )
 
     create_aws_conn >> create_batch_of_drives_task >> [image_task_group, parquet_task_group]
     image_task_group >> [submit_yolo_job, submit_lane_det_job]
-

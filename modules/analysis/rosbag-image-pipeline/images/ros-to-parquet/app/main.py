@@ -17,11 +17,11 @@ import json
 import logging
 import os
 import sys
-import requests
 
 import boto3
 import fastparquet
 import pandas as pd
+import requests
 from bagpy import bagreader
 
 DEBUG_LOGGING_FORMAT = "[%(asctime)s][%(filename)-13s:%(lineno)3d][%(levelname)s][%(threadName)s] %(message)s"
@@ -90,32 +90,30 @@ def get_log_path():
 
 def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
     job_region, log_path = get_log_path()
-    job_url = f"https://{job_region}.console.aws.amazon.com/batch/home?region={job_region}#jobs/detail/" \
-              f"{os.environ['AWS_BATCH_JOB_ID']}"
+    job_url = (
+        f"https://{job_region}.console.aws.amazon.com/batch/home?region={job_region}#jobs/detail/"
+        f"{os.environ['AWS_BATCH_JOB_ID']}"
+    )
 
-    job_cloudwatch_logs = f"https://{job_region}.console.aws.amazon.com/cloudwatch/home?region={job_region}#" \
-                          f"logsV2:log-groups/log-group/$252Faws$252Fbatch$252Fjob/log-events/{log_path}"
+    job_cloudwatch_logs = (
+        f"https://{job_region}.console.aws.amazon.com/cloudwatch/home?region={job_region}#"
+        f"logsV2:log-groups/log-group/$252Faws$252Fbatch$252Fjob/log-events/{log_path}"
+    )
 
     table.update_item(
         Key={"pk": drive_id, "sk": file_id},
         UpdateExpression="SET "
-                         "parquet_extraction_batch_job = :batch_url, "
-                         "parquet_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={
-            ":cloudwatch_logs": job_cloudwatch_logs,
-            ":batch_url": job_url
-        },
+        "parquet_extraction_batch_job = :batch_url, "
+        "parquet_extraction_job_logs = :cloudwatch_logs",
+        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
     )
 
     table.update_item(
         Key={"pk": batch_id, "sk": index},
         UpdateExpression="SET "
-                         "parquet_extraction_batch_job = :batch_url, "
-                         "parquet_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={
-            ":cloudwatch_logs": job_cloudwatch_logs,
-            ":batch_url": job_url
-        },
+        "parquet_extraction_batch_job = :batch_url, "
+        "parquet_extraction_job_logs = :cloudwatch_logs",
+        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
     )
 
 

@@ -4,4 +4,4 @@ opencv-python
 roslib
 rosbag
 rospy
-
+requests

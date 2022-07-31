@@ -15,8 +15,6 @@
 import logging
 import typing
 
-from boto3.dynamodb.conditions import Key
-
 logger = logging.getLogger("airflow")
 logger.setLevel("DEBUG")
 

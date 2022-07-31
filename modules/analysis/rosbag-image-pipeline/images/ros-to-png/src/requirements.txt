@@ -16,6 +16,10 @@ catkin==0.7.18
     # via roslib
 catkin-pkg==0.5.2
     # via rospkg
+certifi==2022.6.15
+    # via requests
+charset-normalizer==2.1.0
+    # via requests
 distro==1.7.0
     # via rospkg
 docutils==0.19
@@ -33,6 +37,8 @@ genpy==0.6.14
     #   std-msgs
 gnupg==2.3.1
     # via rosbag
+idna==3.3
+    # via requests
 jmespath==1.0.1
     # via
     #   boto3
@@ -57,6 +63,8 @@ python-dateutil==2.8.2
     #   catkin-pkg
 pyyaml==6.0
     # via rospkg
+requests==2.28.1
+    # via -r /Users/soucyk/PycharmProjects/autonomous-driving-data-framework/modules/analysis/rosbag-image-pipeline/images/ros-to-png/src/requirements.in
 rosbag==1.15.11
     # via -r /Users/soucyk/PycharmProjects/autonomous-driving-data-framework/modules/analysis/rosbag-image-pipeline/images/ros-to-png/src/requirements.in
 roscpp==1.15.11
@@ -87,7 +95,9 @@ six==1.16.0
 std-msgs==0.5.13.post0
     # via rospy
 urllib3==1.26.11
-    # via botocore
+    # via
+    #   botocore
+    #   requests
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

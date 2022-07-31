@@ -17,10 +17,10 @@ import json
 import logging
 import os
 import sys
-import requests
 
 import boto3
 import cv2
+import requests
 import rosbag
 import rospy
 from cv_bridge import CvBridge
@@ -104,32 +104,30 @@ def get_log_path():
 
 def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
     job_region, log_path = get_log_path()
-    job_url = f"https://{job_region}.console.aws.amazon.com/batch/home?region={job_region}#jobs/detail/" \
-              f"{os.environ['AWS_BATCH_JOB_ID']}"
+    job_url = (
+        f"https://{job_region}.console.aws.amazon.com/batch/home?region={job_region}#jobs/detail/"
+        f"{os.environ['AWS_BATCH_JOB_ID']}"
+    )
 
-    job_cloudwatch_logs = f"https://{job_region}.console.aws.amazon.com/cloudwatch/home?region={job_region}#" \
-                          f"logsV2:log-groups/log-group/$252Faws$252Fbatch$252Fjob/log-events/{log_path}"
+    job_cloudwatch_logs = (
+        f"https://{job_region}.console.aws.amazon.com/cloudwatch/home?region={job_region}#"
+        f"logsV2:log-groups/log-group/$252Faws$252Fbatch$252Fjob/log-events/{log_path}"
+    )
 
     table.update_item(
         Key={"pk": drive_id, "sk": file_id},
         UpdateExpression="SET "
-                         "image_extraction_batch_job = :batch_url, "
-                         "image_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={
-            ":cloudwatch_logs": job_cloudwatch_logs,
-            ":batch_url": job_url
-        },
+        "image_extraction_batch_job = :batch_url, "
+        "image_extraction_job_logs = :cloudwatch_logs",
+        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
     )
 
     table.update_item(
         Key={"pk": batch_id, "sk": index},
         UpdateExpression="SET "
-                         "image_extraction_batch_job = :batch_url, "
-                         "image_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={
-            ":cloudwatch_logs": job_cloudwatch_logs,
-            ":batch_url": job_url
-        },
+        "image_extraction_batch_job = :batch_url, "
+        "image_extraction_job_logs = :cloudwatch_logs",
+        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
     )
 
 
