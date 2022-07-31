@@ -17,6 +17,7 @@ import json
 import logging
 import os
 import sys
+import requests
 
 import boto3
 import cv2
@@ -95,6 +96,43 @@ def upload(client, bucket_name, drive_id, file_id, files):
     return uploaded_files, list(target_prefixes)
 
 
+def get_log_path():
+    response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}")
+    task_region = response.json()["LogOptions"]["awslogs-region"]
+    return task_region, response.json()["LogOptions"]["awslogs-stream"].replace("/", "$252F")
+
+
+def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
+    job_region, log_path = get_log_path()
+    job_url = f"https://{job_region}.console.aws.amazon.com/batch/home?region={job_region}#jobs/detail/" \
+              f"{os.environ['AWS_BATCH_JOB_ID']}"
+
+    job_cloudwatch_logs = f"https://{job_region}.console.aws.amazon.com/cloudwatch/home?region={job_region}#" \
+                          f"logsV2:log-groups/log-group/$252Faws$252Fbatch$252Fjob/log-events/{log_path}"
+
+    table.update_item(
+        Key={"pk": drive_id, "sk": file_id},
+        UpdateExpression="SET "
+                         "image_extraction_batch_job = :batch_url, "
+                         "image_extraction_job_logs = :cloudwatch_logs",
+        ExpressionAttributeValues={
+            ":cloudwatch_logs": job_cloudwatch_logs,
+            ":batch_url": job_url
+        },
+    )
+
+    table.update_item(
+        Key={"pk": batch_id, "sk": index},
+        UpdateExpression="SET "
+                         "image_extraction_batch_job = :batch_url, "
+                         "image_extraction_job_logs = :cloudwatch_logs",
+        ExpressionAttributeValues={
+            ":cloudwatch_logs": job_cloudwatch_logs,
+            ":batch_url": job_url
+        },
+    )
+
+
 def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket) -> int:
     logger.info("batch_id: %s", batch_id)
     logger.info("index: %s", index)
@@ -105,9 +143,9 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     logger.info("encoding: %s", encoding)
     logger.info("target_bucket: %s", target_bucket)
 
-    # Getting Item to Process
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(table_name)
+
     item = table.get_item(
         Key={"pk": batch_id, "sk": index},
     ).get("Item", {})
@@ -120,6 +158,8 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     drive_id = item["drive_id"]
     file_id = item["file_id"]
     s3 = boto3.client("s3")
+
+    save_job_url_and_logs(table, drive_id, file_id, batch_id, index)
 
     logger.info("Downloading Bag")
     s3.download_file(item["s3_bucket"], item["s3_key"], bag_path)
