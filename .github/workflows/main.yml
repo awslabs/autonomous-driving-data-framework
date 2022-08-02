@@ -65,7 +65,7 @@ jobs:
       - name: ros-to-parquet static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-parquet/ --skip-static-checks
       - name: ros-to-png static checks and linting (mypy, flake8, black, isort)
-          run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-png/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-png/ --skip-static-checks
 
   modules-object-detection-yolo:
     runs-on: ubuntu-latest
