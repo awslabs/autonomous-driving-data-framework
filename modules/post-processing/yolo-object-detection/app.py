@@ -27,7 +27,7 @@ stack = ObjectDetection(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
-    s3_access_policy=full_access_policy
+    s3_access_policy=full_access_policy,
 )
 
 CfnOutput(

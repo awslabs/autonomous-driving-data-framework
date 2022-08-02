@@ -8,7 +8,9 @@ from aws_cdk import aws_kms as kms
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_s3_deployment as s3d
 from aws_emr_launch.constructs.emr_constructs import emr_code, emr_profile
-from aws_emr_launch.constructs.emr_constructs.cluster_configuration import InstanceMarketType
+from aws_emr_launch.constructs.emr_constructs.cluster_configuration import (
+    InstanceMarketType,
+)
 from aws_emr_launch.constructs.step_functions import emr_launch_function
 
 from .instance_group_config import TaskInstanceGroupConfiguration
@@ -19,7 +21,9 @@ class EMRClusterDefinition(aws_cdk.Stack):
     Stack to define a Standard EMR Cluster Configuration:
     """
 
-    def __init__(self, scope: constructs.Construct, id: str, config: dict, **kwargs: Any):
+    def __init__(
+        self, scope: constructs.Construct, id: str, config: dict, **kwargs: Any
+    ):
         super().__init__(scope, id, **kwargs)
 
         for k, v in config.items():
@@ -35,7 +39,11 @@ class EMRClusterDefinition(aws_cdk.Stack):
         # Gives Object level access to the imported subnets
         self.private_subnets = []
         for idx, subnet_id in enumerate(self.private_subnet_ids):
-            self.private_subnets.append(ec2.Subnet.from_subnet_id(scope=self, id=f"subnet{idx}", subnet_id=subnet_id))
+            self.private_subnets.append(
+                ec2.Subnet.from_subnet_id(
+                    scope=self, id=f"subnet{idx}", subnet_id=subnet_id
+                )
+            )
 
         # Not adding module_name as it exceeds RoleName char limit
         self._cluster_name = f"addf-{self.deployment_name}-{self.CLUSTER_NAME}"
@@ -47,7 +55,9 @@ class EMRClusterDefinition(aws_cdk.Stack):
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if self.emr_bucket_retention_type.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
-            auto_delete_objects=None if self.emr_bucket_retention_type.upper() == "RETAIN" else True,
+            auto_delete_objects=None
+            if self.emr_bucket_retention_type.upper() == "RETAIN"
+            else True,
             encryption=s3.BucketEncryption.S3_MANAGED,
         )
         self.scenes_bucket = s3.Bucket(
@@ -57,7 +67,9 @@ class EMRClusterDefinition(aws_cdk.Stack):
             if self.emr_bucket_retention_type.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             bucket_name=f"addf-{self.deployment_name}-detected-scenes-{self.hash}",
-            auto_delete_objects=None if self.emr_bucket_retention_type.upper() == "RETAIN" else True,
+            auto_delete_objects=None
+            if self.emr_bucket_retention_type.upper() == "RETAIN"
+            else True,
             encryption=s3.BucketEncryption.S3_MANAGED,
         )
 
@@ -78,14 +90,18 @@ class EMRClusterDefinition(aws_cdk.Stack):
         s3d.BucketDeployment(
             self,
             id="bootstrap_actions",
-            destination_bucket=s3.Bucket.from_bucket_name(self, "airflow-dag-bucket", self.artifact_bucket_name),
+            destination_bucket=s3.Bucket.from_bucket_name(
+                self, "airflow-dag-bucket", self.artifact_bucket_name
+            ),
             destination_key_prefix=f"{self.module_name}/bootstrap_actions",
             sources=[s3d.Source.asset("infrastructure/emr_launch/bootstrap_actions/")],
         )
 
         bootstrap_actions = []
         for f in listdir("infrastructure/emr_launch/bootstrap_actions/"):
-            bootstrap_actions.append(f"s3://{self.artifact_bucket_name}/{self.module_name}/bootstrap_actions/{f}")
+            bootstrap_actions.append(
+                f"s3://{self.artifact_bucket_name}/{self.module_name}/bootstrap_actions/{f}"
+            )
 
         self._cluster_configuration = self.emr_resource_config(
             subnet=self.private_subnets[0],
@@ -150,19 +166,25 @@ class EMRClusterDefinition(aws_cdk.Stack):
         elif core_instance_market == "ON_DEMAND":
             core_market = InstanceMarketType.ON_DEMAND
         else:
-            raise Exception(f"{core_instance_market} must be one of 'SPOT' or 'ON_DEMAND'")
+            raise Exception(
+                f"{core_instance_market} must be one of 'SPOT' or 'ON_DEMAND'"
+            )
 
         if task_instance_market == "SPOT":
             task_market = InstanceMarketType.SPOT
         elif task_instance_market == "ON_DEMAND":
             task_market = InstanceMarketType.ON_DEMAND
         else:
-            raise Exception(f"{task_instance_market} must be one of 'SPOT' or 'ON_DEMAND'")
+            raise Exception(
+                f"{task_instance_market} must be one of 'SPOT' or 'ON_DEMAND'"
+            )
 
         if bootstrap_action_script_paths:
             bootstrap_actions = []
             for idx, script_path in enumerate(bootstrap_action_script_paths):
-                assert "s3://" in script_path, f"{script_path} must be a full s3 path like s3://bucket/script.sh"
+                assert (
+                    "s3://" in script_path
+                ), f"{script_path} must be a full s3 path like s3://bucket/script.sh"
                 bootstrap_action = emr_code.EMRBootstrapAction(
                     name=f"bootstrap_{idx}",
                     path=script_path,
@@ -237,23 +259,33 @@ class EMRClusterDefinition(aws_cdk.Stack):
             profile_name=profile_name,
             vpc=vpc,
             logs_bucket=s3.Bucket.from_bucket_name(self, "logs-bucket", logs_bucket),
-            artifacts_bucket=s3.Bucket.from_bucket_name(self, "artifacts-bucket", artifacts_bucket),
+            artifacts_bucket=s3.Bucket.from_bucket_name(
+                self, "artifacts-bucket", artifacts_bucket
+            ),
         )
 
         if input_kms_keys:
             for i, k in enumerate(input_kms_keys):
-                kms_key = kms.Key.from_key_arn(self, id=f"{profile_name}_input_key_{i}", key_arn=k)
+                kms_key = kms.Key.from_key_arn(
+                    self, id=f"{profile_name}_input_key_{i}", key_arn=k
+                )
                 profile.authorize_input_key(kms_key)
         if output_kms_keys:
             for i, k in enumerate(output_kms_keys):
-                kms_key = kms.Key.from_key_arn(self, id=f"{profile_name}_output_key_{i}", key_arn=k)
+                kms_key = kms.Key.from_key_arn(
+                    self, id=f"{profile_name}_output_key_{i}", key_arn=k
+                )
                 profile.authorize_output_key(kms_key)
 
-        profile.security_groups.service_group.add_ingress_rule(profile.security_groups.master_group, ec2.Port.tcp(9443))
+        profile.security_groups.service_group.add_ingress_rule(
+            profile.security_groups.master_group, ec2.Port.tcp(9443)
+        )
 
         return profile
 
-    def launch_function_config(self, emr_profile, cluster_configuration, default_fail_if_cluster_running):
+    def launch_function_config(
+        self, emr_profile, cluster_configuration, default_fail_if_cluster_running
+    ):
 
         return emr_launch_function.EMRLaunchFunction(
             self,
@@ -264,7 +296,9 @@ class EMRClusterDefinition(aws_cdk.Stack):
             cluster_configuration=cluster_configuration,
             cluster_name=self._cluster_name,
             default_fail_if_cluster_running=default_fail_if_cluster_running,
-            allowed_cluster_config_overrides=cluster_configuration.override_interfaces["default"],
+            allowed_cluster_config_overrides=cluster_configuration.override_interfaces[
+                "default"
+            ],
             cluster_tags=[aws_cdk.Tag(key="Group", value="AWSDemo")],
         )
 

@@ -32,8 +32,6 @@ from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
 from boto3.dynamodb.conditions import Key
 from boto3.session import Session
-from mypy_boto3_batch.client import BatchClient
-
 from demo_dags import batch_creation_and_tracking
 from demo_dags.dag_config import (
     CONTAINER_TIMEOUT,
@@ -54,6 +52,7 @@ from demo_dags.dag_config import (
     TARGET_BUCKET,
     VCPU,
 )
+from mypy_boto3_batch.client import BatchClient
 
 ValueType = TypeVar("ValueType")
 
@@ -76,7 +75,9 @@ def try_create_aws_conn():
         AwsHook.get_connection(conn_id)
     except AirflowException:
         extra = json.dumps({"role_arn": DAG_ROLE}, indent=2)
-        conn = Connection(conn_id=conn_id, conn_type="aws", host="", schema="", login="", extra=extra)
+        conn = Connection(
+            conn_id=conn_id, conn_type="aws", host="", schema="", login="", extra=extra
+        )
         try:
             session = settings.Session()
             session.add(conn)
@@ -94,7 +95,9 @@ def create_batch_of_drives(ti, **kwargs):
     Add Drives until reaching max files allowed in 1 batch (hard limit of 10k)
     """
     sts_client = boto3.client("sts")
-    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1"
+    )
     credentials = assumed_role_object["Credentials"]
     dynamodb = boto3.resource(
         "dynamodb",
@@ -121,12 +124,17 @@ def create_batch_of_drives(ti, **kwargs):
         print("Batch Id already exists in tracking table - using existing batch")
         return files_in_batch
 
-    print("New Batch Id - collecting unprocessed drives from S3 and adding to the batch")
+    print(
+        "New Batch Id - collecting unprocessed drives from S3 and adding to the batch"
+    )
     files_in_batch = 0
     while True:
         print(f"Segments in Batch: {files_in_batch}")
         next_continuation = None
-        (files_in_batch, next_continuation,) = batch_creation_and_tracking.add_drives_to_batch(
+        (
+            files_in_batch,
+            next_continuation,
+        ) = batch_creation_and_tracking.add_drives_to_batch(
             table,
             SRC_BUCKET,
             MAX_NUM_FILES_PER_BATCH,
@@ -252,7 +260,9 @@ with DAG(
     def my_func(**kwargs):
         ti = kwargs["ti"]
         ds = kwargs["ds"]
-        array_size = ti.xcom_pull(task_ids="create_batch_of_drives_task", key="return_value")
+        array_size = ti.xcom_pull(
+            task_ids="create_batch_of_drives_task", key="return_value"
+        )
         batch_id = kwargs["dag_run"].run_id
 
         if isinstance(array_size, dict):
@@ -290,7 +300,9 @@ with DAG(
                     {"name": "DEBUG", "value": "true"},
                     {
                         "name": "AWS_ACCOUNT_ID",
-                        "value": boto3.client("sts").get_caller_identity().get("Account"),
+                        "value": boto3.client("sts")
+                        .get_caller_identity()
+                        .get("Account"),
                     },
                     {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
                 ],
@@ -299,7 +311,9 @@ with DAG(
 
         op.execute(ds)
 
-    submit_batch_job = PythonOperator(task_id="submit_batch_job", python_callable=my_func)
+    submit_batch_job = PythonOperator(
+        task_id="submit_batch_job", python_callable=my_func
+    )
 
     deregister_batch_job_definition = PythonOperator(
         task_id="deregister_batch_job_definition",

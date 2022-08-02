@@ -41,16 +41,6 @@ parameters:
 name: object-detection
 path: modules/post-processing/yolo-object-detection/
 parameters:
-  - name: platform
-    value: FARGATE
-  - name: retries
-    value: 1
-  - name: timeout-seconds
-    value: 1800
-  - name: vcpus
-    value: 2
-  - name: memory-mib
-    value: 8192
   - name: full-access-policy-arn
     valueFrom:
       moduleMetadata:

@@ -62,13 +62,17 @@ class ImageFromBag:
         files = []
         with rosbag.Bag(bag_path) as bag:
             for idx, (topic, msg, t) in enumerate(bag.read_messages(topics=[topic])):
-                timestamp = "{}_{}".format(msg.header.stamp.secs, msg.header.stamp.nsecs)
+                timestamp = "{}_{}".format(
+                    msg.header.stamp.secs, msg.header.stamp.nsecs
+                )
                 seq = "{:07d}".format(msg.header.seq)
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
                 local_image_name = "frame_{}.png".format(seq)
                 s3_image_name = "frame_{}_{}.png".format(seq, timestamp)
                 im_out_path = os.path.join(output_dir, local_image_name)
-                logger.info("Write image: {} to {}".format(local_image_name, im_out_path))
+                logger.info(
+                    "Write image: {} to {}".format(local_image_name, im_out_path)
+                )
                 cv2.imwrite(im_out_path, cv_image)
 
                 files.append(
@@ -99,7 +103,9 @@ def upload(client, bucket_name, drive_id, file_id, files):
 def get_log_path():
     response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}")
     task_region = response.json()["LogOptions"]["awslogs-region"]
-    return task_region, response.json()["LogOptions"]["awslogs-stream"].replace("/", "$252F")
+    return task_region, response.json()["LogOptions"]["awslogs-stream"].replace(
+        "/", "$252F"
+    )
 
 
 def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
@@ -119,7 +125,10 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
         UpdateExpression="SET "
         "image_extraction_batch_job = :batch_url, "
         "image_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
+        ExpressionAttributeValues={
+            ":cloudwatch_logs": job_cloudwatch_logs,
+            ":batch_url": job_url,
+        },
     )
 
     table.update_item(
@@ -127,11 +136,16 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
         UpdateExpression="SET "
         "image_extraction_batch_job = :batch_url, "
         "image_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
+        ExpressionAttributeValues={
+            ":cloudwatch_logs": job_cloudwatch_logs,
+            ":batch_url": job_url,
+        },
     )
 
 
-def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket) -> int:
+def main(
+    table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket
+) -> int:
     logger.info("batch_id: %s", batch_id)
     logger.info("index: %s", index)
     logger.info("table_name: %s", table_name)
@@ -151,7 +165,9 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     logger.info("Item Pulled: %s", item)
 
     if not item:
-        raise Exception(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
+        raise Exception(
+            f"pk: {batch_id} sk: {index} not existing in table: {table_name}"
+        )
 
     drive_id = item["drive_id"]
     file_id = item["file_id"]
@@ -169,14 +185,18 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         try:
             bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
             all_files += bag_obj.files
-            logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
+            logger.info(
+                f"Images extracted from topic: {topic} with encoding {encoding}"
+            )
             # video_file = VideoFromBag(topic, images_path)
         except rospy.ROSInterruptException:
             pass
 
     # Sync results
     logger.info(f"Uploading results - {target_bucket}")
-    uploaded_files, uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
+    uploaded_files, uploaded_directories = upload(
+        s3, target_bucket, drive_id, file_id, all_files
+    )
     logger.info("Uploaded results")
 
     logger.info("Writing job status to DynamoDB")

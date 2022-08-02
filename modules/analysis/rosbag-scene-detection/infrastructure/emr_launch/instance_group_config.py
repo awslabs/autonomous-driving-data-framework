@@ -4,8 +4,12 @@ import constructs
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_secretsmanager as secretsmanager
 from aws_emr_launch.constructs.emr_constructs import emr_code
-from aws_emr_launch.constructs.emr_constructs.cluster_configuration import InstanceMarketType
-from aws_emr_launch.constructs.managed_configurations.instance_group_configuration import InstanceGroupConfiguration
+from aws_emr_launch.constructs.emr_constructs.cluster_configuration import (
+    InstanceMarketType,
+)
+from aws_emr_launch.constructs.managed_configurations.instance_group_configuration import (
+    InstanceGroupConfiguration,
+)
 
 
 class TaskInstanceGroupConfiguration(InstanceGroupConfiguration):
@@ -19,12 +23,18 @@ class TaskInstanceGroupConfiguration(InstanceGroupConfiguration):
         namespace: str = "default",
         release_label: Optional[str] = "emr-5.29.0",
         master_instance_type: Optional[str] = "m5.2xlarge",
-        master_instance_market: Optional[InstanceMarketType] = InstanceMarketType.ON_DEMAND,
+        master_instance_market: Optional[
+            InstanceMarketType
+        ] = InstanceMarketType.ON_DEMAND,
         core_instance_type: Optional[str] = "m5.xlarge",
-        core_instance_market: Optional[InstanceMarketType] = InstanceMarketType.ON_DEMAND,
+        core_instance_market: Optional[
+            InstanceMarketType
+        ] = InstanceMarketType.ON_DEMAND,
         core_instance_count: Optional[int] = 2,
         task_instance_type: Optional[str] = "m5.xlarge",
-        task_instance_market: Optional[InstanceMarketType] = InstanceMarketType.ON_DEMAND,
+        task_instance_market: Optional[
+            InstanceMarketType
+        ] = InstanceMarketType.ON_DEMAND,
         task_instance_count: Optional[int] = 2,
         applications: Optional[List[str]] = None,
         bootstrap_actions: Optional[List[emr_code.EMRBootstrapAction]] = None,

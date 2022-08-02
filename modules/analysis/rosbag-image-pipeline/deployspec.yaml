@@ -15,8 +15,6 @@ deploy:
       - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> $DAG_DIR/dag_config.py
       - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> $DAG_DIR/dag_config.py
       - echo "REGION = '${AWS_DEFAULT_REGION}'" >> $DAG_DIR/dag_config.py
-      - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - aws s3 cp --recursive $DAG_DIR/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$DAG_DIR/
 destroy:
   phases:

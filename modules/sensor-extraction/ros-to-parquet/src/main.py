@@ -85,7 +85,9 @@ def upload(client, bucket_name, drive_id, file_id, files):
 def get_log_path():
     response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}")
     task_region = response.json()["LogOptions"]["awslogs-region"]
-    return task_region, response.json()["LogOptions"]["awslogs-stream"].replace("/", "$252F")
+    return task_region, response.json()["LogOptions"]["awslogs-stream"].replace(
+        "/", "$252F"
+    )
 
 
 def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
@@ -105,7 +107,10 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
         UpdateExpression="SET "
         "parquet_extraction_batch_job = :batch_url, "
         "parquet_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
+        ExpressionAttributeValues={
+            ":cloudwatch_logs": job_cloudwatch_logs,
+            ":batch_url": job_url,
+        },
     )
 
     table.update_item(
@@ -113,7 +118,10 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
         UpdateExpression="SET "
         "parquet_extraction_batch_job = :batch_url, "
         "parquet_extraction_job_logs = :cloudwatch_logs",
-        ExpressionAttributeValues={":cloudwatch_logs": job_cloudwatch_logs, ":batch_url": job_url},
+        ExpressionAttributeValues={
+            ":cloudwatch_logs": job_cloudwatch_logs,
+            ":batch_url": job_url,
+        },
     )
 
 
@@ -134,7 +142,9 @@ def main(table_name, index, batch_id, topics, target_bucket) -> int:
     logger.info("Item Pulled: %s", item)
 
     if not item:
-        raise Exception(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
+        raise Exception(
+            f"pk: {batch_id} sk: {index} not existing in table: {table_name}"
+        )
 
     drive_id = item["drive_id"]
     file_id = item["file_id"]
@@ -155,7 +165,11 @@ def main(table_name, index, batch_id, topics, target_bucket) -> int:
     for topic in topics:
         logger.info(f"Getting data from topic: {topic}")
         bag_obj = ParquetFromBag(
-            topic=topic, bag_path=bag_path, output_path=local_output_path, drive_id=drive_id, file_id=file_id
+            topic=topic,
+            bag_path=bag_path,
+            output_path=local_output_path,
+            drive_id=drive_id,
+            file_id=file_id,
         )
         all_files.append(bag_obj.file)
 

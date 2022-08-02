@@ -59,7 +59,9 @@ class AwsBatchPipeline(Stack):  # type: ignore
         )
 
         self.repository_name = dep_mod
-        ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
+        ecr.Repository(
+            self, id=self.repository_name, repository_name=self.repository_name
+        )
 
         # DYNAMODB TRACKING TABLE
         self.tracking_table_name = f"{dep_mod}-drive-tracking"
@@ -70,8 +72,12 @@ class AwsBatchPipeline(Stack):  # type: ignore
             self,
             self.tracking_table_name,
             table_name=self.tracking_table_name,
-            partition_key=dynamo.Attribute(name=tracking_partition_key, type=dynamo.AttributeType.STRING),
-            sort_key=dynamo.Attribute(name=tracking_sort_key, type=dynamo.AttributeType.STRING),
+            partition_key=dynamo.Attribute(
+                name=tracking_partition_key, type=dynamo.AttributeType.STRING
+            ),
+            sort_key=dynamo.Attribute(
+                name=tracking_sort_key, type=dynamo.AttributeType.STRING
+            ),
             billing_mode=dynamo.BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,
             point_in_time_recovery=True,
@@ -83,12 +89,16 @@ class AwsBatchPipeline(Stack):  # type: ignore
             iam.PolicyStatement(
                 actions=["dynamodb:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/{dep_mod}*"],
+                resources=[
+                    f"arn:aws:dynamodb:{self.region}:{self.account}:table/{dep_mod}*"
+                ],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
+                resources=[
+                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"
+                ],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -140,7 +150,9 @@ class AwsBatchPipeline(Stack):  # type: ignore
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AmazonECSTaskExecutionRolePolicy"
+                ),
                 iam.ManagedPolicy.from_managed_policy_arn(
                     self, id="fullaccess", managed_policy_arn=self.full_access_policy
                 ),

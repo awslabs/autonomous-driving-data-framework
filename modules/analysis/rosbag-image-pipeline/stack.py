@@ -13,27 +13,29 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, Dict, cast
+from typing import Any, cast
 
-import aws_cdk.aws_ec2 as ec2
-import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_iam as iam
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_dynamodb as dynamo
-from cdk_nag import NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AwsBatchPipeline(Stack):  # type: ignore
+class AwsBatchPipeline(Stack):
     def __init__(
         self,
         scope: Construct,
         id: str,
         *,
-        config: Dict[str, Any],
+        deployment_name: str,
+        module_name: str,
+        vpc_id: str,
+        mwaa_exec_role: str,
+        full_access_policy: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -42,8 +44,11 @@ class AwsBatchPipeline(Stack):  # type: ignore
             **kwargs,
         )
 
-        for k, v in config.items():
-            setattr(self, k, v)
+        self.deployment_name = deployment_name
+        self.module_name = module_name
+        self.vpc_id = vpc_id
+        self.mwaa_exec_role = mwaa_exec_role
+        self.full_access_policy = full_access_policy
 
         Tags.of(scope=cast(IConstruct, self)).add(
             key="Deployment",
@@ -154,15 +159,15 @@ class AwsBatchPipeline(Stack):  # type: ignore
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
-                    "id": "AwsSolutions-IAM4",
-                    "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
-                },
-                {
-                    "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
-                },
+                NagPackSuppression(
+                    id="AwsSolutions-IAM4",
+                    reason="Managed Policies are for service account roles only",
+                    applies_to="*",
+                ),
+                NagPackSuppression(
+                    id="AwsSolutions-IAM4",
+                    reason="Resource access restriced to ADDF resources",
+                    applies_to="*",
+                ),
             ],
         )

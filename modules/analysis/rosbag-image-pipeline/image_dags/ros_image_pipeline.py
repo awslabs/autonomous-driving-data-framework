@@ -28,8 +28,8 @@ from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
-from airflow.operators.python import PythonOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
@@ -43,8 +43,16 @@ from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_
 # SET VARIABLES FOR EXTRACTION
 PROVIDER = "FARGATE"  # One of ON_DEMAND, SPOT, FARGATE
 FILE_SUFFIX = ".bag"
-IMAGE_TOPICS = ["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]
-SENSOR_TOPICS = ["/vehicle/gps/fix", "/vehicle/gps/time", "/vehicle/gps/vel", "/imu_raw"]
+IMAGE_TOPICS = [
+    "/flir_adk/rgb_front_left/image_raw",
+    "/flir_adk/rgb_front_right/image_raw",
+]
+SENSOR_TOPICS = [
+    "/vehicle/gps/fix",
+    "/vehicle/gps/time",
+    "/vehicle/gps/vel",
+    "/imu_raw",
+]
 DESIRED_ENCODING = "bgr8"
 
 # SET VARIABLES FOR OBJECT DETECTION
@@ -66,7 +74,6 @@ YOLO_IMAGE_URI = addf_module_metadata["ObjectDetectionImageUri"]
 YOLO_ROLE = addf_module_metadata["ObjectDetectionRole"]
 YOLO_CONCURRENCY = addf_module_metadata["ObjectDetectionJobConcurrency"]
 YOLO_INSTANCE_TYPE = addf_module_metadata["ObjectDetectionInstanceType"]
-
 
 
 account = boto3.client("sts").get_caller_identity().get("Account")
@@ -104,14 +111,17 @@ def try_create_aws_conn():
 def validate_config(drives_to_process):
     example_input = {
         "drives_to_process": {
-            "drive2": {"bucket": "addf-ros-image-demo-raw-bucket-d2be7d29", "prefix": "rosbag-scene-detection/drive2/"},
+            "drive2": {
+                "bucket": "addf-ros-image-demo-raw-bucket-d2be7d29",
+                "prefix": "rosbag-scene-detection/drive2/",
+            },
         }
     }
 
     for k, v in drives_to_process.items():
         assert isinstance(k, str), f"expecting config to be like {example_input}, received: {drives_to_process}"
         assert (
-                "bucket" in v.keys() and "prefix" in v.keys()
+            "bucket" in v.keys() and "prefix" in v.keys()
         ), f"expecting config to be like {example_input}, received: {drives_to_process}"
         assert v["prefix"][-1] == "/"
 
@@ -303,7 +313,9 @@ def sagemaker_lane_det_operation(**kwargs):
                 ],
                 inputs=[
                     ProcessingInput(
-                        input_name="images", source=f"s3://{TARGET_BUCKET}/{image_directory}/", destination=LOCAL_INPUT
+                        input_name="images",
+                        source=f"s3://{TARGET_BUCKET}/{image_directory}/",
+                        destination=LOCAL_INPUT,
                     )
                 ],
                 outputs=[
@@ -435,11 +447,10 @@ with DAG(
 
     with TaskGroup(group_id="image-labelling") as image_labelling_task_group:
         submit_yolo_job = PythonOperator(
-            task_id="object-detection-sagemaker-job", python_callable=sagemaker_yolo_operation
+            task_id="object-detection-sagemaker-job",
+            python_callable=sagemaker_yolo_operation,
         )
-        submit_lane_det_job = DummyOperator(
-            task_id="lane-detection-sagemaker-job"
-        )
+        submit_lane_det_job = DummyOperator(task_id="lane-detection-sagemaker-job")
 
     create_aws_conn >> create_batch_of_drives_task >> extract_task_group
     submit_png_job >> image_labelling_task_group

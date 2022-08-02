@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 - aws-batch-demo pipeline and manifest
 - image extraction (rosbag to png) pipeline with yolov5 object detection
-
+- sensor extraction (rosbag to parquet) added to image pipeline
 - added docker module to build container images
 
 ### **Changed**

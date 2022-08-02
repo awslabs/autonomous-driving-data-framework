@@ -36,7 +36,9 @@ def parse_file(
     local_file = get_object(s3_src_bucket, s3_src_prefix, input_dir)
 
     # Process File locally
-    process_file(local_file, s3_src_prefix, s3_src_bucket, output_dir, topics_to_extract)
+    process_file(
+        local_file, s3_src_prefix, s3_src_bucket, output_dir, topics_to_extract
+    )
 
     s3_dest_prefix = "bag_parquets"
 
@@ -107,14 +109,18 @@ def process_file(local_file, s3_prefix, s3_bucket, output_dir, topics_to_extract
                         break
                 if example:
                     obj_start = example.split(":")[0].replace("[", "")
-                    df_out[f"{col}_clean"] = df_out[col].apply(lambda x: parse_yaml_val(x, obj_start))
+                    df_out[f"{col}_clean"] = df_out[col].apply(
+                        lambda x: parse_yaml_val(x, obj_start)
+                    )
 
             df_out["bag_file_prefix"] = s3_prefix
             df_out["bag_file_bucket"] = s3_bucket
             clean_topic = topic.replace("/", "_")[1:]
             topic_output_dir = os.path.join(output_dir, clean_topic)
             clean_directory(topic_output_dir)
-            topic_output_dir = os.path.join(topic_output_dir, "bag_file=" + local_file_name)
+            topic_output_dir = os.path.join(
+                topic_output_dir, "bag_file=" + local_file_name
+            )
             clean_directory(topic_output_dir)
             output_path = os.path.join(topic_output_dir, "data.parq")
             fastparquet.write(output_path, df_out)
@@ -135,7 +141,9 @@ def get_object(bucket, object_path, local_dir):
     bag_name = object_path.split("/")[-1]
     local_path = os.path.join(local_dir, bag_name)
     s3 = boto3.client("s3")
-    logging.warning("Getting s3://{bucket}/{prefix}".format(bucket=bucket, prefix=object_path))
+    logging.warning(
+        "Getting s3://{bucket}/{prefix}".format(bucket=bucket, prefix=object_path)
+    )
     s3.download_file(bucket, object_path, local_path)
     return local_path
 

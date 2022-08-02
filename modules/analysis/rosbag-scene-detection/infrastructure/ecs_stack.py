@@ -102,12 +102,20 @@ class Fargate(aws_cdk.Stack):
 
         self.private_subnets = []
         for idx, subnet_id in enumerate(private_subnet_ids):
-            self.private_subnets.append(ec2.Subnet.from_subnet_id(scope=self, id=f"subnet{idx}", subnet_id=subnet_id))
+            self.private_subnets.append(
+                ec2.Subnet.from_subnet_id(
+                    scope=self, id=f"subnet{idx}", subnet_id=subnet_id
+                )
+            )
 
         # DAG Bucket
-        src_bucket = aws_s3.Bucket.from_bucket_name(self, "source-bucket", input_bucket_name)
+        src_bucket = aws_s3.Bucket.from_bucket_name(
+            self, "source-bucket", input_bucket_name
+        )
 
-        dest_bucket = aws_s3.Bucket.from_bucket_name(self, "destination-bucket", output_bucket_name)
+        dest_bucket = aws_s3.Bucket.from_bucket_name(
+            self, "destination-bucket", output_bucket_name
+        )
 
         # EFS
         fs = efs.FileSystem(
@@ -131,7 +139,9 @@ class Fargate(aws_cdk.Stack):
                         "elasticfilesystem:ClientRootAccess",
                     ],
                     resources=["*"],
-                    conditions={"Bool": {"elasticfilesystem:AccessedViaMountTarget": "true"}},
+                    conditions={
+                        "Bool": {"elasticfilesystem:AccessedViaMountTarget": "true"}
+                    },
                 ),
                 aws_iam.PolicyStatement(
                     effect=aws_iam.Effect.DENY,
@@ -162,7 +172,11 @@ class Fargate(aws_cdk.Stack):
             self,
             "ecs_task_role",
             assumed_by=aws_iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-            managed_policies=[aws_iam.ManagedPolicy.from_aws_managed_policy_name("CloudWatchFullAccess")],
+            managed_policies=[
+                aws_iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "CloudWatchFullAccess"
+                )
+            ],
         )
 
         ecs_task_role.add_to_policy(
@@ -238,7 +252,9 @@ class Fargate(aws_cdk.Stack):
             ],
         )
 
-        repo = ecr.Repository.from_repository_name(self, id=id, repository_name=ecr_repository_name)
+        repo = ecr.Repository.from_repository_name(
+            self, id=id, repository_name=ecr_repository_name
+        )
 
         img = ecs.EcrImage.from_ecr_repository(repository=repo, tag="latest")
 
@@ -290,13 +306,17 @@ class Fargate(aws_cdk.Stack):
             assign_public_ip=False,
             subnets=ec2.SubnetSelection(subnets=self.private_subnets),
             cluster=cluster,
-            launch_target=tasks.EcsFargateLaunchTarget(platform_version=ecs.FargatePlatformVersion.VERSION1_4),
+            launch_target=tasks.EcsFargateLaunchTarget(
+                platform_version=ecs.FargatePlatformVersion.VERSION1_4
+            ),
             task_definition=task_definition,
             container_overrides=[
                 tasks.ContainerOverride(
                     container_definition=task_definition.default_container,
                     environment=[
-                        tasks.TaskEnvironmentVariable(name=k, value=sfn.JsonPath.string_at(v))
+                        tasks.TaskEnvironmentVariable(
+                            name=k, value=sfn.JsonPath.string_at(v)
+                        )
                         for k, v in environment_vars.items()
                     ],
                 )
@@ -382,6 +402,10 @@ class Fargate(aws_cdk.Stack):
             database_name=glue_db_name,
             schedule=None,
             targets=glue.CfnCrawler.TargetsProperty(
-                s3_targets=[glue.CfnCrawler.S3TargetProperty(path=f"s3://{module_name}/" + dest_bucket.bucket_name)]
+                s3_targets=[
+                    glue.CfnCrawler.S3TargetProperty(
+                        path=f"s3://{module_name}/" + dest_bucket.bucket_name
+                    )
+                ]
             ),
         )

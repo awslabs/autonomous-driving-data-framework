@@ -52,18 +52,14 @@ if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
 
 app = App()
 
-config = {
-    "deployment_name": deployment_name,
-    "module_name": module_name,
-    "vpc_id": vpc_id,
-    "mwaa_exec_role": mwaa_exec_role,
-    "full_access_policy": full_access_policy,
-}
-
 stack = AwsBatchPipeline(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
-    config=config,
+    deployment_name=deployment_name,
+    module_name=module_name,
+    vpc_id=vpc_id,
+    mwaa_exec_role=mwaa_exec_role,
+    full_access_policy=full_access_policy,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

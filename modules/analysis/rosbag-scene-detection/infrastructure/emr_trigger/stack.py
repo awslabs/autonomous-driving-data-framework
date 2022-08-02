@@ -25,7 +25,9 @@ class EmrTriggerStack(aws_cdk.Stack):
         super().__init__(scope, id, **kwargs)
 
         # SNS Triggered Pipeline
-        lambda_code = aws_lambda.Code.from_asset("infrastructure/emr_trigger/lambda_source/")
+        lambda_code = aws_lambda.Code.from_asset(
+            "infrastructure/emr_trigger/lambda_source/"
+        )
 
         aws_lambda.Function(
             self,
