@@ -162,12 +162,12 @@ class AwsBatchPipeline(Stack):
                 NagPackSuppression(
                     id="AwsSolutions-IAM4",
                     reason="Managed Policies are for service account roles only",
-                    applies_to="*",
+                    applies_to=["*"],
                 ),
                 NagPackSuppression(
                     id="AwsSolutions-IAM4",
                     reason="Resource access restriced to ADDF resources",
-                    applies_to="*",
+                    applies_to=["*"],
                 ),
             ],
         )
