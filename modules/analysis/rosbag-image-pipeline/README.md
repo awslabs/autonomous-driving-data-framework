@@ -4,38 +4,34 @@
 
 This module contains an end-to-end pipeline for extracting images from Rosbag recording files using AWS Batch.
 The module labels these extracted images with open-source object detection and lane detection models
-using Sagemaker Processing jobs. The entire pipeline is orchestrated with a single Airflow dag.
-
+using Sagemaker Processing jobs. The entire pipeline is orchestrated with a single Airflow dag. 
+The pipeline also extracts a given set of topics to parquet files. 
 The pipeline expects a config of a list of drives to process from S3.
 
 This module deploys:
 
-- IAM Role for Batch Job and Airflow Dag
+- IAM Role for the Airflow Dag
 - a DynamoDB table used for passing data to AWS Batch containers and Sagemaker Processing jobs.
 
 The deployspec also includes commands to:
-- build and publish images/ros-to-png to ECR for image extraction
-- build and publish images/yolo to ECR for object detection
 - upload image_dags/ to S3 for Managed Airflow
 - append deployment variables to image_dags/dag_config.py for the DAG to use
 
 
 ## Testing module
 
-Trigger ros_image_pipeline dag in Airflow with this config"
+Trigger ros_image_pipeline dag in Airflow with a config like:"
 {
     "drives_to_process": {
-        "drive1": {"bucket": "addf-sample-rosbag-data", "prefix": "drive1/"},
-        "drive2": {"bucket": "addf-sample-rosbag-data", "prefix": "drive2/"},
-        "drive3": {"bucket": "addf-sample-rosbag-data", "prefix": "drive3/"},
-        "drive4": {"bucket": "addf-sample-rosbag-data", "prefix": "drive4/"},
-        "smalldrive": {"bucket": "addf-sample-rosbag-data", "prefix": "small-demo/"}
+        "{drive_id_1}": {"bucket": "{bucket}", "prefix": "{prefix}/"},
+        "{drive_id_n}": {"bucket": "{bucket_n}", "prefix": "{prefix_n}/"}
     }
 }
 
 where files exist in:
-    s3://addf-ros-image-demo-raw-bucket-d2be7d29/rosbag-scene-detection/drive1/*.bag
-    s3://addf-ros-image-demo-raw-bucket-d2be7d29/rosbag-scene-detection/drive2/*.bag
+    s3://{bucket}/{prefix}/*.bag
+    s3://{bucket_n}/{prefix_n}/*.bag
+    
     
 ## Inputs/Outputs
 
@@ -43,12 +39,16 @@ where files exist in:
 
 #### Required
 
-
+- `parquet-batch-job-def-arn`: arn of the Batch Job Definition for extracting sensor data to parquet files
+- `png-batch-job-def-arn`: arn of the Batch Job Definition for extracting image data to png files
+- `object-detection-image-uri`: ecr uri of the image for running object detection models
+- `object-detection-job-concurrency`: max number of parallel sagemaker processing jobs to trigger
+- `object-detection-iam-role`: execution role of the object detection container
+- `object-detection-instance-type`: instance type to use for the Sagemaker processing job for object detection
 - `dag-bucket-name`: name of the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `dag-path`: name of the path in the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `mwaa-exec-role`: ARN of the MWAA Execution Role
 - `vpc-id`: The VPC-ID that the cluster will be created in
-- `private-subnet-ids`: The Private Subnets that the AWS Batch Compute resources will be deployed to
 - `source-bucket`: Bucket containing the raw recording data
 - `intermediate-bucket`: Output bucket for saving images
 - `full-access-policy-arn`: Access policy from Datalake Bucket Core Module
@@ -62,18 +62,40 @@ where files exist in:
 name: image-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
+  - name: object-detection-job-concurrency
+    value: 50
+  - name: object-detection-instance-type
+    value: ml.m5.xlarge
+  - name: object-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ImageUri
+  - name: object-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ExecutionRole
+  - name: parquet-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-parquet
+        key: JobDefinitionArn
+  - name: png-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-png
+        key: JobDefinitionArn
   - name: vpc-id
     valueFrom:
       moduleMetadata:
         group: optionals
         name: networking
         key: VpcId
-  - name: private-subnet-ids
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: PrivateSubnetIds
   - name: source-bucket
     valueFrom:
       moduleMetadata:
@@ -143,11 +165,18 @@ parameters:
 - `DynamoDbTableName`: Table for orchestrating AWS Batch job
 - `SourceBucketName`: Bucket containing raw data
 - `TargetBucketName`: Bucket to save images and video to
+- `ParquetBatchJobDefArn`: arn of the Batch Job Definition for extracting sensor data to parquet files
+- `PngBatchJobDefArn`: arn of the Batch Job Definition for extracting image data to png files
+- `ObjectDetectionImageUri`: ecr uri of the image for running object detection models
+- `ObjectDetectionJobConcurrency`: max number of parallel sagemaker processing jobs to trigger
+- `ObjectDetectionRole`: execution role of the object detection container
+- `ObjectDetectionInstanceType`: instance type to use for the Sagemaker processing job for object detection
 
-            
+
 #### Output Example
 
 ```json
+
 {
   "DagRoleArn":"arn:aws:iam::...",
   "EcrRepoName":"addf-ros-image-demo-analysis-image-pipeline",
@@ -156,6 +185,15 @@ parameters:
   "TargetBucketName":"addf-ros-image-demo-intermediate-bucket-xyz",
   "OnDemandJobQueueArn":"arn:aws:batch:...",
   "SpotJobQueueArn":"arn:aws:batch:...",
-  "FargateJobQueueArn":"arn:aws:batch:..."
+  "FargateJobQueueArn":"arn:aws:batch:...",
+  "ParquetBatchJobDefArn":"arn:aws:batch:...",
+  "PngBatchJobDefArn":"arn:aws:batch:...",
+  "ObjectDetectionImageUri":"account_id.dkr.ecr.region.amazonaws.com/addf...:latest",
+  "ObjectDetectionRole":"arn:aws:iam::...",
+  "ObjectDetectionJobConcurrency":50,
+  "ObjectDetectionInstanceType":"ml.m5.xlarge"
 }
+
+
+
 ```
