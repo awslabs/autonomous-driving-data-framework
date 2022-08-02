@@ -52,15 +52,6 @@ class AwsBatchPipeline(Stack):  # type: ignore
 
         dep_mod = f"addf-{self.deployment_name}-{self.module_name}"
 
-        self.vpc = ec2.Vpc.from_lookup(
-            self,
-            "VPC",
-            vpc_id=self.vpc_id,
-        )
-
-        self.repository_name = dep_mod
-        ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
-
         # DYNAMODB TRACKING TABLE
         self.tracking_table_name = f"{dep_mod}-drive-tracking"
         tracking_partition_key = "pk"  # batch_id or drive_id
@@ -134,7 +125,7 @@ class AwsBatchPipeline(Stack):  # type: ignore
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 
-        batch_role_name = f"{dep_mod}-dag-role"
+        batch_role_name = f"{dep_mod}-dag-role-{self.region}"
 
         self.dag_role = iam.Role(
             self,

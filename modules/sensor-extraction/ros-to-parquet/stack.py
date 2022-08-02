@@ -1,0 +1,139 @@
+#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License").
+#    You may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+import logging
+from typing import Any, Dict, cast
+import os
+import aws_cdk.aws_ec2 as ec2
+import aws_cdk.aws_ecr as ecr
+import aws_cdk.aws_ecs as ecs
+import aws_cdk.aws_iam as iam
+import aws_cdk.aws_batch_alpha as batch
+from aws_cdk import Duration, Stack, Tags
+from constructs import Construct, IConstruct
+from aws_cdk.aws_ecr_assets import DockerImageAsset
+from cdk_ecr_deployment import ECRDeployment, DockerImageName
+
+_logger: logging.Logger = logging.getLogger(__name__)
+
+
+class RosToParquetBatchJob(Stack):  # type: ignore
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        *,
+        deployment_name: str,
+        module_name: str,
+        s3_access_policy: str,
+        platform: str,  # FARGATE or EC2
+        retries: int,
+        timeout_seconds: int,
+        vcpus: int,
+        memory_limit_mib: int,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            scope,
+            id,
+            **kwargs,
+        )
+
+        if platform not in ['FARGATE', 'EC2']:
+            raise ValueError
+
+        Tags.of(scope=cast(IConstruct, self)).add(
+            key="Deployment",
+            value="aws",
+        )
+
+        dep_mod = f"addf-{deployment_name}-{module_name}"
+
+        self.repository_name = dep_mod
+        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
+
+        local_image = DockerImageAsset(
+            self,
+            "RosToParquet",
+            directory=os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "src"
+            ),
+        )
+
+        image_uri = f"{repo.repository_uri}:latest"
+        ecr_image = ECRDeployment(
+            self,
+            "RosToParquetURI",
+            src=DockerImageName(local_image.image_uri),
+            dest=DockerImageName(image_uri),
+        )
+
+        policy_statements = [
+            iam.PolicyStatement(
+                actions=["dynamodb:*"],
+                effect=iam.Effect.ALLOW,
+                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf*"],
+            ),
+            iam.PolicyStatement(
+                actions=["ecr:*"],
+                effect=iam.Effect.ALLOW,
+                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
+            ),
+            iam.PolicyStatement(
+                actions=["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
+                effect=iam.Effect.ALLOW,
+                resources=["arn:aws:s3:::addf-*", "arn:aws:s3:::addf-*/*"],
+            ),
+        ]
+        dag_document = iam.PolicyDocument(statements=policy_statements)
+
+        role = iam.Role(
+            self,
+            f"{self.repository_name}-batch-role",
+            assumed_by=iam.CompositePrincipal(
+                iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            ),
+            inline_policies={"DagPolicyDocument": dag_document},
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),
+                iam.ManagedPolicy.from_managed_policy_arn(
+                    self, id="fullaccess", managed_policy_arn=s3_access_policy
+                ),
+            ],
+            max_session_duration=Duration.hours(12),
+        )
+
+        self.batch_job = batch.JobDefinition(
+            self,
+            "batch-job-def-from-ecr",
+            container=batch.JobDefinitionContainer(
+                image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
+                command=["bash", "entrypoint.sh"],
+                environment={
+                        "AWS_DEFAULT_REGION": self.region,
+                        "AWS_ACCOUNT_ID": self.account,
+                        "DEBUG": "true",
+                },
+                job_role=role,
+                execution_role=role,
+                memory_limit_mib=memory_limit_mib,
+                vcpus=vcpus
+            ),
+            job_definition_name=self.repository_name,
+            platform_capabilities=[batch.PlatformCapabilities.FARGATE \
+                if platform == "FARGATE" else batch.PlatformCapabilities.EC2],
+            retry_attempts=retries,
+            timeout=Duration.seconds(timeout_seconds),
+        )

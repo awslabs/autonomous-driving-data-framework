@@ -1,6 +1,34 @@
 name: image-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
+  - name: object-detection-job-concurrency
+    value: 50
+  - name: object-detection-instance-type
+    value: ml.m5.xlarge
+  - name: object-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ImageUri
+  - name: object-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ExecutionRole
+  - name: parquet-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-parquet
+        key: JobDefinitionArn
+  - name: png-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-png
+        key: JobDefinitionArn
   - name: vpc-id
     valueFrom:
       moduleMetadata:
