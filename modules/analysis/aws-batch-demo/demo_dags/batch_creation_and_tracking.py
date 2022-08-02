@@ -37,9 +37,7 @@ def add_drives_to_batch(
         files = get_drive_files(drive_id, src_bucket, file_suffix, s3_client)
 
         if files_in_batch + len(files) > max_files_per_batch:
-            print(
-                f"Adding this drive with {len(files)} files would exceed the batch size threshold"
-            )
+            print(f"Adding this drive with {len(files)} files would exceed the batch size threshold")
             next_continuation = None
             break
 
@@ -61,9 +59,7 @@ def get_batch_of_drive_ids(src_bucket, s3_client, next_continuation=None):
             ContinuationToken=next_continuation,
         )
     else:
-        response = s3_client.list_objects_v2(
-            Bucket=src_bucket, MaxKeys=MAX_KEYS, Delimiter="/"
-        )
+        response = s3_client.list_objects_v2(Bucket=src_bucket, MaxKeys=MAX_KEYS, Delimiter="/")
 
     drive_ids = [x["Prefix"][0:-1] for x in response.get("CommonPrefixes", [])]
     next_continuation = response.get("NextContinuationToken")
@@ -72,15 +68,9 @@ def get_batch_of_drive_ids(src_bucket, s3_client, next_continuation=None):
 
 def get_drive_files(drive_id, src_bucket, file_suffix, s3_client):
     MAX_KEYS = 1000
-    file_response = s3_client.list_objects_v2(
-        Bucket=src_bucket, Prefix=drive_id + "/", MaxKeys=MAX_KEYS, Delimiter="/"
-    )
+    file_response = s3_client.list_objects_v2(Bucket=src_bucket, Prefix=drive_id + "/", MaxKeys=MAX_KEYS, Delimiter="/")
     file_next_continuation = file_response.get("NextContinuationToken")
-    files = [
-        x["Key"]
-        for x in file_response.get("Contents", [])
-        if x["Key"].endswith(file_suffix)
-    ]
+    files = [x["Key"] for x in file_response.get("Contents", []) if x["Key"].endswith(file_suffix)]
     while file_next_continuation is not None:
         file_response = s3_client.list_objects_v2(
             Bucket=src_bucket,

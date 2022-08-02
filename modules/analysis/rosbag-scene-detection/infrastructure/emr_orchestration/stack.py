@@ -38,9 +38,7 @@ class StepFunctionStack(aws_cdk.Stack):
             self,
             "dynamotable",
             table_name=f"addf-{deployment_name}-{module_name}-Rosbag-EMR-Batch-Metadata",
-            partition_key=dynamo.Attribute(
-                name="BatchId", type=dynamo.AttributeType.STRING
-            ),
+            partition_key=dynamo.Attribute(name="BatchId", type=dynamo.AttributeType.STRING),
             sort_key=dynamo.Attribute(name="Name", type=dynamo.AttributeType.STRING),
             billing_mode=dynamo.BillingMode.PAY_PER_REQUEST,
             removal_policy=aws_cdk.RemovalPolicy.DESTROY,
@@ -51,9 +49,7 @@ class StepFunctionStack(aws_cdk.Stack):
             self, "dynamotablescenes", table_name=rosbag_scene_metadata_table
         )
 
-        emr_role = aws_iam.Role.from_role_arn(
-            self, "emr_role_iam", role_arn=emr_launch_stack.instance_role_arn
-        )
+        emr_role = aws_iam.Role.from_role_arn(self, "emr_role_iam", role_arn=emr_launch_stack.instance_role_arn)
 
         emr_role.add_to_principal_policy(
             aws_iam.PolicyStatement(
@@ -95,9 +91,7 @@ class StepFunctionStack(aws_cdk.Stack):
         s3d.BucketDeployment(
             self,
             id="sparkscript",
-            destination_bucket=s3.Bucket.from_bucket_name(
-                self, "artifacts-bucket", artifact_bucket
-            ),
+            destination_bucket=s3.Bucket.from_bucket_name(self, "artifacts-bucket", artifact_bucket),
             destination_key_prefix=f"{module_name}/steps",
             sources=[s3d.Source.asset("spark_scripts/")],
         )
@@ -116,9 +110,7 @@ class StepFunctionStack(aws_cdk.Stack):
             self,
             "TerminateFailedCluster",
             name="Terminate Failed Cluster",
-            cluster_id=sfn.TaskInput.from_json_path_at(
-                "$.LaunchClusterResult.ClusterId"
-            ).value,
+            cluster_id=sfn.TaskInput.from_json_path_at("$.LaunchClusterResult.ClusterId").value,
             result_path="$.TerminateResult",
         ).add_catch(fail, errors=["States.ALL"], result_path="$.Error")
 
@@ -163,9 +155,7 @@ class StepFunctionStack(aws_cdk.Stack):
                     os.environ["CDK_DEFAULT_REGION"],
                 ],
             ),
-            cluster_id=sfn.TaskInput.from_json_path_at(
-                "$.LaunchClusterResult.ClusterId"
-            ).value,
+            cluster_id=sfn.TaskInput.from_json_path_at("$.LaunchClusterResult.ClusterId").value,
             result_path="$.PySparkResult",
             fail_chain=terminate_failed_cluster,
         )
@@ -206,9 +196,7 @@ class StepFunctionStack(aws_cdk.Stack):
                     os.environ["CDK_DEFAULT_REGION"],
                 ],
             ),
-            cluster_id=sfn.TaskInput.from_json_path_at(
-                "$.LaunchClusterResult.ClusterId"
-            ).value,
+            cluster_id=sfn.TaskInput.from_json_path_at("$.LaunchClusterResult.ClusterId").value,
             result_path="$.SceneResult",
             fail_chain=terminate_failed_cluster,
         )
@@ -218,9 +206,7 @@ class StepFunctionStack(aws_cdk.Stack):
             self,
             "TerminateCluster",
             name="Terminate Cluster",
-            cluster_id=sfn.TaskInput.from_json_path_at(
-                "$.LaunchClusterResult.ClusterId"
-            ).value,
+            cluster_id=sfn.TaskInput.from_json_path_at("$.LaunchClusterResult.ClusterId").value,
             result_path="$.TerminateResult",
         ).add_catch(fail, errors=["States.ALL"], result_path="$.Error")
 
@@ -278,12 +264,8 @@ class StepFunctionStack(aws_cdk.Stack):
             schedule=None,
             targets=glue.CfnCrawler.TargetsProperty(
                 s3_targets=[
-                    glue.CfnCrawler.S3TargetProperty(
-                        path="s3://" + synchronized_bucket.bucket_name
-                    ),
-                    glue.CfnCrawler.S3TargetProperty(
-                        path="s3://" + scenes_bucket.bucket_name
-                    ),
+                    glue.CfnCrawler.S3TargetProperty(path="s3://" + synchronized_bucket.bucket_name),
+                    glue.CfnCrawler.S3TargetProperty(path="s3://" + scenes_bucket.bucket_name),
                 ]
             ),
         )

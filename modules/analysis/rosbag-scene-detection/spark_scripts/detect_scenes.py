@@ -91,15 +91,9 @@ def is_object_in_lane(obj, lane_points):
 
 
 def obj_in_lane_detection(row):
-    if row.get("rgb_right_detections_only_clean") and row.get(
-        "post_process_lane_points_rgb_front_right_clean"
-    ):
+    if row.get("rgb_right_detections_only_clean") and row.get("post_process_lane_points_rgb_front_right_clean"):
         objects_in_lane = []
-        objects = json.loads(
-            json.loads(row["rgb_right_detections_only_clean"]).get(
-                "detections_bboxes_clean", []
-            )
-        )
+        objects = json.loads(json.loads(row["rgb_right_detections_only_clean"]).get("detections_bboxes_clean", []))
         lane_points = row["post_process_lane_points_rgb_front_right_clean"]
         for o in objects:
             corners_in_lane, lanes = is_object_in_lane(obj=o, lane_points=lane_points)
@@ -123,9 +117,7 @@ def detect_scenes(synchronized_data):
     return (
         synced_rdd.map(obj_in_lane_detection)
         .toDF()
-        .select(
-            "Time", "objects_in_lane", "bag_file", "bag_file_prefix", "bag_file_bucket"
-        )
+        .select("Time", "objects_in_lane", "bag_file", "bag_file_prefix", "bag_file_bucket")
     )
 
 
@@ -147,11 +139,7 @@ def parse_arguments(args):
 def get_batch_file_metadata(table_name, batch_id, region):
     dynamodb = boto3.resource("dynamodb", region_name=region)
     table = dynamodb.Table(table_name)
-    response = table.query(
-        KeyConditions={
-            "BatchId": {"AttributeValueList": [batch_id], "ComparisonOperator": "EQ"}
-        }
-    )
+    response = table.query(KeyConditions={"BatchId": {"AttributeValueList": [batch_id], "ComparisonOperator": "EQ"}})
     data = response["Items"]
     while "LastEvaluatedKey" in response:
         response = table.query(ExclusiveStartKey=response["LastEvaluatedKey"])
@@ -163,9 +151,7 @@ def load_data(spark, input_bucket, table_name, batch_metadata):
     dfs = []
     for item in batch_metadata:
         s3_path = f"s3://{input_bucket}/{table_name}/bag_file={item['Name']}/"
-        df = spark.read.option("basePath", f"s3://{input_bucket}/{table_name}/").load(
-            s3_path
-        )
+        df = spark.read.option("basePath", f"s3://{input_bucket}/{table_name}/").load(s3_path)
         dfs.append(df)
 
     return union_all(dfs)
@@ -177,9 +163,7 @@ def write_results_s3(df, table_name, output_bucket, partition_cols=[]):
 
 
 def write_results_dynamo(df, output_dynamo_table, region):
-    df.write.mode("append").option("tableName", output_dynamo_table).option(
-        "region", region
-    ).format("dynamodb").save()
+    df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format("dynamodb").save()
 
 
 def people_in_scenes(row):
@@ -197,22 +181,16 @@ def summarize_person_scenes(df):
     people_in_lane = df.rdd.map(lambda row: row.asDict()).map(people_in_scenes).toDF()
 
     scene_state_udf = func.udf(
-        lambda num, lag: "start"
-        if num > 0 and lag == 0
-        else ("end" if num == 0 and lag > 0 else None),
+        lambda num, lag: "start" if num > 0 and lag == 0 else ("end" if num == 0 and lag > 0 else None),
         StringType(),
     )
 
-    win = Window.orderBy("Time").partitionBy(
-        "bag_file", "bag_file_prefix", "bag_file_bucket"
-    )
+    win = Window.orderBy("Time").partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket")
 
     people_in_lane = people_in_lane.withColumn(
         "num_people_in_scene_lag1",
         func.lag(func.col("num_people_in_scene"), 1).over(win),
-    ).filter(
-        "num_people_in_scene is not null and num_people_in_scene_lag1 is not null "
-    )
+    ).filter("num_people_in_scene is not null and num_people_in_scene_lag1 is not null ")
 
     summary = (
         people_in_lane.withColumn(
@@ -237,9 +215,7 @@ def summarize_person_scenes(df):
         )
         .withColumn(
             "scene_id",
-            func.concat(
-                func.col("bag_file"), func.lit("_PersonInLane_"), func.col("start_time")
-            ),
+            func.concat(func.col("bag_file"), func.lit("_PersonInLane_"), func.col("start_time")),
         )
         .withColumn("scene_length", func.col("end_time") - func.col("start_time"))
         .withColumn(
@@ -272,9 +248,7 @@ def main(
     region,
 ):
     # Load files to process
-    batch_metadata = get_batch_file_metadata(
-        table_name=batch_metadata_table_name, batch_id=batch_id, region=region
-    )
+    batch_metadata = get_batch_file_metadata(table_name=batch_metadata_table_name, batch_id=batch_id, region=region)
 
     # Load topic data from s3 and union
     synchronized_data = load_data(

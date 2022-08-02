@@ -5,6 +5,7 @@ import os
 from typing import List
 
 import aws_cdk
+
 from infrastructure.ecs_stack import Fargate
 from infrastructure.emr_launch.cluster_definition import EMRClusterDefinition
 from infrastructure.emr_orchestration.stack import StepFunctionStack
@@ -16,9 +17,7 @@ module_name = os.getenv("ADDF_MODULE_NAME")
 hash = os.getenv("ADDF_HASH")
 # Module Metadata
 vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")  # required
-private_subnet_ids = json.loads(
-    os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS")
-)  # required
+private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # required
 input_bucket_name = os.getenv("ADDF_PARAMETER_SOURCE_BUCKET_NAME")  # required
 output_bucket_name = os.getenv("ADDF_PARAMETER_DESTINATION_BUCKET_NAME")  # required
 logs_bucket_name = os.getenv("ADDF_PARAMETER_LOGS_BUCKET_NAME")  # required
@@ -26,12 +25,8 @@ artifact_bucket_name = os.getenv("ADDF_PARAMETER_ARTIFACT_BUCKET_NAME")  # requi
 retention_type = os.getenv("ADDF_PARAMETER_RETENTION_TYPE", "DESTROY")
 glue_db_name = os.getenv("ADDF_PARAMETER_GLUE_DB_NAME")  # required
 rosbag_bagfile_table = os.getenv("ADDF_PARAMETER_ROSBAG_BAGFILE_TABLE")  # required
-rosbag_scene_metadata_table = os.getenv(
-    "ADDF_PARAMETER_ROSBAG_SCENE_METADATA_TABLE"
-)  # required
-rosbag_files_input_path_relative_to_s3 = os.getenv(
-    "ADDF_PARAMETER_ROSBAG_FILES_INPUT_PATH_RELATIVE_TO_S3"
-)  # required
+rosbag_scene_metadata_table = os.getenv("ADDF_PARAMETER_ROSBAG_SCENE_METADATA_TABLE")  # required
+rosbag_files_input_path_relative_to_s3 = os.getenv("ADDF_PARAMETER_ROSBAG_FILES_INPUT_PATH_RELATIVE_TO_S3")  # required
 emr_config = json.loads(os.environ.get("ADDF_PARAMETER_EMR"))  # required
 fargate_config = json.loads(os.environ.get("ADDF_PARAMETER_FARGATE"))  # required
 

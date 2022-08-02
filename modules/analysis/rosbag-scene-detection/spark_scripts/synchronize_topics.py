@@ -31,11 +31,7 @@ def parse_arguments(args):
 def get_batch_file_metadata(table_name, batch_id, region):
     dynamodb = boto3.resource("dynamodb", region_name=region)
     table = dynamodb.Table(table_name)
-    response = table.query(
-        KeyConditions={
-            "BatchId": {"AttributeValueList": [batch_id], "ComparisonOperator": "EQ"}
-        }
-    )
+    response = table.query(KeyConditions={"BatchId": {"AttributeValueList": [batch_id], "ComparisonOperator": "EQ"}})
     data = response["Items"]
     while "LastEvaluatedKey" in response:
         response = table.query(ExclusiveStartKey=response["LastEvaluatedKey"])
@@ -44,11 +40,7 @@ def get_batch_file_metadata(table_name, batch_id, region):
 
 
 def load_file_path(spark, file_path, topic, bag_file):
-    df = (
-        spark.read.load(file_path)
-        .withColumn("topic", func.lit(topic))
-        .withColumn("bag_file", func.lit(bag_file))
-    )
+    df = spark.read.load(file_path).withColumn("topic", func.lit(topic)).withColumn("bag_file", func.lit(bag_file))
     return df
 
 
@@ -65,9 +57,7 @@ def load_and_union_data(spark, batch_metadata):
         for bag_file in batch_metadata:
             print(f"{bag_file['Name']}_{topic}")
             bag_dfs = [
-                load_file_path(
-                    spark, file_path=file, topic=topic, bag_file=bag_file["Name"]
-                )
+                load_file_path(spark, file_path=file, topic=topic, bag_file=bag_file["Name"])
                 for file in bag_file["files"]
                 if topic in file
             ]
@@ -116,17 +106,13 @@ def create_master_time_df(signals_df, topics):
     """
     time_interval_secs = 0.1
 
-    w = Window.partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket").orderBy(
-        func.asc("Time")
-    )
+    w = Window.partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket").orderBy(func.asc("Time"))
 
     first_and_last_signals = (
         signals_df.withColumn("rn", func.row_number().over(w))
         .withColumn(
             "max_rn",
-            func.max("rn").over(
-                Window.partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket")
-            ),
+            func.max("rn").over(Window.partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket")),
         )
         .where((func.col("rn") == func.col("max_rn")) | (func.col("rn") == 1))
         .select("bag_file", "bag_file_prefix", "bag_file_bucket", "Time", "rn")
@@ -137,9 +123,7 @@ def create_master_time_df(signals_df, topics):
 
     def customFunction(row):
 
-        df = spark.range(
-            row.Times[0] / time_interval_secs, row.Times[1] / time_interval_secs
-        ).select(func.col("id"))
+        df = spark.range(row.Times[0] / time_interval_secs, row.Times[1] / time_interval_secs).select(func.col("id"))
 
         return (
             df.withColumn("Time", func.expr(f"id * {time_interval_secs}"))
@@ -154,23 +138,17 @@ def create_master_time_df(signals_df, topics):
         print(bag_file)
         dfs.append(customFunction(bag_file))
 
-    master_time_df = union_all(dfs).withColumn(
-        "source", func.lit("master_time_df").cast(types.StringType())
-    )
+    master_time_df = union_all(dfs).withColumn("source", func.lit("master_time_df").cast(types.StringType()))
 
     for t in topics:
-        master_time_df = master_time_df.withColumn(
-            t, func.lit(None).cast(types.StringType())
-        )
+        master_time_df = master_time_df.withColumn(t, func.lit(None).cast(types.StringType()))
 
     return master_time_df
 
 
 def fill_with_last_value(df, col):
     # define the window
-    w = Window.partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket").orderBy(
-        func.asc("Time")
-    )
+    w = Window.partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket").orderBy(func.asc("Time"))
 
     last_value_column = func.last(df[col], ignorenulls=True).over(w)
 
@@ -182,20 +160,14 @@ def synchronize_signals(signals_df, topics):
     master_time_df = create_master_time_df(signals_df, topics)
 
     topic_signals = (
-        signals_df.select(
-            "bag_file", "bag_file_prefix", "bag_file_bucket", "Time", "topic", "payload"
-        )
+        signals_df.select("bag_file", "bag_file_prefix", "bag_file_bucket", "Time", "topic", "payload")
         .groupby("bag_file", "bag_file_prefix", "bag_file_bucket", "Time")
         .pivot("topic")
         .agg(func.first("payload"))
         .withColumn("source", func.lit("signals_df").cast(types.StringType()))
     )
 
-    unioned_signals = (
-        master_time_df.select(*topic_signals.columns)
-        .union(topic_signals)
-        .orderBy(func.asc("Time"))
-    )
+    unioned_signals = master_time_df.select(*topic_signals.columns).union(topic_signals).orderBy(func.asc("Time"))
 
     topic_cols_clean = ["bag_file", "bag_file_prefix", "bag_file_bucket", "Time"]
 
@@ -203,9 +175,7 @@ def synchronize_signals(signals_df, topics):
         unioned_signals = fill_with_last_value(unioned_signals, topic)
         topic_cols_clean.append(f"{topic}_clean")
 
-    unioned_signals = unioned_signals.filter("source = 'master_time_df'").select(
-        *topic_cols_clean
-    )
+    unioned_signals = unioned_signals.filter("source = 'master_time_df'").select(*topic_cols_clean)
 
     return unioned_signals
 
@@ -219,9 +189,7 @@ def synchronize_topics(topic_data):
 
 def main(batch_metadata_table_name, batch_id, output_bucket, spark, region):
     # Load files to process
-    batch_metadata = get_batch_file_metadata(
-        table_name=batch_metadata_table_name, batch_id=batch_id, region=region
-    )
+    batch_metadata = get_batch_file_metadata(table_name=batch_metadata_table_name, batch_id=batch_id, region=region)
 
     # Load topic data from s3 and union
     topic_data = load_and_union_data(spark, batch_metadata)

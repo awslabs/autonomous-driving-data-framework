@@ -35,9 +35,7 @@ def main(table_name, index, batch_id, s3bucketout) -> int:
     ).get("Item", {})
 
     if not item:
-        raise Exception(
-            f"pk: {batch_id} sk: {index} not existing in table: {table_name}"
-        )
+        raise Exception(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
 
     # DO SOME PROCESSING HERE
     s3 = boto3.client("s3")

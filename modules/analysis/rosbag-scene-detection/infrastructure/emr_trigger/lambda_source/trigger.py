@@ -27,9 +27,7 @@ def parse_s3_event(s3_event):
         "size": int(s3_event["s3"]["object"]["size"] / 1024),
         "s3_event": s3_event,
     }
-    d["bag_file"] = [x for x in d["key"].split("/") if "bag_file=" in x][0].replace(
-        "bag_file=", ""
-    )
+    d["bag_file"] = [x for x in d["key"].split("/") if "bag_file=" in x][0].replace("bag_file=", "")
     d["topic"] = [x for x in d["key"].split("/")][0]
     return d
 
@@ -60,9 +58,9 @@ def is_safe_to_run_new_execution(pipeline_arn, current_batch_id):
     :param current_batch_id:
     :return:
     """
-    response = sfn.list_executions(
-        stateMachineArn=pipeline_arn, statusFilter="RUNNING", maxResults=100
-    ).get("executions", [])
+    response = sfn.list_executions(stateMachineArn=pipeline_arn, statusFilter="RUNNING", maxResults=100).get(
+        "executions", []
+    )
     if [x for x in response if x["name"] == f"BatchId_{current_batch_id}"]:
         return False
     else:
@@ -161,9 +159,7 @@ def should_lambda_trigger_pipeline(latest_batch, latest_bag_file):
 
     all_topics_in_dynamo = len(list(set(latest_bag_file["topics"]))) == num_topics
     number_of_bag_files_in_batch = latest_batch["NumFiles"] / num_topics
-    return (
-        all_topics_in_dynamo and number_of_bag_files_in_batch >= min_num_bags_to_process
-    )
+    return all_topics_in_dynamo and number_of_bag_files_in_batch >= min_num_bags_to_process
 
 
 def trigger_pipeline(current_batch_id, pipeline_arn, cluster_name):
@@ -179,9 +175,7 @@ def trigger_pipeline(current_batch_id, pipeline_arn, cluster_name):
                 "ClusterName": cluster_name,
             },
             "StepArgumentOverrides": {
-                "Synchronize Topics - PySpark Job": {
-                    "DynamoDB.BatchId": current_batch_id
-                },
+                "Synchronize Topics - PySpark Job": {"DynamoDB.BatchId": current_batch_id},
                 "Scene Detection - PySpark Job": {"DynamoDB.BatchId": current_batch_id},
             },
             "BatchId": current_batch_id,
@@ -197,16 +191,12 @@ def trigger_pipeline(current_batch_id, pipeline_arn, cluster_name):
         logger.info(f"Started StateMachine {pipeline_arn} with input {pipeline_input}")
         return execution
     else:
-        logger.info(
-            f"Batch already started for {pipeline_arn} with input {pipeline_input}"
-        )
+        logger.info(f"Batch already started for {pipeline_arn} with input {pipeline_input}")
         return None
 
 
 def handler(event, context):
-    logger.info(
-        "Lambda metadata: {} (type = {})".format(json.dumps(event), type(event))
-    )
+    logger.info("Lambda metadata: {} (type = {})".format(json.dumps(event), type(event)))
     logger.info("Received {} messages".format(len(event["Records"])))
     try:
         table = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -228,9 +218,7 @@ def handler(event, context):
             sns_message_records = json.loads(sns_event["Sns"]["Message"])["Records"]
 
             for record in sns_message_records:
-                latest_batch, latest_bag_file = process_sns_message(
-                    record, table, current_batch_id
-                )
+                latest_batch, latest_bag_file = process_sns_message(record, table, current_batch_id)
 
         if should_lambda_trigger_pipeline(latest_batch, latest_bag_file):
             pipeline_arn = os.environ.get("PIPELINE_ARN", "")

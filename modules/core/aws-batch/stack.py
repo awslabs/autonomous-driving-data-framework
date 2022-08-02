@@ -20,7 +20,7 @@ import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
 import cdk_nag
 from aws_cdk import Aspects, Stack, Tags
-from cdk_nag import NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ _logger: logging.Logger = logging.getLogger(__name__)
 DEFAULT_MAX_VCPUS_PER_QUEUE = str(256)
 
 
-class AwsBatch(Stack):  # type: ignore
+class AwsBatch(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -133,9 +133,7 @@ class AwsBatch(Stack):  # type: ignore
                         compute_resources=batch.ComputeResources(
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus")
-                            if batchenv.get("max_vcpus")
-                            else DEFAULT_MAX_VCPUS_PER_QUEUE,
+                            maxv_cpus=batchenv.get("max_vcpus", DEFAULT_MAX_VCPUS_PER_QUEUE),
                             minv_cpus=0,
                             type=batch.ComputeResourceType.ON_DEMAND,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
@@ -161,9 +159,7 @@ class AwsBatch(Stack):  # type: ignore
                         compute_resources=batch.ComputeResources(
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus")
-                            if batchenv.get("max_vcpus")
-                            else DEFAULT_MAX_VCPUS_PER_QUEUE,
+                            maxv_cpus=batchenv.get("max_vcpus", DEFAULT_MAX_VCPUS_PER_QUEUE),
                             minv_cpus=0,
                             type=batch.ComputeResourceType.SPOT,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
@@ -183,9 +179,7 @@ class AwsBatch(Stack):  # type: ignore
                         f"{dep_mod}-FargateJobEnv-{batchenv.get('env_name')}",
                         compute_resources=batch.ComputeResources(
                             vpc=self.vpc,
-                            maxv_cpus=batchenv.get("max_vcpus")
-                            if batchenv.get("max_vcpus")
-                            else DEFAULT_MAX_VCPUS_PER_QUEUE,
+                            maxv_cpus=batchenv.get("max_vcpus", DEFAULT_MAX_VCPUS_PER_QUEUE),
                             type=batch.ComputeResourceType.FARGATE,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
                             security_groups=[batchSG],
@@ -197,7 +191,6 @@ class AwsBatch(Stack):  # type: ignore
                             compute_environment=fargate_compute_env, order=int(batchenv.get("order"))
                         )
                     )
-
 
         # Outputs
         if on_demand_compute_env_list:
@@ -236,15 +229,15 @@ class AwsBatch(Stack):  # type: ignore
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
-                    "id": "AwsSolutions-IAM4",
-                    "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
-                },
-                {
-                    "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
-                },
+                NagPackSuppression(
+                    id="AwsSolutions-IAM4",
+                    reason="Managed Policies are for service account roles only",
+                    applies_to="*",
+                ),
+                NagPackSuppression(
+                    id="AwsSolutions-IAM4",
+                    reason="Resource access restriced to ADDF resources",
+                    applies_to="*",
+                ),
             ],
         )

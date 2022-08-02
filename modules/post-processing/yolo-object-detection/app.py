@@ -30,6 +30,8 @@ stack = ObjectDetection(
     s3_access_policy=full_access_policy,
 )
 
+base_image = f"763104351884.dkr.ecr.{stack.region}.amazonaws.com/pytorch-inference:1.7.1-gpu-py36-cu110-ubuntu18.04"
+
 CfnOutput(
     scope=stack,
     id="metadata",
@@ -38,7 +40,7 @@ CfnOutput(
             "ImageUri": stack.image_uri,
             "EcrRepoName": stack.repository_name,
             "ExecutionRole": stack.role.role_arn,
-            "BaseImage": f"763104351884.dkr.ecr.{stack.region}.amazonaws.com/pytorch-inference:1.7.1-gpu-py36-cu110-ubuntu18.04",
+            "BaseImage": base_image,
         }
     ),
 )
