@@ -1,5 +1,6 @@
 import json
-from typing import Any, List
+from re import A
+from typing import Any, List, cast
 
 import aws_cdk
 import constructs
@@ -44,42 +45,29 @@ class Fargate(aws_cdk.Stack):
     ) -> None:
         """
         Imports the following infrastructure:
-
             2 S3 Buckets
                 - "-in" bucket will be monitored for incoming data, and each incoming file will trigger an ECS Task
                 - "-out" bucket will be the destination for saving processed data from the ECS Task
-
                 - These bucket names are automatically passed as environment variables to your docker container
                     In your docker container, access these bucket names via:
-
                     import os
                     src_bucket = os.environ["s3_source"]
                     dest_bucket = os.environ["s3_destination"]
-
         Creates the following infrastructure:
-
             ECS Fargate Cluster
                 - Using Fargate, this cluster will not cost any money when no tasks are running
-
             ECS Fargate Task
-
             ECS Task Role - used by the docker container
                 - Read access to the "-in" bucket and write access to the "-out" bucket
-
             ECR Repository
                 - reference to the repository hosting the service's docker image
-
             ECR Image
                 - reference to the service's docker image in the ecr repo
-
             ECS Log Group for the ECS Task
                 f'{image_name}-log-group'
-
             Step Function to execute the ECSRunFargateTask command
-
             Lambda Function listening for S3 Put Object events in src_bucket
                 - then triggers Fargate Task for that object
-
         :param scope:
         :param id:
         :param image_name:
@@ -117,6 +105,29 @@ class Fargate(aws_cdk.Stack):
             removal_policy=aws_cdk.RemovalPolicy.DESTROY,
             throughput_mode=efs.ThroughputMode.BURSTING,
             performance_mode=efs.PerformanceMode.MAX_IO,
+        )
+        cfn_fs = cast(efs.CfnFileSystem, fs.node.default_child)
+        cfn_fs.file_system_policy = aws_iam.PolicyDocument(
+            statements=[
+                aws_iam.PolicyStatement(
+                    effect=aws_iam.Effect.ALLOW,
+                    principals=[aws_iam.AnyPrincipal()],
+                    actions=[
+                        "elasticfilesystem:ClientMount",
+                        "elasticfilesystem:ClientWrite",
+                        "elasticfilesystem:ClientRootAccess",
+                    ],
+                    resources=["*"],
+                    conditions={"Bool": {"elasticfilesystem:AccessedViaMountTarget": "true"}},
+                ),
+                aws_iam.PolicyStatement(
+                    effect=aws_iam.Effect.DENY,
+                    principals=[aws_iam.AnyPrincipal()],
+                    actions=["*"],
+                    resources=["*"],
+                    conditions={"Bool": {"aws:SecureTransport": "false"}},
+                ),
+            ]
         )
 
         access_point = fs.add_access_point(
