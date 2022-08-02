@@ -14,10 +14,9 @@
 
 import logging
 import os
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 import aws_cdk.aws_batch_alpha as batch
-import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
@@ -29,7 +28,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class RosToPngBatchJob(Stack):  # type: ignore
+class RosToPngBatchJob(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -62,9 +61,7 @@ class RosToPngBatchJob(Stack):  # type: ignore
         dep_mod = f"addf-{deployment_name}-{module_name}"
 
         self.repository_name = dep_mod
-        repo = ecr.Repository(
-            self, id=self.repository_name, repository_name=self.repository_name
-        )
+        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
 
         local_image = DockerImageAsset(
             self,
@@ -73,7 +70,7 @@ class RosToPngBatchJob(Stack):  # type: ignore
         )
 
         image_uri = f"{repo.repository_uri}:latest"
-        ecr_image = ECRDeployment(
+        ECRDeployment(
             self,
             "RosToPngURI",
             src=DockerImageName(local_image.image_uri),
@@ -84,16 +81,12 @@ class RosToPngBatchJob(Stack):  # type: ignore
             iam.PolicyStatement(
                 actions=["dynamodb:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[
-                    f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf*"
-                ],
+                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf*"],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[
-                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"
-                ],
+                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
             ),
             iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
@@ -111,12 +104,8 @@ class RosToPngBatchJob(Stack):  # type: ignore
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "service-role/AmazonECSTaskExecutionRolePolicy"
-                ),
-                iam.ManagedPolicy.from_managed_policy_arn(
-                    self, id="fullaccess", managed_policy_arn=s3_access_policy
-                ),
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),
+                iam.ManagedPolicy.from_managed_policy_arn(self, id="fullaccess", managed_policy_arn=s3_access_policy),
             ],
             max_session_duration=Duration.hours(12),
         )
@@ -139,9 +128,7 @@ class RosToPngBatchJob(Stack):  # type: ignore
             ),
             job_definition_name=self.repository_name,
             platform_capabilities=[
-                batch.PlatformCapabilities.FARGATE
-                if platform == "FARGATE"
-                else batch.PlatformCapabilities.EC2
+                batch.PlatformCapabilities.FARGATE if platform == "FARGATE" else batch.PlatformCapabilities.EC2
             ],
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),

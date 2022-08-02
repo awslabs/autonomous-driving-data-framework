@@ -85,9 +85,7 @@ def upload(client, bucket_name, drive_id, file_id, files):
 def get_log_path():
     response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}")
     task_region = response.json()["LogOptions"]["awslogs-region"]
-    return task_region, response.json()["LogOptions"]["awslogs-stream"].replace(
-        "/", "$252F"
-    )
+    return task_region, response.json()["LogOptions"]["awslogs-stream"].replace("/", "$252F")
 
 
 def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
@@ -142,9 +140,7 @@ def main(table_name, index, batch_id, topics, target_bucket) -> int:
     logger.info("Item Pulled: %s", item)
 
     if not item:
-        raise Exception(
-            f"pk: {batch_id} sk: {index} not existing in table: {table_name}"
-        )
+        raise Exception(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
 
     drive_id = item["drive_id"]
     file_id = item["file_id"]
