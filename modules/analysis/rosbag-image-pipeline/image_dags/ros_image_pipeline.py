@@ -62,7 +62,6 @@ MODEL = "yolov5s"
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
 DAG_ROLE = addf_module_metadata["DagRoleArn"]
 DYNAMODB_TABLE = addf_module_metadata["DynamoDbTableName"]
-ECR_REPO_NAME = addf_module_metadata["EcrRepoName"]
 FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
 SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
