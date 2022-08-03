@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, cast, Sequence
+from typing import Any, Sequence, cast
 
 import aws_cdk.aws_iam as iam
 import cdk_nag
@@ -100,7 +100,9 @@ class AwsBatchPipeline(Stack):
                     "batch:TagResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=job_queues + job_definitions + [
+                resources=job_queues
+                + job_definitions
+                + [
                     f"arn:aws:batch:{self.region}:{self.account}:job/*",
                 ],
             ),
