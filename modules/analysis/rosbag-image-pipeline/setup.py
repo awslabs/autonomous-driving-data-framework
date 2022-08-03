@@ -5,10 +5,10 @@ with open("README.md") as fp:
 
 setuptools.setup(
     version="0.1.0",
-    description="A short description of the module.",
+    description="A Airflow Dag for extracting rosbag topics and labelling images with ML Models.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="author",
+    author="kevinsoucy",
     install_requires=[
         "aws-cdk-lib==2.20.0",
     ],
@@ -16,7 +16,7 @@ setuptools.setup(
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
+        "License :: Apache License",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.6",
         "Typing :: Typed",

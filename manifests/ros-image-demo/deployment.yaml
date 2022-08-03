@@ -5,5 +5,7 @@ groups:
     path: manifests/ros-image-demo/optional-modules.yaml
   - name: core
     path: manifests/ros-image-demo/core-modules.yaml
+  - name: docker-images
+    path: manifests/ros-image-demo/docker-image-modules.yaml
   - name: analysis
     path: manifests/ros-image-demo/analysis-modules.yaml
