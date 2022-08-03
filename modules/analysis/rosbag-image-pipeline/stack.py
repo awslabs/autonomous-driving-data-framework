@@ -133,7 +133,7 @@ class AwsBatchPipeline(Stack):
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 
-        dag_role_name = f"{dep_mod}-dag-role-{self.region}"
+        dag_role_name = f"{dep_mod}-dag-{self.region}"
 
         self.dag_role = iam.Role(
             self,
