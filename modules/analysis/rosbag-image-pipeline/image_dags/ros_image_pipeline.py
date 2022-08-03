@@ -280,7 +280,7 @@ def sagemaker_yolo_operation(**kwargs):
         logger.info(f"Starting object detection job for batch {i + 1} of {num_batches}")
         processor = Processor(
             image_uri=YOLO_IMAGE_URI,
-            role=DAG_ROLE,
+            role=YOLO_ROLE,
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-YOLO",

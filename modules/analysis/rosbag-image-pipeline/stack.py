@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, cast
+from typing import Any, cast, Sequence
 
 import aws_cdk.aws_iam as iam
 import cdk_nag
@@ -35,7 +35,10 @@ class AwsBatchPipeline(Stack):
         module_name: str,
         vpc_id: str,
         mwaa_exec_role: str,
-        full_access_policy: str,
+        bucket_access_policy: str,
+        object_detection_role: str,
+        job_queues: Sequence[str],
+        job_definitions: Sequence[str],
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -48,7 +51,7 @@ class AwsBatchPipeline(Stack):
         self.module_name = module_name
         self.vpc_id = vpc_id
         self.mwaa_exec_role = mwaa_exec_role
-        self.full_access_policy = full_access_policy
+        self.bucket_access_policy = bucket_access_policy
 
         Tags.of(scope=cast(IConstruct, self)).add(
             key="Deployment",
@@ -97,9 +100,7 @@ class AwsBatchPipeline(Stack):
                     "batch:TagResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[
-                    f"arn:aws:batch:{self.region}:{self.account}:job-queue/addf*",
-                    f"arn:aws:batch:{self.region}:{self.account}:job-definition/*",
+                resources=job_queues + job_definitions + [
                     f"arn:aws:batch:{self.region}:{self.account}:job/*",
                 ],
             ),
@@ -109,7 +110,7 @@ class AwsBatchPipeline(Stack):
                 ],
                 effect=iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:iam::{self.account}:role/addf*",
+                    object_detection_role,
                 ],
             ),
             iam.PolicyStatement(
@@ -130,25 +131,22 @@ class AwsBatchPipeline(Stack):
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 
-        batch_role_name = f"{dep_mod}-dag-role-{self.region}"
+        dag_role_name = f"{dep_mod}-dag-role-{self.region}"
 
         self.dag_role = iam.Role(
             self,
             f"dag-role-{dep_mod}",
             assumed_by=iam.CompositePrincipal(
                 iam.ArnPrincipal(self.mwaa_exec_role),
-                iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
-                iam.ServicePrincipal("sagemaker.amazonaws.com"),
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),
                 iam.ManagedPolicy.from_managed_policy_arn(
-                    self, id="fullaccess", managed_policy_arn=self.full_access_policy
+                    self, id="fullaccess", managed_policy_arn=self.bucket_access_policy
                 ),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSageMakerFullAccess"),
             ],
-            role_name=batch_role_name,
+            role_name=dag_role_name,
             max_session_duration=Duration.hours(12),
             path="/",
         )
