@@ -73,6 +73,11 @@ YOLO_ROLE = addf_module_metadata["ObjectDetectionRole"]
 YOLO_CONCURRENCY = addf_module_metadata["ObjectDetectionJobConcurrency"]
 YOLO_INSTANCE_TYPE = addf_module_metadata["ObjectDetectionInstanceType"]
 
+LANEDET_IMAGE_URI = addf_module_metadata["LaneDetectionImageUri"]
+LANEDET_ROLE = addf_module_metadata["LaneDetectionRole"]
+LANEDET_CONCURRENCY = addf_module_metadata["LaneDetectionJobConcurrency"]
+LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
+
 
 account = boto3.client("sts").get_caller_identity().get("Account")
 
@@ -323,6 +328,101 @@ def sagemaker_yolo_operation(**kwargs):
         logger.info("All object detection jobs complete")
 
 
+def sagemaker_lanedet_operation(**kwargs):
+
+    # Establish AWS API Connections
+    sts_client = boto3.client("sts")
+    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    credentials = assumed_role_object["Credentials"]
+    dynamodb = boto3.resource(
+        "dynamodb",
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    )
+    table = dynamodb.Table(DYNAMODB_TABLE)
+    batch_id = kwargs["dag_run"].run_id
+
+    # Get Image Directories per Recording File to Label
+    image_directory_items = table.query(
+        KeyConditionExpression=Key("pk").eq(batch_id),
+        Select="SPECIFIC_ATTRIBUTES",
+        ProjectionExpression="raw_image_dirs",
+    )["Items"]
+
+    image_directories = []
+    for item in image_directory_items:
+        image_directories += item["raw_image_dirs"]
+
+    logger.info(f"Starting lane detection job for {len(image_directories)} directories")
+
+    total_jobs = len(image_directories)
+    num_batches = ceil(total_jobs / LANEDET_CONCURRENCY)
+
+    for i in range(num_batches):
+        logger.info(f"Starting lane detection job for batch {i + 1} of {num_batches}")
+        processor = Processor(
+            image_uri=LANEDET_IMAGE_URI,
+            role=LANEDET_ROLE,
+            instance_count=1,
+            instance_type=LANEDET_INSTANCE_TYPE,
+            base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-LANE",
+        )
+        LOCAL_INPUT = "/opt/ml/processing/input/image"
+        LOCAL_OUTPUT = "/opt/ml/processing/output/image"
+        LOCAL_OUTPUT_JSON = "/opt/ml/processing/output/json"
+        LOCAL_OUTPUT_CSV = "/opt/ml/processing/output/csv"
+
+        idx_start = i * LANEDET_CONCURRENCY
+        idx_end = (i + 1) * LANEDET_CONCURRENCY
+        for image_directory in image_directories[idx_start:idx_end]:
+            logger.info(f"Starting lane detection job for {image_directory}")
+            logger.info(
+                "Job details available at: "
+                f"https://{REGION}.console.aws.amazon.com/sagemaker/home?region={REGION}#/processing-jobs"
+            )
+            processor.run(
+                arguments=[
+                    "configs/laneatt/resnet34_tusimple.py",
+                    "--json_path", LOCAL_OUTPUT_JSON,
+                    "--csv_path", LOCAL_OUTPUT_CSV
+                ],
+                inputs=[
+                    ProcessingInput(
+                        input_name="data",
+                        source=f"s3://{TARGET_BUCKET}/{image_directory}/",
+                        destination=LOCAL_INPUT,
+                    )
+                ],
+                outputs=[
+                    ProcessingOutput(
+                        output_name="output",
+                        source=LOCAL_OUTPUT,
+                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
+                    ),
+                    ProcessingOutput(
+                        output_name="output",
+                        source=LOCAL_OUTPUT_JSON,
+                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
+                    ),
+                    ProcessingOutput(
+                        output_name="output",
+                        source=LOCAL_OUTPUT_CSV,
+                        destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
+                    )
+                ],
+                wait=False,
+                logs=False,
+            )
+            time.sleep(1)  # Attempt at avoiding throttling exceptions
+
+        logger.info("Waiting on batch of jobs to finish")
+        for job in processor.jobs:
+            logger.info(f"Waiting on: {job} - logs from job:")
+            job.wait(logs=False)
+
+        logger.info("All object detection jobs complete")
+
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
@@ -359,7 +459,10 @@ with DAG(
             task_id="object-detection-sagemaker-job",
             python_callable=sagemaker_yolo_operation,
         )
-        submit_lane_det_job = DummyOperator(task_id="lane-detection-sagemaker-job")
+        submit_lane_det_job = PythonOperator(
+            task_id="lane-detection-sagemaker-job",
+            python_callable=sagemaker_lanedet_operation,
+        )
 
     create_aws_conn >> create_batch_of_drives_task >> extract_task_group
     submit_png_job >> image_labelling_task_group

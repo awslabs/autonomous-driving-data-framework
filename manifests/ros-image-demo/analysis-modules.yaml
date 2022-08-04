@@ -1,8 +1,24 @@
 name: image-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
+  - name: lane-detection-job-concurrency
+    value: 5
+  - name: lane-detection-instance-type
+    value: ml.p3.2xlarge
+  - name: lane-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ImageUri
+  - name: lane-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ExecutionRole
   - name: object-detection-job-concurrency
-    value: 50
+    value: 30
   - name: object-detection-instance-type
     value: ml.m5.xlarge
   - name: object-detection-image-uri
