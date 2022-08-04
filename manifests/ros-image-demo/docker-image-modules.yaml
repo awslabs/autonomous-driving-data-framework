@@ -47,3 +47,13 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: FullAccessPolicyArn
+---
+name: lane-detection
+path: modules/post-processing/lane-detection/
+parameters:
+  - name: full-access-policy-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: FullAccessPolicyArn
