@@ -40,43 +40,41 @@ from sagemaker.pytorch.processing import PyTorchProcessor
 from image_dags import batch_creation_and_tracking
 from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
 
-# SET VARIABLES FOR EXTRACTION
-PROVIDER = "FARGATE"  # One of ON_DEMAND, SPOT, FARGATE
-FILE_SUFFIX = ".bag"
-IMAGE_TOPICS = [
-    "/flir_adk/rgb_front_left/image_raw",
-    "/flir_adk/rgb_front_right/image_raw",
-]
-SENSOR_TOPICS = [
-    "/vehicle/gps/fix",
-    "/vehicle/gps/time",
-    "/vehicle/gps/vel",
-    "/imu_raw",
-]
-DESIRED_ENCODING = "bgr8"
-
-# SET VARIABLES FOR OBJECT DETECTION
-MODEL = "yolov5s"
-
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
 DAG_ROLE = addf_module_metadata["DagRoleArn"]
 DYNAMODB_TABLE = addf_module_metadata["DynamoDbTableName"]
+PROVIDER = addf_module_metadata["BatchProvider"]
 FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
 SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
 TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
+
+FILE_SUFFIX = addf_module_metadata["FileSuffix"]
+
 PNG_JOB_DEFINITION_ARN = addf_module_metadata["PngBatchJobDefArn"]
+DESIRED_ENCODING = addf_module_metadata["DesiredEncoding"]
+IMAGE_TOPICS = addf_module_metadata["ImageTopics"]
+
 PARQUET_JOB_DEFINITION_ARN = addf_module_metadata["ParquetBatchJobDefArn"]
+SENSOR_TOPICS = addf_module_metadata["SensorTopics"]
+
 YOLO_IMAGE_URI = addf_module_metadata["ObjectDetectionImageUri"]
 YOLO_ROLE = addf_module_metadata["ObjectDetectionRole"]
 YOLO_CONCURRENCY = addf_module_metadata["ObjectDetectionJobConcurrency"]
 YOLO_INSTANCE_TYPE = addf_module_metadata["ObjectDetectionInstanceType"]
+YOLO_MODEL = addf_module_metadata["YoloModel"]
 
 LANEDET_IMAGE_URI = addf_module_metadata["LaneDetectionImageUri"]
 LANEDET_ROLE = addf_module_metadata["LaneDetectionRole"]
 LANEDET_CONCURRENCY = addf_module_metadata["LaneDetectionJobConcurrency"]
 LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
+
+
+
+
+
+
 
 
 account = boto3.client("sts").get_caller_identity().get("Account")
@@ -314,7 +312,7 @@ def sagemaker_yolo_operation(**kwargs):
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_obj_dets/",
                     )
                 ],
-                arguments=["--model", MODEL],
+                arguments=["--model", YOLO_MODEL],
                 wait=False,
                 logs=False,
             )

@@ -1,6 +1,21 @@
 name: image-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
+  - name: image-topics
+    value:
+      - /image_front_left
+  - name: sensor-topics
+    value:
+      - /gps
+      - /gps_time
+      - /imu
+      - /pose_ground_truth
+      - /pose_localized
+      - /pose_raw
+      - /tf
+      - /velocity_raw
+  - name: desired-encoding
+    value: 8UC3
   - name: lane-detection-job-concurrency
     value: 5
   - name: lane-detection-instance-type

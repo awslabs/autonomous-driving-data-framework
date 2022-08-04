@@ -31,6 +31,13 @@ lane_detection_role = os.getenv(_param("LANE_DETECTION_IAM_ROLE"))
 lane_detection_job_concurrency = int(os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), 5))
 lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"), "ml.p3.2xlarge")
 
+batch_provider = os.getenv(_param("BATCH_PROVIDER"), "FARGATE")
+file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
+desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
+yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
+image_topics = os.getenv(_param("IMAGE_TOPICS"))
+sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
+
 
 if not png_batch_job_def_arn:
     raise Exception("missing input parameter png-batch-job-def-arn")
@@ -81,7 +88,7 @@ stack = AwsBatchPipeline(
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
 )
-
+import json
 CfnOutput(
     scope=stack,
     id="metadata",
@@ -104,6 +111,12 @@ CfnOutput(
             "LaneDetectionRole": lane_detection_role,
             "LaneDetectionJobConcurrency": lane_detection_job_concurrency,
             "LaneDetectionInstanceType": lane_detection_instance_type,
+            "BatchProvider": batch_provider,
+            "FileSuffix": file_suffix,
+            "DesiredEncoding": desired_encoding,
+            "YoloModel": yolo_model,
+            "ImageTopics": json.loads(image_topics),
+            "SensorTopics": json.loads(sensor_topics),
         }
     ),
 )
