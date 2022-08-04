@@ -112,10 +112,7 @@ class AwsBatchPipeline(Stack):
                     "iam:PassRole",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[
-                    object_detection_role,
-                    lane_detection_role
-                ],
+                resources=[object_detection_role, lane_detection_role],
             ),
             iam.PolicyStatement(
                 actions=[

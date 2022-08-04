@@ -384,8 +384,10 @@ def sagemaker_lanedet_operation(**kwargs):
             processor.run(
                 arguments=[
                     "configs/laneatt/resnet34_tusimple.py",
-                    "--json_path", LOCAL_OUTPUT_JSON,
-                    "--csv_path", LOCAL_OUTPUT_CSV
+                    "--json_path",
+                    LOCAL_OUTPUT_JSON,
+                    "--csv_path",
+                    LOCAL_OUTPUT_CSV,
                 ],
                 inputs=[
                     ProcessingInput(
@@ -409,7 +411,7 @@ def sagemaker_lanedet_operation(**kwargs):
                         output_name="output",
                         source=LOCAL_OUTPUT_CSV,
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
-                    )
+                    ),
                 ],
                 wait=False,
                 logs=False,
@@ -422,6 +424,7 @@ def sagemaker_lanedet_operation(**kwargs):
             job.wait(logs=False)
 
         logger.info("All object detection jobs complete")
+
 
 with DAG(
     dag_id=DAG_ID,
