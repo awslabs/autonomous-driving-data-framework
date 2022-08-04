@@ -85,6 +85,23 @@ jobs:
       - name: ros-to-parquet static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/post-processing/yolo-object-detection/ --skip-static-checks
 
+  modules-lane-detection:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: lane detection image static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/post-processing/lane-detection/ --skip-static-checks
 
   modules-core-eks:
     runs-on: ubuntu-latest

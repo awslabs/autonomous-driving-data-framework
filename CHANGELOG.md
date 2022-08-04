@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - image extraction (rosbag to png) pipeline with yolov5 object detection
 - sensor extraction (rosbag to parquet) added to image pipeline
 - added docker module to build container images
+- added lane detection module for building docker image into ECR
 
 ### **Changed**
 
