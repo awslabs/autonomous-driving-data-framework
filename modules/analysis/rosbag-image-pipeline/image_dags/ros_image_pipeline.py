@@ -420,27 +420,6 @@ def sagemaker_lanedet_operation(**kwargs):
         logger.info("All object detection jobs complete")
 
 
-def png_batch_operation(**kwargs):
-    ti = kwargs["ti"]
-    ds = kwargs["ds"]
-    batch_id = kwargs["dag_run"].run_id
-
-    QUERY_CREATE_TABLE = """
-    
-    """
-
-    op = read_table = AthenaOperator(
-        task_id='create_table',
-        query=QUERY_READ_TABLE,
-        database=ATHENA_DATABASE,
-        output_location=f's3://{S3_BUCKET}/',
-    )
-
-    op.execute(ds)
-
-
-
-
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
