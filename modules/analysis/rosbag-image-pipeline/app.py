@@ -10,6 +10,7 @@ module_name = os.getenv("ADDF_MODULE_NAME", "")
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
+
 dag_id = os.getenv(_param("DAG_ID"))  # required
 vpc_id = os.getenv(_param("VPC_ID"))  # required
 mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
@@ -89,6 +90,7 @@ stack = AwsBatchPipeline(
     ),
 )
 import json
+
 CfnOutput(
     scope=stack,
     id="metadata",

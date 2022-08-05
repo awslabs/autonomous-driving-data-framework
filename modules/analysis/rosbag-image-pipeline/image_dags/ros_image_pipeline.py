@@ -16,9 +16,9 @@
 import json
 import logging
 import os
-import sys
 import random
 import string
+import sys
 import time
 from datetime import timedelta
 from math import ceil
@@ -29,7 +29,6 @@ from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
-from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
