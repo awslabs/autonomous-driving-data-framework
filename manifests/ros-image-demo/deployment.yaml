@@ -8,4 +8,6 @@ groups:
   - name: docker-images
     path: manifests/ros-image-demo/docker-image-modules.yaml
   - name: analysis
-    path: manifests/ros-image-demo/analysis-modules.yaml
+    path: manifests/ros-image-demo/aws-analysis-modules.yaml
+  - name: ford-analysis
+    path: manifests/ros-image-demo/ford-analysis-modules.yaml

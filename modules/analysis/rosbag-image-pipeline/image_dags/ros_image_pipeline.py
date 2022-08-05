@@ -16,6 +16,7 @@
 import json
 import logging
 import os
+import sys
 import random
 import string
 import time
@@ -35,13 +36,15 @@ from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
-from sagemaker.pytorch.processing import PyTorchProcessor
 
-from image_dags import batch_creation_and_tracking
-from image_dags.dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+from batch_creation_and_tracking import add_drives_to_batch
+from dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
+DAG_ID = addf_module_metadata["DagId"]
 DAG_ROLE = addf_module_metadata["DagRoleArn"]
 DYNAMODB_TABLE = addf_module_metadata["DynamoDbTableName"]
 PROVIDER = addf_module_metadata["BatchProvider"]
@@ -71,17 +74,10 @@ LANEDET_CONCURRENCY = addf_module_metadata["LaneDetectionJobConcurrency"]
 LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
 
 
-
-
-
-
-
-
 account = boto3.client("sts").get_caller_identity().get("Account")
 
 ValueType = TypeVar("ValueType")
 
-DAG_ID = os.path.basename(__file__).replace(".py", "")
 TASK_DEF_XCOM_KEY = "job_definition_arn"
 
 DEFAULT_ARGS = {
@@ -171,7 +167,7 @@ def create_batch_of_drives(ti, **kwargs):
         return files_in_batch
 
     logger.info("New Batch Id - collecting unprocessed drives from S3 and adding to the batch")
-    files_in_batch = batch_creation_and_tracking.add_drives_to_batch(
+    files_in_batch = add_drives_to_batch(
         table=table,
         drives_to_process=drives_to_process,
         batch_id=batch_id,
@@ -422,6 +418,27 @@ def sagemaker_lanedet_operation(**kwargs):
             job.wait(logs=False)
 
         logger.info("All object detection jobs complete")
+
+
+def png_batch_operation(**kwargs):
+    ti = kwargs["ti"]
+    ds = kwargs["ds"]
+    batch_id = kwargs["dag_run"].run_id
+
+    QUERY_CREATE_TABLE = """
+    
+    """
+
+    op = read_table = AthenaOperator(
+        task_id='create_table',
+        query=QUERY_READ_TABLE,
+        database=ATHENA_DATABASE,
+        output_location=f's3://{S3_BUCKET}/',
+    )
+
+    op.execute(ds)
+
+
 
 
 with DAG(

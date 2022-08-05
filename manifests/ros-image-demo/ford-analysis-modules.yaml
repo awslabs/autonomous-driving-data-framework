@@ -1,6 +1,8 @@
-name: image-pipeline
+name: ford-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
+  - name: dag-id
+    value: ford_image_pipeline
   - name: image-topics
     value:
       - /image_front_left
@@ -15,7 +17,7 @@ parameters:
       - /tf
       - /velocity_raw
   - name: desired-encoding
-    value: 8UC3
+    value: 8UC3  # or bgr8
   - name: lane-detection-job-concurrency
     value: 5
   - name: lane-detection-instance-type

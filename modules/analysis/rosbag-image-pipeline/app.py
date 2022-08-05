@@ -10,7 +10,7 @@ module_name = os.getenv("ADDF_MODULE_NAME", "")
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
-
+dag_id = os.getenv(_param("DAG_ID"))  # required
 vpc_id = os.getenv(_param("VPC_ID"))  # required
 mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
@@ -94,6 +94,7 @@ CfnOutput(
     id="metadata",
     value=stack.to_json_string(
         {
+            "DagId": dag_id,
             "DagRoleArn": stack.dag_role.role_arn,
             "DynamoDbTableName": stack.tracking_table_name,
             "SourceBucketName": source_bucket_name,
