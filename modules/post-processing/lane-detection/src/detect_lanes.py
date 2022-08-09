@@ -51,6 +51,7 @@ class Detect(object):
     def run(self, data):
         data = self.preprocess(data)
         data["lanes"] = self.inference(data)[0]
+        data['lanes_clean'] = {idx: lane.to_array(self.cfg).tolist() for idx, lane in enumerate(data["lanes"])}
         if self.cfg.show or self.cfg.savedir:
             self.show(data)
         return data
@@ -103,7 +104,7 @@ def process(args):
             json_o = f"{json_output}/{n.split('.')[0]}.json"
             print(json_o)
             with open(json_o, "w", encoding="utf-8") as jsonf:
-                json.dump(to_json(out), jsonf)
+                json.dump(out['lanes_clean'], jsonf)
                 # REF:  https://discuss.pytorch.org/t/typeerror-tensor-is-not-json-serializable/36065/4
         if csv_output:
             # csv_o = f"{p[0:p.rindex('.')].replace(input_dir,csv_output)}.csv"

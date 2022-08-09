@@ -13,8 +13,6 @@ RUN rm -rf /var/lib/apt/lists/* &&  rm -rf /etc/apt/sources.list.d/*\
 # Install LaneDet 
 RUN conda clean --all
 RUN git clone https://github.com/turoad/lanedet.git /lanedet
-COPY detect_lanes.py /lanedet/tools
-
 
 WORKDIR /lanedet
 RUN pip install --no-cache-dir -r requirements.txt  && \
@@ -31,6 +29,7 @@ RUN wget -O models/laneatt_r34_tusimple.zip --no-check-certificate \
 WORKDIR /lanedet/models
 RUN unzip laneatt_r34_tusimple.zip
 RUN rm -rf ssd/ laneatt_r34_tusimple.zip
+COPY detect_lanes.py /lanedet/tools
 
 WORKDIR /lanedet
 ENTRYPOINT ["python3", "tools/detect_lanes.py"]

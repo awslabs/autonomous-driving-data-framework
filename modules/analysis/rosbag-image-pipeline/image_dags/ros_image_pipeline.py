@@ -396,12 +396,12 @@ def sagemaker_lanedet_operation(**kwargs):
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
                     ),
                     ProcessingOutput(
-                        output_name="output",
+                        output_name="jsonoutput",
                         source=LOCAL_OUTPUT_JSON,
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
                     ),
                     ProcessingOutput(
-                        output_name="output",
+                        output_name="csvoutput",
                         source=LOCAL_OUTPUT_CSV,
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
                     ),

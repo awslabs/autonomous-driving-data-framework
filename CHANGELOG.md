@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - sensor extraction (rosbag to parquet) added to image pipeline
 - added docker module to build container images
 - added lane detection module for building docker image into ECR
+- object and lane detection added to the rosbag-image-pipeline
 
 ### **Changed**
 
