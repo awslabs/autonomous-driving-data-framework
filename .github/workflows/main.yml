@@ -82,6 +82,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r requirements.txt
       - name: ros-to-parquet static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/post-processing/yolo-object-detection/
 
@@ -100,6 +101,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r requirements.txt
       - name: lane detection image static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/post-processing/lane-detection/
 
@@ -118,6 +120,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r requirements.txt
       - name: lane detection image static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/post-processing/yolop-lane-detection/
 
