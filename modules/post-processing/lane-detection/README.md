@@ -5,6 +5,8 @@
 This module contains a Docker container for detecting lanes on images using 
 LaneDet (https://github.com/Turoad/lanedet), with the resnet34_tusimple backbone (configs and weights).  It is designed to incorporate the weights, the model code, and the transformation/processing code into one image with the entry point being `tools/detect_lanes.py` when processing.  That entry point as one (1) positional required arguement to indicate the local path to the configuration (`configs/laneatt/resnet34_tusimple.py` in this case).  
 
+NOTE: this image MUST use GPU compute resources that are NVIDIA driver enabled
+
 ### Full list of parameters for processing code
 The `tools/detect_lanes.py` entry point has several parameters that can be overridden.  They are listed below just for reference, but you DO NOT need to modify them as they exist in the sample `/src/sample_sm_processor.py`.
 * <b>config</b> - the relative path to the config file in the image (corresponds to the backbone used)
