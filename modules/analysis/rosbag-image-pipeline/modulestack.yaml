@@ -26,13 +26,6 @@ Resources:
               - "s3:List*"
             Effect: Allow
             Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
-          - Action:
-              - "secretsmanager:Get*"
-              - "secretsmanager:DescribeSecret"
-              - "secretsmanager:ListSecretVersionIds"
-              - "kms:Decrypt*"
-            Effect: Allow
-            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
           - Effect: Allow
             Action:
               - "ecr:Describe*"

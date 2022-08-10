@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - modifed text in modules/analysis/rosbag-scene-detection
 - enforce HTTPS on OpenSearch
 - EFS FileSystemPolicies to improve security
+- removed all referneces to secrestsmanager in modulestack.yaml where not needed
 
 ### **Removed**
 

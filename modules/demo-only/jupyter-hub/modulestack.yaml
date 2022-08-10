@@ -18,13 +18,6 @@ Resources:
     Properties:
       PolicyDocument:
         Statement:
-          - Action:
-              - "secretsmanager:Get*"
-              - "secretsmanager:DescribeSecret"
-              - "secretsmanager:ListSecretVersionIds"
-              - "kms:Decrypt*"
-            Effect: Allow
-            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
           - Effect: Allow
             Action:
               - "ecr:Describe*"
