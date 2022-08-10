@@ -34,12 +34,16 @@ processor = Processor(
 
 # Run the processing job
 processor.run(
-    arguments=[ 
-        "--save_dir", LOCAL_OUTPUT,
-        "--source",LOCAL_INPUT,
-        "--json_path", LOCAL_OUTPUT_JSON,
-        "--csv_path", LOCAL_OUTPUT_CSV,
-        #"--img-size","640" #1280
+    arguments=[
+        "--save_dir",
+        LOCAL_OUTPUT,
+        "--source",
+        LOCAL_INPUT,
+        "--json_path",
+        LOCAL_OUTPUT_JSON,
+        "--csv_path",
+        LOCAL_OUTPUT_CSV,
+        # "--img-size","640" #1280
     ],
     inputs=[
         ProcessingInput(
@@ -56,8 +60,7 @@ processor.run(
             destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH_JSON}",
         ),
         ProcessingOutput(
-            output_name='out_csv',
-            source=LOCAL_OUTPUT_CSV,
-            destination=f's3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH_CSV}'),
+            output_name="out_csv", source=LOCAL_OUTPUT_CSV, destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH_CSV}"
+        ),
     ],
 )
