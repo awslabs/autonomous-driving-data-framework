@@ -18,7 +18,7 @@ from typing import Any, List, cast
 import aws_cdk.aws_ec2 as ec2
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
-from aws_cdk import aws_neptune_alpha as neptune
+from aws_cdk import aws_neptune_alpha as neptune  # type: ignore
 from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 

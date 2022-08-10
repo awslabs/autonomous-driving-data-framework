@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/analysis/rosbag-scene-detection/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-scene-detection/ --skip-static-checks
 
@@ -44,6 +45,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/analysis/rosbag-image-pipeline/requirements-dev.txt
+          pip install -r modules/analysis/rosbag-image-pipeline/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-image-pipeline/ --skip-static-checks
 
@@ -139,6 +142,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/eks/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/eks/ --skip-static-checks
 
@@ -157,8 +161,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/aws-batch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/aws-batch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/aws-batch/
 
   modules-analysis-aws-batch-demo:
     runs-on: ubuntu-latest
@@ -175,6 +180,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/analysis/aws-batch-demo/requirements-dev.txt
+          pip install -r modules/analysis/aws-batch-demo/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/aws-batch-demo/ --skip-static-checks
 
@@ -193,8 +200,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/metadata-storage/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/metadata-storage/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/metadata-storage/
 
   modules-core-mwaa:
     runs-on: ubuntu-latest
@@ -211,8 +219,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/mwaa/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/mwaa/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/mwaa/
 
   modules-core-neptune:
     runs-on: ubuntu-latest
@@ -229,8 +238,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/neptune/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/neptune/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/neptune/
 
   modules-core-opensearch:
     runs-on: ubuntu-latest
@@ -247,8 +257,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/opensearch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/opensearch/
 
   modules-integration-ddb-to-opensearch:
     runs-on: ubuntu-latest
@@ -265,8 +276,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/integration/ddb-to-opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/integration/ddb-to-opensearch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/integration/ddb-to-opensearch/
 
   modules-integration-eks-to-opensearch:
     runs-on: ubuntu-latest
@@ -283,8 +295,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/integration/eks-to-opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/integration/eks-to-opensearch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/integration/eks-to-opensearch/
 
   modules-integration-emr-to-opensearch:
     runs-on: ubuntu-latest
@@ -319,8 +332,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/optionals/datalake-buckets/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/optionals/datalake-buckets/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/optionals/datalake-buckets/
 
   modules-optionals-networking:
     runs-on: ubuntu-latest
@@ -337,6 +351,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/optionals/networking/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/optionals/networking/
 
@@ -373,5 +388,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/simulations/k8s-managed/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/simulations/k8s-managed/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/simulations/k8s-managed/

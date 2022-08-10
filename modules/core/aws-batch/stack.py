@@ -28,7 +28,7 @@ _logger: logging.Logger = logging.getLogger(__name__)
 DEFAULT_MAX_VCPUS_PER_QUEUE = str(256)
 
 
-class AwsBatch(Stack):  # type: ignore
+class AwsBatch(Stack):
     def __init__(
         self,
         scope: Construct,

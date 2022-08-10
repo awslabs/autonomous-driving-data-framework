@@ -27,7 +27,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class DDBtoOpensearch(Stack):  # type: ignore
+class DDBtoOpensearch(Stack):
     def __init__(
         self,
         scope: Construct,
