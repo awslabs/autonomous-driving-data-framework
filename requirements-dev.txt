@@ -16,3 +16,4 @@ twine~=4.0.1
 types-PyYAML~=6.0.8
 types-setuptools~=57.4.17
 wheel~=0.37.1
+cdk-nag==2.12.29
