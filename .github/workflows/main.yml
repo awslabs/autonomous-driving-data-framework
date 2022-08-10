@@ -119,8 +119,8 @@ jobs:
       - name: Install Requirements
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r requirements.txt
+          pip install -r modules/post-processing/yolop-lane-detection/requirements-dev.txt
+          pip install -r modules/post-processing/yolop-lane-detection/requirements.txt
       - name: lane detection image static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/post-processing/yolop-lane-detection/
 
