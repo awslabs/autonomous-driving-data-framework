@@ -21,7 +21,7 @@ import aws_cdk.aws_iam as aws_iam
 import aws_cdk.aws_s3 as aws_s3
 import cdk_nag
 from aws_cdk import Aspects, Stack, Tags
-from cdk_nag import NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -218,16 +218,20 @@ class DataLakeBucketsStack(Stack):  # type: ignore
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
         suppressions = [
-            {
-                "id": "AwsSolutions-S1",
-                "reason": "Logging has been disabled for demo purposes",
-                "applies_to": "*",
-            },
-            {
-                "id": "AwsSolutions-IAM5",
-                "reason": "Resource access restriced to ADDF resources",
-                "applies_to": "*",
-            },
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-S1",
+                    "reason": "Logging has been disabled for demo purposes",
+                    "applies_to": "*",
+                }
+            ),
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-IAM5",
+                    "reason": "Resource access restriced to ADDF resources",
+                    "applies_to": "*",
+                }
+            ),
         ]
 
         NagSuppressions.add_stack_suppressions(self, suppressions)

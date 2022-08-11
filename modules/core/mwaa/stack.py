@@ -25,7 +25,7 @@ import aws_cdk.aws_s3 as aws_s3
 import aws_cdk.aws_s3_deployment as aws_s3_deployment
 import cdk_nag
 from aws_cdk import Aspects, Stack, Tags
-from cdk_nag import NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -273,26 +273,34 @@ class MWAAStack(Stack):  # type: ignore
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks(verbose=True))
 
         bucket_suppression = [
-            {
-                "id": "AwsSolutions-S1",
-                "reason": "Logs are disabled for demo purposes",
-                "applies_to": "*",
-            },
-            {
-                "id": "AwsSolutions-S5",
-                "reason": "No OAI needed - no one is accessing this data without explicit permissions",
-                "applies_to": "*",
-            },
-            {
-                "id": "AwsSolutions-IAM5",
-                "reason": "Resource access restriced to ADDF resources",
-                "applies_to": "*",
-            },
-            {
-                "id": "AwsSolutions-IAM4",
-                "reason": "Managed Policies are for service account roles only",
-                "applies_to": "*",
-            },
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-S1",
+                    "reason": "Logs are disabled for demo purposes",
+                    "applies_to": "*",
+                }
+            ),
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-S5",
+                    "reason": "No OAI needed - no one is accessing this data without explicit permissions",
+                    "applies_to": "*",
+                }
+            ),
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-IAM5",
+                    "reason": "Resource access restriced to ADDF resources",
+                    "applies_to": "*",
+                }
+            ),
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-IAM4",
+                    "reason": "Managed Policies are for service account roles only",
+                    "applies_to": "*",
+                }
+            ),
         ]
 
         NagSuppressions.add_stack_suppressions(self, bucket_suppression)

@@ -19,7 +19,7 @@ import aws_cdk.aws_iam as iam
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_dynamodb as dynamo
-from cdk_nag import NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -158,15 +158,19 @@ class AwsBatchPipeline(Stack):
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
-                    "id": "AwsSolutions-IAM4",
-                    "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
-                },
-                {
-                    "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
-                },
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM4",
+                        "reason": "Managed Policies are for service account roles only",
+                        "applies_to": "*",
+                    }
+                ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM5",
+                        "reason": "Resource access restriced to ADDF resources",
+                        "applies_to": "*",
+                    }
+                ),
             ],
         )

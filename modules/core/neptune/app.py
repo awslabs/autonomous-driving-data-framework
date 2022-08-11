@@ -14,7 +14,7 @@ def _param(name: str) -> str:
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # required
+private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # type: ignore
 
 if not vpc_id:
     raise Exception("missing input parameter vpc-id")

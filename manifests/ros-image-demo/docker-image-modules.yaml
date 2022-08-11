@@ -57,3 +57,13 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: FullAccessPolicyArn
+---
+name: yolop-lane-detection
+path: modules/post-processing/yolop-lane-detection/
+parameters:
+  - name: full-access-policy-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: FullAccessPolicyArn

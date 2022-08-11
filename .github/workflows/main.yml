@@ -26,6 +26,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/analysis/rosbag-scene-detection/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-scene-detection/ --skip-static-checks
 
@@ -44,6 +45,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/analysis/rosbag-image-pipeline/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-image-pipeline/ --skip-static-checks
 
@@ -81,9 +83,10 @@ jobs:
       - name: Install Requirements
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          pip install -r modules/post-processing/yolo-object-detection/requirements-dev.txt
+          pip install -r modules/post-processing/yolo-object-detection/requirements.txt
       - name: ros-to-parquet static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/post-processing/yolo-object-detection/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/post-processing/yolo-object-detection/
 
   modules-lane-detection:
     runs-on: ubuntu-latest
@@ -99,9 +102,29 @@ jobs:
       - name: Install Requirements
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          pip install -r modules/post-processing/lane-detection/requirements-dev.txt
+          pip install -r modules/post-processing/lane-detection/requirements.txt
       - name: lane detection image static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/post-processing/lane-detection/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/post-processing/lane-detection/
+
+  modules-yolop-lane-detection:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r modules/post-processing/yolop-lane-detection/requirements-dev.txt
+          pip install -r modules/post-processing/yolop-lane-detection/requirements.txt
+      - name: lane detection image static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/post-processing/yolop-lane-detection/
 
   modules-core-eks:
     runs-on: ubuntu-latest
@@ -118,6 +141,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/eks/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/eks/ --skip-static-checks
 
@@ -136,8 +160,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/aws-batch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/aws-batch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/aws-batch/
 
   modules-analysis-aws-batch-demo:
     runs-on: ubuntu-latest
@@ -154,8 +179,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/analysis/aws-batch-demo/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/analysis/aws-batch-demo/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/analysis/aws-batch-demo/
 
   modules-core-metadata-storage:
     runs-on: ubuntu-latest
@@ -172,8 +198,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/metadata-storage/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/metadata-storage/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/metadata-storage/
 
   modules-core-mwaa:
     runs-on: ubuntu-latest
@@ -190,8 +217,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/mwaa/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/mwaa/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/mwaa/
 
   modules-core-neptune:
     runs-on: ubuntu-latest
@@ -208,8 +236,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/neptune/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/neptune/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/neptune/
 
   modules-core-opensearch:
     runs-on: ubuntu-latest
@@ -226,8 +255,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/core/opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/opensearch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/core/opensearch/
 
   modules-integration-ddb-to-opensearch:
     runs-on: ubuntu-latest
@@ -244,8 +274,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/integration/ddb-to-opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/integration/ddb-to-opensearch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/integration/ddb-to-opensearch/
 
   modules-integration-eks-to-opensearch:
     runs-on: ubuntu-latest
@@ -262,8 +293,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/integration/eks-to-opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/integration/eks-to-opensearch/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/integration/eks-to-opensearch/
 
   modules-integration-emr-to-opensearch:
     runs-on: ubuntu-latest
@@ -271,7 +303,7 @@ jobs:
       matrix:
         python-version: [3.9]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v2      
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
@@ -298,8 +330,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/optionals/datalake-buckets/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/optionals/datalake-buckets/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/optionals/datalake-buckets/
 
   modules-optionals-networking:
     runs-on: ubuntu-latest
@@ -316,6 +349,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/optionals/networking/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/optionals/networking/
 
@@ -352,5 +386,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          pip install -r modules/simulations/k8s-managed/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/simulations/k8s-managed/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/simulations/k8s-managed/

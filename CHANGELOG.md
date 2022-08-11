@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added docker module to build container images
 - added lane detection module for building docker image into ECR
 - object and lane detection added to the rosbag-image-pipeline
+- added lane detection WITH YOLOP module for building docker image into ECR
 
 ### **Changed**
 
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - modifed text in modules/analysis/rosbag-scene-detection
 - enforce HTTPS on OpenSearch
 - EFS FileSystemPolicies to improve security
+- removed all referneces to secrestsmanager in modulestack.yaml where not needed
 
 ### **Removed**
 
