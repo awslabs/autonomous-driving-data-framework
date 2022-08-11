@@ -13,7 +13,7 @@ deploy:
       - export IMAGE_URI=$(echo ${ADDF_MODULE_METADATA} | jq -r ".ImageUri")
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
       - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - export BASE_IMAGE=763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-inference:1.10.2-cpu-py38-ubuntu20.04-e3
+      - export BASE_IMAGE=763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/pytorch-inference:1.10.2-cpu-py38-ubuntu20.04-e3
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       # - Building the Docker image(s)...
       # - Logging into AWS Deep Learning ECR Repository to pull Pytorch Base Image

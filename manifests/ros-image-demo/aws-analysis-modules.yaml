@@ -16,9 +16,9 @@ parameters:
   - name: desired-encoding
     value: bgr8
   - name: lane-detection-job-concurrency
-    value: 5
+    value: 20
   - name: lane-detection-instance-type
-    value: ml.p3.2xlarge
+    value: ml.m5.2xlarge
   - name: lane-detection-image-uri
     valueFrom:
       moduleMetadata:

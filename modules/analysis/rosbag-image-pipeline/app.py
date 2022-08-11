@@ -24,13 +24,21 @@ parquet_batch_job_def_arn = os.getenv(_param("PARQUET_BATCH_JOB_DEF_ARN"))
 png_batch_job_def_arn = os.getenv(_param("PNG_BATCH_JOB_DEF_ARN"))
 object_detection_image_uri = os.getenv(_param("OBJECT_DETECTION_IMAGE_URI"))
 object_detection_role = os.getenv(_param("OBJECT_DETECTION_IAM_ROLE"))
-object_detection_job_concurrency = int(os.getenv(_param("OBJECT_DETECTION_JOB_CONCURRENCY"), 10))
-object_detection_instance_type = os.getenv(_param("OBJECT_DETECTION_INSTANCE_TYPE"), "ml.m5.xlarge")
+object_detection_job_concurrency = int(
+    os.getenv(_param("OBJECT_DETECTION_JOB_CONCURRENCY"), 10)
+)
+object_detection_instance_type = os.getenv(
+    _param("OBJECT_DETECTION_INSTANCE_TYPE"), "ml.m5.xlarge"
+)
 
 lane_detection_image_uri = os.getenv(_param("LANE_DETECTION_IMAGE_URI"))
 lane_detection_role = os.getenv(_param("LANE_DETECTION_IAM_ROLE"))
-lane_detection_job_concurrency = int(os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), 5))
-lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"), "ml.p3.2xlarge")
+lane_detection_job_concurrency = int(
+    os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), 5)
+)
+lane_detection_instance_type = os.getenv(
+    _param("LANE_DETECTION_INSTANCE_TYPE"), "ml.p3.2xlarge"
+)
 
 batch_provider = os.getenv(_param("BATCH_PROVIDER"), "FARGATE")
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
@@ -82,8 +90,14 @@ stack = AwsBatchPipeline(
     bucket_access_policy=full_access_policy,
     object_detection_role=object_detection_role,
     lane_detection_role=lane_detection_role,
-    job_queues=[x for x in [fargate_job_queue, spot_job_queue, on_demand_job_queue] if x is not None],
-    job_definitions=[x for x in [png_batch_job_def_arn, parquet_batch_job_def_arn] if x is not None],
+    job_queues=[
+        x
+        for x in [fargate_job_queue, spot_job_queue, on_demand_job_queue]
+        if x is not None
+    ],
+    job_definitions=[
+        x for x in [png_batch_job_def_arn, parquet_batch_job_def_arn] if x is not None
+    ],
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

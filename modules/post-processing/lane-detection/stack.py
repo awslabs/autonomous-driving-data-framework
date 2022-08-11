@@ -48,19 +48,25 @@ class LaneDetection(Stack):
         dep_mod = f"addf-{deployment_name}-{module_name}"
 
         self.repository_name = dep_mod
-        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
+        repo = ecr.Repository(
+            self, id=self.repository_name, repository_name=self.repository_name
+        )
         self.image_uri = f"{repo.repository_uri}:smprocessor"
 
         policy_statements = [
             iam.PolicyStatement(
                 actions=["dynamodb:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf*"],
+                resources=[
+                    f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf*"
+                ],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
+                resources=[
+                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"
+                ],
             ),
             iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
@@ -78,9 +84,15 @@ class LaneDetection(Stack):
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),
-                iam.ManagedPolicy.from_managed_policy_arn(self, id="fullaccess", managed_policy_arn=s3_access_policy),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSageMakerFullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AmazonECSTaskExecutionRolePolicy"
+                ),
+                iam.ManagedPolicy.from_managed_policy_arn(
+                    self, id="fullaccess", managed_policy_arn=s3_access_policy
+                ),
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "AmazonSageMakerFullAccess"
+                ),
             ],
             max_session_duration=Duration.hours(12),
         )

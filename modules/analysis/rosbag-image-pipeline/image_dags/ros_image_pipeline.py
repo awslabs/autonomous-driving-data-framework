@@ -95,7 +95,9 @@ def try_create_aws_conn():
         AwsHook.get_connection(conn_id)
     except AirflowException:
         extra = json.dumps({"role_arn": DAG_ROLE}, indent=2)
-        conn = Connection(conn_id=conn_id, conn_type="aws", host="", schema="", login="", extra=extra)
+        conn = Connection(
+            conn_id=conn_id, conn_type="aws", host="", schema="", login="", extra=extra
+        )
         try:
             session = settings.Session()
             session.add(conn)
@@ -115,7 +117,9 @@ def validate_config(drives_to_process):
     }
 
     for k, v in drives_to_process.items():
-        assert isinstance(k, str), f"expecting config to be like {example_input}, received: {drives_to_process}"
+        assert isinstance(
+            k, str
+        ), f"expecting config to be like {example_input}, received: {drives_to_process}"
         assert (
             "bucket" in v.keys() and "prefix" in v.keys()
         ), f"expecting config to be like {example_input}, received: {drives_to_process}"
@@ -135,7 +139,9 @@ def create_batch_of_drives(ti, **kwargs):
     batch_id = kwargs["dag_run"].run_id
     # Establish AWS API Connections
     sts_client = boto3.client("sts")
-    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1"
+    )
     credentials = assumed_role_object["Credentials"]
     dynamodb = boto3.resource(
         "dynamodb",
@@ -165,7 +171,9 @@ def create_batch_of_drives(ti, **kwargs):
         logger.info("Batch Id already exists in tracking table - using existing batch")
         return files_in_batch
 
-    logger.info("New Batch Id - collecting unprocessed drives from S3 and adding to the batch")
+    logger.info(
+        "New Batch Id - collecting unprocessed drives from S3 and adding to the batch"
+    )
     files_in_batch = add_drives_to_batch(
         table=table,
         drives_to_process=drives_to_process,
@@ -247,7 +255,9 @@ def sagemaker_yolo_operation(**kwargs):
 
     # Establish AWS API Connections
     sts_client = boto3.client("sts")
-    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1"
+    )
     credentials = assumed_role_object["Credentials"]
     dynamodb = boto3.resource(
         "dynamodb",
@@ -269,7 +279,9 @@ def sagemaker_yolo_operation(**kwargs):
     for item in image_directory_items:
         image_directories += item["raw_image_dirs"]
 
-    logger.info(f"Starting object detection job for {len(image_directories)} directories")
+    logger.info(
+        f"Starting object detection job for {len(image_directories)} directories"
+    )
 
     total_jobs = len(image_directories)
     num_batches = ceil(total_jobs / YOLO_CONCURRENCY)
@@ -325,7 +337,9 @@ def sagemaker_lanedet_operation(**kwargs):
 
     # Establish AWS API Connections
     sts_client = boto3.client("sts")
-    assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1"
+    )
     credentials = assumed_role_object["Credentials"]
     dynamodb = boto3.resource(
         "dynamodb",
@@ -376,7 +390,10 @@ def sagemaker_lanedet_operation(**kwargs):
             )
             processor.run(
                 arguments=[
-                    "configs/laneatt/resnet34_tusimple.py",
+                    "--save_dir",
+                    LOCAL_OUTPUT,
+                    "--source",
+                    LOCAL_INPUT,
                     "--json_path",
                     LOCAL_OUTPUT_JSON,
                     "--csv_path",
@@ -391,17 +408,17 @@ def sagemaker_lanedet_operation(**kwargs):
                 ],
                 outputs=[
                     ProcessingOutput(
-                        output_name="output",
+                        output_name="image_output",
                         source=LOCAL_OUTPUT,
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
                     ),
                     ProcessingOutput(
-                        output_name="jsonoutput",
+                        output_name="json_output",
                         source=LOCAL_OUTPUT_JSON,
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
                     ),
                     ProcessingOutput(
-                        output_name="csvoutput",
+                        output_name="csv_output",
                         source=LOCAL_OUTPUT_CSV,
                         destination=f"s3://{TARGET_BUCKET}/{image_directory}_post_lane_dets/",
                     ),
@@ -446,8 +463,12 @@ with DAG(
     # Start Task Group definition
     with TaskGroup(group_id="sensor-extraction") as extract_task_group:
 
-        submit_png_job = PythonOperator(task_id="image-extraction-batch-job", python_callable=png_batch_operation)
-        submit_parquet_job = PythonOperator(task_id="parquet-extraction-batch-job", python_callable=parquet_operation)
+        submit_png_job = PythonOperator(
+            task_id="image-extraction-batch-job", python_callable=png_batch_operation
+        )
+        submit_parquet_job = PythonOperator(
+            task_id="parquet-extraction-batch-job", python_callable=parquet_operation
+        )
         create_batch_of_drives_task >> [submit_parquet_job, submit_png_job]
 
     with TaskGroup(group_id="image-labelling") as image_labelling_task_group:

@@ -47,12 +47,16 @@ processor.run(
     ],
     inputs=[
         ProcessingInput(
-            input_name="images_input", source=f"s3://{BUCKET_INPUT}/{S3_INPUT_PATH}", destination=LOCAL_INPUT
+            input_name="images_input",
+            source=f"s3://{BUCKET_INPUT}/{S3_INPUT_PATH}",
+            destination=LOCAL_INPUT,
         )
     ],
     outputs=[
         ProcessingOutput(
-            output_name="image_output", source=LOCAL_OUTPUT, destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH}"
+            output_name="image_output",
+            source=LOCAL_OUTPUT,
+            destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH}",
         ),
         ProcessingOutput(
             output_name="json_output",
@@ -60,7 +64,9 @@ processor.run(
             destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH_JSON}",
         ),
         ProcessingOutput(
-            output_name="out_csv", source=LOCAL_OUTPUT_CSV, destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH_CSV}"
+            output_name="out_csv",
+            source=LOCAL_OUTPUT_CSV,
+            destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH_CSV}",
         ),
     ],
 )
