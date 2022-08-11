@@ -123,56 +123,48 @@ class OpenSearchStack(Stack):  # type: ignore
                     **{
                         "id": "AwsSolutions-OS2",
                         "reason": "Node to Node encryption not enabled - no customer data",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-OS3",
                         "reason": "Access restricted by security group ingress permissions in VPC",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-OS4",
                         "reason": "Single noe for demo purposes",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-OS5",
                         "reason": "Access restricted by security group ingress permissions in VPC",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-OS7",
                         "reason": "Single Node for Demo purposes",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-OS8",
                         "reason": "No customer data - for Demo purposes",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-OS9",
                         "reason": "No logs - for Demo purposes",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-IAM4",
                         "reason": "Managed policies used by service accout roles and managed service",
-                        "applies_to": "*",
                     }
                 ),
             ],

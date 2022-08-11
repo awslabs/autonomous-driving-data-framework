@@ -129,14 +129,12 @@ class NeptuneStack(Stack):
                     **{
                         "id": "AwsSolutions-N5",
                         "reason": "Cluster is in private subnets, no DB IAM auth enabled",
-                        "applies_to": "*",
                     }
                 ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-EC23",
                         "reason": "Cluster is in private subnets, open to all available IP within VPC",
-                        "applies_to": "*",
                     }
                 ),
             ],
