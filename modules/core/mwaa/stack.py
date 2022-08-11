@@ -277,28 +277,24 @@ class MWAAStack(Stack):  # type: ignore
                 **{
                     "id": "AwsSolutions-S1",
                     "reason": "Logs are disabled for demo purposes",
-                    "applies_to": "*",
                 }
             ),
             NagPackSuppression(
                 **{
                     "id": "AwsSolutions-S5",
                     "reason": "No OAI needed - no one is accessing this data without explicit permissions",
-                    "applies_to": "*",
                 }
             ),
             NagPackSuppression(
                 **{
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
                 }
             ),
             NagPackSuppression(
                 **{
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
                 }
             ),
         ]

@@ -222,14 +222,12 @@ class DataLakeBucketsStack(Stack):  # type: ignore
                 **{
                     "id": "AwsSolutions-S1",
                     "reason": "Logging has been disabled for demo purposes",
-                    "applies_to": "*",
                 }
             ),
             NagPackSuppression(
                 **{
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
                 }
             ),
         ]
