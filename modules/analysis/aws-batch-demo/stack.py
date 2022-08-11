@@ -21,13 +21,13 @@ import aws_cdk.aws_iam as iam
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_dynamodb as dynamo
-from cdk_nag import NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AwsBatchPipeline(Stack):  # type: ignore
+class AwsBatchPipeline(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -50,12 +50,12 @@ class AwsBatchPipeline(Stack):  # type: ignore
             value="aws",
         )
 
-        dep_mod = f"addf-{self.deployment_name}-{self.module_name}"
+        dep_mod = f"addf-{self.deployment_name}-{self.module_name}"  # type: ignore
 
         self.vpc = ec2.Vpc.from_lookup(
             self,
             "VPC",
-            vpc_id=self.vpc_id,
+            vpc_id=self.vpc_id,  # type: ignore
         )
 
         self.repository_name = dep_mod
@@ -135,14 +135,14 @@ class AwsBatchPipeline(Stack):  # type: ignore
             self,
             f"dag-role-{dep_mod}",
             assumed_by=iam.CompositePrincipal(
-                iam.ArnPrincipal(self.mwaa_exec_role),
+                iam.ArnPrincipal(self.mwaa_exec_role),  # type: ignore
                 iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),
                 iam.ManagedPolicy.from_managed_policy_arn(
-                    self, id="fullaccess", managed_policy_arn=self.full_access_policy
+                    self, id="fullaccess", managed_policy_arn=self.full_access_policy  # type: ignore
                 ),
             ],
             role_name=batch_role_name,
@@ -156,15 +156,19 @@ class AwsBatchPipeline(Stack):  # type: ignore
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
-                    "id": "AwsSolutions-IAM4",
-                    "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
-                },
-                {
-                    "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
-                },
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM4",
+                        "reason": "Managed Policies are for service account roles only",
+                        "applies_to": "*",
+                    }
+                ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM5",
+                        "reason": "Resource access restriced to ADDF resources",
+                        "applies_to": "*",
+                    }
+                ),
             ],
         )

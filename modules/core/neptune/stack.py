@@ -19,7 +19,7 @@ import aws_cdk.aws_ec2 as ec2
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_neptune_alpha as neptune  # type: ignore
-from cdk_nag import NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -125,15 +125,19 @@ class NeptuneStack(Stack):
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
-                    "id": "AwsSolutions-N5",
-                    "reason": "Cluster is in private subnets, no DB IAM auth enabled",
-                    "applies_to": "*",
-                },
-                {
-                    "id": "AwsSolutions-EC23",
-                    "reason": "Cluster is in private subnets, open to all available IP within VPC",
-                    "applies_to": "*",
-                },
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-N5",
+                        "reason": "Cluster is in private subnets, no DB IAM auth enabled",
+                        "applies_to": "*",
+                    }
+                ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-EC23",
+                        "reason": "Cluster is in private subnets, open to all available IP within VPC",
+                        "applies_to": "*",
+                    }
+                ),
             ],
         )

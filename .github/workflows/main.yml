@@ -45,7 +45,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
-          pip install -r modules/analysis/rosbag-image-pipeline/requirements-dev.txt
           pip install -r modules/analysis/rosbag-image-pipeline/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-image-pipeline/ --skip-static-checks
@@ -180,10 +179,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
-          pip install -r modules/analysis/aws-batch-demo/requirements-dev.txt
           pip install -r modules/analysis/aws-batch-demo/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/analysis/aws-batch-demo/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/analysis/aws-batch-demo/
 
   modules-core-metadata-storage:
     runs-on: ubuntu-latest
