@@ -16,7 +16,7 @@ You can follow instructions in the Deployment Guide [Readme](docs/deployment_gui
 
 | Type | Description |
 | --- | --- |
-|  [Rosbag Scene Detection Module](modules/analysis/README.md)  |  Deploys a Rosbag Scene Detection pipeline for use in ADDF  |  
+|  [Rosbag Scene Detection Module](modules/analysis/rosbag-scene-detection/README.md)  |  Deploys a Rosbag Scene Detection pipeline for use in ADDF  |  
 |  [Rosbag WebViz Module](modules/demo-only/rosbag-webviz/README.md) |  Deploys and Visualizes Rosbag Data on AWS using Webviz for use in ADDF  |
 
 ### Optional Modules
