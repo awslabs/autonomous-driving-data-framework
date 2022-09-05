@@ -25,7 +25,7 @@ deploy:
         - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
     # post_build:
     #   commands:
-    #     #- aws s3 cp --recursive s3://autonomous-datalake/small2__2020-11-19-16-21-22_4.bag s3://${ADDF_PARAMETER_SHARED_BUCKET_NAME}/
+    #     #- aws s3 cp --recursive s3://aws-autonomous-driving-datasets/test-vehicle-01/072021/small2__2020-11-19-16-21-22_4.bag s3://${ADDF_PARAMETER_SHARED_BUCKET_NAME}/
 destroy:
   phases:
     install:
