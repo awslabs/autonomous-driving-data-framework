@@ -56,9 +56,8 @@ If you notice a defect, or need support with deployment or demonstrating the kit
 - Further, the pipeline will be deployed by executing the CDK command to deploy all infrastructure defined in `app.py` and the progress of the deployment can be followed on the command line, but also in the CloudFormation section of the AWS console.   
 
 - Once deployed, the user must upload 2 or more bag files to the rosbag-ingest bucket to initiate the pipeline. In the rosbog-ingest bucket, create a folder called 'demo' and use the below two bag files. You must be connected to VPN to download these.
-- [File 1 to upload to rosbag-ingest bucket](https://autonomous-datalake.s3.amazonaws.com/small2__2020-11-19-16-21-22_4.bag). 
-
-- [File 2 to upload to the rosbag-ingest bucket](https://autonomous-datalake.s3.amazonaws.com/small1__2020-11-19-16-21-22_4.bag).
+- [File 1 to upload to the rosbag-ingest bucket](https://s3.amazonaws.com/aws-autonomous-driving-datasets/test-vehicle-01/072021/small1__2020-11-19-16-21-22_4.bag). 
+- [File 2 to upload to the rosbag-ingest bucket](https://s3.amazonaws.com/aws-autonomous-driving-datasets/test-vehicle-01/072021/small2__2020-11-19-16-21-22_4.bag).
 
 - If you run into issues, please see FAQs at the botton of this readme file for more instructions on dpeloyment and troubleshooting.
 
