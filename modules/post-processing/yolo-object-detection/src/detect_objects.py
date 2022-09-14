@@ -127,9 +127,7 @@ if __name__ == "__main__":
     output_data_path = "/opt/ml/processing/output/"
     model_name = args.model
 
-    model = torch.hub.load(
-        "ultralytics/yolov5", model_name
-    )  # or yolov5n - yolov5x6, custom
+    model = torch.hub.load("ultralytics/yolov5", model_name)  # or yolov5n - yolov5x6, custom
 
     images_list = [file for file in get_files(input_data_path + "*.png")]
 
@@ -144,9 +142,7 @@ if __name__ == "__main__":
         output[image_file_name] = output_json
 
         with open(f"{output_data_path}{image_json_name}", "w") as file:
-            dump_json(
-                output_json, file, indent=2, separators=(",", ": "), sort_keys=False
-            )
+            dump_json(output_json, file, indent=2, separators=(",", ": "), sort_keys=False)
 
         output_pandas["source_image"] = image_file_name
         dfs.append(output_pandas)

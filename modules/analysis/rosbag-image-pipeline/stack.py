@@ -70,12 +70,8 @@ class AwsBatchPipeline(Stack):
             self,
             self.tracking_table_name,
             table_name=self.tracking_table_name,
-            partition_key=dynamo.Attribute(
-                name=tracking_partition_key, type=dynamo.AttributeType.STRING
-            ),
-            sort_key=dynamo.Attribute(
-                name=tracking_sort_key, type=dynamo.AttributeType.STRING
-            ),
+            partition_key=dynamo.Attribute(name=tracking_partition_key, type=dynamo.AttributeType.STRING),
+            sort_key=dynamo.Attribute(name=tracking_sort_key, type=dynamo.AttributeType.STRING),
             billing_mode=dynamo.BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,
             point_in_time_recovery=True,
@@ -87,16 +83,12 @@ class AwsBatchPipeline(Stack):
             iam.PolicyStatement(
                 actions=["dynamodb:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[
-                    f"arn:aws:dynamodb:{self.region}:{self.account}:table/{dep_mod}*"
-                ],
+                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/{dep_mod}*"],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[
-                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"
-                ],
+                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -153,9 +145,7 @@ class AwsBatchPipeline(Stack):
                 iam.ManagedPolicy.from_managed_policy_arn(
                     self, id="fullaccess", managed_policy_arn=self.bucket_access_policy
                 ),
-                iam.ManagedPolicy.from_aws_managed_policy_name(
-                    "AmazonSageMakerFullAccess"
-                ),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSageMakerFullAccess"),
             ],
             role_name=dag_role_name,
             max_session_duration=Duration.hours(12),

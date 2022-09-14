@@ -73,16 +73,10 @@ def get_drive_files(drive_id, src_bucket, src_prefix, file_suffix, s3_client):
     MAX_KEYS = 1000
     logger.info(src_bucket)
     logger.info(src_prefix)
-    file_response = s3_client.list_objects_v2(
-        Bucket=src_bucket, Prefix=src_prefix, MaxKeys=MAX_KEYS, Delimiter="/"
-    )
+    file_response = s3_client.list_objects_v2(Bucket=src_bucket, Prefix=src_prefix, MaxKeys=MAX_KEYS, Delimiter="/")
     logger.info(file_response)
     file_next_continuation = file_response.get("NextContinuationToken")
-    files = [
-        x["Key"]
-        for x in file_response.get("Contents", [])
-        if x["Key"].endswith(file_suffix)
-    ]
+    files = [x["Key"] for x in file_response.get("Contents", []) if x["Key"].endswith(file_suffix)]
     while file_next_continuation is not None:
         file_response = s3_client.list_objects_v2(
             Bucket=src_bucket,

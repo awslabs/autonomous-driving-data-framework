@@ -51,10 +51,7 @@ class Detect(object):
     def run(self, data):
         data = self.preprocess(data)
         data["lanes"] = self.inference(data)[0]
-        data["lanes_clean"] = {
-            idx: lane.to_array(self.cfg).tolist()
-            for idx, lane in enumerate(data["lanes"])
-        }
+        data["lanes_clean"] = {idx: lane.to_array(self.cfg).tolist() for idx, lane in enumerate(data["lanes"])}
         if self.cfg.show or self.cfg.savedir:
             self.show(data)
         return data
@@ -142,12 +139,8 @@ if __name__ == "__main__":
         default="models/laneatt_r34_tusimple.pth",
         help="The path of model",
     )
-    parser.add_argument(
-        "--json_path", type=str, default=None, help="The root of save directory of json"
-    )
-    parser.add_argument(
-        "--csv_path", type=str, default=None, help="The root of save directory of csv"
-    )
+    parser.add_argument("--json_path", type=str, default=None, help="The root of save directory of json")
+    parser.add_argument("--csv_path", type=str, default=None, help="The root of save directory of csv")
     parser.add_argument("--show", action="store_true", help="Whether to show the image")
     args = parser.parse_args()
     process(args)
