@@ -106,7 +106,11 @@ def detect(cfg, opt):
         # Apply NMS
         t3 = time_synchronized()
         det_pred = non_max_suppression(
-            inf_out, conf_thres=opt.conf_thres, iou_thres=opt.iou_thres, classes=None, agnostic=False
+            inf_out,
+            conf_thres=opt.conf_thres,
+            iou_thres=opt.iou_thres,
+            classes=None,
+            agnostic=False,
         )
         t4 = time_synchronized()
 
@@ -146,7 +150,13 @@ def detect(cfg, opt):
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], img_det.shape).round()
             for *xyxy, conf, cls in reversed(det):
                 label_det_pred = f"{names[int(cls)]} {conf:.2f}"
-                plot_one_box(xyxy, img_det, label=label_det_pred, color=colors[int(cls)], line_thickness=2)
+                plot_one_box(
+                    xyxy,
+                    img_det,
+                    label=label_det_pred,
+                    color=colors[int(cls)],
+                    line_thickness=2,
+                )
 
         # if dataset.mode == 'images':
         cv2.imwrite(save_path, img_det)
@@ -177,7 +187,13 @@ def detect(cfg, opt):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--weights", nargs="+", type=str, default="weights/End-to-end.pth", help="model.pth path(s)")
+    parser.add_argument(
+        "--weights",
+        nargs="+",
+        type=str,
+        default="weights/End-to-end.pth",
+        help="model.pth path(s)",
+    )
     parser.add_argument(
         "--source", type=str, default="/opt/ml/processing/input/image", help="source"
     )  # file/folder   ex:inference/images
@@ -186,12 +202,25 @@ if __name__ == "__main__":
     parser.add_argument("--iou-thres", type=float, default=0.45, help="IOU threshold for NMS")
     parser.add_argument("--device", default="cpu", help="cuda device, i.e. 0 or 0,1,2,3 or cpu")
     parser.add_argument(
-        "--save_dir", type=str, default="/opt/ml/processing/output/image", help="directory to save results"
+        "--save_dir",
+        type=str,
+        default="/opt/ml/processing/output/image",
+        help="directory to save results",
     )
     parser.add_argument("--augment", action="store_true", help="augmented inference")
     parser.add_argument("--update", action="store_true", help="update all models")
-    parser.add_argument("--csv_path", type=str, default="/opt/ml/processing/output/csv", help="output path for csv")
-    parser.add_argument("--json_path", type=str, default="/opt/ml/processing/output/json", help="output path for json")
+    parser.add_argument(
+        "--csv_path",
+        type=str,
+        default="/opt/ml/processing/output/csv",
+        help="output path for csv",
+    )
+    parser.add_argument(
+        "--json_path",
+        type=str,
+        default="/opt/ml/processing/output/json",
+        help="output path for json",
+    )
     opt = parser.parse_args()
     with torch.no_grad():
         detect(cfg, opt)

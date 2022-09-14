@@ -37,6 +37,7 @@ class AwsBatchPipeline(Stack):
         mwaa_exec_role: str,
         bucket_access_policy: str,
         object_detection_role: str,
+        lane_detection_role: str,
         job_queues: Sequence[str],
         job_definitions: Sequence[str],
         **kwargs: Any,
@@ -111,9 +112,7 @@ class AwsBatchPipeline(Stack):
                     "iam:PassRole",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[
-                    object_detection_role,
-                ],
+                resources=[object_detection_role, lane_detection_role],
             ),
             iam.PolicyStatement(
                 actions=[

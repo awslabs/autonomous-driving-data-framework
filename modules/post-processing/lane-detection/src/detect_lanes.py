@@ -51,6 +51,7 @@ class Detect(object):
     def run(self, data):
         data = self.preprocess(data)
         data["lanes"] = self.inference(data)[0]
+        data["lanes_clean"] = {idx: lane.to_array(self.cfg).tolist() for idx, lane in enumerate(data["lanes"])}
         if self.cfg.show or self.cfg.savedir:
             self.show(data)
         return data
@@ -103,7 +104,7 @@ def process(args):
             json_o = f"{json_output}/{n.split('.')[0]}.json"
             print(json_o)
             with open(json_o, "w", encoding="utf-8") as jsonf:
-                json.dump(to_json(out), jsonf)
+                json.dump(out["lanes_clean"], jsonf)
                 # REF:  https://discuss.pytorch.org/t/typeerror-tensor-is-not-json-serializable/36065/4
         if csv_output:
             # csv_o = f"{p[0:p.rindex('.')].replace(input_dir,csv_output)}.csv"
@@ -116,16 +117,28 @@ def process(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("config", default="configs/laneatt/resnet34_tusimple.py", help="The path of config file")
+    parser.add_argument(
+        "config",
+        default="configs/laneatt/resnet34_tusimple.py",
+        help="The path of config file",
+    )
     parser.add_argument(
         "--img",
         default="/opt/ml/processing/input/image",
         help="The path of the img (img file or img_folder), for example: data/*.png",
     )
     parser.add_argument(
-        "--savedir", type=str, default="/opt/ml/processing/output/image", help="The root of save directory"
+        "--savedir",
+        type=str,
+        default="/opt/ml/processing/output/image",
+        help="The root of save directory",
     )
-    parser.add_argument("--load_from", type=str, default="models/laneatt_r34_tusimple.pth", help="The path of model")
+    parser.add_argument(
+        "--load_from",
+        type=str,
+        default="models/laneatt_r34_tusimple.pth",
+        help="The path of model",
+    )
     parser.add_argument("--json_path", type=str, default=None, help="The root of save directory of json")
     parser.add_argument("--csv_path", type=str, default=None, help="The root of save directory of csv")
     parser.add_argument("--show", action="store_true", help="Whether to show the image")

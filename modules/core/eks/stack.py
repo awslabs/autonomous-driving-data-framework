@@ -948,7 +948,6 @@ class Eks(Stack):  # type: ignore
                 {
                     "id": "AwsSolutions-EKS1",
                     "reason": "No Customer data resides on the compute resources",
-                    "applies_to": "*",
                 },
             ],
         )
