@@ -1,6 +1,6 @@
 # Autonomous Driving Data Framework (ADDF) Deployment Guide
 
-Autonomous Driving Data Framework follows the Industry standard `GitOps` model. The project is entirely driven by `Descriptive` prinicples in the form of asking inputs from a module developer via manifest file(s).
+Autonomous Driving Data Framework follows the Industry standard `GitOps` model. The project is entirely driven by `Descriptive` prinicples in the form of asking inputs from a module developer via manifest file(s). This guide walks us through the process of deploying `ADDF 1.0` version using the latest release of `SeedFarmer 2.0` which helps with `Multi Account and multi region` deployments.
 
 ## Steps to deploy ADDF
 
@@ -9,7 +9,7 @@ Autonomous Driving Data Framework follows the Industry standard `GitOps` model. 
 You will need to clone the ADDF repository and checkout a release branch using the below command:
 
 ```bash
-git clone --origin upstream --branch release/0.1.0 https://github.com/awslabs/autonomouse-driving-data-framework
+git clone --origin upstream --branch release/1.0.0 https://github.com/awslabs/autonomouse-driving-data-framework
 ```
 
 > The release version can be replaced with the version of interest
@@ -44,10 +44,20 @@ Please see [HERE for details](https://docs.aws.amazon.com/cli/latest/userguide/c
 
 #### Bootstrap the CDKV2
 
-We use AWS CDK V2 as the standard CDK version because CDK V1 is set to maintenance mode beginning June 1, 2022. You  would need to bootstrap the CDK environment (one time per region) with V2 - see [HERE](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html).
+We use AWS CDK V2 as the standard CDK version because CDK V1 is set to maintenance mode beginning June 1, 2022. You  would need to bootstrap the CDK environment (one time per region) with V2 - see [HERE](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) in the account(s) you will be deploying.
 
 ```bash
 cdk bootstrap aws://<account>/<region>
+```
+
+#### Bootstrap AWS Account(s)
+
+Assuming that you will be using a single account, follow the guide [here](https://seed-farmer.readthedocs.io/en/latest/bootstrapping.html#) to bootstrap your account(s) to function as a toolchain and target account.
+
+Following is the command to bootstrap your existing account to a toolchain and target account
+
+```sh
+seedfarmer bootstrap toolchain --project addf --trusted-principals [principal-arns] --as-target
 ```
 
 #### Prepare the Manifests for Deployment
@@ -66,6 +76,25 @@ If running in a Linux instance (such as Cloud9), this the command for a `sed` re
 ```bash
 cp -R manifests/example-dev manifests/demo
 sed -i "s/example-dev/demo/g" manifests/demo/deployment.yaml
+```
+
+> Replace the value of `toolchainRegion` with your region of interest.
+> Set the `accountId` under `targetAccountMappings` to the AWS Account you would deploy target modules. You could set the `accountId` as below:
+
+```yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 1234567890
+```
+
+> Alternatively, you could also set `accountId` as an environment variable inside a `.env` file at the root of the addf project which has the values of global kind of variables using the format `PRIMARY_ACCOUNT=1234567890`. Then, we can set the value of `accountId` to `PRIMARY_ACCOUNT`, which will be dynamically loaded using `pydotenv` library.
+
+```yaml
+targetAccountMappings:
+  - alias: primary
+    accountId:
+      valueFrom:
+        envVariable: PRIMARY_ACCOUNT
 ```
 
 #### Prepare the AWS SecretsManager
@@ -139,39 +168,7 @@ seedfarmer apply manifests/demo/deployment.yaml
 
 ## Steps to Update ADDF deployment when there is a new change from ADDF team (if a new release is published)
 
-Below is the command to fetch the ADDF remote
-
-```bash
-git fetch upstream
-```
-
-Then, you should be merging the remote release branch of interest into your locally working/deployable branch
-
-```bash
-git merge release/MAJOR.MINOR.PATCH
-```
-
-> You would need to resolve any conflicts which happens during the merge of release branch into your local branch
-
-Then, you would need to commit the changes locally
-
-```bash
-git commit <<CHANGES>
-```
-
-If you are operating ADDF deployments by running `SeedFarmer` locally from your workstation, then below is the command to deploy the modules using the `SeedFarmer` CLI using the main manifest `deployment.yaml`:
-
-```bash
-seedfarmer apply manifests/demo/deployment.yaml
-```
-
-Alternatively, if you have setup a CICD process to handle updates/deployments of ADDF, then you would need to push the changes into your specific remote (user/customer specific remote) maintained for ADDF.
-
-```bash
-git push -u origin BRANCH_NAME
-```
-
-> Note: you should replace the `BRANCH_NAME` in the above command.
+Find the [Updating guide](updating_guide.md)
 
 ## Steps to Destroy ADDF
 

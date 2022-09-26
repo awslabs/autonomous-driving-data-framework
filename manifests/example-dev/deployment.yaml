@@ -1,5 +1,5 @@
 name: example-dev
-dockerCredentialsSecret: aws-addf-docker-credentials
+toolchainRegion: us-west-2
 groups:
   - name: optionals
     path: manifests/example-dev/optional-modules.yaml
@@ -13,5 +13,16 @@ groups:
     path: manifests/example-dev/simulation-modules.yaml
   - name: integration
     path: manifests/example-dev/integration-modules.yaml
-  - name: ide
-    path: manifests/example-dev/ide-modules.yaml
+  # - name: ide
+  #   path: manifests/example-dev/ide-modules.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId:
+      valueFrom:
+        envVariable: 1234567890
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true
