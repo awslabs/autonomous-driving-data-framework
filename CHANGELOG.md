@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [V0.2.0] - [UNRELEASED]
+## [V1.0.0] - [09/27/2022]
 
 ### **Added**
+
+- updated docs with the information about deploying addf with seedfarmer 2.0v which enables multi region and multi account deployments
 - aws-batch-demo pipeline and manifest
 - image extraction (rosbag to png) pipeline with yolov5 object detection
 - sensor extraction (rosbag to parquet) added to image pipeline
