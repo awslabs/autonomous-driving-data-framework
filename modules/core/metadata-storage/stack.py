@@ -19,6 +19,7 @@ import cdk_nag
 from aws_cdk import Aspects, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_dynamodb as dynamo
 from aws_cdk import aws_glue_alpha as glue_alpha  # type: ignore
+from aws_cdk import aws_events as events
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -73,6 +74,8 @@ class MetadataStorageStack(Stack):  # type: ignore
             "glue_db",
             database_name=f"{dep_mod}-{glue_db_suffix}",
         )
+
+        self.eventbus = events.EventBus(self, dep_mod,event_bus_name=dep_mod)
 
         self.rosbag_bagfile_table = rosbag_bagfile_table
         self.rosbag_bagfile_partition_key = rosbag_bagfile_p_key

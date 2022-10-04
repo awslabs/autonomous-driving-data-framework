@@ -51,6 +51,8 @@ CfnOutput(
             "RosbagSceneMetadataPartitionKey": stack.rosbag_scene_p_key,
             "RosbagSceneMetadataSortKey": stack.rosbag_scene_sort_key,
             "GlueDBName": stack.glue_db.database_name,
+            "EventBusName": stack.eventbus.event_bus_name,
+            "EventBusArn": stack.eventbus.event_bus_arn
         }
     ),
 )

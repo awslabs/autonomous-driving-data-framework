@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 ### **Changed**
-
+- modified `metadata-storage` module to create and AWS Event Bridge bus
 ### **Removed**
 
 ## [V1.0.0] - [09/27/2022]

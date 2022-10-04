@@ -10,6 +10,7 @@ The following functions occur:
 - creates a Glue Database table for vsi data
 - create a DDB table for Rosbag-BagFile-Metadata
 - creates a DDB table for Rosbag-Scene-Metadata
+- creates an Event Bridge Bus
 
 ## Inputs/Outputs
 
@@ -30,7 +31,8 @@ The following functions occur:
 - `RosbagBagFileTable`: name of the DDB table created for Rosbag Bagfile Data
 - `RosbagSceneMetadataTable`: name of the DDB table created for Rosbag Scene Data
 - `RosbagSceneMetadataStreamArn`: arn of the stream for the Rosbag Scene Metadata Table
-
+- `EventBusName`: name of the event bus in Event Bridge
+- `EventBusArn`: arn of the event bus in Event Bridge
 #### Output Example
 
 ```json
@@ -39,5 +41,7 @@ The following functions occur:
   "RosbagBagFileTable": "some-table-name",
   "RosbagSceneMetadataTable": "some-table-name",
   "RosbagSceneMetadataStreamArn": "arn:aws:dynamodb:<region>:table/addf-local-core-metadata-storage-<name>",
+  "EventBusName":"addf-example-dev-core-metadata-storage",
+  "EventBusArn":"arn:aws:events:<region>:<account-id>:event-bus/addf-example-dev-core-metadata-storage"
 }
 ```
