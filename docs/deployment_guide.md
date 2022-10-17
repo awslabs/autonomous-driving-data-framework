@@ -57,7 +57,7 @@ Assuming that you will be using a single account, follow the guide [here](https:
 Following is the command to bootstrap your existing account to a toolchain and target account
 
 ```sh
-seedfarmer bootstrap toolchain --project addf --trusted-principals [principal-arns] --as-target
+seedfarmer bootstrap toolchain --project addf --trusted-principal [principal-arns] --as-target
 ```
 
 #### Prepare the Manifests for Deployment
