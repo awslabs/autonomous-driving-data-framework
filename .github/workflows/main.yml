@@ -164,6 +164,25 @@ jobs:
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/aws-batch/
 
+  modules-example-eventbridge-stepfunc-awsbatch:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -r modules/examples/eb-sf-batch/requirements.txt
+      - name: Static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/examples/eb-sf-batch/ --skip-static-checks
+
   modules-analysis-aws-batch-demo:
     runs-on: ubuntu-latest
     strategy:
