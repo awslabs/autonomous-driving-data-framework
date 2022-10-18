@@ -5,15 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [V1.1.0] - [Unreleased]
+=======
+## [V1.1.0] - [UNRELEASED]
 
 ### **Added**
 
+
 ### **Changed**
 - changing removal policy of EFS to `RETAIN` by default in core-eks module
+- Added a pattern for Event bridge triggering StepFunctions triggering AWS Batch
 
+
+### **Changed**
+- Updated default accountId resolution in sample manifests to simple key:value mapping to reduce confusion
 ### **Removed**
 
+=======
 ## [V1.0.0] - [09/27/2022]
 
 ### **Added**

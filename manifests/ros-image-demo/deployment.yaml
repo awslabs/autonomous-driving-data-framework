@@ -13,9 +13,7 @@ groups:
     path: manifests/ros-image-demo/ford-analysis-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId:
-      valueFrom:
-        envVariable: 1234567890
+    accountId: 1234567890
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
