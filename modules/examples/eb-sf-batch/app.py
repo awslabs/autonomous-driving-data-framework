@@ -14,7 +14,7 @@ def _param(name: str) -> str:
 vcpus = os.getenv(_param("VCPUS"))  # required
 memory_limit_mib = os.getenv(_param("MEMORY_LIMIT_MIB"))  # required
 fargate_job_queue_arn = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))  # required
-ecr_repo_name = os.getenv(_param("ECR_REPO_NAME")) # required
+ecr_repo_name = os.getenv(_param("ECR_REPO_NAME"))  # required
 
 
 if not fargate_job_queue_arn:
@@ -40,14 +40,14 @@ stack = EventDrivenBatch(
     ),
 )
 
-# CfnOutput(
-#     scope=stack,
-#     id="metadata",
-#     value=stack.to_json_string(
-#         {
-#             "StateMachine": stack.eventbridge_sfn.state_machine,
-#         }
-#     ),
-# )
+CfnOutput(
+    scope=stack,
+    id="metadata",
+    value=stack.to_json_string(
+        {
+            "StateMachine": stack.eventbridge_sfn.state_machine.state_machine_arn,
+        }
+    ),
+)
 
 app.synth(force=True)

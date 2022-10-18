@@ -17,10 +17,10 @@ deploy:
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
       - aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || aws ecr create-repository --repository-name ${ECR_REPO_NAME}
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - cd images/simulation-mock && docker build -t $REPOSITORY_URI:latest .
+      - cd images/ && docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest && docker push $REPOSITORY_URI:$IMAGE_TAG
-      - cd ../../
+      - cd ../
       - cdk deploy --all --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # # Here we export some env vars and the write values into the batch_dag_config.py file for use by the DAGs
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
@@ -33,3 +33,5 @@ destroy:
     build:
       commands:
       - cdk destroy --force --app "python app.py"
+      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${ADDF_PARAMETER_ECR_REPO_NAME}"
+      - aws ecr delete-repository --repository-name ${ECR_REPO_NAME} --force

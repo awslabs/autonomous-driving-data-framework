@@ -3,9 +3,7 @@ from typing import Any, Dict, List, cast
 
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_iam as iam
-
-# import cdk_nag
-from aws_cdk import Aspects, Duration, NestedStack, Stack, Tags
+from aws_cdk import Aspects, Duration, NestedStack, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_events as events
@@ -15,6 +13,9 @@ from aws_solutions_constructs.aws_eventbridge_stepfunctions import EventbridgeTo
 
 # from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
+
+# import cdk_nag
+
 
 _logger: logging.Logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class EventDrivenBatch(Stack):
 
         role = iam.Role(
             self,
-            "MetricsAWSBatchRole",
+            f"{dep_mod}-AWSBatchRole",
             assumed_by=iam.ServicePrincipal(service="ecs-tasks.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_managed_policy_arn(
@@ -78,14 +79,14 @@ class EventDrivenBatch(Stack):
             },
         )
 
-        repo = ecr.Repository.from_repository_name(self, id=id, repository_name=f"{dep_mod}-{ecr_repo_name}")
+        repository = ecr.Repository.from_repository_name(self, id=id, repository_name=f"{dep_mod}-{ecr_repo_name}")
 
-        img = ecs.EcrImage.from_ecr_repository(repository=repo, tag="latest")
+        img = ecs.EcrImage.from_ecr_repository(repository=repository, tag="latest")
 
         definition = batch.JobDefinition(
             self,
-            "MetricsJobDefinition",
-            job_definition_name="Metrics-Job-Definition",
+            f"{dep_mod}-JobDefinition",
+            job_definition_name=f"addf-{deployment_name}-Job-Definition",
             retry_attempts=1,
             platform_capabilities=[batch.PlatformCapabilities.FARGATE],
             container=batch.JobDefinitionContainer(
@@ -95,7 +96,7 @@ class EventDrivenBatch(Stack):
                 execution_role=role,
                 job_role=role,
                 image=img,
-                command=["echo", "I ran fine"],
+                # command=["echo", "I ran fine"],
             ),
         )
 
@@ -103,8 +104,8 @@ class EventDrivenBatch(Stack):
 
         submit_metrics_job = step_functions_tasks.BatchSubmitJob(
             self,
-            "Submit metrics calculation job",
-            job_name="MetricsCalculation",
+            f"{dep_mod}-Batchjob",
+            job_name=f"addf-{deployment_name}-Job",
             job_queue_arn=fargate_job_queue_arn,
             job_definition_arn=definition.job_definition_arn,
         )
@@ -123,7 +124,7 @@ class EventDrivenBatch(Stack):
 
         self.eventbridge_sfn = EventbridgeToStepfunctions(
             self,
-            "test-eventbridge-stepfunctions-stack",
+            f"addf-{deployment_name}-eb-sf-batch",
             state_machine_props=stepfunctions.StateMachineProps(definition=definition),
             event_rule_props=events.RuleProps(schedule=events.Schedule.rate(Duration.minutes(1))),
         )
