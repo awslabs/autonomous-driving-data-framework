@@ -1,8 +1,41 @@
-name: image-pipeline
+name: ford-pipeline
 path: modules/analysis/rosbag-image-pipeline
 parameters:
+  - name: dag-id
+    value: ford_image_pipeline
+  - name: image-topics
+    value:
+      - /image_front_left
+  - name: sensor-topics
+    value:
+      - /gps
+      - /gps_time
+      - /imu
+      - /pose_ground_truth
+      - /pose_localized
+      - /pose_raw
+      - /tf
+      - /velocity_raw
+  - name: desired-encoding
+    value: 8UC3  # or bgr8
+  - name: lane-detection-job-concurrency
+    value: 10
+  - name: lane-detection-instance-type
+    value: ml.m5.2xlarge
+  - name: lane-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ImageUri
+  - name: lane-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ExecutionRole
   - name: object-detection-job-concurrency
-    value: 50
+    value: 30
   - name: object-detection-instance-type
     value: ml.m5.xlarge
   - name: object-detection-image-uri

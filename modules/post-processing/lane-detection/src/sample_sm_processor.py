@@ -42,12 +42,16 @@ processor.run(
     ],
     inputs=[
         ProcessingInput(
-            input_name="images_input", source=f"s3://{BUCKET_INPUT}/{S3_INPUT_PATH}", destination=LOCAL_INPUT
+            input_name="images_input",
+            source=f"s3://{BUCKET_INPUT}/{S3_INPUT_PATH}",
+            destination=LOCAL_INPUT,
         )
     ],
     outputs=[
         ProcessingOutput(
-            output_name="image_output", source=LOCAL_OUTPUT, destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH}"
+            output_name="image_output",
+            source=LOCAL_OUTPUT,
+            destination=f"s3://{BUCKET_OUTPUT}/{S3_OUTPUT_PATH}",
         ),
         ProcessingOutput(
             output_name="json_output",

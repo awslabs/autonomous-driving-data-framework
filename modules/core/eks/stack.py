@@ -65,7 +65,7 @@ class Eks(Stack):  # type: ignore
         cluster_admin_role = iam.Role(
             self,
             "ClusterAdminRole",
-            role_name=f"addf-{self.deployment_name}-{self.module_name}-masterrole",
+            role_name=f"addf-{self.deployment_name}-{self.module_name}-{self.region}-masterrole",
             assumed_by=iam.CompositePrincipal(
                 iam.AccountRootPrincipal(),
                 iam.ServicePrincipal("ec2.amazonaws.com"),
@@ -948,7 +948,6 @@ class Eks(Stack):  # type: ignore
                 {
                     "id": "AwsSolutions-EKS1",
                     "reason": "No Customer data resides on the compute resources",
-                    "applies_to": "*",
                 },
             ],
         )

@@ -49,7 +49,7 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: lane-detection
-path: modules/post-processing/lane-detection/
+path: modules/post-processing/yolop-lane-detection/
 parameters:
   - name: full-access-policy-arn
     valueFrom:

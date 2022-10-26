@@ -1,5 +1,5 @@
 name: aws-batch-demo
-dockerCredentialsSecret: aws-addf-docker-credentials
+toolchainRegion: us-west-2
 groups:
   - name: optionals
     path: manifests/aws-batch-demo/optional-modules.yaml
@@ -7,3 +7,12 @@ groups:
     path: manifests/aws-batch-demo/core-modules.yaml
   - name: analysis
     path: manifests/aws-batch-demo/analysis-modules.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 1234567890
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true

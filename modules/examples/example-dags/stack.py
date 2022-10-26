@@ -89,7 +89,6 @@ class DagIamRole(Stack):
                 {
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced describe only",
-                    "applies_to": "*",
                 },
             ],
         )

@@ -148,27 +148,22 @@ class ProxyStack(Stack):
                 {
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
                 },
                 {
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
                 },
                 {
                     "id": "AwsSolutions-EC23",
                     "reason": "Access is using basic-auth challenge",
-                    "applies_to": "*",
                 },
                 {
                     "id": "AwsSolutions-EC28",
                     "reason": "Detailed Monitoring not enabled as this is a simple proxy",
-                    "applies_to": "*",
                 },
                 {
                     "id": "AwsSolutions-EC29",
                     "reason": "ASG not enabled as this is a simple proxy",
-                    "applies_to": "*",
                 },
             ],
         )

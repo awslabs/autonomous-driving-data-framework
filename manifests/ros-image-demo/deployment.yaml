@@ -1,5 +1,5 @@
 name: ros-image-demo
-dockerCredentialsSecret: aws-addf-docker-credentials
+toolchainRegion: us-west-2
 groups:
   - name: optionals
     path: manifests/ros-image-demo/optional-modules.yaml
@@ -8,4 +8,15 @@ groups:
   - name: docker-images
     path: manifests/ros-image-demo/docker-image-modules.yaml
   - name: analysis
-    path: manifests/ros-image-demo/analysis-modules.yaml
+    path: manifests/ros-image-demo/aws-analysis-modules.yaml
+  - name: ford-analysis
+    path: manifests/ros-image-demo/ford-analysis-modules.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 1234567890
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true
