@@ -262,12 +262,12 @@ def sagemaker_yolo_operation(**kwargs):
     image_directory_items = table.query(
         KeyConditionExpression=Key("pk").eq(batch_id),
         Select="SPECIFIC_ATTRIBUTES",
-        ProjectionExpression="raw_image_dirs",
+        ProjectionExpression="resized_image_dirs",
     )["Items"]
 
     image_directories = []
     for item in image_directory_items:
-        image_directories += item["raw_image_dirs"]
+        image_directories += item["resized_image_dirs"]
 
     logger.info(f"Starting object detection job for {len(image_directories)} directories")
 
@@ -340,12 +340,12 @@ def sagemaker_lanedet_operation(**kwargs):
     image_directory_items = table.query(
         KeyConditionExpression=Key("pk").eq(batch_id),
         Select="SPECIFIC_ATTRIBUTES",
-        ProjectionExpression="raw_image_dirs",
+        ProjectionExpression="resized_image_dirs",
     )["Items"]
 
     image_directories = []
     for item in image_directory_items:
-        image_directories += item["raw_image_dirs"]
+        image_directories += item["resized_image_dirs"]
 
     logger.info(f"Starting lane detection job for {len(image_directories)} directories")
 

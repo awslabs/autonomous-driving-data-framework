@@ -42,6 +42,8 @@ class RosToPngBatchJob(Stack):
         timeout_seconds: int,
         vcpus: int,
         memory_limit_mib: int,
+        resized_width: int,
+        resized_height: int,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -120,6 +122,8 @@ class RosToPngBatchJob(Stack):
                     "AWS_DEFAULT_REGION": self.region,
                     "AWS_ACCOUNT_ID": self.account,
                     "DEBUG": "true",
+                    "RESIZE_WIDTH": str(resized_width),
+                    "RESIZE_HEIGHT": str(resized_height),
                 },
                 job_role=role,
                 execution_role=role,

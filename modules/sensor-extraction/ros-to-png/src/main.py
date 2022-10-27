@@ -55,9 +55,15 @@ class VideoFromBag:
 
 
 class ImageFromBag:
-    def __init__(self, topic, encoding, bag_path, output_path):
+    def __init__(self, topic, encoding, bag_path, output_path, resized_width=None, resized_height=None):
         self.bridge = CvBridge()
         output_dir = os.path.join(output_path, topic.replace("/", "_"))
+
+        resize = resized_width is not None and resized_height is not None
+        if resize:
+            output_dir = output_dir + f"_resized_{resized_width}_{resized_height}"
+
+        logger.info(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         files = []
         with rosbag.Bag(bag_path) as bag:
@@ -65,12 +71,15 @@ class ImageFromBag:
                 timestamp = "{}_{}".format(msg.header.stamp.secs, msg.header.stamp.nsecs)
                 seq = "{:07d}".format(msg.header.seq)
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
+                if resize:
+                    cv_image = cv2.resize(cv_image, (resized_width, resized_height))
                 local_image_name = "frame_{}.png".format(seq)
                 s3_image_name = "frame_{}_{}.png".format(seq, timestamp)
                 im_out_path = os.path.join(output_dir, local_image_name)
                 logger.info("Write image: {} to {}".format(local_image_name, im_out_path))
                 cv2.imwrite(im_out_path, cv_image)
 
+                topic = topic + f"_resized_{resized_width}_{resized_height}" if resize else topic
                 files.append(
                     {
                         "local_image_path": im_out_path,
@@ -147,6 +156,11 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     logger.info("encoding: %s", encoding)
     logger.info("target_bucket: %s", target_bucket)
 
+    resized_width = int(os.environ['RESIZE_WIDTH'])
+    resized_height = int(os.environ['RESIZE_HEIGHT'])
+    logger.info("resized_width: %s", resized_width)
+    logger.info("resized_height: %s", resized_height)
+
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(table_name)
 
@@ -175,7 +189,17 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         try:
             bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
             all_files += bag_obj.files
-            logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
+            logger.info(f"Raw Images extracted from topic: {topic} with encoding {encoding}")
+
+            if resized_width and resized_height:
+                logger.info(
+                    f"Resized Images extracted from topic: {topic} with encoding {encoding}"
+                    f" with new size {resized_width} x {resized_height}"
+                )
+                bag_obj = ImageFromBag(topic, encoding, bag_path, images_path, resized_width, resized_height)
+                all_files += bag_obj.files
+                logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
+
             # video_file = VideoFromBag(topic, images_path)
         except rospy.ROSInterruptException:
             pass
@@ -185,12 +209,16 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     uploaded_files, uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
     logger.info("Uploaded results")
 
+    raw_image_dirs = [d for d in uploaded_directories if "resized" not in d]
+    resized_image_dirs = [d for d in uploaded_directories if "resized" in d]
+
     logger.info("Writing job status to DynamoDB")
     table.update_item(
         Key={"pk": item["drive_id"], "sk": item["file_id"]},
         UpdateExpression="SET "
         "image_extraction_status = :status, "
         "raw_image_dirs = :raw_image_dirs, "
+        "resized_image_dirs = :resized_image_dirs, "
         "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
@@ -200,7 +228,8 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         "file_id = :file_id",
         ExpressionAttributeValues={
             ":status": "success",
-            ":raw_image_dirs": uploaded_directories,
+            ":raw_image_dirs": raw_image_dirs,
+            ":resized_image_dirs": resized_image_dirs,
             ":raw_image_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,
@@ -216,6 +245,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         UpdateExpression="SET "
         "image_extraction_status = :status, "
         "raw_image_dirs = :raw_image_dirs, "
+         "resized_image_dirs = :resized_image_dirs, "
         "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
@@ -224,6 +254,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         ExpressionAttributeValues={
             ":status": "success",
             ":raw_image_dirs": uploaded_directories,
+            ":resized_image_dirs": resized_image_dirs,
             ":raw_image_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,

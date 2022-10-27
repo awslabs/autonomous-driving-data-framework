@@ -17,6 +17,7 @@ mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
+
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
 fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
