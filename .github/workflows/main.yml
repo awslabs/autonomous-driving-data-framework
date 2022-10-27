@@ -389,3 +389,21 @@ jobs:
           pip install -r modules/simulations/k8s-managed/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/simulations/k8s-managed/
+
+  modules-visualization-dev-instance:
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          python-version: [3.9]
+      steps:
+        - uses: actions/checkout@v2
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v1
+          with:
+            python-version: ${{ matrix.python-version }}
+        - name: Install Requirements
+          run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements-dev.txt
+        - name: Static checks and linting (mypy, flake8, black, isort)
+          run: scripts/validate.sh --language python --path modules/visualization/dev-instance/ --skip-static-checks
