@@ -156,8 +156,8 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     logger.info("encoding: %s", encoding)
     logger.info("target_bucket: %s", target_bucket)
 
-    resized_width = int(os.environ['RESIZE_WIDTH'])
-    resized_height = int(os.environ['RESIZE_HEIGHT'])
+    resized_width = int(os.environ["RESIZE_WIDTH"])
+    resized_height = int(os.environ["RESIZE_HEIGHT"])
     logger.info("resized_width: %s", resized_width)
     logger.info("resized_height: %s", resized_height)
 
@@ -245,7 +245,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         UpdateExpression="SET "
         "image_extraction_status = :status, "
         "raw_image_dirs = :raw_image_dirs, "
-         "resized_image_dirs = :resized_image_dirs, "
+        "resized_image_dirs = :resized_image_dirs, "
         "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"

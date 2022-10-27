@@ -41,7 +41,7 @@ stack = RosToPngBatchJob(
     memory_limit_mib=memory_limit_mib,
     s3_access_policy=full_access_policy,
     resized_width=resized_width,
-    resized_height=resized_height
+    resized_height=resized_height,
 )
 
 CfnOutput(
