@@ -27,6 +27,12 @@ parameters:
 name: batch-compute
 path: modules/core/aws-batch
 parameters:
+  - name: ebs-iops
+    value: 8000
+  - name: ebs-size-gbs
+    value: 200
+  - name: ebs-type
+    value: io1
   - name: vpc-id
     valueFrom:
       moduleMetadata:

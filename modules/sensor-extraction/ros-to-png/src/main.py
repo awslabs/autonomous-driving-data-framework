@@ -17,7 +17,8 @@ import json
 import logging
 import os
 import sys
-
+import shutil
+import time
 import boto3
 import cv2
 import requests
@@ -42,16 +43,16 @@ if debug:
     logging.getLogger("s3transfer").setLevel(logging.CRITICAL)
 
 
-class VideoFromBag:
-    def __init__(self, topic, images_path):
-        self.bridge = CvBridge()
-        output_dir = os.path.join(images_path, topic.replace("/", "_"))
-        self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
-        logger.info("Get video for topic {}".format(topic))
-        logger.info(
-            f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png \
-            -vcodec libx264 -crf 25  -pix_fmt yuv420p {self.video}"""
-        )
+# class VideoFromBag:
+#     def __init__(self, topic, images_path):
+#         self.bridge = CvBridge()
+#         output_dir = os.path.join(images_path, topic.replace("/", "_"))
+#         self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
+#         logger.info("Get video for topic {}".format(topic))
+#         logger.info(
+#             f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png \
+#             -vcodec libx264 -crf 25  -pix_fmt yuv420p {self.video}"""
+#         )
 
 
 class ImageFromBag:
@@ -102,7 +103,7 @@ def upload(client, bucket_name, drive_id, file_id, files):
         client.upload_file(file["local_image_path"], bucket_name, target)
         uploaded_files.append(target)
         target_prefixes.add(target_prefix)
-    return uploaded_files, list(target_prefixes)
+    return list(target_prefixes)
 
 
 def get_log_path():
@@ -146,6 +147,29 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
     )
 
 
+def extract_images(bag_path, topic, resized_width, resized_height, encoding, images_path):
+    all_files = []
+    logger.info(f"Getting images from topic: {topic} with encoding {encoding}")
+    try:
+        bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
+        all_files += bag_obj.files
+        logger.info(f"Raw Images extracted from topic: {topic} with encoding {encoding}")
+
+        if resized_width and resized_height:
+            logger.info(
+                f"Resized Images extracted from topic: {topic} with encoding {encoding}"
+                f" with new size {resized_width} x {resized_height}"
+            )
+            bag_obj = ImageFromBag(topic, encoding, bag_path, images_path, resized_width, resized_height)
+            all_files += bag_obj.files
+            logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
+
+        # video_file = VideoFromBag(topic, images_path)
+    except rospy.ROSInterruptException:
+        pass
+    return all_files
+
+
 def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket) -> int:
     logger.info("batch_id: %s", batch_id)
     logger.info("index: %s", index)
@@ -183,31 +207,13 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     s3.download_file(item["s3_bucket"], item["s3_key"], bag_path)
     logger.info(f"Bag downloaded to {bag_path}")
 
-    all_files = []
+    uploaded_directories = []
     for topic in topics:
-        logger.info(f"Getting images from topic: {topic} with encoding {encoding}")
-        try:
-            bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
-            all_files += bag_obj.files
-            logger.info(f"Raw Images extracted from topic: {topic} with encoding {encoding}")
-
-            if resized_width and resized_height:
-                logger.info(
-                    f"Resized Images extracted from topic: {topic} with encoding {encoding}"
-                    f" with new size {resized_width} x {resized_height}"
-                )
-                bag_obj = ImageFromBag(topic, encoding, bag_path, images_path, resized_width, resized_height)
-                all_files += bag_obj.files
-                logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
-
-            # video_file = VideoFromBag(topic, images_path)
-        except rospy.ROSInterruptException:
-            pass
-
-    # Sync results
-    logger.info(f"Uploading results - {target_bucket}")
-    uploaded_files, uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
-    logger.info("Uploaded results")
+        all_files = extract_images(bag_path, topic, resized_width, resized_height, encoding, images_path)
+        logger.info(f"Uploading results - {target_bucket}")
+        uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
+        uploaded_directories += uploaded_directories
+        logger.info("Uploaded results")
 
     raw_image_dirs = [d for d in uploaded_directories if "resized" not in d]
     resized_image_dirs = [d for d in uploaded_directories if "resized" in d]
@@ -262,7 +268,6 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
             ":s3_bucket": item["s3_bucket"],
         },
     )
-
     return 0
 
 
@@ -278,16 +283,20 @@ if __name__ == "__main__":
     parser.add_argument("--targetbucket", required=True)
     args = parser.parse_args()
 
+    unique_id = f"{args.index}_{str(int(time.time()))}"
+    local_dir = f"/mnt/ebs/{unique_id}"
     logger.debug("ARGS: %s", args)
+    os.mkdir(local_dir)
     sys.exit(
         main(
             batch_id=args.batchid,
             index=args.index,
             table_name=args.tablename,
-            bag_path="/tmp/ros.bag",
-            images_path="/tmp/images/",
+            bag_path=f"{local_dir}/ros.bag",
+            images_path=f"{local_dir}/images/",
             topics=json.loads(args.imagetopics),
             encoding=args.desiredencoding,
             target_bucket=args.targetbucket,
         )
     )
+    shutil.rmtree(local_dir)
