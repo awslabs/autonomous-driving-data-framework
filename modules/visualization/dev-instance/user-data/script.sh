@@ -289,14 +289,14 @@ echo "$TARGET_USERNAME:$NEW_PASSWORD" | chpasswd
 
 
 # Create config file
-mkdir /home/ubuntu/.aws
-cat >/home/ubuntu/.aws/config <<EOL
-[default]
-region = ${AWS_REGION}
-output=json
+# mkdir /home/ubuntu/.aws
+# cat >/home/ubuntu/.aws/config <<EOL
+# [default]
+# region = ${AWS_REGION}
+# output=json
 
-EOL
-chown -R ubuntu:ubuntu /home/ubuntu/.aws
+# EOL
+# chown -R ubuntu:ubuntu /home/ubuntu/.aws
 
 # Install Foxglove
 export foxglove=1.29.0
