@@ -13,6 +13,7 @@
 #    limitations under the License.
 
 import argparse
+import concurrent
 import json
 import logging
 import os
@@ -92,17 +93,40 @@ class ImageFromBag:
                 )
         self.files = files
 
+def upload_file(client, local_image_path, bucket_name, target):
+    client.upload_file(local_image_path, bucket_name, target)
 
 def upload(client, bucket_name, drive_id, file_id, files):
     uploaded_files = []
     target_prefixes = set()
+    items = []
     for file in files:
         topic = file["topic"].replace("/", "_")
         target_prefix = os.path.join(drive_id, file_id.replace(".bag", ""), topic)
         target = os.path.join(target_prefix, file["s3_image_name"])
-        client.upload_file(file["local_image_path"], bucket_name, target)
+        items.append(
+            {
+                'local_image_path': file['local_image_path'],
+                'bucket_name': bucket_name,
+                'target': target,
+            }
+        )
         uploaded_files.append(target)
         target_prefixes.add(target_prefix)
+
+    executor = concurrent.futures.ThreadPoolExecutor(100)
+    futures = [
+        executor.submit(
+            upload_file,
+            client,
+            item['local_image_path'],
+            item['bucket_name'],
+            item['target'],
+        )
+        for item in items
+    ]
+    concurrent.futures.wait(futures)
+
     return list(target_prefixes)
 
 
@@ -268,6 +292,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
             ":s3_bucket": item["s3_bucket"],
         },
     )
+    shutil.rmtree(local_dir)
     return 0
 
 
@@ -299,4 +324,3 @@ if __name__ == "__main__":
             target_bucket=args.targetbucket,
         )
     )
-    shutil.rmtree(local_dir)

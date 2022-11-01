@@ -52,9 +52,6 @@ class RosToPngBatchJob(Stack):
             **kwargs,
         )
 
-        if platform not in ["FARGATE", "EC2"]:
-            raise ValueError
-
         Tags.of(scope=cast(IConstruct, self)).add(
             key="Deployment",
             value="aws",

@@ -28,9 +28,9 @@ name: batch-compute
 path: modules/core/aws-batch
 parameters:
   - name: ebs-iops
-    value: 8000
+    value: 16000
   - name: ebs-size-gbs
-    value: 200
+    value: 400
   - name: ebs-type
     value: io1
   - name: vpc-id
@@ -54,7 +54,12 @@ parameters:
           desired_vcpus: 0
           order: 1
           instance_types:
+             - "m4.2xlarge"
+             - "m4.xlarge"
+             - "m4.4xlarge"
+             - "m5.2xlarge"
              - "m5.xlarge"
+             - "m5.4xlarge"
         - env_name: ng2
           max_vcpus: 4800
           desired_vcpus: 0

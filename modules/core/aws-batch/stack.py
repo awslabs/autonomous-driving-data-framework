@@ -130,11 +130,11 @@ class AwsBatch(Stack):
                     launch_template = ec2.CfnLaunchTemplate(
                         self,
                         'StorageLaunchTemplate',
-                        launch_template_name='extra-storage-template',
+                        launch_template_name='additional-storage-template',
                         launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
                             block_device_mappings=[
                                 ec2.CfnLaunchTemplate.BlockDeviceMappingProperty(
-                                    device_name="/dev/sdh",
+                                    device_name="/dev/xvda",
                                     ebs=ec2.CfnLaunchTemplate.EbsProperty(
                                         encrypted=True,
                                         delete_on_termination=True,
@@ -146,6 +146,10 @@ class AwsBatch(Stack):
                                     )
                                 )
                             ],
+                            ebs_optimized=True,
+                            monitoring=ec2.CfnLaunchTemplate.MonitoringProperty(
+                                enabled=False
+                            ),
                         )
                     )
 
