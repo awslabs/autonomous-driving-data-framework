@@ -128,10 +128,13 @@ class AwsBatch(Stack):
                     instance_types = []
                     ebs_config = batchenv.get("ebs_config", {})
                     if ebs_config:
-                        launch_template = ec2.CfnLaunchTemplate(
+
+                        launch_template_name = "additional-storage-template"
+
+                        ec2.CfnLaunchTemplate(
                             self,
                             "StorageLaunchTemplate",
-                            launch_template_name="additional-storage-template",
+                            launch_template_name=launch_template_name,
                             launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
                                 block_device_mappings=[
                                     ec2.CfnLaunchTemplate.BlockDeviceMappingProperty(
@@ -151,6 +154,11 @@ class AwsBatch(Stack):
                                 monitoring=ec2.CfnLaunchTemplate.MonitoringProperty(enabled=True),
                             ),
                         )
+                        launch_template_spec = batch.LaunchTemplateSpecification(
+                            launch_template_name=launch_template_name,
+                        )
+                    else:
+                        launch_template_spec = None
 
                     if instance_types_context:
                         for value in instance_types_context:
@@ -164,11 +172,7 @@ class AwsBatch(Stack):
                             instance_types=instance_types if instance_types else None,
                             maxv_cpus=batchenv.get("max_vcpus", DEFAULT_MAX_VCPUS_PER_QUEUE),
                             minv_cpus=0,
-                            launch_template=None
-                            if ebs_config is None
-                            else batch.LaunchTemplateSpecification(
-                                launch_template_name=launch_template.launch_template_name,
-                            ),
+                            launch_template=launch_template_spec,
                             type=batch.ComputeResourceType.ON_DEMAND,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
                             security_groups=[batchSG],
