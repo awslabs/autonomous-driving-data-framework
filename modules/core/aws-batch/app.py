@@ -16,12 +16,6 @@ def _param(name: str) -> str:
 vpc_id = os.getenv(_param("VPC_ID"))  # required
 private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS"), ""))  # required
 batch_compute = json.loads(os.getenv(_param("BATCH_COMPUTE"), ""))  # required
-ebs_iops = int(os.getenv(_param("EBS_IOPS"), 1000))
-ebs_size_gbs = int(os.getenv(_param("EBS_SIZE_GBS"), 100))
-ebs_type = os.getenv(_param("EBS_TYPE"), "io1")
-
-if ebs_iops / ebs_size_gbs >= 50:
-    raise Exception("iops cannot be more than 50x ebs volume size")
 
 if not vpc_id:
     raise Exception("Missing input parameter vpc-id")
@@ -43,9 +37,6 @@ stack = AwsBatch(
     vpc_id=vpc_id,
     private_subnet_ids=private_subnet_ids,
     batch_compute=batch_compute,
-    ebs_iops=ebs_iops,
-    ebs_size_gbs=ebs_size_gbs,
-    ebs_type=ebs_type,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

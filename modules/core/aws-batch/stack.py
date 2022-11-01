@@ -39,9 +39,6 @@ class AwsBatch(Stack):
         vpc_id: str,
         private_subnet_ids: List[str],
         batch_compute: Dict[str, Any],
-        ebs_iops: int = 8000,
-        ebs_size_gbs: int = 200,
-        ebs_type: str = "io1",
         **kwargs: Any,
     ) -> None:
         super().__init__(
