@@ -17,9 +17,10 @@ import concurrent
 import json
 import logging
 import os
-import sys
 import shutil
+import sys
 import time
+
 import boto3
 import cv2
 import requests
@@ -93,8 +94,10 @@ class ImageFromBag:
                 )
         self.files = files
 
+
 def upload_file(client, local_image_path, bucket_name, target):
     client.upload_file(local_image_path, bucket_name, target)
+
 
 def upload(client, bucket_name, drive_id, file_id, files):
     uploaded_files = []
@@ -106,9 +109,9 @@ def upload(client, bucket_name, drive_id, file_id, files):
         target = os.path.join(target_prefix, file["s3_image_name"])
         items.append(
             {
-                'local_image_path': file['local_image_path'],
-                'bucket_name': bucket_name,
-                'target': target,
+                "local_image_path": file["local_image_path"],
+                "bucket_name": bucket_name,
+                "target": target,
             }
         )
         uploaded_files.append(target)
@@ -119,9 +122,9 @@ def upload(client, bucket_name, drive_id, file_id, files):
         executor.submit(
             upload_file,
             client,
-            item['local_image_path'],
-            item['bucket_name'],
-            item['target'],
+            item["local_image_path"],
+            item["bucket_name"],
+            item["target"],
         )
         for item in items
     ]

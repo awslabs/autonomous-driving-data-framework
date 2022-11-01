@@ -126,32 +126,31 @@ class AwsBatch(Stack):
                 if batchenv.get("compute_type").upper().startswith("ON"):
                     instance_types_context = batchenv.get("instance_types")
                     instance_types = []
-
-                    launch_template = ec2.CfnLaunchTemplate(
-                        self,
-                        'StorageLaunchTemplate',
-                        launch_template_name='additional-storage-template',
-                        launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
-                            block_device_mappings=[
-                                ec2.CfnLaunchTemplate.BlockDeviceMappingProperty(
-                                    device_name="/dev/xvda",
-                                    ebs=ec2.CfnLaunchTemplate.EbsProperty(
-                                        encrypted=True,
-                                        delete_on_termination=True,
-                                        iops=ebs_iops,  # max iops of an m5.xlarge instance -
-                                        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/
-                                        # ebs-optimized.html#ebs-optimization-support
-                                        volume_size=ebs_size_gbs,
-                                        volume_type=ebs_type,
+                    ebs_config = batchenv.get("ebs_config", {})
+                    if ebs_config:
+                        launch_template = ec2.CfnLaunchTemplate(
+                            self,
+                            "StorageLaunchTemplate",
+                            launch_template_name="additional-storage-template",
+                            launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
+                                block_device_mappings=[
+                                    ec2.CfnLaunchTemplate.BlockDeviceMappingProperty(
+                                        device_name="/dev/xvda",
+                                        ebs=ec2.CfnLaunchTemplate.EbsProperty(
+                                            encrypted=True,
+                                            delete_on_termination=True,
+                                            iops=ebs_config["ebs_iops"],  # max iops of an m5.xlarge instance -
+                                            # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/
+                                            # ebs-optimized.html#ebs-optimization-support
+                                            volume_size=ebs_config["ebs_size_gbs"],
+                                            volume_type=ebs_config["ebs_type"],
+                                        ),
                                     )
-                                )
-                            ],
-                            ebs_optimized=True,
-                            monitoring=ec2.CfnLaunchTemplate.MonitoringProperty(
-                                enabled=False
+                                ],
+                                ebs_optimized=True,
+                                monitoring=ec2.CfnLaunchTemplate.MonitoringProperty(enabled=True),
                             ),
                         )
-                    )
 
                     if instance_types_context:
                         for value in instance_types_context:
@@ -165,7 +164,9 @@ class AwsBatch(Stack):
                             instance_types=instance_types if instance_types else None,
                             maxv_cpus=batchenv.get("max_vcpus", DEFAULT_MAX_VCPUS_PER_QUEUE),
                             minv_cpus=0,
-                            launch_template=batch.LaunchTemplateSpecification(
+                            launch_template=None
+                            if ebs_config is None
+                            else batch.LaunchTemplateSpecification(
                                 launch_template_name=launch_template.launch_template_name,
                             ),
                             type=batch.ComputeResourceType.ON_DEMAND,

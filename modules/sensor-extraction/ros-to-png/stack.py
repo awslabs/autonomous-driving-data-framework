@@ -130,11 +130,7 @@ class RosToPngBatchJob(Stack):
                     ecs.Volume(
                         name="scratch",
                         docker_volume_configuration=ecs.DockerVolumeConfiguration(
-                            scope=ecs.Scope.TASK,
-                            driver="local",
-                            labels={
-                                "scratch": "space"
-                            }
+                            scope=ecs.Scope.TASK, driver="local", labels={"scratch": "space"}
                         ),
                     ),
                 ],
@@ -144,12 +140,10 @@ class RosToPngBatchJob(Stack):
                         container_path="/mnt/ebs",
                         read_only=False,
                     ),
-                ]
+                ],
             ),
             job_definition_name=self.repository_name,
-            platform_capabilities=[
-                batch.PlatformCapabilities.EC2
-            ],
+            platform_capabilities=[batch.PlatformCapabilities.EC2],
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),
         )
