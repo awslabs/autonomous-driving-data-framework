@@ -1,5 +1,5 @@
 name: ros-image-demo
-toolchainRegion: eu-west-1
+toolchainRegion: us-west-2
 groups:
   - name: optionals
     path: manifests/ros-image-demo/optional-modules.yaml
@@ -16,5 +16,5 @@ targetAccountMappings:
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
     regionMappings:
-      - region: eu-west-1
+      - region: us-west-2
         default: true
