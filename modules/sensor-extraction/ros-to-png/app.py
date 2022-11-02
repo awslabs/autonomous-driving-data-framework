@@ -16,9 +16,14 @@ retries = int(os.getenv(_param("RETRIES"), 1))
 timeout_seconds = int(os.getenv(_param("TIMEOUT_SECONDS"), 60))
 vcpus = int(os.getenv(_param("VCPUS"), 4))
 memory_limit_mib = int(os.getenv(_param("MEMORY_MIB"), 16384))
-resized_width = int(os.getenv(_param("RESIZED_WIDTH")))
-resized_height = int(os.getenv(_param("RESIZED_HEIGHT")))
+resized_width = os.getenv(_param("RESIZED_WIDTH"))
+resized_height = os.getenv(_param("RESIZED_HEIGHT"))
 
+if resized_width:
+    resized_width = int(resized_width)
+
+if resized_height:
+    resized_height = int(resized_height)
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")

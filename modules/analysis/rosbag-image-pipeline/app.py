@@ -36,39 +36,39 @@ lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"),
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
 desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
 yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
-image_topics = os.getenv(_param("IMAGE_TOPICS"))
-sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
+image_topics = os.getenv(_param("IMAGE_TOPICS"), "{}")
+sensor_topics = os.getenv(_param("SENSOR_TOPICS"), "{}")
 
-
-if not png_batch_job_def_arn:
-    raise Exception("missing input parameter png-batch-job-def-arn")
-
-if not parquet_batch_job_def_arn:
-    raise Exception("missing input parameter parquet-batch-job-def-arn")
-
-if not object_detection_role:
-    raise Exception("missing input parameter object-detection-iam-role")
-
-if not object_detection_image_uri:
-    raise Exception("missing input parameter object-detection-image-uri")
-
-if not lane_detection_role:
-    raise Exception("missing input parameter lane-detection-iam-role")
-
-if not lane_detection_image_uri:
-    raise Exception("missing input parameter lane-detection-image-uri")
-
-if not vpc_id:
-    raise Exception("missing input parameter vpc-id")
-
-if not mwaa_exec_role:
-    raise ValueError("MWAA Execution Role is missing.")
-
-if not full_access_policy:
-    raise ValueError("S3 Full Access Policy ARN is missing.")
-
-if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
-    raise ValueError("Requires at least one job queue.")
+#
+# if not png_batch_job_def_arn:
+#     raise Exception("missing input parameter png-batch-job-def-arn")
+#
+# if not parquet_batch_job_def_arn:
+#     raise Exception("missing input parameter parquet-batch-job-def-arn")
+#
+# if not object_detection_role:
+#     raise Exception("missing input parameter object-detection-iam-role")
+#
+# if not object_detection_image_uri:
+#     raise Exception("missing input parameter object-detection-image-uri")
+#
+# if not lane_detection_role:
+#     raise Exception("missing input parameter lane-detection-iam-role")
+#
+# if not lane_detection_image_uri:
+#     raise Exception("missing input parameter lane-detection-image-uri")
+#
+# if not vpc_id:
+#     raise Exception("missing input parameter vpc-id")
+#
+# if not mwaa_exec_role:
+#     raise ValueError("MWAA Execution Role is missing.")
+#
+# if not full_access_policy:
+#     raise ValueError("S3 Full Access Policy ARN is missing.")
+#
+# if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
+#     raise ValueError("Requires at least one job queue.")
 
 app = App()
 
