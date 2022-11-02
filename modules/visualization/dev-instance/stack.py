@@ -2,7 +2,6 @@ import json
 import os
 from typing import cast
 
-# from aws_cdk.aws_s3_assets import Asset
 import aws_cdk.aws_secretsmanager as secretsmanager
 from aws_cdk import Environment, Stack, Tags, aws_iam
 from aws_cdk.aws_ec2 import (
