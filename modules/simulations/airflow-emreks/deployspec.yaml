@@ -34,6 +34,7 @@ deploy:
       - echo "REGION = '${AWS_DEFAULT_REGION}'" >> emr_eks_dags/emr_eks_dag_config.py
       - echo "ACCOUNT_ID = '${AWS_ACCOUNT_ID}'" >> emr_eks_dags/emr_eks_dag_config.py
       - echo "RAW_BUCKET = '${ADDF_PARAMETER_RAW_BUCKET_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
+      - echo "DAG_BUCKET = '${ADDF_PARAMETER_DAG_BUCKET_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
       # Copy DAG files to S3
       - aws s3 cp --recursive emr_eks_dags/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/emr_eks_dags/
 destroy:

@@ -46,6 +46,8 @@ class EmronEksRbacStack(Stack):
         eks_oidc_arn: str,
         eks_openid_issuer: str,
         emr_namespace: str,
+        raw_bucket_name: str,
+        artifact_bucket_name: str,
         **kwargs: Any,
     ) -> None:
 
@@ -94,14 +96,36 @@ class EmronEksRbacStack(Stack):
             },
         )
 
-        # Create Dag IAM Role and policy
+        # The below permissions is to deploy the `citibike` usecase declared in the below blogpost
+        # https://aws.amazon.com/blogs/big-data/manage-and-process-your-big-data-workflows-with-amazon-mwaa-and-amazon-emr-on-amazon-eks/
         policy_statements = [
             iam.PolicyStatement(
-                actions=["ecr:*"],
+                actions=["s3:ListBucket", "s3:GetObject*"],
+                effect=iam.Effect.ALLOW,
+                resources=["arn:aws:s3:::tripdata", "arn:aws:s3:::tripdata/*"],
+            ),
+            iam.PolicyStatement(
+                actions=["s3:*"],
                 effect=iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:ecr:{self.region}:{self.account}:repository/addf-{self.deployment_name}*"
+                    f"arn:aws:s3:::{raw_bucket_name}",
+                    f"arn:aws:s3:::{raw_bucket_name}/*",
                 ],
+            ),
+            iam.PolicyStatement(
+                actions=[
+                    "emr-containers:StartJobRun",
+                    "emr-containers:ListJobRuns",
+                    "emr-containers:DescribeJobRun",
+                    "emr-containers:CancelJobRun",
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+            ),
+            iam.PolicyStatement(
+                actions=["kms:Decrypt", "kms:GenerateDataKey"],
+                effect=iam.Effect.ALLOW,
+                resources=[f"arn:aws:kms:{self.region}:{self.account}:key/*"],
             ),
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
@@ -273,20 +297,35 @@ class EmronEksRbacStack(Stack):
 
         self.job_role.add_to_policy(
             iam.PolicyStatement(
-                resources=["*"],
-                actions=["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
+                resources=[
+                    f"arn:aws:s3:::{raw_bucket_name}",
+                    f"arn:aws:s3:::{raw_bucket_name}/*",
+                    f"arn:aws:s3:::{artifact_bucket_name}",
+                    f"arn:aws:s3:::{artifact_bucket_name}/*",
+                    f"arn:aws:kms:{self.region}:{self.account}:key/*",
+                ],
+                actions=[
+                    "s3:PutObject*",
+                    "s3:GetObject*",
+                    "s3:ListBucket",
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey",
+                ],
                 effect=iam.Effect.ALLOW,
             )
         )
 
         self.job_role.add_to_policy(
             iam.PolicyStatement(
-                resources=["arn:aws:logs:*:*:*"],
+                resources=[f"arn:aws:logs:{self.region}:{self.account}:*"],
                 actions=[
                     "logs:PutLogEvents",
                     "logs:CreateLogStream",
                     "logs:DescribeLogGroups",
                     "logs:DescribeLogStreams",
+                    "emr-containers:*",
+                    "elasticmapreduce:*",
+                    "cloudwatch:*",
                 ],
                 effect=iam.Effect.ALLOW,
             )
@@ -297,7 +336,7 @@ class EmronEksRbacStack(Stack):
             self,
             "ConditionJson",
             value={
-                f"{eks_openid_issuer}:sub": f"system:serviceaccount:emr:emr-containers-sa-*-*-{self.account}-*"
+                f"{eks_openid_issuer}:sub": f"system:serviceaccount:{self.emr_namespace}:emr-containers-sa-*-*-{self.account}-*"
             },
         )
         self.job_role.assume_role_policy.add_statements(
@@ -329,22 +368,3 @@ class EmronEksRbacStack(Stack):
                 ],
             )
         )
-
-        # Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
-
-        # NagSuppressions.add_stack_suppressions(
-        #     self,
-        #     apply_to_nested_stacks=True,
-        #     suppressions=[
-        #         {
-        #             "id": "AwsSolutions-IAM4",
-        #             "reason": "Managed Policies are for service account roles only",
-        #             "applies_to": "*",
-        #         },
-        #         {
-        #             "id": "AwsSolutions-IAM5",
-        #             "reason": "Resource access restriced to ADDF resources",
-        #             "applies_to": "*",
-        #         },
-        #     ],
-        # )

@@ -42,12 +42,13 @@ from boto3.session import Session
 
 from emr_eks_dags import emr_eks_dag_config
 
-# afbucket = "AIRFLOW_BUCKET"
-afbucket = 'addf-demo-artifacts-bucket-c2c670f1/dags/emr_eks_dags/'
+afbucket = (
+    f"{emr_eks_dag_config.DAG_BUCKET}/dags/emr_eks_dags/"  # ADDF MWAA Dags bucket
+)
 emr_virtual_cluster_id = emr_eks_dag_config.VIRTUAL_CLUSTER_ID
 emr_execution_role_arn = emr_eks_dag_config.EMR_JOB_EXECUTION_ROLE
 YR = "2020"
-bucket = 'addf-demo-artifacts-bucket-c2c670f1'
+bucket = emr_eks_dag_config.RAW_BUCKET  # ADDF RAW bucket
 SRC_BUCKET = "tripdata"
 SRC_KEY = "-citibike-tripdata.csv.zip"
 DEST_BUCKET = emr_eks_dag_config.RAW_BUCKET
@@ -160,7 +161,6 @@ CONFIGURATION_OVERRIDES = {
         "s3MonitoringConfiguration": {"logUri": "s3://" + afbucket + "/joblogs"},
     }
 }
-# [END howto_operator_emr_containers_start_job_run]
 
 with DAG(
     dag_id="Citibike_Ridership_Analytics",
@@ -181,10 +181,10 @@ with DAG(
     )
 
     create_aws_conn = PythonOperator(
-            task_id="try_create_aws_conn",
-            python_callable=try_create_aws_conn,
-            dag=dag,
-        )
+        task_id="try_create_aws_conn",
+        python_callable=try_create_aws_conn,
+        dag=dag,
+    )
 
     for i in range(1, find_max_month() + 1):
         NEW_SRC_KEY = YR + str(i).zfill(2) + SRC_KEY
@@ -207,7 +207,9 @@ with DAG(
             task_id=f"start_citibike_ridership_analytics-{i}",
             name="citibike_analytics_run",
             virtual_cluster_id=emr_virtual_cluster_id,
-            client_request_token="".join(random.choice(string.digits) for _ in range(10)),
+            client_request_token="".join(
+                random.choice(string.digits) for _ in range(10)
+            ),
             execution_role_arn=emr_execution_role_arn,
             release_label="emr-6.2.0-latest",
             job_driver=JOB_DRIVER,

@@ -22,6 +22,7 @@ eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"), "")  # required
 eks_openid_issuer = os.getenv(_param("EKS_OPENID_ISSUER"), "")  # required
 artifact_bucket_name = os.getenv(_param("ARTIFACT_BUCKET_NAME"))  # required
 emr_eks_namespace = os.getenv(_param("AIRFLOW_EMR_EKS_NAMESPACE"), "emr-eks-spark")
+raw_bucket_name = os.getenv(_param("RAW_BUCKET_NAME"))
 
 app = App()
 
@@ -36,6 +37,8 @@ eks_rbac_stack = EmronEksRbacStack(
     eks_oidc_arn=eks_oidc_arn,
     eks_openid_issuer=eks_openid_issuer,
     emr_namespace=emr_eks_namespace,
+    raw_bucket_name=raw_bucket_name,
+    artifact_bucket_name=artifact_bucket_name,
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
@@ -50,9 +53,6 @@ emr_eks_airflow = AirflowEmrEksStack(
     mwaa_exec_role=mwaa_exec_role,
     eks_cluster_name=eks_cluster_name,
     emr_namespace=emr_eks_namespace,
-    eks_openid_issuer=eks_openid_issuer,
-    eks_admin_role_arn=eks_admin_role_arn,
-    eks_oidc_arn=eks_oidc_arn,
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

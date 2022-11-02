@@ -31,9 +31,6 @@ class AirflowEmrEksStack(Stack):
         mwaa_exec_role: str,
         eks_cluster_name: str,
         emr_namespace: str,
-        eks_openid_issuer: str,
-        eks_admin_role_arn: str,
-        eks_oidc_arn: str,
         **kwargs,
     ) -> None:
         # ADDF Env vars
@@ -70,22 +67,3 @@ class AirflowEmrEksStack(Stack):
             ),
             name=f"{dep_mod}-EMROnEKSCluster",
         )
-
-        # Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
-
-        # NagSuppressions.add_stack_suppressions(
-        #     self,
-        #     apply_to_nested_stacks=True,
-        #     suppressions=[
-        #         {
-        #             "id": "AwsSolutions-IAM4",
-        #             "reason": "Managed Policies are for service account roles only",
-        #             "applies_to": "*",
-        #         },
-        #         {
-        #             "id": "AwsSolutions-IAM5",
-        #             "reason": "Resource access restriced to ADDF resources",
-        #             "applies_to": "*",
-        #         },
-        #     ],
-        # )

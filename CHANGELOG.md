@@ -11,9 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 - Added a pattern for Event bridge triggering StepFunctions triggering AWS Batch
+- Added a pattern for Airflow to trigger Spark Jobs on  AWS EMR on EKS.
 
 ### **Changed**
+
 - Updated default accountId resolution in sample manifests to simple key:value mapping to reduce confusion
+
 ### **Removed**
 
 =======
