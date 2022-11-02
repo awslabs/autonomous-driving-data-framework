@@ -33,6 +33,8 @@ Any file you want staged on the running instance should be saved in the `scripts
 
 #### Optional
 - `instance-type` - the type of EC2 compute to use - defaults to `g4dn.xlarge`
+- `instance-count` - the number (INT) of identical instances to create with the same security group and same instance profile
+  - defaults to 1
 - `s3-script-bucket` - a place to stage any scripts that will be put on the ubuntu users home directory
   - This MUST be a bucket in the project (ex. `addf-`)
 - `s3-dataset-bucket` - any staged datasets that the server needs access to
@@ -51,6 +53,8 @@ parameters:
         key: VpcId
   - name: instance-type
     value: g4dn.xlarge
+  - name: instance-count
+    value: 2
   - name: s3-script-bucket
     valueFrom:
        moduleMetadata:
@@ -60,16 +64,32 @@ parameters:
 ```
 
 ### Module Metadata Outputs
+Nested in the instance indicator, there are two pertinent parameters output:
 - `DevInstanceURL` - the url with port to access the  NiceDCV endpoint
 - `AWSSecretName` - the name of the AWS SecretsManager entry that has the password 
+
+Thr structure is:
+- dev-instance-name
+  - `DevInstanceURL`
+  - `AWSSecretName`
 
 
 #### Output Example
 ```json
-{
-    "AWSSecretName": "addf-dataservice-visualization-dev-instance-0-ubuntu-password", 
-    "DevInstanceURL": "https://ec2-34-229-76-152.compute-1.amazonaws.com:8443"
-}
+  {
+    "dev-instance-0": {
+      "AWSSecretName": "addf-dataservice-visualization-dev-instance-0-ubuntu-password",
+      "DevInstanceURL": "https://ec2-3-90-103-67.compute-1.amazonaws.com:8443"
+    },
+    "dev-instance-1": {
+      "AWSSecretName": "addf-dataservice-visualization-dev-instance-1-ubuntu-password",
+      "DevInstanceURL": "https://ec2-54-91-11-227.compute-1.amazonaws.com:8443"
+    },
+    "dev-instance-2": {
+      "AWSSecretName": "addf-dataservice-visualization-dev-instance-2-ubuntu-password",
+      "DevInstanceURL": "https://ec2-54-221-109-36.compute-1.amazonaws.com:8443"
+    }
+  }
 ```
 
 ### Helpful commands

@@ -122,11 +122,13 @@ class DataServiceDevInstancesStack(Stack):
         if s3_dataset_bucket:
             dev_instance_role.add_to_principal_policy(aws_iam.PolicyStatement.from_json(public_aev_dataset_policy_json))
 
+        i_output = {}
+
         for idx in range(0, instance_count):
             instance_name = f"dev-instance-{idx}"
             secret = secretsmanager.Secret(
                 self,
-                "Secret",
+                f"Secret-{idx}",
                 description=f"Ubuntu password for {instance_name}",
                 secret_name=f"{dep_mod}-{idx}-ubuntu-password",
                 generate_secret_string=secretsmanager.SecretStringGenerator(
@@ -178,3 +180,8 @@ class DataServiceDevInstancesStack(Stack):
             )
 
             self.instance = instance
+            i_output[instance_name] = {
+                "DevInstanceURL": f"https://{instance.instance_public_dns_name}:8443",
+                "AWSSecretName": secret.secret_name,
+            }
+        self.output_instances = i_output

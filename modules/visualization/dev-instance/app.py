@@ -1,3 +1,4 @@
+import json
 import os
 
 from aws_cdk import App, CfnOutput, Environment
@@ -8,6 +9,7 @@ module_name = os.getenv("ADDF_MODULE_NAME")
 
 vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")
 instance_type = os.getenv("ADDF_PARAMETER_INSTANCE_TYPE", "g4dn.xlarge")
+instance_count = int(os.getenv("ADDF_PARAMETER_INSTANCE_COUNT", "1"))
 
 ami_id = os.getenv("ADDF_PARAMETER_AMI_ID", None)
 s3_dataset_bucket = os.getenv("ADDF_PARAMETER_S3_DATASET_BUCKET", None)
@@ -33,6 +35,7 @@ stack = DataServiceDevInstancesStack(
     deployment_name=deployment_name,
     module_name=module_name,
     vpc_id=vpc_id,
+    instance_count=instance_count,
     instance_type=instance_type,
     ami_id=ami_id,
     demo_password=demo_password,
@@ -41,15 +44,6 @@ stack = DataServiceDevInstancesStack(
 )
 
 
-CfnOutput(
-    scope=stack,
-    id="metadata",
-    value=stack.to_json_string(
-        {
-            "DevInstanceURL": f"https://{stack.instance.instance_public_dns_name}:8443",
-            "AWSSecretName": stack.secret.secret_name,
-        }
-    ),
-)
+CfnOutput(scope=stack, id="metadata", value=json.dumps(stack.output_instances))
 
 app.synth(force=True)
