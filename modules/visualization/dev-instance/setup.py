@@ -5,7 +5,7 @@ with open("README.md") as fp:
 
 setuptools.setup(
     version="0.1.0",
-    description="A short description of the module.",
+    description="This module deploys an EC2 istnaces with Ubuntu Desktop, Foxglove, and Rviz with access via NiceDCV",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="author",
