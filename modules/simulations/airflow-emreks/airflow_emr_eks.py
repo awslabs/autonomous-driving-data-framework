@@ -3,13 +3,15 @@
 import random
 from typing import List, cast
 
-import cdk_nag
-from aws_cdk import Aspects, CfnOutput, Stack, Tags
+# import cdk_nag
+from aws_cdk import Aspects, CfnJson, CfnOutput, Stack, Tags
 from aws_cdk import aws_ec2 as ec2
+from aws_cdk import aws_eks as eks
 from aws_cdk import aws_emr as emr
 from aws_cdk import aws_emrcontainers as emrc
 from aws_cdk import aws_iam as iam
-from cdk_nag import NagSuppressions
+
+# from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 
 """
@@ -24,26 +26,33 @@ class AirflowEmrEksStack(Stack):
         self,
         scope: Construct,
         id: str,
-        deployment: str,
-        module: str,
+        deployment_name: str,
+        module_name: str,
         mwaa_exec_role: str,
-        artifact_bucket_name: str,
         eks_cluster_name: str,
-        execution_role_arn: str,
         emr_namespace: str,
+        eks_openid_issuer: str,
+        eks_admin_role_arn: str,
+        eks_oidc_arn: str,
         **kwargs,
     ) -> None:
+        # ADDF Env vars
+        self.deployment_name = deployment_name
+        self.module_name = module_name
+        self.mwaa_exec_role = mwaa_exec_role
+        self.emr_namespace = emr_namespace
+
         super().__init__(
             scope,
             id,
             description="This stack deploys a pattern where Airflow triggers EMR on EKS for ADDF",
             **kwargs,
         )
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"addf-{self.deployment_name}-{self.module_name}"
         dep_mod = dep_mod[:27]
 
         Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{deployment}"
+            key="Deployment", value=f"addf-{self.deployment_name}"
         )
 
         # EMR virtual cluster
@@ -59,24 +68,24 @@ class AirflowEmrEksStack(Stack):
                 ),
                 type="EKS",
             ),
-            name=f"{dep_mod}-EMRCluster",
+            name=f"{dep_mod}-EMROnEKSCluster",
         )
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
+        # Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
-        NagSuppressions.add_stack_suppressions(
-            self,
-            apply_to_nested_stacks=True,
-            suppressions=[
-                {
-                    "id": "AwsSolutions-IAM4",
-                    "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
-                },
-                {
-                    "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
-                },
-            ],
-        )
+        # NagSuppressions.add_stack_suppressions(
+        #     self,
+        #     apply_to_nested_stacks=True,
+        #     suppressions=[
+        #         {
+        #             "id": "AwsSolutions-IAM4",
+        #             "reason": "Managed Policies are for service account roles only",
+        #             "applies_to": "*",
+        #         },
+        #         {
+        #             "id": "AwsSolutions-IAM5",
+        #             "reason": "Resource access restriced to ADDF resources",
+        #             "applies_to": "*",
+        #         },
+        #     ],
+        # )

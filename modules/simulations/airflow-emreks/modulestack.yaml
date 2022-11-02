@@ -2,18 +2,24 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This stack deploys a Module specific IAM permissions
 
 Parameters:
-  # DeploymentName:
-  #   Type: String
-  #   Description: The name of the deployment
-  # ModuleName:
-  #   Type: String
-  #   Description: The name of the Module
+  DeploymentName:
+    Type: String
+    Description: The name of the deployment
+  ModuleName:
+    Type: String
+    Description: The name of the Module
   RoleName:
     Type: String
     Description: The name of the IAM Role
   EksClusterAdminRoleArn:
     Type: String
     Description: Role from the EKS module with cluster admin permissions
+  DagBucketName:
+    Type: String
+    Description: The name Bucket where MWAA DAG artifacts are deployed
+  DagPath:
+    Type: String
+    Description: The path in the Dag Bucket where MWAA DAG artifacts are deployed
 
 Resources:
   Policy:
@@ -21,6 +27,21 @@ Resources:
     Properties:
       PolicyDocument:
         Statement:
+          - Action:
+              - 's3:Create*'
+              - 's3:Put*'
+              - 's3:Delete*'
+              - 's3:Get*'
+              - 's3:List*'
+            Effect: Allow
+            Resource:
+              - 'arn:aws:s3:::cdk*'
+              - !Sub "arn:aws:s3:::${DagBucketName}/${DagPath}/*"
+          - Effect: Allow
+            Action:
+              - cloudformation:*
+            Resource:
+              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/addf-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "sts:AssumeRole"

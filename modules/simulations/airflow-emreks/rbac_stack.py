@@ -15,12 +15,13 @@
 import logging
 from typing import Any, cast
 
-import cdk_nag
+# import cdk_nag
 from aws_cdk import Aspects, CfnJson, Stack, Tags
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_emrcontainers as emrc
 from aws_cdk import aws_iam as iam
-from cdk_nag import NagSuppressions
+
+# from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -31,14 +32,15 @@ This stack deploys the following:
 """
 
 
-class EmrEksRbacStack(Stack):
+class EmronEksRbacStack(Stack):
     def __init__(
         self,
         scope: Construct,
         id: str,
         *,
-        deployment: str,
-        module: str,
+        deployment_name: str,
+        module_name: str,
+        mwaa_exec_role: str,
         eks_cluster_name: str,
         eks_admin_role_arn: str,
         eks_oidc_arn: str,
@@ -47,17 +49,23 @@ class EmrEksRbacStack(Stack):
         **kwargs: Any,
     ) -> None:
 
+        # ADDF Env vars
+        self.deployment_name = deployment_name
+        self.module_name = module_name
+        self.mwaa_exec_role = mwaa_exec_role
+        self.emr_namespace = emr_namespace
+
         super().__init__(
             scope,
             id,
-            description="This stack deploys EMR Studio RBAC Configuration for ADDF",
+            description="This stack deploys EMR on EKS RBAC Configuration for ADDF",
             **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{deployment}"
+            key="Deployment", value=f"addf-{self.deployment_name}"
         )
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"addf-{self.deployment_name}-{self.module_name}"
         dep_mod = dep_mod[:27]
 
         # Import EKS Cluster
@@ -72,7 +80,6 @@ class EmrEksRbacStack(Stack):
             open_id_connect_provider=provider,
         )
 
-        self.emr_namespace = emr_namespace
         self.emrsvcrolearn = (
             f"arn:aws:iam::{self.account}:role/AWSServiceRoleForAmazonEMRContainers"
         )
@@ -86,6 +93,44 @@ class EmrEksRbacStack(Stack):
                 "metadata": {"name": self.emr_namespace},
             },
         )
+
+        # Create Dag IAM Role and policy
+        policy_statements = [
+            iam.PolicyStatement(
+                actions=["ecr:*"],
+                effect=iam.Effect.ALLOW,
+                resources=[
+                    f"arn:aws:ecr:{self.region}:{self.account}:repository/addf-{self.deployment_name}*"
+                ],
+            ),
+        ]
+        dag_document = iam.PolicyDocument(statements=policy_statements)
+
+        r_name = f"addf-{self.deployment_name}-{self.module_name}-dag-role"
+        self.dag_role = iam.Role(
+            self,
+            f"dag-role-{self.deployment_name}-{self.module_name}",
+            assumed_by=iam.ArnPrincipal(self.mwaa_exec_role),
+            inline_policies={"DagPolicyDocument": dag_document},
+            role_name=r_name,
+            path="/",
+        )
+
+        service_account = eks_cluster.add_service_account(
+            "service-account", name=module_name, namespace=self.emr_namespace
+        )
+        service_account.node.add_dependency(namespace)
+        service_account_role: iam.Role = cast(iam.Role, service_account.role)
+        if service_account_role.assume_role_policy:
+            service_account_role.assume_role_policy.add_statements(
+                iam.PolicyStatement(
+                    effect=iam.Effect.ALLOW,
+                    actions=["sts:AssumeRole"],
+                    principals=[iam.ArnPrincipal(mwaa_exec_role)],
+                )
+            )
+        for statement in policy_statements:
+            service_account_role.add_to_policy(statement=statement)
 
         # Create k8s role for EMR
         emrrole = eks_cluster.add_manifest(
@@ -285,37 +330,21 @@ class EmrEksRbacStack(Stack):
             )
         )
 
-        # EMR virtual cluster
-        self.emr_vc = emrc.CfnVirtualCluster(
-            scope=self,
-            id=f"{dep_mod}-EMRVirtualCluster",
-            container_provider=emrc.CfnVirtualCluster.ContainerProviderProperty(
-                id=eks_cluster_name,
-                info=emrc.CfnVirtualCluster.ContainerInfoProperty(
-                    eks_info=emrc.CfnVirtualCluster.EksInfoProperty(
-                        namespace=emr_namespace
-                    )
-                ),
-                type="EKS",
-            ),
-            name=f"{dep_mod}-EMRCluster",
-        )
+        # Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
-
-        NagSuppressions.add_stack_suppressions(
-            self,
-            apply_to_nested_stacks=True,
-            suppressions=[
-                {
-                    "id": "AwsSolutions-IAM4",
-                    "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
-                },
-                {
-                    "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
-                },
-            ],
-        )
+        # NagSuppressions.add_stack_suppressions(
+        #     self,
+        #     apply_to_nested_stacks=True,
+        #     suppressions=[
+        #         {
+        #             "id": "AwsSolutions-IAM4",
+        #             "reason": "Managed Policies are for service account roles only",
+        #             "applies_to": "*",
+        #         },
+        #         {
+        #             "id": "AwsSolutions-IAM5",
+        #             "reason": "Resource access restriced to ADDF resources",
+        #             "applies_to": "*",
+        #         },
+        #     ],
+        # )
