@@ -1,6 +1,5 @@
 import json
 import os
-from gc import DEBUG_UNCOLLECTABLE
 from typing import cast
 
 # from aws_cdk.aws_s3_assets import Asset
