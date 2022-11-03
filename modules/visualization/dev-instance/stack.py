@@ -78,6 +78,12 @@ class DataServiceDevInstancesStack(Stack):
             "allow 8443 access everywhere",
         )
 
+        instance_sg.add_ingress_rule(
+            Peer.any_ipv4(),
+            Port.tcp(8888),
+            "allow 8888 access everywhere",
+        )
+
         with open(os.path.join("user-data", "script.sh"), "r") as f:
             user_data_script = f.read()
 
@@ -106,6 +112,12 @@ class DataServiceDevInstancesStack(Stack):
             "Resource": ["arn:aws:s3:::addf*", "arn:aws:s3:::addf*/*"],
         }
 
+        lambda_policy_json ={
+            "Effect": "Allow",
+            "Action": ["lambda:Invoke*"],
+            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:addf-*"],
+        }
+
         if s3_dataset_bucket:
             public_aev_dataset_policy_json = {
                 "Effect": "Allow",
@@ -117,6 +129,7 @@ class DataServiceDevInstancesStack(Stack):
         dev_instance_role.add_to_principal_policy(aws_iam.PolicyStatement.from_json(cloudformation_policy_json))
         dev_instance_role.add_to_principal_policy(aws_iam.PolicyStatement.from_json(dcv_license_policy_json))
         dev_instance_role.add_to_principal_policy(aws_iam.PolicyStatement.from_json(s3_policy_json))
+        dev_instance_role.add_to_principal_policy(aws_iam.PolicyStatement.from_json(lambda_policy_json))
         if s3_dataset_bucket:
             dev_instance_role.add_to_principal_policy(aws_iam.PolicyStatement.from_json(public_aev_dataset_policy_json))
 
