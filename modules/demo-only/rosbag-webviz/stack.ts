@@ -208,12 +208,13 @@ export class WebvizStack extends cdk.Stack {
       }
     );
 
+    const generateUrlLambdaName = `addf-${props.deploymentName}-${props.moduleName}-generate-ros-streaming-url`;
     this.generateUrlLambda = new lambda.Function(this, "generateUrlLambda", {
       code: lambda.Code.fromAsset(
         path.join(__dirname, "lambda", "generate_url")
       ),
       handler: "main.lambda_handler",
-      functionName: `addf-${props.deploymentName}-${props.moduleName}-generate-ros-streaming-url`,
+      functionName: generateUrlLambdaName.length > 64 ? generateUrlLambdaName.substring(0, 64) : generateUrlLambdaName,
       runtime: lambda.Runtime.PYTHON_3_8,
       reservedConcurrentExecutions: 1,
       environment: {
