@@ -45,16 +45,16 @@ if debug:
     logging.getLogger("s3transfer").setLevel(logging.CRITICAL)
 
 
-# class VideoFromBag:
-#     def __init__(self, topic, images_path):
-#         self.bridge = CvBridge()
-#         output_dir = os.path.join(images_path, topic.replace("/", "_"))
-#         self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
-#         logger.info("Get video for topic {}".format(topic))
-#         logger.info(
-#             f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png \
-#             -vcodec libx264 -crf 25  -pix_fmt yuv420p {self.video}"""
-#         )
+class VideoFromBag:
+    def __init__(self, topic, images_path):
+        self.bridge = CvBridge()
+        output_dir = os.path.join(images_path, topic.replace("/", "_"))
+        self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
+        logger.info("Get video for topic {}".format(topic))
+        logger.info(
+            f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png \
+            -vcodec libx264 -crf 25  -pix_fmt yuv420p {self.video}"""
+        )
 
 
 class ImageFromBag:
