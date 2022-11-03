@@ -107,13 +107,13 @@ class AwsBatchPipeline(Stack):
                     f"arn:aws:batch:{self.region}:{self.account}:job/*",
                 ],
             ),
-            # iam.PolicyStatement(
-            #     actions=[
-            #         "iam:PassRole",
-            #     ],
-            #     effect=iam.Effect.ALLOW,
-            #     resources=[x for x in [object_detection_role, lane_detection_role] if x is not None],
-            # ),
+            iam.PolicyStatement(
+                actions=[
+                    "iam:PassRole",
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[x for x in [object_detection_role, lane_detection_role] if x is not None],
+            ),
             iam.PolicyStatement(
                 actions=[
                     "batch:Describe*",
