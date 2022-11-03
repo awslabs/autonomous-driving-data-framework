@@ -106,7 +106,7 @@ class DataServiceDevInstancesStack(Stack):
             "Resource": ["arn:aws:s3:::addf*", "arn:aws:s3:::addf*/*"],
         }
 
-        lambda_policy_json ={
+        lambda_policy_json = {
             "Effect": "Allow",
             "Action": ["lambda:Invoke*"],
             "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:addf-*"],
