@@ -6,7 +6,7 @@ parameters:
   - name: retries
     value: 1
   - name: timeout-seconds
-    value: 1800
+    value: 3600
   - name: vcpus
     value: 2
   - name: memory-mib
@@ -22,15 +22,15 @@ name: ros-to-png
 path: modules/sensor-extraction/ros-to-png/
 parameters:
   - name: platform
-    value: FARGATE
+    value: EC2
   - name: retries
     value: 1
   - name: timeout-seconds
-    value: 1800
+    value: 3600
   - name: vcpus
     value: 2
   - name: memory-mib
-    value: 8192
+    value: 7168
   - name: resized-width
     value: 1280
   - name: resized-height

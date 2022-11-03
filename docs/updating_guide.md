@@ -120,7 +120,7 @@ cdk bootstrap aws://<account>/<region>
 Bootstrap your existing account to convert to a Toolchain and a Target account using the below
 
 ```sh
-seedfarmer bootstrap toolchain --project addf --trusted-principals [principal-arns] --as-target
+seedfarmer bootstrap toolchain --project addf --trusted-principal [principal-arns] --as-target
 ```
 
 > `--as-target` sets your account as a target account too
@@ -128,7 +128,7 @@ seedfarmer bootstrap toolchain --project addf --trusted-principals [principal-ar
 If you want to move from a Single account to a Multi account structure, where you have 1 Tool chain and at least 1 Target account, run the below
 
 ```sh
-seedfarmer bootstrap toolchain --project addf --trusted-principals [principal-arns]
+seedfarmer bootstrap toolchain --project addf --trusted-principal [principal-arns]
 ```
 
 > Before running the above command, set your AWS credentials to the toolchain account
