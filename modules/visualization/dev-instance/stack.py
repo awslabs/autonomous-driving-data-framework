@@ -78,12 +78,6 @@ class DataServiceDevInstancesStack(Stack):
             "allow 8443 access everywhere",
         )
 
-        instance_sg.add_ingress_rule(
-            Peer.any_ipv4(),
-            Port.tcp(8888),
-            "allow 8888 access everywhere",
-        )
-
         with open(os.path.join("user-data", "script.sh"), "r") as f:
             user_data_script = f.read()
 
