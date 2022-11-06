@@ -1,4 +1,4 @@
-FROM ros:noetic-perception-focal
+FROM public.ecr.aws/docker/library/ros:noetic-perception-focal
 
 # install ros package
 RUN apt-get update && apt-get install -y \
