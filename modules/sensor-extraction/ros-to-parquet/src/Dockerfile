@@ -1,5 +1,4 @@
-FROM python:3.7.13-slim-buster
-
+FROM public.ecr.aws/docker/library/python:3.7.13-slim-buster
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get -qq install gcc
