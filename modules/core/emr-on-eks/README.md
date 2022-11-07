@@ -30,7 +30,7 @@ For custom use-cases, you shuld be adjusting the required permissions on EMR Job
 
 ```yaml
 name: emr-on-eks
-path: modules/simulations/airflow-emreks/
+path: modules/core/emr-on-eks/
 parameters:
   - name: vpc-id
     valueFrom:

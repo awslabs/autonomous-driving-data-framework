@@ -64,7 +64,6 @@ CfnOutput(
     id="metadata",
     value=eks_rbac_stack.to_json_string(
         {
-            "DagRoleArn": eks_rbac_stack.dag_role.role_arn,
             "EMRJobExecutionRoleArn": eks_rbac_stack.job_role.role_arn,
         }
     ),

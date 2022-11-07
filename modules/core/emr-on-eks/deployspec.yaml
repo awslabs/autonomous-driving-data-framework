@@ -7,11 +7,8 @@ deploy:
     build:
       commands:
       - aws iam create-service-linked-role --aws-service-name emr-containers.amazonaws.com || true
-      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-rbac
-      - export ADDF_MODULE_METADATA_RBAC=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-rbac']['metadata'])")
+      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports-rbac.json addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-rbac
       - export EMR_SERVICE_ACCOUNT_ROLE=arn:aws:iam::${AWS_ACCOUNT_ID}:role/AWSServiceRoleForAmazonEMRContainers
-      - export DAG_ROLE=$(echo ${ADDF_MODULE_METADATA_RBAC} | jq -r ".DagRoleArn")
-      - export EMR_JOB_EXECUTION_ROLE=$(echo ${ADDF_MODULE_METADATA_RBAC} | jq -r ".EMRJobExecutionRoleArn")
       # Assume the EKS_CLUSTER_ADMIN_ROLE and add our new service account role as a user in the aws_auth ConfigMap
       # Track https://github.com/aws/aws-cdk/issues/19753
       - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
@@ -22,21 +19,28 @@ deploy:
       # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will fail
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      # Merge 2 stacks outputs
+      - python exports-merger.py
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      # RBAC Stack exports
+      # - export DAG_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".DagRoleArn")
+      - export EMR_JOB_EXECUTION_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EMRJobExecutionRoleArn")
+      # Stack exports
       - export VIRTUAL_CLUSTER_ID=$(echo ${ADDF_MODULE_METADATA} | jq -r ".VirtualClusterId")
-      - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "DAG_ROLE = '${DAG_ROLE}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "EMR_JOB_EXECUTION_ROLE = '${EMR_JOB_EXECUTION_ROLE}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "VIRTUAL_CLUSTER_ID = '${VIRTUAL_CLUSTER_ID}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "EKS_CLUSTER_NAME = '${ADDF_PARAMETER_EKS_CLUSTER_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "EKS_NAMESPACE = '${ADDF_PARAMETER_AIRFLOW_EMR_EKS_NAMESPACE}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "REGION = '${AWS_DEFAULT_REGION}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "ACCOUNT_ID = '${AWS_ACCOUNT_ID}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "RAW_BUCKET = '${ADDF_PARAMETER_RAW_BUCKET_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
-      - echo "DAG_BUCKET = '${ADDF_PARAMETER_DAG_BUCKET_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # Import the below in the example-modules 
+      # - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "DAG_ROLE = '${DAG_ROLE}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "EMR_JOB_EXECUTION_ROLE = '${EMR_JOB_EXECUTION_ROLE}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "VIRTUAL_CLUSTER_ID = '${VIRTUAL_CLUSTER_ID}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "EKS_CLUSTER_NAME = '${ADDF_PARAMETER_EKS_CLUSTER_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "EKS_NAMESPACE = '${ADDF_PARAMETER_AIRFLOW_EMR_EKS_NAMESPACE}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "REGION = '${AWS_DEFAULT_REGION}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "ACCOUNT_ID = '${AWS_ACCOUNT_ID}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "RAW_BUCKET = '${ADDF_PARAMETER_RAW_BUCKET_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
+      # - echo "DAG_BUCKET = '${ADDF_PARAMETER_DAG_BUCKET_NAME}'" >> emr_eks_dags/emr_eks_dag_config.py
       # Copy DAG files to S3
-      - aws s3 cp --recursive emr_eks_dags/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/emr_eks_dags/
+      # - aws s3 cp --recursive emr_eks_dags/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/emr_eks_dags/
 destroy:
   phases:
     install:

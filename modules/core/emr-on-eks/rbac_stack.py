@@ -98,63 +98,67 @@ class EmronEksRbacStack(Stack):
 
         # The below permissions is to deploy the `citibike` usecase declared in the below blogpost
         # https://aws.amazon.com/blogs/big-data/manage-and-process-your-big-data-workflows-with-amazon-mwaa-and-amazon-emr-on-amazon-eks/
-        policy_statements = [
-            iam.PolicyStatement(
-                actions=["s3:ListBucket", "s3:GetObject*"],
-                effect=iam.Effect.ALLOW,
-                resources=["arn:aws:s3:::tripdata", "arn:aws:s3:::tripdata/*"],
-            ),
-            iam.PolicyStatement(
-                actions=["s3:*"],
-                effect=iam.Effect.ALLOW,
-                resources=[
-                    f"arn:aws:s3:::{raw_bucket_name}",
-                    f"arn:aws:s3:::{raw_bucket_name}/*",
-                ],
-            ),
-            iam.PolicyStatement(
-                actions=[
-                    "emr-containers:StartJobRun",
-                    "emr-containers:ListJobRuns",
-                    "emr-containers:DescribeJobRun",
-                    "emr-containers:CancelJobRun",
-                ],
-                effect=iam.Effect.ALLOW,
-                resources=["*"],
-            ),
-            iam.PolicyStatement(
-                actions=["kms:Decrypt", "kms:GenerateDataKey"],
-                effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:kms:{self.region}:{self.account}:key/*"],
-            ),
-        ]
-        dag_document = iam.PolicyDocument(statements=policy_statements)
+        # policy_statements = [
+        #     iam.PolicyStatement(
+        #         actions=["s3:ListBucket", "s3:GetObject*"],
+        #         effect=iam.Effect.ALLOW,
+        #         resources=["arn:aws:s3:::tripdata", "arn:aws:s3:::tripdata/*"],
+        #     ),
+        #     iam.PolicyStatement(
+        #         actions=["s3:*"],
+        #         effect=iam.Effect.ALLOW,
+        #         resources=[
+        #             f"arn:aws:s3:::{raw_bucket_name}",
+        #             f"arn:aws:s3:::{raw_bucket_name}/*",
+        #         ],
+        #     ),
+        #     iam.PolicyStatement(
+        #         actions=[
+        #             "emr-containers:StartJobRun",
+        #             "emr-containers:ListJobRuns",
+        #             "emr-containers:DescribeJobRun",
+        #             "emr-containers:CancelJobRun",
+        #         ],
+        #         effect=iam.Effect.ALLOW,
+        #         resources=["*"],
+        #     ),
+        #     iam.PolicyStatement(
+        #         actions=["kms:Decrypt", "kms:GenerateDataKey"],
+        #         effect=iam.Effect.ALLOW,
+        #         resources=[f"arn:aws:kms:{self.region}:{self.account}:key/*"],
+        #     ),
+        # ]
+        # dag_document = iam.PolicyDocument(statements=policy_statements)
 
-        r_name = f"addf-{self.deployment_name}-{self.module_name}-dag-role"
-        self.dag_role = iam.Role(
-            self,
-            f"dag-role-{self.deployment_name}-{self.module_name}",
-            assumed_by=iam.ArnPrincipal(self.mwaa_exec_role),
-            inline_policies={"DagPolicyDocument": dag_document},
-            role_name=r_name,
-            path="/",
-        )
+        # r_name = f"addf-{self.deployment_name}-{self.module_name}-dag-role"
+        # self.dag_role = iam.Role(
+        #     self,
+        #     f"dag-role-{self.deployment_name}-{self.module_name}",
+        #     assumed_by=iam.ArnPrincipal(self.mwaa_exec_role),
+        #     inline_policies={"DagPolicyDocument": dag_document},
+        #     role_name=r_name,
+        #     path="/",
+        # )
 
-        service_account = eks_cluster.add_service_account(
-            "service-account", name=module_name, namespace=self.emr_namespace
-        )
-        service_account.node.add_dependency(namespace)
-        service_account_role: iam.Role = cast(iam.Role, service_account.role)
-        if service_account_role.assume_role_policy:
-            service_account_role.assume_role_policy.add_statements(
-                iam.PolicyStatement(
-                    effect=iam.Effect.ALLOW,
-                    actions=["sts:AssumeRole"],
-                    principals=[iam.ArnPrincipal(mwaa_exec_role)],
-                )
-            )
-        for statement in policy_statements:
-            service_account_role.add_to_policy(statement=statement)
+        """
+        Not needed
+        # service_account = eks_cluster.add_service_account(
+        #     "service-account", name=module_name, namespace=self.emr_namespace
+        # )
+        # service_account.node.add_dependency(namespace)
+        # service_account_role: iam.Role = cast(iam.Role, service_account.role)
+        # if service_account_role.assume_role_policy:
+        #     service_account_role.assume_role_policy.add_statements(
+        #         iam.PolicyStatement(
+        #             effect=iam.Effect.ALLOW,
+        #             actions=["sts:AssumeRole"],
+        #             principals=[iam.ArnPrincipal(mwaa_exec_role)],
+        #         )
+        #     )
+        # for statement in policy_statements:
+        #     service_account_role.add_to_policy(statement=statement)
+
+        """
 
         # Create k8s role for EMR
         emrrole = eks_cluster.add_manifest(
