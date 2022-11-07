@@ -340,7 +340,7 @@ class Eks(Stack):  # type: ignore
                 "EFSFilesystem",
                 vpc=self.vpc,
                 security_group=efs_security_group,
-                removal_policy=RemovalPolicy.DESTROY,
+                removal_policy=RemovalPolicy.RETAIN,
             )
             cfn_efs_filesystem = cast(efs.CfnFileSystem, efs_filesystem.node.default_child)
             cfn_efs_filesystem.file_system_policy = iam.PolicyDocument(
