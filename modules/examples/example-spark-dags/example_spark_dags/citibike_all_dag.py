@@ -25,18 +25,10 @@ from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
-from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
-
-# from airflow.operators.emr_containers_start_job_run import EmrContainersStartJobRun
 from airflow.operators.python_operator import PythonOperator
-
-# from airflow.operators.emr_containers_airflow_plugin import EmrContainersStartJobRun
 from airflow.providers.amazon.aws.operators.emr_containers import EMRContainerOperator
 from airflow.providers.amazon.aws.sensors.emr_containers import EMRContainerSensor
-
-# from airflow.sensors.emr_containers_airflow_plugin import EmrContainersJobRunSensor
-# from airflow.sensors.emr_containers_job_run import EmrContainersJobRunSensor
 from airflow.utils.dates import days_ago
 from boto3.session import Session
 from example_spark_dags import emr_eks_dag_config

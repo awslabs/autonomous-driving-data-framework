@@ -14,6 +14,7 @@
 
 import logging
 import os
+import typing
 from typing import Any, cast
 
 import aws_cdk.aws_batch_alpha as batch
@@ -37,11 +38,12 @@ class RosToPngBatchJob(Stack):
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
-        platform: str,  # FARGATE or EC2
         retries: int,
         timeout_seconds: int,
         vcpus: int,
         memory_limit_mib: int,
+        resized_width: int,
+        resized_height: int,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -49,9 +51,6 @@ class RosToPngBatchJob(Stack):
             id,
             **kwargs,
         )
-
-        if platform not in ["FARGATE", "EC2"]:
-            raise ValueError
 
         Tags.of(scope=cast(IConstruct, self)).add(
             key="Deployment",
@@ -120,16 +119,31 @@ class RosToPngBatchJob(Stack):
                     "AWS_DEFAULT_REGION": self.region,
                     "AWS_ACCOUNT_ID": self.account,
                     "DEBUG": "true",
+                    "RESIZE_WIDTH": str(resized_width),
+                    "RESIZE_HEIGHT": str(resized_height),
                 },
                 job_role=role,
                 execution_role=role,
                 memory_limit_mib=memory_limit_mib,
                 vcpus=vcpus,
+                volumes=[
+                    ecs.Volume(
+                        name="scratch",
+                        docker_volume_configuration=ecs.DockerVolumeConfiguration(
+                            scope=ecs.Scope.TASK, driver="local", labels={"scratch": "space"}
+                        ),
+                    ),
+                ],
+                mount_points=[
+                    ecs.MountPoint(
+                        source_volume="scratch",
+                        container_path="/mnt/ebs",
+                        read_only=False,
+                    ),
+                ],
             ),
             job_definition_name=self.repository_name,
-            platform_capabilities=[
-                batch.PlatformCapabilities.FARGATE if platform == "FARGATE" else batch.PlatformCapabilities.EC2
-            ],
+            platform_capabilities=[batch.PlatformCapabilities.EC2],
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),
         )

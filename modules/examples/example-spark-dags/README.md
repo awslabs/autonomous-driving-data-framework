@@ -2,7 +2,7 @@
 
 ## Description
 
-This module demonstrates a pattern on how to create user specific dag module to run spark jobs by consuming the `emr-on-eks` module from `core` group. The `DagRole` created as a part of the CDK stack declared in this module will be assigned to the airflow run time environment
+This module demonstrates a pattern on how to create user specific dag module to run spark jobs by consuming the `emr-on-eks` module from `core` group. The `DagRole` created as a part of the CDK stack declared in this module will be assigned to the airflow run time environment. For this module to run, you would need to get EMR Virtual Cluster ID, EMR Job Execution Role ARN details
 
 ## Inputs/Outputs
 

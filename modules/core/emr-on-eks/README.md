@@ -1,9 +1,9 @@
 ## Introduction
 
-This module uses Airflow to trigger spark jobs on EMR on EKS. Also this module uses the `use-case` declared in this blogpost
+This module provisions EMR on EKS supporting infrastructure which creates EMR Vritual Cluster, K8s Namespace, EMR Job Execution Role which enables any spark applications to use Airflow to trigger spark jobs on EMR on EKS. Also this module uses the `use-case` declared in this blogpost
 https://aws.amazon.com/blogs/big-data/manage-and-process-your-big-data-workflows-with-amazon-mwaa-and-amazon-emr-on-amazon-eks/
 
-For custom use-cases, you shuld be adjusting the required permissions on EMR Job execution role.
+> Note: You should be adjusting the required permissions on EMR Job execution role to allow spark driver to write logs to CloudWatch and S3 logging bucket.
 
 ## Inputs/Outputs
 
@@ -93,6 +93,12 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: RawBucketName
+  - name: logs-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: LogsBucketName
 ```
 
 ### Module Metadata Outputs

@@ -21,7 +21,7 @@ eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"), "")  # requ
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"), "")  # required
 eks_openid_issuer = os.getenv(_param("EKS_OPENID_ISSUER"), "")  # required
 artifact_bucket_name = os.getenv(_param("ARTIFACT_BUCKET_NAME"))  # required
-emr_eks_namespace = os.getenv(_param("AIRFLOW_EMR_EKS_NAMESPACE")) # required
+emr_eks_namespace = os.getenv(_param("AIRFLOW_EMR_EKS_NAMESPACE"))  # required
 raw_bucket_name = os.getenv(_param("RAW_BUCKET_NAME"))
 logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"), "")
 

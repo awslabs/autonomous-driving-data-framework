@@ -13,10 +13,13 @@
 #    limitations under the License.
 
 import argparse
+import concurrent
 import json
 import logging
 import os
+import shutil
 import sys
+import time
 
 import boto3
 import cv2
@@ -55,9 +58,15 @@ class VideoFromBag:
 
 
 class ImageFromBag:
-    def __init__(self, topic, encoding, bag_path, output_path):
+    def __init__(self, topic, encoding, bag_path, output_path, resized_width=None, resized_height=None):
         self.bridge = CvBridge()
         output_dir = os.path.join(output_path, topic.replace("/", "_"))
+
+        resize = resized_width is not None and resized_height is not None
+        if resize:
+            output_dir = output_dir + f"_resized_{resized_width}_{resized_height}"
+
+        logger.info(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         files = []
         with rosbag.Bag(bag_path) as bag:
@@ -65,12 +74,15 @@ class ImageFromBag:
                 timestamp = "{}_{}".format(msg.header.stamp.secs, msg.header.stamp.nsecs)
                 seq = "{:07d}".format(msg.header.seq)
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
+                if resize:
+                    cv_image = cv2.resize(cv_image, (resized_width, resized_height))
                 local_image_name = "frame_{}.png".format(seq)
                 s3_image_name = "frame_{}_{}.png".format(seq, timestamp)
                 im_out_path = os.path.join(output_dir, local_image_name)
                 logger.info("Write image: {} to {}".format(local_image_name, im_out_path))
                 cv2.imwrite(im_out_path, cv_image)
 
+                topic = topic + f"_resized_{resized_width}_{resized_height}" if resize else topic
                 files.append(
                     {
                         "local_image_path": im_out_path,
@@ -83,17 +95,42 @@ class ImageFromBag:
         self.files = files
 
 
+def upload_file(client, local_image_path, bucket_name, target):
+    client.upload_file(local_image_path, bucket_name, target)
+
+
 def upload(client, bucket_name, drive_id, file_id, files):
     uploaded_files = []
     target_prefixes = set()
+    items = []
     for file in files:
         topic = file["topic"].replace("/", "_")
         target_prefix = os.path.join(drive_id, file_id.replace(".bag", ""), topic)
         target = os.path.join(target_prefix, file["s3_image_name"])
-        client.upload_file(file["local_image_path"], bucket_name, target)
+        items.append(
+            {
+                "local_image_path": file["local_image_path"],
+                "bucket_name": bucket_name,
+                "target": target,
+            }
+        )
         uploaded_files.append(target)
         target_prefixes.add(target_prefix)
-    return uploaded_files, list(target_prefixes)
+
+    executor = concurrent.futures.ThreadPoolExecutor(100)
+    futures = [
+        executor.submit(
+            upload_file,
+            client,
+            item["local_image_path"],
+            item["bucket_name"],
+            item["target"],
+        )
+        for item in items
+    ]
+    concurrent.futures.wait(futures)
+
+    return list(target_prefixes)
 
 
 def get_log_path():
@@ -137,6 +174,29 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
     )
 
 
+def extract_images(bag_path, topic, resized_width, resized_height, encoding, images_path):
+    all_files = []
+    logger.info(f"Getting images from topic: {topic} with encoding {encoding}")
+    try:
+        bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
+        all_files += bag_obj.files
+        logger.info(f"Raw Images extracted from topic: {topic} with encoding {encoding}")
+
+        if resized_width and resized_height:
+            logger.info(
+                f"Resized Images extracted from topic: {topic} with encoding {encoding}"
+                f" with new size {resized_width} x {resized_height}"
+            )
+            bag_obj = ImageFromBag(topic, encoding, bag_path, images_path, resized_width, resized_height)
+            all_files += bag_obj.files
+            logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
+
+        # video_file = VideoFromBag(topic, images_path)
+    except rospy.ROSInterruptException:
+        pass
+    return all_files
+
+
 def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket) -> int:
     logger.info("batch_id: %s", batch_id)
     logger.info("index: %s", index)
@@ -146,6 +206,11 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     logger.info("topics: %s", topics)
     logger.info("encoding: %s", encoding)
     logger.info("target_bucket: %s", target_bucket)
+
+    resized_width = int(os.environ["RESIZE_WIDTH"])
+    resized_height = int(os.environ["RESIZE_HEIGHT"])
+    logger.info("resized_width: %s", resized_width)
+    logger.info("resized_height: %s", resized_height)
 
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(table_name)
@@ -169,21 +234,16 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     s3.download_file(item["s3_bucket"], item["s3_key"], bag_path)
     logger.info(f"Bag downloaded to {bag_path}")
 
-    all_files = []
+    uploaded_directories = []
     for topic in topics:
-        logger.info(f"Getting images from topic: {topic} with encoding {encoding}")
-        try:
-            bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
-            all_files += bag_obj.files
-            logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
-            # video_file = VideoFromBag(topic, images_path)
-        except rospy.ROSInterruptException:
-            pass
+        all_files = extract_images(bag_path, topic, resized_width, resized_height, encoding, images_path)
+        logger.info(f"Uploading results - {target_bucket}")
+        uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
+        uploaded_directories += uploaded_directories
+        logger.info("Uploaded results")
 
-    # Sync results
-    logger.info(f"Uploading results - {target_bucket}")
-    uploaded_files, uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
-    logger.info("Uploaded results")
+    raw_image_dirs = [d for d in uploaded_directories if "resized" not in d]
+    resized_image_dirs = [d for d in uploaded_directories if "resized" in d]
 
     logger.info("Writing job status to DynamoDB")
     table.update_item(
@@ -191,6 +251,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         UpdateExpression="SET "
         "image_extraction_status = :status, "
         "raw_image_dirs = :raw_image_dirs, "
+        "resized_image_dirs = :resized_image_dirs, "
         "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
@@ -200,7 +261,8 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         "file_id = :file_id",
         ExpressionAttributeValues={
             ":status": "success",
-            ":raw_image_dirs": uploaded_directories,
+            ":raw_image_dirs": raw_image_dirs,
+            ":resized_image_dirs": resized_image_dirs,
             ":raw_image_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,
@@ -216,6 +278,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         UpdateExpression="SET "
         "image_extraction_status = :status, "
         "raw_image_dirs = :raw_image_dirs, "
+        "resized_image_dirs = :resized_image_dirs, "
         "raw_image_bucket = :raw_image_bucket, "
         "s3_key = :s3_key, "
         "s3_bucket = :s3_bucket,"
@@ -224,6 +287,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         ExpressionAttributeValues={
             ":status": "success",
             ":raw_image_dirs": uploaded_directories,
+            ":resized_image_dirs": resized_image_dirs,
             ":raw_image_bucket": target_bucket,
             ":batch_id": batch_id,
             ":index": index,
@@ -231,7 +295,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
             ":s3_bucket": item["s3_bucket"],
         },
     )
-
+    shutil.rmtree(local_dir)
     return 0
 
 
@@ -247,14 +311,17 @@ if __name__ == "__main__":
     parser.add_argument("--targetbucket", required=True)
     args = parser.parse_args()
 
+    unique_id = f"{args.index}_{str(int(time.time()))}"
+    local_dir = f"/mnt/ebs/{unique_id}"
     logger.debug("ARGS: %s", args)
+    os.mkdir(local_dir)
     sys.exit(
         main(
             batch_id=args.batchid,
             index=args.index,
             table_name=args.tablename,
-            bag_path="/tmp/ros.bag",
-            images_path="/tmp/images/",
+            bag_path=f"{local_dir}/ros.bag",
+            images_path=f"{local_dir}/images/",
             topics=json.loads(args.imagetopics),
             encoding=args.desiredencoding,
             target_bucket=args.targetbucket,
