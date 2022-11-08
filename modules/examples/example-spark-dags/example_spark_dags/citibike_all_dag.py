@@ -39,12 +39,9 @@ from airflow.providers.amazon.aws.sensors.emr_containers import EMRContainerSens
 # from airflow.sensors.emr_containers_job_run import EmrContainersJobRunSensor
 from airflow.utils.dates import days_ago
 from boto3.session import Session
+from example_spark_dags import emr_eks_dag_config
 
-from emr_eks_dags import emr_eks_dag_config
-
-afbucket = (
-    f"{emr_eks_dag_config.DAG_BUCKET}/dags/emr_eks_dags/"  # ADDF MWAA Dags bucket
-)
+afbucket = f"{emr_eks_dag_config.DAG_BUCKET}/dags/example_spark_dags/"  # ADDF MWAA Dags bucket
 emr_virtual_cluster_id = emr_eks_dag_config.VIRTUAL_CLUSTER_ID
 emr_execution_role_arn = emr_eks_dag_config.EMR_JOB_EXECUTION_ROLE
 YR = "2020"
@@ -63,9 +60,7 @@ def try_create_aws_conn(**kwargs):
         AwsHook.get_connection(conn_id)
     except AirflowException:
         extra = json.dumps({"role_arn": emr_eks_dag_config.DAG_ROLE}, indent=2)
-        conn = Connection(
-            conn_id=conn_id, conn_type="aws", host="", schema="", login="", extra=extra
-        )
+        conn = Connection(conn_id=conn_id, conn_type="aws", host="", schema="", login="", extra=extra)
         try:
             session = settings.Session()
             session.add(conn)
@@ -155,7 +150,7 @@ CONFIGURATION_OVERRIDES = {
     "monitoringConfiguration": {
         "cloudWatchMonitoringConfiguration": {
             "logGroupName": "/emr-containers/jobs",
-            "logStreamNamePrefix": "blog",
+            "logStreamNamePrefix": "addf",
         },
         "persistentAppUI": "ENABLED",
         "s3MonitoringConfiguration": {"logUri": "s3://" + afbucket + "/joblogs"},
@@ -207,9 +202,7 @@ with DAG(
             task_id=f"start_citibike_ridership_analytics-{i}",
             name="citibike_analytics_run",
             virtual_cluster_id=emr_virtual_cluster_id,
-            client_request_token="".join(
-                random.choice(string.digits) for _ in range(10)
-            ),
+            client_request_token="".join(random.choice(string.digits) for _ in range(10)),
             execution_role_arn=emr_execution_role_arn,
             release_label="emr-6.2.0-latest",
             job_driver=JOB_DRIVER,

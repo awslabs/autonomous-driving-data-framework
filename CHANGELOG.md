@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 - Added a pattern for Event bridge triggering StepFunctions triggering AWS Batch
-- Added a pattern for Airflow to trigger Spark Jobs on  AWS EMR on EKS.
+- Added a module to support the execution of Spark Jobs on AWS EMR on EKS.
+- Added an example spark dags module to demonstrate how to consume `emr-on-eks` module for running spark jobs on AWS EMR on EKS
 
 ### **Changed**
 
 - Updated default accountId resolution in sample manifests to simple key:value mapping to reduce confusion
+- Updated `seedfarmer` version to 2.2.1 for being able to use `.env` files
 
 ### **Removed**
 

@@ -16,14 +16,7 @@ import sys
 
 import pyspark
 from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    DateType,
-    DoubleType,
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql.types import DateType, DoubleType, IntegerType, StringType, StructField, StructType
 
 bucket = sys.argv[1]
 
@@ -49,25 +42,16 @@ schema = StructType(
     ]
 )
 
-df = (
-    spark.read.format("csv")
-    .option("header", "true")
-    .schema(schema)
-    .load("s3://" + bucket + "/citibike/csv/")
-)
+df = spark.read.format("csv").option("header", "true").schema(schema).load("s3://" + bucket + "/citibike/csv/")
 df.write.parquet("s3://" + bucket + "/citibike/parquet/", mode="overwrite")
 
 #######################################
 df = spark.read.format("parquet").load("s3://" + bucket + "/citibike/parquet/")
 df.createOrReplaceTempView("citibike")
-newdf = spark.sql(
-    "select *, extract(year from starttime) as yr,extract( month from starttime) as mo from citibike"
-)
+newdf = spark.sql("select *, extract(year from starttime) as yr,extract( month from starttime) as mo from citibike")
 newdf.createOrReplaceTempView("newcitibike")
 
-output = spark.sql(
-    "select count(*) as sum, mo from newcitibike group by mo order by sum  desc"
-)
+output = spark.sql("select count(*) as sum, mo from newcitibike group by mo order by sum  desc")
 output.coalesce(1).write.format("csv").option("header", "true").save(
     "s3://" + bucket + "/citibike/results/ridership/", mode="overwrite"
 )

@@ -21,10 +21,9 @@ For custom use-cases, you shuld be adjusting the required permissions on EMR Job
 - `dag-bucket-name`: name of the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `dag-path`: name of the path in the Bucket configured in the shared MWAA Environment to store DAG artifacts
 - `mwaa-exec-role`: ARN of the MWAA Execution Role
+- `emr-eks-namespace`: The EKS Namespace to which the Virtual Cluster should be deployed to.
 
 #### Optional
-
-- `emr-eks-namespace`: The EKS Namespace to which the Virtual Cluster should be deployed to. It is defauled to `emr-eks-spark` if not provided.
 
 ### Sample declaration of Airflow with EMR on EKS
 
@@ -76,12 +75,6 @@ parameters:
         key: ArtifactsBucketName
   - name: airflow-emr-eks-namespace
     value: emr-eks-spark
-  - name: dag-bucket-name
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: datalake-buckets
-        key: ArtifactsBucketName
   - name: dag-path
     valueFrom:
       moduleMetadata:
@@ -104,8 +97,7 @@ parameters:
 
 ### Module Metadata Outputs
 
-- `DagRoleArn`: ARN of the DAG Execution Role created by the Stack
-- `EMRJobExecutionRoleArn`: ARN for the EMR On EKS Execution Role
+- `EmrJobExecutionRoleArn`: ARN for the EMR On EKS Execution Role
 - `VirtualClusterId`: Cluster ID for the EMR Virtual Cluster ID
 
 #### Output Example
@@ -114,8 +106,7 @@ EksRbacStack:
 
 ```json
 {
-    "DagRoleArn":"arn:aws:iam::1234567890:role/addf-demo-simulations-emr-on-eks-dag-role",
-    "EMRJobExecutionRoleArn":"arn:aws:iam::1234567890:role/addf-demo-simulations-emr-addfdemosimulationsemroE-195BFLP7OJ4UF"
+    "EmrJobExecutionRoleArn":"arn:aws:iam::1234567890:role/addf-demo-simulations-emr-XXXXXXXX"
 }
 ```
 
@@ -123,5 +114,5 @@ EMRStack:
 
 ```json
 {
-    "VirtualClusterId":"nc72xbhwpgnx17ckqoc6rw56e"
+    "VirtualClusterId":"ncXXXXXXXX"
 }

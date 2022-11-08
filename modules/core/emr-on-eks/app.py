@@ -21,8 +21,9 @@ eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"), "")  # requ
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"), "")  # required
 eks_openid_issuer = os.getenv(_param("EKS_OPENID_ISSUER"), "")  # required
 artifact_bucket_name = os.getenv(_param("ARTIFACT_BUCKET_NAME"))  # required
-emr_eks_namespace = os.getenv(_param("AIRFLOW_EMR_EKS_NAMESPACE"), "emr-eks-spark")
+emr_eks_namespace = os.getenv(_param("AIRFLOW_EMR_EKS_NAMESPACE")) # required
 raw_bucket_name = os.getenv(_param("RAW_BUCKET_NAME"))
+logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"), "")
 
 app = App()
 
@@ -38,6 +39,7 @@ eks_rbac_stack = EmronEksRbacStack(
     eks_openid_issuer=eks_openid_issuer,
     emr_namespace=emr_eks_namespace,
     raw_bucket_name=raw_bucket_name,
+    logs_bucket_name=logs_bucket_name,
     artifact_bucket_name=artifact_bucket_name,
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
@@ -64,7 +66,7 @@ CfnOutput(
     id="metadata",
     value=eks_rbac_stack.to_json_string(
         {
-            "EMRJobExecutionRoleArn": eks_rbac_stack.job_role.role_arn,
+            "EmrJobExecutionRoleArn": eks_rbac_stack.job_role.role_arn,
         }
     ),
 )

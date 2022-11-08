@@ -33,7 +33,7 @@ class DagIamRole(Stack):
         deployment_name: str,
         module_name: str,
         mwaa_exec_role: str,
-        bucket_policy_arn: Optional[str] = None,
+        raw_bucket_name: str,
         **kwargs: Any,
     ) -> None:
         # ADDF Env vars

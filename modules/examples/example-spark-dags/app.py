@@ -7,9 +7,7 @@ from stack import DagIamRole
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
 module_name = os.getenv("ADDF_MODULE_NAME", "")
 mwaa_exec_role = os.getenv("ADDF_PARAMETER_MWAA_EXEC_ROLE_ARN", "")
-bucket_policy_arn = os.getenv("ADDF_PARAMETER_BUCKET_POLICY_ARN")
-permission_boundary_arn = os.getenv("ADDF_PERMISSION_BOUNDARY_ARN")
-
+raw_bucket_name = os.getenv("ADDF_PARAMETER_RAW_BUCKET_NAME", "")
 app = App()
 
 stack = DagIamRole(
@@ -18,8 +16,7 @@ stack = DagIamRole(
     deployment_name=deployment_name,
     module_name=module_name,
     mwaa_exec_role=mwaa_exec_role,
-    bucket_policy_arn=bucket_policy_arn,
-    permission_boundary_arn=permission_boundary_arn,
+    raw_bucket_name=raw_bucket_name,
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
