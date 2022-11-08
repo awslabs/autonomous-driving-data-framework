@@ -14,12 +14,6 @@ Parameters:
   EksClusterAdminRoleArn:
     Type: String
     Description: Role from the EKS module with cluster admin permissions
-  ArtifactBucketName:
-    Type: String
-    Description: The name Bucket where MWAA DAG artifacts are deployed
-  DagPath:
-    Type: String
-    Description: The path in the Dag Bucket where MWAA DAG artifacts are deployed
 
 Resources:
   Policy:

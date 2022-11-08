@@ -16,9 +16,8 @@ import logging
 from typing import Any, cast
 
 # import cdk_nag
-from aws_cdk import Aspects, CfnJson, Stack, Tags
+from aws_cdk import CfnJson, Stack, Tags
 from aws_cdk import aws_eks as eks
-from aws_cdk import aws_emrcontainers as emrc
 from aws_cdk import aws_iam as iam
 
 # from cdk_nag import NagSuppressions
@@ -64,9 +63,7 @@ class EmronEksRbacStack(Stack):
             description="This stack deploys EMR on EKS RBAC Configuration for ADDF",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{self.deployment_name}"
-        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
 
         dep_mod = f"addf-{self.deployment_name}-{self.module_name}"
         dep_mod = dep_mod[:27]
@@ -83,9 +80,7 @@ class EmronEksRbacStack(Stack):
             open_id_connect_provider=provider,
         )
 
-        self.emrsvcrolearn = (
-            f"arn:aws:iam::{self.account}:role/AWSServiceRoleForAmazonEMRContainers"
-        )
+        self.emrsvcrolearn = f"arn:aws:iam::{self.account}:role/AWSServiceRoleForAmazonEMRContainers"
 
         # Create namespace for EMR to use
         namespace = eks_cluster.add_manifest(

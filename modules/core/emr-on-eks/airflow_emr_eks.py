@@ -1,24 +1,11 @@
-# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-# SPDX-License-Identifier: MIT-0
-import random
-from typing import List, cast
+from typing import cast
 
 # import cdk_nag
-from aws_cdk import Aspects, CfnJson, CfnOutput, Stack, Tags
-from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_eks as eks
-from aws_cdk import aws_emr as emr
+from aws_cdk import Stack, Tags
 from aws_cdk import aws_emrcontainers as emrc
-from aws_cdk import aws_iam as iam
 
 # from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
-
-"""
-This stack deploys the following:
-- EMR on EKS virtual cluster
-- Airflow with EMR on EKS
-"""
 
 
 class AirflowEmrEksStack(Stack):
@@ -48,9 +35,7 @@ class AirflowEmrEksStack(Stack):
         dep_mod = f"addf-{self.deployment_name}-{self.module_name}"
         dep_mod = dep_mod[:27]
 
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{self.deployment_name}"
-        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
 
         # EMR virtual cluster
         self.emr_vc = emrc.CfnVirtualCluster(
@@ -59,9 +44,7 @@ class AirflowEmrEksStack(Stack):
             container_provider=emrc.CfnVirtualCluster.ContainerProviderProperty(
                 id=eks_cluster_name,
                 info=emrc.CfnVirtualCluster.ContainerInfoProperty(
-                    eks_info=emrc.CfnVirtualCluster.EksInfoProperty(
-                        namespace=emr_namespace
-                    )
+                    eks_info=emrc.CfnVirtualCluster.EksInfoProperty(namespace=emr_namespace)
                 ),
                 type="EKS",
             ),
