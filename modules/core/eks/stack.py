@@ -33,6 +33,23 @@ _logger: logging.Logger = logging.getLogger(__name__)
 project_dir = os.path.dirname(os.path.abspath(__file__))
 
 
+ALB_CONTROLLER_VERSION = "alb_contoller_version"
+
+version_mappings = {
+    "1.21": {ALB_CONTROLLER_VERSION: "1.3.3"},
+    "1.22": {ALB_CONTROLLER_VERSION: "1.4.5"},
+    "1.23": {ALB_CONTROLLER_VERSION: "1.4.5"},
+    "default": {ALB_CONTROLLER_VERSION: "1.3.3"},
+}
+
+
+def get_version(eks_version: str, controller_name) -> str:
+    if version_mappings.get(eks_version) and version_mappings[eks_version].get(controller_name):
+        return version_mappings[eks_version][controller_name]
+    else:
+        return version_mappings["default"][controller_name]
+
+
 class Eks(Stack):  # type: ignore
     def __init__(
         self,
@@ -95,6 +112,7 @@ class Eks(Stack):  # type: ignore
             "Resource": [
                 f"arn:aws:iam::{self.account}:role/AmazonEKSVPCCNIMetricsHelperRole",
                 f"arn:aws:iam::{self.account}:policy/AmazonEKSVPCCNIMetricsHelperPolicy",
+                f"arn:aws:iam::{self.account}:role/addf-{self.deployment_name}-{self.module_name}-CNIMetricsHelperRole",
             ],
         }
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_1))
@@ -176,6 +194,7 @@ class Eks(Stack):  # type: ignore
                     # The default in CDK is to force upgrades through even if they violate - it is safer to not do that
                     force_update=False,
                     instance_types=instance_types,
+                    labels=ng.get("eks_node_labels") if ng.get("eks_node_labels") else None,
                     # release_version=self.eks_compute_config["eks_node_ami_version"],
                 ).role.add_managed_policy(
                     iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
@@ -209,7 +228,7 @@ class Eks(Stack):  # type: ignore
             awslbcontroller_chart = eks_cluster.add_helm_chart(
                 "aws-load-balancer-controller",
                 chart="aws-load-balancer-controller",
-                version="1.3.3",
+                version=get_version(str(self.eks_compute_config["eks_version"]), ALB_CONTROLLER_VERSION),
                 release="awslbcontroller",
                 repository="https://aws.github.io/eks-charts",
                 namespace="kube-system",

@@ -11,7 +11,7 @@ deploy:
       - eval $(aws sts assume-role --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_REGION}-masterrole --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       # Installing CNI Metrics Helper
       - aws iam get-policy --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/AmazonEKSVPCCNIMetricsHelperPolicy || aws iam create-policy --policy-name AmazonEKSVPCCNIMetricsHelperPolicy --policy-document file://addons-iam-policies/cni-metrics-helper-policy.json
-      - eksctl create iamserviceaccount --name cni-metrics-helper --namespace kube-system --cluster addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-cluster --role-name "AmazonEKSVPCCNIMetricsHelperRole" --attach-policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/AmazonEKSVPCCNIMetricsHelperPolicy --approve
+      - eksctl create iamserviceaccount --name cni-metrics-helper --namespace kube-system --cluster addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-cluster --role-name "addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-CNIMetricsHelperRole" --attach-policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/AmazonEKSVPCCNIMetricsHelperPolicy --approve
       - curl -o cni-metrics-helper.yaml https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/v1.11.0/config/master/cni-metrics-helper.yaml
       - sed -i.bak -e "s/us-west-2/$AWS_REGION/" cni-metrics-helper.yaml
       - aws eks update-kubeconfig --name addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-cluster --region ${AWS_REGION}
