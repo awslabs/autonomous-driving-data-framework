@@ -106,13 +106,15 @@ class Eks(Stack):  # type: ignore
                 f"arn:aws:cloudformation:{self.region}:{self.account}:stack/eksctl-addf-{self.deployment_name}*",
             ],
         }
+        cni_metrics_role_name = f"addf-{self.deployment_name}-{self.module_name}-CNIMetricsHelperRole"
+        self.cni_metrics_role_name = cni_metrics_role_name[:60]
         cluster_admin_policy_statement_json_3 = {
             "Effect": "Allow",
             "Action": ["iam:Create*", "iam:Put*", "iam:List*", "iam:Detach*", "iam:Attach*", "iam:DeleteRole"],
             "Resource": [
                 f"arn:aws:iam::{self.account}:role/AmazonEKSVPCCNIMetricsHelperRole",
                 f"arn:aws:iam::{self.account}:policy/AmazonEKSVPCCNIMetricsHelperPolicy",
-                f"arn:aws:iam::{self.account}:role/addf-{self.deployment_name}-{self.module_name}-CNIMetricsHelperRole",
+                f"arn:aws:iam::{self.account}:role/{self.cni_metrics_role_name}",
             ],
         }
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_1))

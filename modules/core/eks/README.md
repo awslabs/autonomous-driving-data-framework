@@ -97,6 +97,7 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
 - `EksClusterSecurityGroupId`: The EKS Cluster's SecurityGroup ID
 - `EksOidcArn`: The EKS Cluster's OIDC Arn
 - `EksClusterOpenIdConnectIssuer`: EKS Cluster's OPEN ID Issuer
+- `CNIMetricsHelperRoleName`: Name of role created for CNIMetricHelper SA
 
 #### Output Example
 
@@ -106,7 +107,8 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
   "EksClusterAdminRoleArn": "arn:aws:iam::XXXXXXXX:role/addf-local-core-eks-stack-clusterCreationRoleXXXX",
   "EksClusterSecurityGroupId": "sg-XXXXXXXXXXXXXX",
   "EksOidcArn": "arn:aws:iam::XXXXXXXX:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/XXXXXXXX",
-  "EksClusterOpenIdConnectIssuer": "oidc.eks.us-west-2.amazonaws.com/id/098FBE7B04A9C399E4A3534FF1C288C6"
+  "EksClusterOpenIdConnectIssuer": "oidc.eks.us-west-2.amazonaws.com/id/098FBE7B04A9C399E4A3534FF1C288C6",
+  "CNIMetricsHelperRoleName": "addf-dataservice-core-eks-CNIMetricsHelperRole"
 }
 
 ```
