@@ -17,6 +17,7 @@ mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
+dag_bucket_name = os.getenv(_param("DAG_BUCKET_NAME"))
 
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
@@ -86,6 +87,8 @@ stack = AwsBatchPipeline(
     lane_detection_role=lane_detection_role,
     job_queues=[x for x in [fargate_job_queue, spot_job_queue, on_demand_job_queue] if x is not None],
     job_definitions=[x for x in [png_batch_job_def_arn, parquet_batch_job_def_arn] if x is not None],
+    emr_job_role_arn=emr_job_role_arn,
+    virtual_emr_cluster_id=virtual_emr_cluster_id,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
@@ -101,8 +104,10 @@ CfnOutput(
             "DagId": dag_id,
             "DagRoleArn": stack.dag_role.role_arn,
             "DynamoDbTableName": stack.tracking_table_name,
+            "DetectionsDynamoDBStreamArn": stack.tracking_table_stream_arn,
             "SourceBucketName": source_bucket_name,
             "TargetBucketName": target_bucket_name,
+            "DagBucketName": dag_bucket_name,
             "OnDemandJobQueueArn": on_demand_job_queue,
             "SpotJobQueueArn": spot_job_queue,
             "FargateJobQueueArn": fargate_job_queue,

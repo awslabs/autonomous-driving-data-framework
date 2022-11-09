@@ -40,6 +40,8 @@ class AwsBatchPipeline(Stack):
         lane_detection_role: str,
         job_queues: Sequence[str],
         job_definitions: Sequence[str],
+        emr_job_role_arn: str,
+        virtual_emr_cluster_id: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -66,7 +68,7 @@ class AwsBatchPipeline(Stack):
         tracking_partition_key = "pk"  # batch_id or drive_id
         tracking_sort_key = "sk"  # batch_id / array_index_id   or drive_id / file_part
 
-        dynamo.Table(
+        table = dynamo.Table(
             self,
             self.tracking_table_name,
             table_name=self.tracking_table_name,
@@ -77,6 +79,8 @@ class AwsBatchPipeline(Stack):
             point_in_time_recovery=True,
             stream=dynamo.StreamViewType.NEW_AND_OLD_IMAGES,
         )
+
+        self.tracking_table_stream_arn = table.table_stream_arn
 
         # Create Dag IAM Role and policy
         policy_statements = [

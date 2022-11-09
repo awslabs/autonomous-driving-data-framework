@@ -31,6 +31,8 @@ from airflow.exceptions import AirflowException
 from airflow.models import Connection
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
+from airflow.providers.amazon.aws.operators.emr_containers import EMRContainerOperator
+from airflow.providers.amazon.aws.sensors.emr_containers import EMRContainerSensor
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
@@ -71,6 +73,31 @@ LANEDET_ROLE = addf_module_metadata["LaneDetectionRole"]
 LANEDET_CONCURRENCY = addf_module_metadata["LaneDetectionJobConcurrency"]
 LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
 
+# EMR Config
+spark_app_dir = f"s3://{addf_module_metadata['DagBucketName']}/spark_jobs/"
+emr_virtual_cluster_id = addf_module_metadata['VIRTUAL_CLUSTER_ID']
+emr_execution_role_arn = addf_module_metadata['EMR_JOB_EXECUTION_ROLE']
+
+JOB_DRIVER = {
+    "sparkSubmitJobDriver": {
+        "entryPoint": f"{spark_app_dir}synchronize_topics.py",
+        "entryPointArguments": [DYNAMODB_TABLE],
+        "sparkSubmitParameters": "--conf spark.executor.instances=3 --conf "
+                                 "spark.executor.memory=4G --conf spark.driver.memory=2G --conf spark.executor.cores=2 "
+                                 "--conf spark.sql.shuffle.partitions=60 --conf spark.dynamicAllocation.enabled=false",
+    }
+}
+
+CONFIGURATION_OVERRIDES = {
+    "monitoringConfiguration": {
+        "cloudWatchMonitoringConfiguration": {
+            "logGroupName": "/emr-containers/jobs",
+            "logStreamNamePrefix": "addf",
+        },
+        "persistentAppUI": "ENABLED",
+        "s3MonitoringConfiguration": {"logUri": "s3://" + afbucket + "/joblogs"},
+    }
+}
 
 account = boto3.client("sts").get_caller_identity().get("Account")
 
@@ -451,6 +478,27 @@ with DAG(
         submit_lane_det_job = PythonOperator(
             task_id="lane-detection-sagemaker-job",
             python_callable=sagemaker_lanedet_operation,
+        )
+
+    with TaskGroup(group_id="scene-detection") as scene_detection_task_group:
+
+        start_job_run = EMRContainerOperator(
+            task_id=f"start_citibike_ridership_analytics-{i}",
+            name="citibike_analytics_run",
+            virtual_cluster_id=emr_virtual_cluster_id,
+            client_request_token="".join(random.choice(string.digits) for _ in range(10)),
+            execution_role_arn=emr_execution_role_arn,
+            release_label="emr-6.2.0-latest",
+            job_driver=JOB_DRIVER,
+            configuration_overrides=CONFIGURATION_OVERRIDES,
+            aws_conn_id="aws_emr_on_eks",
+        )
+
+        job_sensor = EMRContainerSensor(
+            task_id=f"check_job_status",
+            job_id="{{ task_instance.xcom_pull(task_ids='start_citibike_ridership_analytics', key='return_value') }}",
+            virtual_cluster_id="{{ task_instance.xcom_pull(task_ids='start_citibike_ridership_analytics', key='virtual_cluster_id') }}",
+            aws_conn_id="aws_emr_on_eks",
         )
 
     create_aws_conn >> create_batch_of_drives_task >> extract_task_group

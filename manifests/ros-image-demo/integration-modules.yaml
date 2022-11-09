@@ -1,0 +1,63 @@
+name: opensearch-proxy
+path: modules/demo-only/opensearch-proxy/
+parameters:
+  - name: opensearch-domain-endpoint
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchDomainEndpoint
+  - name: opensearch-sg-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchSecurityGroupId
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: secrets-manager-name
+    value: opensearch-proxy-credentials
+---
+name: rosbag-ddb-to-os
+path: modules/integration/ddb-to-opensearch/
+parameters:
+  - name: opensearch-domain-name
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchDomainName
+  - name: opensearch-domain-endpoint
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchDomainEndpoint
+  - name: opensearch-sg-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchSecurityGroupId
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: rosbag_stream_arn
+    valueFrom:
+      moduleMetadata:
+        group: dags
+        name: aws
+        key: DetectionsDynamoDBStreamArn
