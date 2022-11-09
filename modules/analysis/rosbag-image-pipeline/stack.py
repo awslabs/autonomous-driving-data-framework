@@ -129,6 +129,21 @@ class AwsBatchPipeline(Stack):
                 effect=iam.Effect.ALLOW,
                 resources=["arn:aws:s3:::addf-*", "arn:aws:s3:::addf-*/*"],
             ),
+            iam.PolicyStatement(
+                actions=[
+                    "emr-containers:StartJobRun",
+                    "emr-containers:ListJobRuns",
+                    "emr-containers:DescribeJobRun",
+                    "emr-containers:CancelJobRun",
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+            ),
+            iam.PolicyStatement(
+                actions=["kms:Decrypt", "kms:GenerateDataKey"],
+                effect=iam.Effect.ALLOW,
+                resources=[f"arn:aws:kms:{self.region}:{self.account}:key/*"],
+            ),
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 

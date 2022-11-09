@@ -256,3 +256,15 @@ parameters:
         group: core
         name: mwaa
         key: MwaaExecRoleArn
+  - name: emr-job-role-arn
+    valueFrom:
+      moduleMetadata:
+        group: emr
+        name: emr-on-eks
+        key: EmrJobExecutionRoleArn
+  - name: virtual-emr-cluster-id
+    valueFrom:
+      moduleMetadata:
+        group: emr
+        name: emr-on-eks
+        key: VirtualClusterId

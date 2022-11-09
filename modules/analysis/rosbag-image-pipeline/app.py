@@ -39,6 +39,8 @@ yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
 image_topics = os.getenv(_param("IMAGE_TOPICS"))
 sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
 
+virtual_emr_cluster_id = os.getenv(_param("VIRTUAL_EMR_CLUSTER_ID"))
+emr_job_role_arn = os.getenv(_param("EMR_JOB_ROLE_ARN"))
 
 if not png_batch_job_def_arn:
     raise Exception("missing input parameter png-batch-job-def-arn")
@@ -119,6 +121,8 @@ CfnOutput(
             "YoloModel": yolo_model,
             "ImageTopics": json.loads(image_topics),
             "SensorTopics": json.loads(sensor_topics),
+            "EmrVirtualClusterId": virtual_emr_cluster_id,
+            "EmrJobRoleArn": emr_job_role_arn,
         }
     ),
 )

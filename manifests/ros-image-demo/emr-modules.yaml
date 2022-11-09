@@ -1,0 +1,71 @@
+name: emr-on-eks
+path: modules/core/emr-on-eks/
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: eks-cluster-admin-role-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterAdminRoleArn
+  - name: eks-cluster-name
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: eks-oidc-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: eks-openid-issuer
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterOpenIdConnectIssuer
+  - name: artifact-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: airflow-emr-eks-namespace
+    value: emr-eks-spark
+  - name: dag-path
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: DagPath
+  - name: mwaa-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: MwaaExecRoleArn
+  - name: raw-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: RawBucketName
+  - name: logs-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: LogsBucketName
