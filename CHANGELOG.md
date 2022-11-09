@@ -9,19 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [V1.1.0] - [UNRELEASED]
 
 ### **Added**
+
 - Added node label support to core eks module 
-- Added version sopport for core eks module with additional alb version mappings by default
+- Added version support for core eks module with additional alb version mappings by default
+- Added a pattern for Event bridge triggering StepFunctions triggering AWS Batch
+- Added a module to support the execution of Spark Jobs on AWS EMR on EKS.
+- Added an example spark dags module to demonstrate how to consume `emr-on-eks` module for running spark jobs on AWS EMR on EKS
+
 
 ### **Changed**
+
 - changing removal policy of EFS to `RETAIN` by default in core-eks module
 - Added a pattern for Event bridge triggering StepFunctions triggering AWS Batch
 - Added support for configurable EBS Volumes in AWS Batch module, to enable working with larger datasets 
 - Modified the CNI Helper role name and on  eks module 
-
-
-### **Changed**
 - Ros to Png Image Extraction relies on EC2 capacity providers in AWS Batch instead of Fargate
 - Updated default accountId resolution in sample manifests to simple key:value mapping to reduce confusion
+- Updated `seedfarmer` version to 2.2.1 for being able to use `.env` files
+
 ### **Removed**
 
 =======
