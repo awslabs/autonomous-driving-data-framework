@@ -80,7 +80,22 @@ class AwsBatchPipeline(Stack):
             stream=dynamo.StreamViewType.NEW_AND_OLD_IMAGES,
         )
 
-        self.tracking_table_stream_arn = table.table_stream_arn
+        self.scene_table_name = f"{dep_mod}-scenes"
+        rosbag_scene_p_key = "bag_file"
+        rosbag_scene_sort_key = "scene_id"
+        rosbag_scene_table = dynamo.Table(
+            self,
+            "dynamotablescenes",
+            table_name=self.scene_table_name,
+            partition_key=dynamo.Attribute(name=rosbag_scene_p_key, type=dynamo.AttributeType.STRING),
+            sort_key=dynamo.Attribute(name=rosbag_scene_sort_key, type=dynamo.AttributeType.STRING),
+            billing_mode=dynamo.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY,
+            point_in_time_recovery=True,
+            stream=dynamo.StreamViewType.NEW_AND_OLD_IMAGES,
+        )
+        self.scene_table_stream_arn = rosbag_scene_table.table_stream_arn
+        self.scene_table_name = rosbag_scene_table.table_name
 
         # Create Dag IAM Role and policy
         policy_statements = [

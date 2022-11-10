@@ -203,6 +203,16 @@ class MWAAStack(Stack):  # type: ignore
                         f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/*",
                     ],
                 ),
+                aws_iam.PolicyStatement(
+                    actions=[
+                        "emr-containers:StartJobRun",
+                        "emr-containers:ListJobRuns",
+                        "emr-containers:DescribeJobRun",
+                        "emr-containers:CancelJobRun",
+                    ],
+                    effect=aws_iam.Effect.ALLOW,
+                    resources=["*"],
+            ),
             ]
         )
 

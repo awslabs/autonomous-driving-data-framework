@@ -317,8 +317,8 @@ if __name__ == "__main__":
     batch_id = arguments.batch_id
     input_bucket = arguments.input_bucket
     output_bucket = arguments.output_bucket
-    output_dynamo_table = arguments.output_dynamo_table
     region = arguments.region
+    output_dynamo_table = arguments.output_dynamo_table
 
     main(
         batch_metadata_table_name,

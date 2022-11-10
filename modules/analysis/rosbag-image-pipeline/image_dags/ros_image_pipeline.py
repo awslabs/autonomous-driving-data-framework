@@ -86,16 +86,7 @@ spark_app_dir = f"s3://{addf_module_metadata['DagBucketName']}/spark_jobs/"
 # EMR_JOB_ROLE_ARN = addf_module_metadata['EmrJobRoleArn']
 ARTIFACT_BUCKET = addf_module_metadata["DagBucketName"]
 LOGS_BUCKET = addf_module_metadata["LogsBucketName"]
-
-JOB_DRIVER = {
-    "sparkSubmitJobDriver": {
-        "entryPoint": f"{spark_app_dir}synchronize_topics.py",
-        "entryPointArguments": [DYNAMODB_TABLE],
-        "sparkSubmitParameters": "--conf spark.executor.instances=3 --conf "
-                                 "spark.executor.memory=4G --conf spark.driver.memory=2G --conf spark.executor.cores=2 "
-                                 "--conf spark.sql.shuffle.partitions=60 --conf spark.dynamicAllocation.enabled=false",
-    }
-}
+SCENE_TABLE = addf_module_metadata["DetectionsDynamoDBName"]
 
 CONFIGURATION_OVERRIDES = {
     "monitoringConfiguration": {
@@ -450,6 +441,45 @@ def sagemaker_lanedet_operation(**kwargs):
         logger.info("All object detection jobs complete")
 
 
+def emr_batch_operation(**kwargs):
+    ds = kwargs["ds"]
+    batch_id = kwargs["dag_run"].run_id
+
+    JOB_DRIVER = {
+        "sparkSubmitJobDriver": {
+            "entryPoint": f"{spark_app_dir}detect_scenes.py",
+            "entryPointArguments": [
+                "--batch-metadata-table-name", DYNAMODB_TABLE,
+                "--batch-id", batch_id,
+                "--bucket", TARGET_BUCKET,
+                "--region", REGION,
+                "--output-dynamo-table", SCENE_TABLE,
+            ],
+            "sparkSubmitParameters": "--conf spark.executor.instances=3 "
+                                     "--conf spark.executor.memory=4G "
+                                     "--conf spark.driver.memory=2G "
+                                     "--conf spark.executor.cores=2 "
+                                     "--conf spark.sql.shuffle.partitions=60 "
+                                     "--conf spark.dynamicAllocation.enabled=false "
+                                     "--packages com.audienceproject:spark-dynamodb_2.12:1.1.1",
+        }
+    }
+
+    start_job_run_op = EMRContainerOperator(
+        task_id=f"scene_detection",
+        name="scene_detection",
+        virtual_cluster_id=VIRTUAL_CLUSTER_ID,
+        execution_role_arn=EMR_JOB_EXECUTION_ROLE,
+        release_label="emr-6.8.0-latest",
+        job_driver=JOB_DRIVER,
+        configuration_overrides=CONFIGURATION_OVERRIDES,
+        aws_conn_id="aws_default",
+    )
+
+    start_job_run_op.execute(ds)
+    return start_job_run_op.job_id
+
+
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
@@ -491,23 +521,15 @@ with DAG(
 
     with TaskGroup(group_id="scene-detection") as scene_detection_task_group:
 
-        start_job_run = EMRContainerOperator(
-            task_id=f"scene_detection",
-            name="scene_detection",
-            virtual_cluster_id=VIRTUAL_CLUSTER_ID,
-            execution_role_arn=EMR_JOB_EXECUTION_ROLE,
-            release_label="emr-6.8.0-latest",
-            job_driver=JOB_DRIVER,
-            configuration_overrides=CONFIGURATION_OVERRIDES,
-            aws_conn_id="aws_default",
-        )
+        start_job_run = PythonOperator(task_id="scene-detection", python_callable=emr_batch_operation)
 
         job_sensor = EMRContainerSensor(
-            task_id=f"check_job_status",
-            job_id="{{ task_instance.xcom_pull(task_ids='scene_detection', key='return_value') }}",
-            virtual_cluster_id="{{ task_instance.xcom_pull(task_ids='scene_detection', key='virtual_cluster_id') }}",
+            task_id=f"check-emr-job-status",
+            job_id="{{ task_instance.xcom_pull(task_ids='scene-detection', key='return_value') }}",
+            virtual_cluster_id=VIRTUAL_CLUSTER_ID,
             aws_conn_id="aws_default",
         )
+        start_job_run >> job_sensor
 
     create_aws_conn >> create_batch_of_drives_task >> extract_task_group
     submit_png_job >> image_labelling_task_group >> scene_detection_task_group

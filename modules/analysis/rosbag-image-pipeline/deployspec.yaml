@@ -11,6 +11,7 @@ deploy:
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
       # - Here we write env values into the dag_config.py file for use by the DAGs
       - export DAG_DIR="image_dags"
+      - export SCRIPT_DIR="spark_scripts"
       - echo "ADDF_MODULE_METADATA = '${ADDF_MODULE_METADATA}'" >> $DAG_DIR/dag_config.py
       - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> $DAG_DIR/dag_config.py
       - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> $DAG_DIR/dag_config.py
@@ -19,7 +20,10 @@ deploy:
       - echo "ROLE = '${ROLE}'" >> $DAG_DIR/dag_config.py
       - echo "VIRTUAL_CLUSTER_ID = '${ADDF_PARAMETER_VIRTUAL_EMR_CLUSTER_ID}'" >> $DAG_DIR/dag_config.py
       - echo "EMR_JOB_EXECUTION_ROLE = '${ADDF_PARAMETER_EMR_JOB_ROLE_ARN}'" >> $DAG_DIR/dag_config.py
+      - export S3_SCRIPT_DIR="s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/$SCRIPT_DIR/"
+      - echo "S3_SCRIPT_DIR = '${S3_SCRIPT_DIR}'" >> $DAG_DIR/dag_config.py
       - aws s3 cp --recursive $DAG_DIR/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/$DAG_DIR/
+      - aws s3 cp --recursive $SCRIPT_DIR/ $S3_SCRIPT_DIR
 destroy:
   phases:
     install:
