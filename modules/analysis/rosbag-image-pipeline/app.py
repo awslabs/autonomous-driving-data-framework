@@ -18,6 +18,7 @@ full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
 dag_bucket_name = os.getenv(_param("DAG_BUCKET_NAME"))
+logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
 
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
@@ -43,8 +44,11 @@ sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
 virtual_emr_cluster_id = os.getenv(_param("VIRTUAL_EMR_CLUSTER_ID"))
 emr_job_role_arn = os.getenv(_param("EMR_JOB_ROLE_ARN"))
 
-if not png_batch_job_def_arn:
-    raise Exception("missing input parameter png-batch-job-def-arn")
+if not virtual_emr_cluster_id:
+    raise Exception("missing input parameter virtual-emr-cluster-id")
+
+if not emr_job_role_arn:
+    raise Exception("missing input parameter emr-job-role-arn")
 
 if not parquet_batch_job_def_arn:
     raise Exception("missing input parameter parquet-batch-job-def-arn")
@@ -108,6 +112,7 @@ CfnOutput(
             "SourceBucketName": source_bucket_name,
             "TargetBucketName": target_bucket_name,
             "DagBucketName": dag_bucket_name,
+            "LogsBucketName": logs_bucket_name,
             "OnDemandJobQueueArn": on_demand_job_queue,
             "SpotJobQueueArn": spot_job_queue,
             "FargateJobQueueArn": fargate_job_queue,
@@ -128,6 +133,8 @@ CfnOutput(
             "SensorTopics": json.loads(sensor_topics),
             "EmrVirtualClusterId": virtual_emr_cluster_id,
             "EmrJobRoleArn": emr_job_role_arn,
+            "Cluster": virtual_emr_cluster_id,
+            "Role": emr_job_role_arn,
         }
     ),
 )

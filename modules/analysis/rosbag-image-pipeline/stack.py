@@ -167,7 +167,7 @@ class AwsBatchPipeline(Stack):
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSageMakerFullAccess"),
             ],
             role_name=dag_role_name,
-            max_session_duration=Duration.hours(12),
+            max_session_duration=Duration.hours(6),
             path="/",
         )
 

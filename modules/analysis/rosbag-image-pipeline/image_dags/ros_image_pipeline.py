@@ -41,7 +41,14 @@ from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from batch_creation_and_tracking import add_drives_to_batch
-from dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
+from dag_config import (
+    ADDF_MODULE_METADATA,
+    DEPLOYMENT_NAME,
+    MODULE_NAME,
+    REGION,
+    EMR_JOB_EXECUTION_ROLE,
+    VIRTUAL_CLUSTER_ID,
+)
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
@@ -75,8 +82,10 @@ LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
 
 # EMR Config
 spark_app_dir = f"s3://{addf_module_metadata['DagBucketName']}/spark_jobs/"
-emr_virtual_cluster_id = addf_module_metadata['VIRTUAL_CLUSTER_ID']
-emr_execution_role_arn = addf_module_metadata['EMR_JOB_EXECUTION_ROLE']
+# EMR_VIRTUAL_CLUSTER_ID = addf_module_metadata['EmrVirtualClusterId']
+# EMR_JOB_ROLE_ARN = addf_module_metadata['EmrJobRoleArn']
+ARTIFACT_BUCKET = addf_module_metadata["DagBucketName"]
+LOGS_BUCKET = addf_module_metadata["LogsBucketName"]
 
 JOB_DRIVER = {
     "sparkSubmitJobDriver": {
@@ -95,7 +104,7 @@ CONFIGURATION_OVERRIDES = {
             "logStreamNamePrefix": "addf",
         },
         "persistentAppUI": "ENABLED",
-        "s3MonitoringConfiguration": {"logUri": "s3://" + afbucket + "/joblogs"},
+        "s3MonitoringConfiguration": {"logUri": "s3://" + LOGS_BUCKET + "/joblogs"},
     }
 }
 
@@ -483,23 +492,22 @@ with DAG(
     with TaskGroup(group_id="scene-detection") as scene_detection_task_group:
 
         start_job_run = EMRContainerOperator(
-            task_id=f"start_citibike_ridership_analytics-{i}",
-            name="citibike_analytics_run",
-            virtual_cluster_id=emr_virtual_cluster_id,
-            client_request_token="".join(random.choice(string.digits) for _ in range(10)),
-            execution_role_arn=emr_execution_role_arn,
-            release_label="emr-6.2.0-latest",
+            task_id=f"scene_detection",
+            name="scene_detection",
+            virtual_cluster_id=VIRTUAL_CLUSTER_ID,
+            execution_role_arn=EMR_JOB_EXECUTION_ROLE,
+            release_label="emr-6.8.0-latest",
             job_driver=JOB_DRIVER,
             configuration_overrides=CONFIGURATION_OVERRIDES,
-            aws_conn_id="aws_emr_on_eks",
+            aws_conn_id="aws_default",
         )
 
         job_sensor = EMRContainerSensor(
             task_id=f"check_job_status",
-            job_id="{{ task_instance.xcom_pull(task_ids='start_citibike_ridership_analytics', key='return_value') }}",
-            virtual_cluster_id="{{ task_instance.xcom_pull(task_ids='start_citibike_ridership_analytics', key='virtual_cluster_id') }}",
-            aws_conn_id="aws_emr_on_eks",
+            job_id="{{ task_instance.xcom_pull(task_ids='scene_detection', key='return_value') }}",
+            virtual_cluster_id="{{ task_instance.xcom_pull(task_ids='scene_detection', key='virtual_cluster_id') }}",
+            aws_conn_id="aws_default",
         )
 
     create_aws_conn >> create_batch_of_drives_task >> extract_task_group
-    submit_png_job >> image_labelling_task_group
+    submit_png_job >> image_labelling_task_group >> scene_detection_task_group

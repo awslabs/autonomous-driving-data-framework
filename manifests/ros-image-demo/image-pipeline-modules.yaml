@@ -83,6 +83,12 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: IntermediateBucketName
+  - name: logs-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: LogsBucketName
   - name: dag-bucket-name
     valueFrom:
       moduleMetadata:
@@ -125,6 +131,18 @@ parameters:
         group: core
         name: mwaa
         key: MwaaExecRoleArn
+  - name: emr-job-role-arn
+    valueFrom:
+      moduleMetadata:
+        group: emr
+        name: emr-on-eks
+        key: EmrJobExecutionRoleArn
+  - name: virtual-emr-cluster-id
+    valueFrom:
+      moduleMetadata:
+        group: emr
+        name: emr-on-eks
+        key: VirtualClusterId
 ---
 name: ford # ford open source dataset
 path: modules/analysis/rosbag-image-pipeline
@@ -220,6 +238,12 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: ArtifactsBucketName
+  - name: logs-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: LogsBucketName
   - name: dag-path
     valueFrom:
       moduleMetadata:
