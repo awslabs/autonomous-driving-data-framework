@@ -37,6 +37,7 @@ deploy:
       # Add the custom users
       - cd $ROOT_DIR
       - kubectl apply -f profiles/ 
+      - kubectl rollout restart deployment dex -n auth
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       #- export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
     post_build:
