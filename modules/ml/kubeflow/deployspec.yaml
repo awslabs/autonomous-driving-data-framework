@@ -32,14 +32,16 @@ deploy:
       - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_KUBECTL_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - aws eks update-kubeconfig --name ${CLUSTER_NAME}
       - kubectl get pods -n kube-system
-      # Deploy it here
+      # Deploy Kubeflow here
       - make deploy-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
       # Add the custom users
       - cd $ROOT_DIR
       - kubectl apply -f profiles/ 
       - kubectl rollout restart deployment dex -n auth
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-      #- export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      # Get the metadata written to kf-exports by the manage_kf_users.py script
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('kf-exports.json'); print(json.load(file)['metadata'])")
+
     post_build:
       commands:
       - echo "Deploy successful"

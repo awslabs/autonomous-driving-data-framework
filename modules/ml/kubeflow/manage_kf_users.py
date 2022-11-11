@@ -38,10 +38,10 @@ def create_pwd()->str:
         IncludeSpace=False,
     )['RandomPassword']
 
-def get_pwd(email:str, secret_name:str, username: str)->str:
+def get_pwd(email:str, secretname:str, username: str)->str:
     try:
-        re = client.describe_secret(SecretId=secret_name)
-        response = client.get_secret_value(SecretId=secret_name)
+        re = client.describe_secret(SecretId=secretname)
+        response = client.get_secret_value(SecretId=secretname)
         secret_string = response['SecretString']
         pwd = json.loads(secret_string)['password']
         return bcrypt.using(rounds=12, ident="2y").hash(pwd)
@@ -50,7 +50,7 @@ def get_pwd(email:str, secret_name:str, username: str)->str:
         print("create new secret and pwd")
         pwd = create_pwd()
         response = client.create_secret(
-            Name=secret_name,
+            Name=secretname,
             SecretString=get_payload(email,pwd,username)
         )
         return bcrypt.using(rounds=12, ident="2y").hash(pwd)
@@ -77,19 +77,24 @@ def generate_config(info:List[Dict[str,str]])->None:
     with open('kustomize/config.template', 'r') as file:
         config_map = yaml.safe_load(file)
     config_map['staticPasswords']=info
-
     with open(f'kustomize/config.yaml', 'w') as file:
         yaml.dump(config_map,file)
 
+def write_metadata(metadata_users:List[str])->None:
+    metadata={'metadata':{"KubeflowUsersDeployed":metadata_users}}
+    with open(f'kf-exports.json', 'w') as file:
+        json.dump(metadata,file)
+
 def create():
     kustomize_map = []
+    user_metadata = {}
     for user in users:
         email=user['email']
         username=re.sub(r'\W+', '', email.split('@')[0])
         secret_name=f"{project_name}-{deployment_name}-{module_name}-kf-{username}"
-        policy_arn=user['policyArn'] if user.get('policyArn') else None
-
-        encoded_pwd=get_pwd(email,secret_name,username)
+        user={"secretname":secret_name,"email":email,"username":username}
+        policy_arn=user['policyArn'] if user.get('policyArn') else None        
+        encoded_pwd=get_pwd(**user)
         kustomize_map.append({
             "email":email,
             "hash":encoded_pwd,
@@ -97,7 +102,10 @@ def create():
             "userID":str(random.randint(10000, 900000))
         })
         generate_profile(email,policy_arn,username)
+        user_metadata[username]=user
     generate_config(kustomize_map)
+    write_metadata(user_metadata)
+
 
 if __name__=='__main__':
     create()
