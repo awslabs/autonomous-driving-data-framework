@@ -3,19 +3,26 @@ from passlib.hash import bcrypt;
 from typing import Dict,List
 import random, re
 
-sample_users = [
-    {"email":"dgraeber@amazon.com","policyArn":"arn:aws:iam::616260033377:role/AdminRole"},
-    {"email":"dgrabs1@gmail.com","policyArn":"arn:aws:iam::616260033377:role/AdminRole"},
-    {"email":"derek.graeber@gmail.com","policyArn":"arn:aws:iam::616260033377:role/AdminRole"}
-]
-
-
 client = boto3.client("secretsmanager")
-secret_name = 'aws-addf-docker-credentials'
-
 project_name = os.getenv("AWS_CODESEEDER_NAME","addf")
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME","test")
-module_name = os.getenv("ADDF_MODULE_NAME","test")
+account_id=os.getenv("AWS_ACCOUNT_ID","123456789012")
+
+def get_sample_users()->Dict:
+    return [
+        {"email":"user1@amazon.com","policyArn":f"arn:aws:iam::{account_id}:role/AdminRole"},
+        {"email":"user2@gmail.com","policyArn":f"arn:aws:iam::{account_id}:role/AdminRole"}
+    ]
+
+def _proj(name: str) -> str:
+    return f"{project_name.upper()}_{name}"
+
+def _param(name: str) -> str:
+    return f"{project_name.upper()}_PARAMETER_{name}"
+
+deployment_name = os.getenv(_proj("DEPLOYMENT_NAME"), "")
+module_name = os.getenv(_proj("MODULE_NAME"), "")
+
+users = json.loads(os.getenv(_param("KUBEFLOW_USERS"))) if os.getenv(_param("KUBEFLOW_USERS")) else get_sample_users()
 
 
 def get_payload(email:str, pwd:str, username: str)->str:
@@ -76,7 +83,7 @@ def generate_config(info:List[Dict[str,str]])->None:
 
 def create():
     kustomize_map = []
-    for user in sample_users:
+    for user in users:
         email=user['email']
         username=re.sub(r'\W+', '', email.split('@')[0])
         secret_name=f"{project_name}-{deployment_name}-{module_name}-kf-{username}"

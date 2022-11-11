@@ -6,6 +6,7 @@ deploy:
     build:
       commands:
       # Export all env params specific to the deployment stuff
+      - export ROOT_DIR=$(pwd)
       - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
       - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
       - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION} #helm
@@ -22,14 +23,22 @@ deploy:
       - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
       - git status
       - python3.8 -m pip install -r tests/e2e/requirements.txt
+      # Generate the artifacts for users before assuming the KF Admin role
+      - cd $ROOT_DIR
+      - python manage_kf_users.py
+      - kubectl kustomize ./kustomize >> profiles/config-map.yaml
       # Assuming EKS Role
+      - cd $ROOT_DIR/kubeflow-manifests
       - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_KUBECTL_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - aws eks update-kubeconfig --name ${CLUSTER_NAME}
       - kubectl get pods -n kube-system
       # Deploy it here
       - make deploy-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
+      # Add the custom users
+      - cd $ROOT_DIR
+      - kubectl apply -f profiles/ 
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      #- export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
     post_build:
       commands:
       - echo "Deploy successful"
@@ -41,6 +50,7 @@ destroy:
     build:
       commands:
       # Export all env params specific to the deployment stuff
+      - export ROOT_DIR=$(pwd)
       - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
       - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
       - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION} #helm
@@ -61,7 +71,7 @@ destroy:
       - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       # Unattach the policy from  KF admin role and delete the policy
-      - cd ..
+      - cd $ROOT_DIR
       - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
       - python manage_admin_user.py delete ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_KUBECTL_ROLE_ARN}
 
