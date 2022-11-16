@@ -1,0 +1,5 @@
+aws-cdk-lib==2.49.1
+constructs==10.0.91
+cdk-nag==2.12.29
+passlib==1.7.4
+passlib[bcrypt]

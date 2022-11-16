@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This stack deploys a Module specific IAM permissions
+
+Parameters:
+  DeploymentName:
+    Type: String
+    Description: The name of the deployment
+  ModuleName:
+    Type: String
+    Description: The name of the Module
+  RoleName:
+    Type: String
+    Description: The name of the IAM Role
+  EksClusterAdminRoleArn:
+    Type: String
+    Description: Role from the EKS module with cluster admin permissions
+  EksOidcArn:
+    Type: String
+    Description: EKS Oidc ARN
+Resources:
+  Policy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudformation:*
+            Resource:
+              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/addf-${DeploymentName}-${ModuleName}*"
+          - Effect: Allow
+            Action:
+              - "sts:AssumeRole"
+            Resource:
+              - !Ref EksClusterAdminRoleArn
+          - Action:
+              - "iam:CreateServiceLinkedRole"
+            Effect: Allow
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
+          - Action:
+              - "secretsmanager:Get*"
+              - "secretsmanager:DescribeSecret"
+              - "secretsmanager:ListSecretVersionIds"
+              - "kms:Decrypt*"
+            Effect: Allow
+            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
+          - Effect: Allow
+            Action:
+              - "iam:Get*"
+            Resource:
+              - !Ref EksOidcArn
+        Version: 2012-10-17
+      PolicyName: "addf-modulespecific-policy"
+      Roles: [!Ref RoleName]

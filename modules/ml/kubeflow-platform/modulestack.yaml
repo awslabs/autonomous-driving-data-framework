@@ -11,9 +11,9 @@ Parameters:
   RoleName:
     Type: String
     Description: The name of the IAM Role
-  EksClusterKubectlRoleArn:
+  EksClusterAdminRoleArn:
     Type: String
-    Description: The name of the IAM Role
+    Description: Role from the EKS module with cluster admin permissions
 
 Resources:
   Policy:
@@ -25,7 +25,7 @@ Resources:
             Action:
               - "sts:AssumeRole"
             Resource:
-              - !Ref EksClusterKubectlRoleArn
+              - !Ref EksClusterAdminRoleArn
           - Effect: Allow
             Action: 
               - "iam:CreatePolicy"
@@ -34,16 +34,7 @@ Resources:
               - "iam:AttachRolePolicy"
             Resource:
               - !Sub 'arn:aws:iam::${AWS::AccountId}:policy/addf*'
-              - !Ref EksClusterKubectlRoleArn
-          - Effect: Allow
-            Action:
-              - "secretsmanager:*"
-              - "kms:Decrypt*"
-            Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:addf-${DeploymentName}-${ModuleName}*"
-          - Effect: Allow
-            Action:
-              - "secretsmanager:GetRandomPassword"
-            Resource: "*"
+              - !Ref EksClusterAdminRoleArn
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"
       Roles: [!Ref RoleName]

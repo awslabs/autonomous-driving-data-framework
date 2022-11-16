@@ -16,32 +16,25 @@ deploy:
       - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
       ## Create and attach the policy to allow the KF admin role to create/delete roles
       - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
-      - python manage_admin_user.py create ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_KUBECTL_ROLE_ARN} 
+      - python manage_admin_user.py create ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} 
       # Clone the AWS-on-kubeflow and change to the branch
       - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
       - git checkout $AWS_RELEASE_VERSION
       - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
       - git status
       - python3.8 -m pip install -r tests/e2e/requirements.txt
-      # Generate the artifacts for users before assuming the KF Admin role
-      - cd $ROOT_DIR
-      - python manage_kf_users.py
-      - kubectl kustomize ./kustomize >> profiles/config-map.yaml
       # Assuming EKS Role
       - cd $ROOT_DIR/kubeflow-manifests
-      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_KUBECTL_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - aws eks update-kubeconfig --name ${CLUSTER_NAME}
       - kubectl get pods -n kube-system
       # Deploy Kubeflow here
       - make deploy-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
-      # Add the custom users
-      - cd $ROOT_DIR
-      - kubectl apply -f profiles/ 
-      - kubectl rollout restart deployment dex -n auth
+      # remove this stuff...figure out how to NOT deploy it
+      - kubectl delete serviceaccount profiles-controller-service-account -n kubeflow
+      - kubectl patch profile kubeflow-user-example-com -p '{"metadata":{"finalizers":[]}}' --type=merge
+      - kubectl delete profile kubeflow-user-example-com
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-      # Get the metadata written to kf-exports by the manage_kf_users.py script
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('kf-exports.json'); print(json.load(file)['metadata'])")
-
     post_build:
       commands:
       - echo "Deploy successful"
@@ -61,21 +54,22 @@ destroy:
       - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION} #v1.6.1
       - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD} #1.0.0
       - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
-      - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}${AWS_DEFAULT_REGION}-kf
+      - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
       - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
       - git checkout $AWS_RELEASE_VERSION
       - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
       - git status
       - python3.8 -m pip install -r tests/e2e/requirements.txt
       # Assuming EKS Master Role
-      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_KUBECTL_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - aws eks update-kubeconfig --name ${CLUSTER_NAME}
       # Destroy it here
       - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
+      - kubectl patch profile kubeflow-user-example-com -p '{"metadata":{"finalizers":[]}}' --type=merge || true
+      - kubectl delete profile kubeflow-user-example-com || true
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       # Unattach the policy from  KF admin role and delete the policy
       - cd $ROOT_DIR
-      - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
-      - python manage_admin_user.py delete ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_KUBECTL_ROLE_ARN}
+      - python manage_admin_user.py delete ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN}
 
 build_type: BUILD_GENERAL1_SMALL
