@@ -14,7 +14,9 @@ deploy:
       - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
       - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - aws eks update-kubeconfig --name ${CLUSTER_NAME}
-      - kubectl delete serviceaccount profiles-controller-service-account -n kubeflow
+      # Check if KF deployed the original Service Account, if so delete and we will recreate in CDK
+      - export SA_ANNOTATION=$(kubectl get sa  profiles-controller-service-account -n kubeflow -o json | jq ".metadata.annotations" | grep "eks.amazonaws.com/role-arn")
+      - if [[ ! "$SA_ANNOTATION" ]]; then kubectl delete serviceaccount profiles-controller-service-account -n kubeflow; fi
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
