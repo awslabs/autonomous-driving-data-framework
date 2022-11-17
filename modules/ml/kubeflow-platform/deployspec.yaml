@@ -31,9 +31,6 @@ deploy:
       # Deploy Kubeflow here
       - make deploy-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
       # remove this stuff...figure out how to NOT deploy it
-      - kubectl delete serviceaccount profiles-controller-service-account -n kubeflow
-      - kubectl patch profile kubeflow-user-example-com -p '{"metadata":{"finalizers":[]}}' --type=merge
-      - kubectl delete profile kubeflow-user-example-com
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
     post_build:
       commands:
@@ -64,9 +61,8 @@ destroy:
       - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - aws eks update-kubeconfig --name ${CLUSTER_NAME}
       # Destroy it here
+      - bash ${ROOT_DIR}/k8s_profiles.sh || true
       - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
-      - kubectl patch profile kubeflow-user-example-com -p '{"metadata":{"finalizers":[]}}' --type=merge || true
-      - kubectl delete profile kubeflow-user-example-com || true
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       # Unattach the policy from  KF admin role and delete the policy
       - cd $ROOT_DIR
