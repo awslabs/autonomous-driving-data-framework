@@ -34,11 +34,6 @@ Resources:
             Resource:
               - !Ref EksClusterAdminRoleArn
           - Action:
-              - "iam:CreateServiceLinkedRole"
-            Effect: Allow
-            Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
-          - Action:
               - "secretsmanager:Get*"
               - "secretsmanager:DescribeSecret"
               - "secretsmanager:ListSecretVersionIds"

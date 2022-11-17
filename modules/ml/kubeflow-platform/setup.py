@@ -5,12 +5,11 @@ with open("README.md") as fp:
 
 setuptools.setup(
     version="0.1.0",
-    description="Kubeflow via kubeflow-on-aws - https://awslabs.github.io/kubeflow-manifests/docs/",
+    description="Kubeflow via kubeflow-on-aws",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="author",
-    install_requires=[
-    ],
+    install_requires=[],
     python_requires=">=3.8",
     classifiers=[
         "Development Status :: 4 - Beta",
