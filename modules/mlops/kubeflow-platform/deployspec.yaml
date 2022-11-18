@@ -1,0 +1,71 @@
+deploy:
+  phases:
+    install:
+      commands:
+      - bash install_build.sh
+    build:
+      commands:
+      # Export all env params specific to the deployment stuff
+      - export ROOT_DIR=$(pwd)
+      - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
+      - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
+      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION} #helm
+      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION} #vanilla
+      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION} #v1.6.1
+      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD} #1.0.0
+      - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
+      ## Create and attach the policy to allow the KF admin role to create/delete roles
+      - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
+      - python manage_admin_user.py create ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} 
+      # Clone the AWS-on-kubeflow and change to the branch
+      - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
+      - git checkout $AWS_RELEASE_VERSION
+      - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
+      - git status
+      - python3.8 -m pip install -r tests/e2e/requirements.txt
+      # Assuming EKS Role
+      - cd $ROOT_DIR/kubeflow-manifests
+      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - aws eks update-kubeconfig --name ${CLUSTER_NAME}
+      - kubectl get pods -n kube-system
+      # Deploy Kubeflow here
+      - make deploy-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
+      # remove this stuff...figure out how to NOT deploy it
+      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+    post_build:
+      commands:
+      - echo "Deploy successful"
+destroy:
+  phases:
+    install:
+      commands:
+      - bash install_build.sh
+    build:
+      commands:
+      # Export all env params specific to the deployment stuff
+      - export ROOT_DIR=$(pwd)
+      - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
+      - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
+      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION} #helm
+      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION} #vanilla
+      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION} #v1.6.1
+      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD} #1.0.0
+      - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
+      - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
+      - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
+      - git checkout $AWS_RELEASE_VERSION
+      - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
+      - git status
+      - python3.8 -m pip install -r tests/e2e/requirements.txt
+      # Assuming EKS Master Role
+      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - aws eks update-kubeconfig --name ${CLUSTER_NAME}
+      # Destroy it here
+      - bash ${ROOT_DIR}/k8s_profiles.sh || true
+      - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
+      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+      # Unattach the policy from  KF admin role and delete the policy
+      - cd $ROOT_DIR
+      - python manage_admin_user.py delete ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN}
+
+build_type: BUILD_GENERAL1_SMALL

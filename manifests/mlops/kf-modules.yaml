@@ -1,0 +1,26 @@
+name: kubeflow-platform
+path: modules/mlops/kubeflow-platform/
+targetAccount: primary
+targetRegion: us-east-1
+parameters:
+  - name: EksClusterAdminRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterAdminRoleArn
+  - name: EksClusterName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: InstallationOption
+    value: kustomize
+  - name: DeploymentOption
+    value: vanilla
+  - name: KubeflowReleaseVersion
+    value: v1.6.1
+  - name: AwsKubeflowBuild
+    value: '1.0.0'
+
