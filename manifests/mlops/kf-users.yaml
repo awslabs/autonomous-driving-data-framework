@@ -1,0 +1,35 @@
+name: kubeflow-users
+path: modules/mlops/kubeflow-users
+targetAccount: primary
+targetRegion: us-east-1
+parameters:
+  - name: EksClusterAdminRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterAdminRoleArn
+  - name: EksClusterName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: EksOidcArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: EksClusterOpenIdConnectIssuer
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterOpenIdConnectIssuer
+  # - name: KubeflowUsers
+  #   value:
+  #   - policyArn: arn:aws:iam::aws:policy/AdministratorAccess
+  #     secret: addf-dataservice-users-kubeflow-users-kf-dgraeber
+  #   - policyArn: arn:aws:iam::aws:policy/AdministratorAccess
+  #     secret: testderekaddf

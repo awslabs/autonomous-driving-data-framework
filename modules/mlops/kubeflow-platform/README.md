@@ -9,7 +9,7 @@ It leverages the [Kubeflow-on-AWS github repo](https://github.com/awslabs/kubefl
 
 This is a seedfarmer / ADDF wrapped implementation based off Kubeflow-on-AWS.  This allows customization of the deployment via the module's `deplopyspec`.
 It currently supports only the following:
-- `vanilla` deployment via the `kustomize` deploymetn method
+- `vanilla` deployment via the `kustomize` deployment method
 - Kubeflow v1.6.1
 - AWSKubebuild 1.0.0
 
@@ -17,8 +17,10 @@ Since this module is extenisble, addition and modifications are encouraged.
 
 
 
-## Deployment
+## Prerequisites
 This module depends on an existing EKS cluster and access to EKSKubectl Admin role.
+
+<b>The EKS cluster version MUST be at least 1.23</b>
 
 
 
@@ -45,17 +47,17 @@ This module depends on an existing EKS cluster and access to EKSKubectl Admin ro
 
 #### Input Example
 ```yaml
-  - name: EksClusterKubectlRoleArn
+  - name: EksClusterAdminRoleArn
     valueFrom:
       moduleMetadata:
         group: core
-        name: eksagain
-        key: EksClusterKubectlRoleArn
+        name: eks
+        key: EksClusterAdminRoleArn
   - name: EksClusterName
     valueFrom:
       moduleMetadata:
         group: core
-        name: eksagain
+        name: eks
         key: EksClusterName
   - name: InstallationOption
     value: kustomize
