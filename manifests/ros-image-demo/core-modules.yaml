@@ -48,7 +48,16 @@ parameters:
           desired_vcpus: 0
           order: 1
           instance_types:
+             - "m4.2xlarge"
+             - "m4.xlarge"
+             - "m4.4xlarge"
+             - "m5.2xlarge"
              - "m5.xlarge"
+             - "m5.4xlarge"
+          ebs_config:
+            ebs_iops: 16000
+            ebs_size_gbs: 400
+            ebs_type: io1
         - env_name: ng2
           max_vcpus: 4800
           desired_vcpus: 0

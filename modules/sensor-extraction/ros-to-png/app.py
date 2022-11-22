@@ -12,15 +12,21 @@ def _param(name: str) -> str:
 
 
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
-platform = os.getenv(_param("PLATFORM"), "FARGATE")
 retries = int(os.getenv(_param("RETRIES"), 1))
 timeout_seconds = int(os.getenv(_param("TIMEOUT_SECONDS"), 60))
 vcpus = int(os.getenv(_param("VCPUS"), 4))
 memory_limit_mib = int(os.getenv(_param("MEMORY_MIB"), 16384))
+resized_width = os.getenv(_param("RESIZED_WIDTH"))
+resized_height = os.getenv(_param("RESIZED_HEIGHT"))
+
+if resized_width:
+    resized_width = int(resized_width)
+
+if resized_height:
+    resized_height = int(resized_height)
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
-
 
 app = App()
 
@@ -33,12 +39,13 @@ stack = RosToPngBatchJob(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
-    platform=platform,
     retries=retries,
     timeout_seconds=timeout_seconds,
     vcpus=vcpus,
     memory_limit_mib=memory_limit_mib,
     s3_access_policy=full_access_policy,
+    resized_width=resized_width,
+    resized_height=resized_height,
 )
 
 CfnOutput(
