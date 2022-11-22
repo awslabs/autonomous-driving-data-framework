@@ -17,6 +17,7 @@ mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
+
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
 fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
@@ -32,7 +33,6 @@ lane_detection_role = os.getenv(_param("LANE_DETECTION_IAM_ROLE"))
 lane_detection_job_concurrency = int(os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), 5))
 lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"), "ml.p3.2xlarge")
 
-batch_provider = os.getenv(_param("BATCH_PROVIDER"), "FARGATE")
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
 desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
 yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
@@ -114,7 +114,6 @@ CfnOutput(
             "LaneDetectionRole": lane_detection_role,
             "LaneDetectionJobConcurrency": lane_detection_job_concurrency,
             "LaneDetectionInstanceType": lane_detection_instance_type,
-            "BatchProvider": batch_provider,
             "FileSuffix": file_suffix,
             "DesiredEncoding": desired_encoding,
             "YoloModel": yolo_model,

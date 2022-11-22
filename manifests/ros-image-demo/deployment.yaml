@@ -7,10 +7,8 @@ groups:
     path: manifests/ros-image-demo/core-modules.yaml
   - name: docker-images
     path: manifests/ros-image-demo/docker-image-modules.yaml
-  - name: analysis
-    path: manifests/ros-image-demo/aws-analysis-modules.yaml
-  - name: ford-analysis
-    path: manifests/ros-image-demo/ford-analysis-modules.yaml
+  - name: dags
+    path: manifests/ros-image-demo/image-pipeline-modules.yaml
 targetAccountMappings:
   - alias: primary
     accountId:

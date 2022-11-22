@@ -46,7 +46,6 @@ addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
 DAG_ID = addf_module_metadata["DagId"]
 DAG_ROLE = addf_module_metadata["DagRoleArn"]
 DYNAMODB_TABLE = addf_module_metadata["DynamoDbTableName"]
-PROVIDER = addf_module_metadata["BatchProvider"]
 FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
 SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
@@ -177,13 +176,6 @@ def create_batch_of_drives(ti, **kwargs):
     return files_in_batch
 
 
-def get_job_queue_name() -> str:
-    """get_job_queue_name retrieves the the available JobQueues created
-    based on the inputs of the batch-compute manifest file.
-    """
-    return eval(f"{PROVIDER}_JOB_QUEUE_ARN")
-
-
 def get_job_name(suffix="") -> str:
     v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
     return f"ros-image-pipeline-{suffix}-{v}"
@@ -198,7 +190,7 @@ def png_batch_operation(**kwargs):
     op = AwsBatchOperator(
         task_id="submit_batch_job_op",
         job_name=get_job_name("png"),
-        job_queue=queue_name,
+        job_queue=ON_DEMAND_JOB_QUEUE_ARN,
         aws_conn_id="aws_default",
         job_definition=PNG_JOB_DEFINITION_ARN,
         array_properties={"size": int(array_size)},
@@ -226,7 +218,7 @@ def parquet_operation(**kwargs):
     op = AwsBatchOperator(
         task_id="submit_parquet_job_op",
         job_name=get_job_name("parq"),
-        job_queue=queue_name,
+        job_queue=FARGATE_JOB_QUEUE_ARN,
         aws_conn_id="aws_default",
         job_definition=PARQUET_JOB_DEFINITION_ARN,
         array_properties={"size": int(array_size)},
@@ -262,12 +254,12 @@ def sagemaker_yolo_operation(**kwargs):
     image_directory_items = table.query(
         KeyConditionExpression=Key("pk").eq(batch_id),
         Select="SPECIFIC_ATTRIBUTES",
-        ProjectionExpression="raw_image_dirs",
+        ProjectionExpression="resized_image_dirs",
     )["Items"]
 
     image_directories = []
     for item in image_directory_items:
-        image_directories += item["raw_image_dirs"]
+        image_directories += item["resized_image_dirs"]
 
     logger.info(f"Starting object detection job for {len(image_directories)} directories")
 
@@ -340,12 +332,12 @@ def sagemaker_lanedet_operation(**kwargs):
     image_directory_items = table.query(
         KeyConditionExpression=Key("pk").eq(batch_id),
         Select="SPECIFIC_ATTRIBUTES",
-        ProjectionExpression="raw_image_dirs",
+        ProjectionExpression="resized_image_dirs",
     )["Items"]
 
     image_directories = []
     for item in image_directory_items:
-        image_directories += item["raw_image_dirs"]
+        image_directories += item["resized_image_dirs"]
 
     logger.info(f"Starting lane detection job for {len(image_directories)} directories")
 
@@ -430,8 +422,6 @@ with DAG(
     schedule_interval="@once",
     render_template_as_native_obj=True,
 ) as dag:
-
-    queue_name = get_job_queue_name()
 
     create_aws_conn = PythonOperator(
         task_id="try-create-aws-conn",
