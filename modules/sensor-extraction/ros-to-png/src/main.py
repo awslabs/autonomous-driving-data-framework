@@ -286,7 +286,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
         "array_index = :index",
         ExpressionAttributeValues={
             ":status": "success",
-            ":raw_image_dirs": uploaded_directories,
+            ":raw_image_dirs": raw_image_dirs,
             ":resized_image_dirs": resized_image_dirs,
             ":raw_image_bucket": target_bucket,
             ":batch_id": batch_id,
