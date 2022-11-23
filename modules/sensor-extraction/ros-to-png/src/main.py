@@ -238,8 +238,8 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     for topic in topics:
         all_files = extract_images(bag_path, topic, resized_width, resized_height, encoding, images_path)
         logger.info(f"Uploading results - {target_bucket}")
-        uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
-        uploaded_directories += uploaded_directories
+        topic_uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
+        uploaded_directories += topic_uploaded_directories
         logger.info("Uploaded results")
 
     raw_image_dirs = [d for d in uploaded_directories if "resized" not in d]
