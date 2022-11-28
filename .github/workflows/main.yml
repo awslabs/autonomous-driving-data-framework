@@ -464,7 +464,7 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -r modules/core/efs/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/efs/
+        run: scripts/validate.sh --language python --path modules/core/efs/ --skip-static-checks
 
   modules-integration-efs-on-eks:
     runs-on: ubuntu-latest
@@ -483,4 +483,4 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -r modules/integration/efs-on-eks/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/integration/efs-on-eks/
+        run: scripts/validate.sh --language python --path modules/integration/efs-on-eks/ --skip-static-checks
