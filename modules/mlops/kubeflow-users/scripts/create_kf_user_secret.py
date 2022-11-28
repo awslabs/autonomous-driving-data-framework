@@ -5,7 +5,7 @@ import argparse
 import json
 from typing import Dict
 
-import boto3
+import boto3  # type: ignore
 
 client = boto3.client("secretsmanager")
 
@@ -35,6 +35,7 @@ def create(payload: Dict[str, str], secretname: str) -> Dict[str, str]:
     except Exception as e:
         print(e)
         print(f"The AWS SecretManager name {secretname} already exists")
+        return {}
 
 
 parser = argparse.ArgumentParser()

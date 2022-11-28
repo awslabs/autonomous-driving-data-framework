@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-import boto3
+import boto3  # type: ignore
 
 client = boto3.client("iam")
 
