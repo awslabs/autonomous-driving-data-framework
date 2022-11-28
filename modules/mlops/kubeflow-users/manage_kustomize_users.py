@@ -4,9 +4,9 @@ import random
 import sys
 from typing import Any, Dict, List
 
-import boto3
+import boto3  # type: ignore
 import yaml
-from passlib.hash import bcrypt
+from passlib.hash import bcrypt  # type: ignore
 
 client = boto3.client("secretsmanager")
 project_name = os.getenv("AWS_CODESEEDER_NAME", "addf")
