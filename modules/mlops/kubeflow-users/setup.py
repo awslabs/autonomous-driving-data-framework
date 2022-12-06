@@ -8,7 +8,7 @@ setuptools.setup(
     description="Kubeflow via aws-on-kubeflow - https://github.com/kubeflow/manifests",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="author",
+    author="dgraeber@amazon.com",
     install_requires=[
         "aws-cdk-lib==2.20.0",
     ],

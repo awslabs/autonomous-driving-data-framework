@@ -35,6 +35,22 @@ module_name = os.getenv(_proj("MODULE_NAME"), "")
 # }
 
 
+def generate_poddefault(username: str) -> None:
+    with open(f"{abs_path}/poddefaults/poddefault.template", "r") as file:
+        poddefault = yaml.safe_load(file)
+    poddefault["metadata"]["namespace"] = username
+    with open(f"{abs_path}/poddefaults/{username}-poddefault.yaml", "w") as file:
+        yaml.dump(poddefault, file)
+
+
+def generate_cluster_binding(username: str) -> None:
+    with open(f"{abs_path}/poddefaults/clusterrolebinding.template", "r") as file:
+        binding = yaml.safe_load(file)
+    binding["subjects"][0]["namespace"] = username
+    with open(f"{abs_path}/poddefaults/{username}-clusterrolebinding.yaml", "w") as file:
+        yaml.dump(binding, file)
+
+
 def generate_profile(email: str, role_arn: str, username: str) -> None:
     with open(f"{abs_path}/profiles/profile.template", "r") as file:
         profile = yaml.safe_load(file)
@@ -71,6 +87,8 @@ def create(users: Dict[str, Any]):
             email = secret_json["email"]
             rolearn = user["roleArn"]
             generate_profile(email=email, role_arn=rolearn, username=username)
+            generate_poddefault(username=username)
+            generate_cluster_binding(username=username)
             kustomize_map.append(
                 {
                     "email": email,

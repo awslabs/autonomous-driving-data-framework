@@ -12,7 +12,6 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import json
 import os
 from typing import Any, Dict, List, cast
 
@@ -36,8 +35,6 @@ class KubeflowUsersStack(Stack):
         *,
         deployment_name: str,
         module_name: str,
-        eks_cluster_name: str,
-        eks_admin_role_arn: str,
         eks_oidc_arn: str,
         eks_openid_connect_issuer: str,
         users: List[Dict[str, Any]],
@@ -61,29 +58,6 @@ class KubeflowUsersStack(Stack):
         provider = eks.OpenIdConnectProvider.from_open_id_connect_provider_arn(
             self, f"{dep_mod}-provider", eks_oidc_arn
         )
-
-        eks_cluster = eks.Cluster.from_cluster_attributes(
-            self,
-            f"{dep_mod}-eks-cluster",
-            cluster_name=eks_cluster_name,
-            kubectl_role_arn=eks_admin_role_arn,
-            open_id_connect_provider=provider,
-        )
-
-        kf_profile_sa = eks_cluster.add_service_account(
-            f"profiles-controller-sa-{dep_mod}", name="profiles-controller-service-account", namespace="kubeflow"
-        )
-        kf_serviceaccount_policy_document_path = os.path.join(project_dir, "policies", "iam-profile-sa-policy.json")
-
-        with open(kf_serviceaccount_policy_document_path) as json_file:
-            kf_serviceaccount_policy_document_json = json.load(json_file)
-
-        kf_serviceaccount_policy = iam.Policy(
-            self,
-            "kfserviceaccountbcontrollerpolicy",
-            document=iam.PolicyDocument.from_json(kf_serviceaccount_policy_document_json),
-        )
-        kf_profile_sa.role.attach_inline_policy(kf_serviceaccount_policy)
 
         for idx, user in enumerate(users):
             s_name = user["secret"]

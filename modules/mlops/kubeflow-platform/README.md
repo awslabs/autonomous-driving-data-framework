@@ -31,7 +31,7 @@ This module depends on an existing EKS cluster and access to EKSKubectl Admin ro
 
 
 #### Required
-- `EksClusterKubectlRoleArn` - the kubectl user in IAM that is the admin on the EKS cluster
+- `EksClusterMasterRoleArn` - the masterrole in IAM that was used to create the EKS cluster
 - `EksClusterName` - the name of the EKS cluster
 - `InstallationOption` - should be `kustomize` 
 - `DeploymentOption` - please see [Deployment Options](https://awslabs.github.io/kubeflow-manifests/docs/deployment/)
@@ -47,12 +47,12 @@ This module depends on an existing EKS cluster and access to EKSKubectl Admin ro
 
 #### Input Example
 ```yaml
-  - name: EksClusterAdminRoleArn
+  - name: EksClusterMasterRoleArn
     valueFrom:
       moduleMetadata:
         group: core
         name: eks
-        key: EksClusterAdminRoleArn
+        key: EksClusterMasterRoleArn
   - name: EksClusterName
     valueFrom:
       moduleMetadata:
