@@ -3,12 +3,12 @@ path: modules/mlops/kubeflow-platform/
 targetAccount: primary
 targetRegion: us-east-1
 parameters:
-  - name: EksClusterAdminRoleArn
+  - name: EksClusterMasterRoleArn
     valueFrom:
       moduleMetadata:
         group: core
         name: eks
-        key: EksClusterAdminRoleArn
+        key: EksClusterMasterRoleArn
   - name: EksClusterName
     valueFrom:
       moduleMetadata:

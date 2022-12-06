@@ -58,6 +58,7 @@ CfnOutput(
             "EksOidcArn": stack.eks_cluster.open_id_connect_provider.open_id_connect_provider_arn,
             "EksClusterOpenIdConnectIssuer": stack.eks_cluster.cluster_open_id_connect_issuer,
             "CNIMetricsHelperRoleName": stack.cni_metrics_role_name,
+            "EksClusterMasterRoleArn": stack.eks_cluster_masterrole.role_arn,
         }
     ),
 )

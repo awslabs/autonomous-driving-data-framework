@@ -951,6 +951,7 @@ class Eks(Stack):  # type: ignore
 
         # Outputs
         self.eks_cluster = eks_cluster
+        self.eks_cluster_masterrole = cluster_admin_role
 
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 

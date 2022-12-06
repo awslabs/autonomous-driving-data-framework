@@ -5,10 +5,10 @@ with open("README.md") as fp:
 
 setuptools.setup(
     version="0.1.0",
-    description="Kubeflow via kubeflow-on-aws",
+    description="Kubeflow via aws-on-kubeflow - https://github.com/kubeflow/manifests",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="author",
+    author="dgraeber@amazon.com",
     install_requires=[],
     python_requires=">=3.8",
     classifiers=[

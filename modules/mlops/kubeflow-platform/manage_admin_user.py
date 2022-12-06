@@ -7,16 +7,20 @@ import boto3  # type: ignore
 client = boto3.client("iam")
 
 ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID", "*")
+DEPLOYMENT_NAME = os.getenv("ADDF_DEPLOYMENT_NAME", "*")
+MODULE_NAME = os.getenv("ADDF_MODULE_NAME", "*")
 
 policy = {
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": ["iam:Create*", "iam:Delete*", "iam:List*", "iam:Attach*", "iam:Detach*"],
+            "Action": ["iam:Create*", "iam:Delete*", "iam:List*", "iam:Attach*", "iam:Detach*", "iam:Get*"],
             "Resource": [
                 f"arn:aws:iam::{ACCOUNT_ID}:role/kf-ack-sm-controller*",
                 f"arn:aws:iam::{ACCOUNT_ID}:policy/sm-studio-full-access*",
+                f"arn:aws:iam::{ACCOUNT_ID}:policy/addf-{DEPLOYMENT_NAME}-{MODULE_NAME}*",
+                f"arn:aws:iam::{ACCOUNT_ID}:role/addf-{DEPLOYMENT_NAME}-{MODULE_NAME}*",
             ],
         }
     ],

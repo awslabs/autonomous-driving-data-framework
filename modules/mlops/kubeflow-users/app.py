@@ -21,7 +21,6 @@ def _param(name: str) -> str:
 deployment_name = os.getenv(_proj("DEPLOYMENT_NAME"))
 module_name = os.getenv(_proj("MODULE_NAME"))
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"))  # required
-eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"))  # required
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"))  # required
 eks_openid_connect_issuer = os.getenv(_param("EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"))
 users = json.loads(os.getenv(_param("KUBEFLOW_USERS")))  # type: ignore
@@ -33,8 +32,6 @@ kf_users_stack = KubeflowUsersStack(
     id=f"addf-{deployment_name}-{module_name}",
     deployment_name=cast(str, deployment_name),
     module_name=cast(str, module_name),
-    eks_cluster_name=cast(str, eks_cluster_name),
-    eks_admin_role_arn=cast(str, eks_admin_role_arn),
     eks_oidc_arn=cast(str, eks_oidc_arn),
     eks_openid_connect_issuer=cast(str, eks_openid_connect_issuer),
     users=users,
