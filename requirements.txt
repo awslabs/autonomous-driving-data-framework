@@ -1,1 +1,1 @@
-seed-farmer~=2.2.0
+seed-farmer~=2.3.0
