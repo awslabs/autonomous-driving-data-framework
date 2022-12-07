@@ -23,4 +23,52 @@ parameters:
     value: v1.6.1
   - name: AwsKubeflowBuild
     value: '1.0.0'
+---
+name: efs-on-eks
+path: modules/integration/efs-on-eks
+targetAccount: primary
+targetRegion: us-east-1
+parameters:
+  - name: eks-cluster-admin-role-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterAdminRoleArn
+  - name: eks-cluster-name
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: eks-oidc-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: eks-cluster-security-group-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterSecurityGroupId
+  - name: efs-file-system-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: efs
+        key: EFSFileSystemId
+  - name: efs-security-group-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: efs
+        key: EFSSecurityGroupId
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: efs
+        key: VpcId
 
