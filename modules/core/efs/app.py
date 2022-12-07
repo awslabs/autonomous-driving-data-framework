@@ -18,7 +18,7 @@ def _param(name: str) -> str:
 
 
 def evaluate_removal_policy() -> str:
-    return "DESTROY" if os.getenv(_param("REMOVAL_POLICY")).upper() in ["DESTROY"] else "RETAIN"
+    return "DESTROY" if os.getenv(_param("REMOVAL_POLICY"), "RETAIN").upper() in ["DESTROY"] else "RETAIN"
 
 
 deployment_name = os.getenv(_proj("DEPLOYMENT_NAME"))

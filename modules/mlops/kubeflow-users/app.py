@@ -23,7 +23,12 @@ module_name = os.getenv(_proj("MODULE_NAME"))
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"))  # required
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"))  # required
 eks_openid_connect_issuer = os.getenv(_param("EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"))
-users = json.loads(os.getenv(_param("KUBEFLOW_USERS")))  # type: ignore
+users = os.getenv(_param("KUBEFLOW_USERS"))  # type: ignore
+if not users:
+    print(f"No Kubeflow Users Configured, exiting")
+    exit(1)
+else:
+    users = json.loads(users)
 
 app = App()
 
