@@ -8,7 +8,7 @@ setuptools.setup(
     description="A short description of the module.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="author",
+    author="dgraeber@amazon.com",
     install_requires=[
         "aws-cdk-lib==2.49.1",
     ],

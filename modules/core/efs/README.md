@@ -15,6 +15,9 @@ This module will create a new EFS service endpoint and security group tied to th
 
 #### Required
 - `vpc-id` - the VPC ID where this EFS will be tied to via Security Groups
+- `removal-policy` - the retention policy to put on the EFS service
+  - defaults to `RETAIN`
+  - supports `DESTROY` and `RETAIN` only 
 
 #### Optional
 
@@ -27,6 +30,8 @@ This module will create a new EFS service endpoint and security group tied to th
         group: optionals
         name: networking
         key: VpcId
+  - name: removal-policy
+    value: RETAIN
 ```
 
 

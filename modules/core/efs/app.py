@@ -17,9 +17,14 @@ def _param(name: str) -> str:
     return f"{project_name.upper()}_PARAMETER_{name}"
 
 
+def evaluate_removal_policy() -> str:
+    return "DESTROY" if os.getenv(_param("REMOVAL_POLICY")).upper() in ["DESTROY"] else "RETAIN"
+
+
 deployment_name = os.getenv(_proj("DEPLOYMENT_NAME"))
 module_name = os.getenv(_proj("MODULE_NAME"))
 vpc_id = os.getenv(_param("VPC_ID"))
+efs_removal_policy = evaluate_removal_policy()
 
 if not vpc_id:
     raise Exception("missing input parameter vpc-id")
@@ -33,6 +38,7 @@ efs_stack = EFSFileStorage(
     deployment_name=cast(str, deployment_name),
     module_name=cast(str, module_name),
     vpc_id=vpc_id,
+    efs_removal_policy=efs_removal_policy,
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

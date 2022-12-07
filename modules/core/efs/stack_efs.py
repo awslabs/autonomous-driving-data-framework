@@ -19,6 +19,7 @@ class EFSFileStorage(Stack):
         deployment_name: str,
         module_name: str,
         vpc_id: str,
+        efs_removal_policy: str,
         **kwargs: Any,
     ) -> None:
 
@@ -49,7 +50,7 @@ class EFSFileStorage(Stack):
             "Filesystem",
             vpc=self.vpc,
             security_group=self.efs_security_group,
-            removal_policy=RemovalPolicy.DESTROY,
+            removal_policy=RemovalPolicy.DESTROY if efs_removal_policy in ["DESTROY"] else RemovalPolicy.RETAIN,
         )
 
         cfn_efs_filesystem = cast(efs.CfnFileSystem, self.efs_filesystem.node.default_child)
