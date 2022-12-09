@@ -70,7 +70,6 @@ destroy:
       # Give the Stack time to resolve and release the policy
       - sleep 10;
       - aws iam delete-policy  --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${POLICY_NAME:0:60} || true
-
       # Export all env params specific to the deployment stuff
       - export ROOT_DIR=$(pwd)
       - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
@@ -93,6 +92,12 @@ destroy:
       - kubectl get profiles -o json |  jq -r '.items[].metadata.name' >> profiles.out
       - for name in $(cat profiles.out); do kubectl patch profile $name --type json -p '{"metadata":{"finalizers":null}}' --type=merge; done  || true
       - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
+      # the Kubeflow deployment doesn't delete the Samemaker KF role...so manually delete it
+      #- python tests/e2e/utils/ack_sm_controller_bootstrap/cleanup_sm_controller_req.py || true - cannot load libraries...do it manually
+      - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess || true
+      - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/sm-studio-full-access-${CLUSTER_NAME} || true
+      - aws iam delete-policy --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/sm-studio-full-access-${CLUSTER_NAME} || true
+      - aws iam delete-role --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} || true
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       # Unattach the policy from  KF admin role and delete the policy
       - cd $ROOT_DIR
