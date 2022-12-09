@@ -6,3 +6,6 @@ rules:
 - apiGroups: [""]
   resources: ["persistentvolumes"]
   verbs: ["get", "watch", "list"]
+- apiGroups: ["argoproj.io"]
+  resources: ["workflowtaskresults"]
+  verbs: ["get", "watch", "list", "create", "delete", "patch", "update"]
