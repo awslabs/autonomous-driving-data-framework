@@ -521,7 +521,7 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -r  modules/mlops/kubeflow-platform/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path   modules/mlops/kubeflow-platform/
+        run: scripts/validate.sh --language python --path   modules/mlops/kubeflow-platform/ --skip-static-checks
   
   modules-mlops-kubeflow-users:
     runs-on: ubuntu-latest
@@ -540,4 +540,4 @@ jobs:
           pip install -r requirements-dev.txt
           pip install -r  modules/mlops/kubeflow-users/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path   modules/mlops/kubeflow-users/
+        run: scripts/validate.sh --language python --path   modules/mlops/kubeflow-users/ --skip-static-checks
