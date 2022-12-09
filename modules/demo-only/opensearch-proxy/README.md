@@ -18,6 +18,8 @@ A username and password is required to access the IDE, stored in `AWS Secrets Ma
 
 The name of the  `AWS Secrets Manager`  is a parameter that is passed in to ADDF.
 
+<b> CURRENTLY this module only supports alpha-numeric charaacters in the password </b>
+
 ## Inputs/Outputs
 
 ### Input Paramenters

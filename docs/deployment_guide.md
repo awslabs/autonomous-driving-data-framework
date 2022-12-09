@@ -9,7 +9,7 @@ Autonomous Driving Data Framework follows the Industry standard `GitOps` model. 
 You will need to clone the ADDF repository and checkout a release branch using the below command:
 
 ```bash
-git clone --origin upstream --branch release/1.0.0 https://github.com/awslabs/autonomouse-driving-data-framework
+git clone --origin upstream --branch release/1.0.0 https://github.com/awslabs/autonomous-driving-data-framework
 ```
 
 > The release version can be replaced with the version of interest
@@ -17,7 +17,7 @@ git clone --origin upstream --branch release/1.0.0 https://github.com/awslabs/au
 You should move into the ADDF repository:
 
 ```bash
-cd autonomouse-driving-data-framework
+cd autonomous-driving-data-framework
 ```
 
 #### Create and activate a Virtual environment
