@@ -1,4 +1,4 @@
-# Deploying JupyterHub
+# Deploying VSCode IDE on EKS
 
 ## Description
 
