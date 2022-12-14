@@ -3,9 +3,9 @@
 
 import argparse
 import json
-from typing import Dict
+from typing import Dict, cast
 
-import boto3  # type: ignore
+import boto3
 
 client = boto3.client("secretsmanager")
 
@@ -15,14 +15,17 @@ def get_payload(email: str, pwd: str, username: str) -> str:
 
 
 def create_pwd() -> str:
-    return client.get_random_password(
-        PasswordLength=6,
-        ExcludeNumbers=False,
-        ExcludePunctuation=True,
-        ExcludeUppercase=False,
-        ExcludeLowercase=False,
-        IncludeSpace=False,
-    )["RandomPassword"]
+    return cast(
+        str,
+        client.get_random_password(
+            PasswordLength=6,
+            ExcludeNumbers=False,
+            ExcludePunctuation=True,
+            ExcludeUppercase=False,
+            ExcludeLowercase=False,
+            IncludeSpace=False,
+        )["RandomPassword"],
+    )
 
 
 def create(payload: Dict[str, str], secretname: str) -> Dict[str, str]:

@@ -2,7 +2,7 @@ import json
 import os
 import sys
 
-import boto3  # type: ignore
+import boto3
 
 client = boto3.client("iam")
 
@@ -39,15 +39,15 @@ def fetch_policy_arn(policy_name: str) -> str:
     except Exception:
         p = create_policy(policy_name)
         print(f"Created Policy Arn {p}")
-    return p
+    return p  # type: ignore
 
 
 def create_policy(policy_name: str) -> str:
     resp = client.create_policy(PolicyName=policy_name, PolicyDocument=json.dumps(policy))
-    return resp["Policy"]["Arn"]
+    return resp["Policy"]["Arn"]  # type: ignore
 
 
-def attach_role_policy(policy_name: str, role_arn: str):
+def attach_role_policy(policy_name: str, role_arn: str) -> None:
     role_name = role_name_from_arn(role_arn)
     policies_attached = client.list_attached_role_policies(RoleName=role_name)["AttachedPolicies"]
 
@@ -58,7 +58,7 @@ def attach_role_policy(policy_name: str, role_arn: str):
     ) if policy_name not in policies else print(f"{policy_name} already attached to {role_arn} ")
 
 
-def detach_role_policy(policy_name: str, role_arn: str):
+def detach_role_policy(policy_name: str, role_arn: str) -> None:
     role_name = role_name_from_arn(role_arn)
     policies = client.list_attached_role_policies(RoleName=role_name)["AttachedPolicies"]
 
