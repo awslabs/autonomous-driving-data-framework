@@ -8,7 +8,10 @@
                 "iam:GetRole",
                 "iam:UpdateAssumeRolePolicy"
             ],
-            "Resource": "*"
+            "Resource": [
+                "arn:aws:iam::AWS_ACCOUNT_ID:role/addf-ADDF_DEPLOYMENT_NAME*",
+                "arn:aws:iam::AWS_ACCOUNT_ID:policy/addf-ADDF_DEPLOYMENT_NAME*"
+            ]
         }
     ]
 }
