@@ -30,24 +30,9 @@ deploy:
       - kubectl get pods -n kube-system
       # Deploy Kubeflow here
       - make deploy-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
-      # Make sure the IRSA is created with proper annotations, if not, DELETE any eksctl and redeploy to force it (supports redeployments)
+      # Make sure the IRSA for profiles is created with proper annotations, if not, DELETE and redeploy to force it (supports redeployments)
       - cd $ROOT_DIR/
-      - export DEP_MOD=${AWS_CODESEEDER_NAME}-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}
-      - export POLICY_NAME=${DEP_MOD}-policy
-      - export SA_ROLE_NAME=${DEP_MOD}-sa-role
-      - export SA_NAME=profiles-controller-service-account
-      - export SA_ANNOTATION=$(kubectl get sa ${SA_NAME} -n kubeflow -o json | jq ".metadata.annotations" | grep "eks.amazonaws.com/role-arn")
-      - >
-        if [[ ! "$SA_ANNOTATION" ]]; then 
-            aws iam get-policy --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${POLICY_NAME:0:60} || \
-            aws iam create-policy --policy-name ${POLICY_NAME:0:60} --policy-document file://policies/iam-profile-sa-policy.json;
-            eksctl delete iamserviceaccount --name ${SA_NAME} --namespace kubeflow --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} || true;
-            eksctl create iamserviceaccount --name ${SA_NAME} --namespace kubeflow \
-            --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --role-name ${SA_ROLE_NAME:0:60} \
-            --attach-policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${POLICY_NAME:0:60} \
-            --override-existing-serviceaccounts --approve;
-            kubectl rollout restart deployment profiles-deployment -n kubeflow;
-        fi
+      - bash install_role_irsa.sh
       # Install the NVIDIA Plugin
       - helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
       - helm repo update
@@ -85,7 +70,6 @@ destroy:
       - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
       - git status
       - python3.8 -m pip install -r tests/e2e/requirements.txt
-
       - aws eks update-kubeconfig --name ${CLUSTER_NAME}
       # Destroy it here
       - helm uninstall nvdp -n nvidia-device-plugin || true
@@ -93,7 +77,7 @@ destroy:
       - for name in $(cat profiles.out); do kubectl patch profile $name --type json -p '{"metadata":{"finalizers":null}}' --type=merge; done  || true
       - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
       # the Kubeflow deployment doesn't delete the Samemaker KF role...so manually delete it
-      #- python tests/e2e/utils/ack_sm_controller_bootstrap/cleanup_sm_controller_req.py || true - cannot load libraries...do it manually
+      # reF: tests/e2e/utils/ack_sm_controller_bootstrap/cleanup_sm_controller_req.py
       - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess || true
       - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/sm-studio-full-access-${CLUSTER_NAME} || true
       - aws iam delete-policy --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/sm-studio-full-access-${CLUSTER_NAME} || true

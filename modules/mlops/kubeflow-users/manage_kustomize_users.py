@@ -75,7 +75,7 @@ def generate_kustomize_config(info: List[Dict[str, str]]) -> None:
     print("Kustomize config written")
 
 
-def create(users: Dict[str, Any]):
+def create(users: Dict[str, Any]) -> None:
     kustomize_map = []
     user_metadata = {}
     for user in users["KubeflowUsers"]:

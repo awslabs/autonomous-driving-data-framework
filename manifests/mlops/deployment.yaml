@@ -6,7 +6,7 @@ groups:
   - name: core
     path: manifests/mlops/core-modules.yaml
   - name: platform
-    path: manifests/mlops/kf-modules.yaml
+    path: manifests/mlops/kf-platform.yaml
   - name: users
     path: manifests/mlops/kf-users.yaml   
 targetAccountMappings:
