@@ -101,24 +101,27 @@ None
 
 
 ### Module Metadata Outputs
-- `KubeflowUsersDeployed` - a stringifed dict of the users deployed with the username as the key and the usename, email and AWS SecretsManager names for reference
 - `EksClusterName` - the name of the EKS cluster these users are tied to
-
+- `KubeflowUsers` - a stringifed list of dict's with :
+  - `policyArn` - the policy ARN passed in tied to the newly created IAM role 
+  - `secret` - the name of the AWS SecretsManager name tied to the newly created IAM role  
+  - `roleArn` - the ARN of the the newly created role that the Kubeflow user will have attached to user pods in the user namespace
 #### Output Example
 ```json
 {
-  "KubeflowUsers": {
-    "someuser": {
-      "email": "someuser@amazon.com",
-      "secretname": "addf-dataservice-ml-kubeflow-kf-someuser",
-      "username": "someuser"
+  "EksClusterName": "addf-mlops-core-eks-cluster",
+  "KubeflowUsers": [
+    {
+      "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+      "roleArn": "arn:aws:iam::123456789012:role/addf-mlops-users-kubeflow-users-us-east-1-0",
+      "secret": "addf-mlops-kubeflow-users-user1"
     },
-    "anotheruser": {
-      "email": "another.user@gmail.com",
-      "secretname": "addf-dataservice-ml-kubeflow-kf-anotheruser",
-      "username": "anotheruser"
+    {
+      "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+      "roleArn": "arn:aws:iam::123456789012:role/addf-mlops-users-kubeflow-users-us-east-1-1",
+      "secret": "addf-mlops-kubeflow-users-user2"
     }
-  }
+  ]
 }
 
 ```
