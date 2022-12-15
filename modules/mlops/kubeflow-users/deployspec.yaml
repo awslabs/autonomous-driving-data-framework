@@ -11,22 +11,24 @@ deploy:
     build:
       commands:
       # Export all env params specific to the deployment stuff
-      - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
-      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
-      # Create the configmap for k8s via kustomize and the secrets
-      - python manage_kustomize_users.py $ADDF_MODULE_METADATA
-      # Assume the EKS role and install
-      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
-      - aws eks update-kubeconfig --name ${CLUSTER_NAME}
-      - kubectl kustomize ./kustomize >> profiles/config-map.yaml 
-      - ls -al profiles/
-      - kubectl apply -f profiles/
-      - sleep 10;
-      - ls -al poddefaults/
-      - kubectl apply -f poddefaults/  
-      - kubectl rollout restart deployment dex -n auth
-      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+      - >
+        if [[ ${ADDF_PARAMETER_KUBEFLOW_USERS} ]]; then
+            cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json;
+            export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])");
+            python manage_kustomize_users.py $ADDF_MODULE_METADATA;
+            eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"');
+            aws eks update-kubeconfig --name ${ADDF_PARAMETER_EKS_CLUSTER_NAME};
+            kubectl kustomize ./kustomize >> profiles/config-map.yaml;
+            ls -al profiles/;
+            kubectl apply -f profiles/;
+            sleep 10;
+            ls -al poddefaults/;
+            kubectl apply -f poddefaults/; 
+            kubectl rollout restart deployment dex -n auth;
+            unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN;
+        else
+            echo "No Kubeflow Users configured....please see the module README regarding the usage of this module";
+        fi;
     post_build:
       commands:
       - echo "Deploy successful"
@@ -36,18 +38,11 @@ destroy:
       commands:
       - npm install -g aws-cdk@2.20.0
       - pip install -r requirements.txt
-      - wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3.2.1/kustomize_kustomize.v3.2.1_linux_amd64
-      - chmod +x kustomize_kustomize.v3.2.1_linux_amd64
-      - mv kustomize_kustomize.v3.2.1_linux_amd64 /usr/local/bin/kustomize
-      - kustomize version
     build:
       commands:
-      # Export all env params specific to the deployment stuff
-      # Assuming EKS Admin Role
-      - echo ${ADDF_PARAMETER_EKS_CLUSTER_NAME}
-      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
-      - aws eks update-kubeconfig --name ${ADDF_PARAMETER_EKS_CLUSTER_NAME}
-      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-      - cdk destroy --force --app "python app.py"
+      - >
+        if [[ ${ADDF_PARAMETER_KUBEFLOW_USERS} ]]; then
+          cdk destroy --force --app "python app.py";
+        fi;
 
 build_type: BUILD_GENERAL1_SMALL

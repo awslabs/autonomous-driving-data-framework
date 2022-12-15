@@ -1,7 +1,7 @@
 name: kubeflow-users
 path: modules/mlops/kubeflow-users
-targetAccount: primary
-targetRegion: us-east-1
+#targetAccount: primary
+#targetRegion: us-east-1
 parameters:
   - name: EksClusterAdminRoleArn
     valueFrom:
@@ -30,6 +30,6 @@ parameters:
   # - name: KubeflowUsers
   #   value:
   #   - policyArn: arn:aws:iam::aws:policy/AdministratorAccess
-  #     secret: addf-dataservice-users-kubeflow-users-kf-dgraeber
+  #     secret: addf-mlops-kubeflow-users-user1
   #   - policyArn: arn:aws:iam::aws:policy/AdministratorAccess
-  #     secret: testderekaddf
+  #     secret: addf-mlops-kubeflow-users-user2
