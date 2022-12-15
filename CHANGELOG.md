@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ros to Png Image Extraction relies on EC2 capacity providers in AWS Batch instead of Fargate
 - Updated default accountId resolution in sample manifests to simple key:value mapping to reduce confusion
 - Updated `seedfarmer` version to 2.2.1 for being able to use `.env` files
-
+- in `modules/analysis/rosbag-scene-detection` limited the length of the name of the `StepFunctionTrigger` 
 ### **Removed**
 
 =======
