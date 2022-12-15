@@ -306,10 +306,12 @@ class Fargate(aws_cdk.Stack):
 
         state_machine.grant_task_response(ecs_task_role)
 
+        ecsTaskTriggerName = f"addf-{deployment_name}-{module_name}-ecsTaskTrigger"
+        ecsTaskTriggerName = ecsTaskTriggerName[:63]
         lambda_function = aws_lambda.Function(
             self,
             "StepFunctionTrigger",
-            function_name=f"addf-{deployment_name}-{module_name}-ecsTaskTrigger",
+            function_name=ecsTaskTriggerName,
             code=aws_lambda.Code.from_inline(lambda_code),
             environment={
                 "state_machine_arn": state_machine.state_machine_arn,
