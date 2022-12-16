@@ -20,7 +20,7 @@ This module requires BEFORE EXECUTION:
 - an entry for each user in the module manifest under `KubeflowUsers` -- see `Input Parameters`
 
 #### Using AWS SecretsManager
-A unique entry to AWS SecretsManager is required with the following JSON format:
+A unique entry to AWS SecretsManager for each user is required with the following JSON format:
 ```json
 {
   "email": "user1@amazon.com",
@@ -28,7 +28,10 @@ A unique entry to AWS SecretsManager is required with the following JSON format:
   "username": "user1"
 }
 ```
-In the above, an `email` address is required as this is the login for the user.  A unique `password` is used to log into the dashboard.  The `username` becomes the namespace for this user - and should be all lowercase alpha characters.
+In the above
+  - an `email` address is required as this is the login for the user
+  - a unique `password` is used to log into the dashboard 
+  - the `username` becomes the namespace for this user - and should be all lowercase alpha-numeric characters.
 
 A helper script is provided to seed this secret. 
 
@@ -129,6 +132,12 @@ None
 
 
 ### Reference Commands
+
+Be sure to have your `.kube/config` properly set up to access your cluster.  Here is a reference command, but you may use one that fits your cluster:
+```bash
+aws eks update-kubeconfig --name <clustername>
+```
+
 To tunnel to the cluster and access the dashboard over http://localhost:8080
 ```bash
 kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80

@@ -13,6 +13,8 @@ It currently supports only the following:
 - Kubeflow v1.6.1
 - AWSKubebuild 1.0.0
 
+*** NOTE: this module does not support earlier versions of Kubeflow v1.6.1 as specified in the branches of [Kubeflow-on-AWS](https://github.com/awslabs/kubeflow-manifests)
+
 Since this module is extenisble, addition and modifications are encouraged.
 
 
