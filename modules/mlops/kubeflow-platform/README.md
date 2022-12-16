@@ -13,12 +13,14 @@ It currently supports only the following:
 - Kubeflow v1.6.1
 - AWSKubebuild 1.0.0
 
-Since this module is extenisble, addition and modifications are encouraged.
+*** NOTE: this module does not support earlier versions of Kubeflow v1.6.1 as specified in the branches of [Kubeflow-on-AWS](https://github.com/awslabs/kubeflow-manifests)
+
+Since this module is extenisble, additions and modifications are encouraged.
 
 
 
 ## Prerequisites
-This module depends on an existing EKS cluster and access to EKSKubectl Admin role.
+This module depends on an existing EKS cluster and access to EKS Master role (an IAM role that is an admin on the EKS cluster and has IAM capabilty to create/delete roles and policies).
 
 <b>The EKS cluster version MUST be at least 1.23</b>
 
