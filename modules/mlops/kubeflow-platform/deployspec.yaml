@@ -34,9 +34,10 @@ deploy:
       - cd $ROOT_DIR/
       - bash install_role_irsa.sh
       # Install the NVIDIA Plugin
+      - export PLUGIN=${ADDF_PARAMETER_NVIDIA_DEVICE_PLUGIN_VERSION:=0.13.0}
       - helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
       - helm repo update
-      - helm upgrade -i nvdp nvdp/nvidia-device-plugin --version=0.13.0 --namespace nvidia-device-plugin --create-namespace --set-file config.map.config=gpu/nvidia-plugin-configmap.yaml || true
+      - helm upgrade -i nvdp nvdp/nvidia-device-plugin --version=${PLUGIN} --namespace nvidia-device-plugin --create-namespace --set-file config.map.config=gpu/nvidia-plugin-configmap.yaml || true
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
 destroy:
   phases:
