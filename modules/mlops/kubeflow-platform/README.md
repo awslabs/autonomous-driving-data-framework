@@ -42,10 +42,12 @@ This module depends on an existing EKS cluster and access to EKS Master role (an
   - please see [Release Versions](https://awslabs.github.io/kubeflow-manifests/docs/about/releases/)
 - `AwsKubeflowBuild` - 1.0.0 currently tested
   - please see [Build Versions](https://awslabs.github.io/kubeflow-manifests/docs/about/releases/)
-  - **** this must be a string element ---> `1.0.0`
+  - **** this must be a string element ---> \`1.0.0\`
 
 #### Optional
-
+- `NvidiaDevicePluginVersion` - the version of the NVIDIA plugin to allow EKS to recognize GPU compute
+  - this is set to `0.13.0` by default and is the RECOMMENDED version - override at your own risk!
+  - ref [NVIDIA Plugin Repo](https://github.com/NVIDIA/k8s-device-plugin)
 
 #### Input Example
 ```yaml
