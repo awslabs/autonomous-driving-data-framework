@@ -39,6 +39,7 @@ deploy:
       - helm repo update
       - helm upgrade -i nvdp nvdp/nvidia-device-plugin --version=${PLUGIN} --namespace nvidia-device-plugin --create-namespace --set-file config.map.config=gpu/nvidia-plugin-configmap.yaml || true
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+      - export ADDF_MODULE_METADATA="{'EksClusterName':'${ADDF_PARAMETER_EKS_CLUSTER_NAME}'}"
 destroy:
   phases:
     install:

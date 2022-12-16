@@ -76,6 +76,14 @@ This module depends on an existing EKS cluster and access to EKS Master role (an
 
 
 ### Module Metadata Outputs
-None
+- `EksClusterName` - the name of the EKS cluster this Kubeflow platform is deployed on
+
+#### Output Example
+```json
+{
+  "EksClusterName": "addf-mlops-core-eks-cluster"
+}
+
+```
 
 
