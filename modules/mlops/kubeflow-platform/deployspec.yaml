@@ -9,15 +9,15 @@ deploy:
       - export ROOT_DIR=$(pwd)
       - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
       - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
-      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION} #helm
-      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION} #vanilla
-      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION} #v1.6.1
-      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD} #1.0.0
+      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION}
+      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION}
+      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION}
+      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD}
       - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
       ## Create and attach the policy to allow the KF admin role to create/delete roles
       - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
       - python manage_admin_user.py create ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_MASTER_ROLE_ARN} 
-      # Clone the AWS-on-kubeflow and change to the branch
+      # Clone the Kubeflow-on-AWS and change to the branch
       - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
       - git checkout $AWS_RELEASE_VERSION
       - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
@@ -45,7 +45,7 @@ destroy:
       - bash install_build.sh
     build:
       commands:
-      # Reverse the order of deploy...delete the Servuce Account
+      # Reverse the order of deploy...delete the Service Account
       - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_MASTER_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - export DEP_MOD=${AWS_CODESEEDER_NAME}-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}
       - export POLICY_NAME=${DEP_MOD}-policy
@@ -59,10 +59,10 @@ destroy:
       - export ROOT_DIR=$(pwd)
       - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
       - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
-      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION} #helm
-      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION} #vanilla
-      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION} #v1.6.1
-      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD} #1.0.0
+      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION}
+      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION}
+      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION}
+      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD}
       - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
       - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
       - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
@@ -76,7 +76,7 @@ destroy:
       - kubectl get profiles -o json |  jq -r '.items[].metadata.name' >> profiles.out
       - for name in $(cat profiles.out); do kubectl patch profile $name --type json -p '{"metadata":{"finalizers":null}}' --type=merge; done  || true
       - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
-      # the Kubeflow deployment doesn't delete the Samemaker KF role...so manually delete it
+      # the Kubeflow deployment doesn't delete the SageMaker KF role...so manually delete it
       # reF: tests/e2e/utils/ack_sm_controller_bootstrap/cleanup_sm_controller_req.py
       - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess || true
       - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/sm-studio-full-access-${CLUSTER_NAME} || true
@@ -86,5 +86,4 @@ destroy:
       # Unattach the policy from  KF admin role and delete the policy
       - cd $ROOT_DIR
       - python manage_admin_user.py delete ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_MASTER_ROLE_ARN}
-
 build_type: BUILD_GENERAL1_SMALL

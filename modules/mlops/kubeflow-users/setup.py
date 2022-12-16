@@ -5,7 +5,7 @@ with open("README.md") as fp:
 
 setuptools.setup(
     version="0.1.0",
-    description="Kubeflow via aws-on-kubeflow - https://github.com/kubeflow/manifests",
+    description="Kubeflow via Kubeflow-on-AWS - https://github.com/kubeflow/manifests",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="dgraeber@amazon.com",
