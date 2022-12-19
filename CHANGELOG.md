@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an example spark dags module to demonstrate how to consume `emr-on-eks` module for running spark jobs on AWS EMR on EKS
 - Added EFS support as a core module
 - Addded EFS-on-EKS as an integration module to create a Storage Class
-
+- Added Kubeflow-on-AWS support via `mlops/kubeflow-platform` module
+- Added Kubeflow-on-AWS USERS support via `mlops/kubeflow-users` module
 
 ### **Changed**
 

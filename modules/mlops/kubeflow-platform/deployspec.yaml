@@ -1,0 +1,91 @@
+deploy:
+  phases:
+    install:
+      commands:
+      - bash install_build.sh
+    build:
+      commands:
+      # Export all env params specific to the deployment stuff
+      - export ROOT_DIR=$(pwd)
+      - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
+      - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
+      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION}
+      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION}
+      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION}
+      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD}
+      - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
+      ## Create and attach the policy to allow the KF admin role to create/delete roles
+      - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
+      - python manage_admin_user.py create ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_MASTER_ROLE_ARN} 
+      # Clone the Kubeflow-on-AWS and change to the branch
+      - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
+      - git checkout $AWS_RELEASE_VERSION
+      - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
+      - git status
+      - python3.8 -m pip install -r tests/e2e/requirements.txt
+      # Assuming EKS Role
+      - cd $ROOT_DIR/kubeflow-manifests
+      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_MASTER_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - aws eks update-kubeconfig --name ${CLUSTER_NAME}
+      - kubectl get pods -n kube-system
+      # Deploy Kubeflow here
+      - make deploy-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
+      # Make sure the IRSA for profiles is created with proper annotations, if not, DELETE and redeploy to force it (supports redeployments)
+      - cd $ROOT_DIR/
+      - bash install_role_irsa.sh
+      # Install the NVIDIA Plugin
+      - export PLUGIN=${ADDF_PARAMETER_NVIDIA_DEVICE_PLUGIN_VERSION:=0.13.0}
+      - helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
+      - helm repo update
+      - helm upgrade -i nvdp nvdp/nvidia-device-plugin --version=${PLUGIN} --namespace nvidia-device-plugin --create-namespace --set-file config.map.config=gpu/nvidia-plugin-configmap.yaml || true
+      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+      - export ADDF_MODULE_METADATA="{'EksClusterName':'${ADDF_PARAMETER_EKS_CLUSTER_NAME}'}"
+destroy:
+  phases:
+    install:
+      commands:
+      - bash install_build.sh
+    build:
+      commands:
+      # Reverse the order of deploy...delete the Service Account
+      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_MASTER_ROLE_ARN} --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - export DEP_MOD=${AWS_CODESEEDER_NAME}-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}
+      - export POLICY_NAME=${DEP_MOD}-policy
+      - export SA_ROLE_NAME=${DEP_MOD}-sa-role
+      - export SA_NAME=profiles-controller-service-account
+      - eksctl delete iamserviceaccount --name ${SA_NAME} --namespace kubeflow --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME}
+      # Give the Stack time to resolve and release the policy
+      - sleep 10;
+      - aws iam delete-policy  --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/${POLICY_NAME:0:60} || true
+      # Export all env params specific to the deployment stuff
+      - export ROOT_DIR=$(pwd)
+      - export CLUSTER_NAME=${ADDF_PARAMETER_EKS_CLUSTER_NAME}
+      - export CLUSTER_REGION=${AWS_DEFAULT_REGION}
+      - export INSTALLATION_OPTION=${ADDF_PARAMETER_INSTALLATION_OPTION}
+      - export DEPLOYMENT_OPTION=${ADDF_PARAMETER_DEPLOYMENT_OPTION}
+      - export KUBEFLOW_RELEASE_VERSION=${ADDF_PARAMETER_KUBEFLOW_RELEASE_VERSION}
+      - export AWS_KUBEFLOW_BUILD=${ADDF_PARAMETER_AWS_KUBEFLOW_BUILD}
+      - export AWS_RELEASE_VERSION=${KUBEFLOW_RELEASE_VERSION}-aws-b${AWS_KUBEFLOW_BUILD}
+      - export KF_POLICY_NAME=addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}-kf
+      - git clone https://github.com/awslabs/kubeflow-manifests.git && cd kubeflow-manifests
+      - git checkout $AWS_RELEASE_VERSION
+      - git clone --branch ${KUBEFLOW_RELEASE_VERSION} https://github.com/kubeflow/manifests.git upstream
+      - git status
+      - python3.8 -m pip install -r tests/e2e/requirements.txt
+      - aws eks update-kubeconfig --name ${CLUSTER_NAME}
+      # Destroy it here
+      - helm uninstall nvdp -n nvidia-device-plugin || true
+      - kubectl get profiles -o json |  jq -r '.items[].metadata.name' >> profiles.out
+      - for name in $(cat profiles.out); do kubectl patch profile $name --type json -p '{"metadata":{"finalizers":null}}' --type=merge; done  || true
+      - make delete-kubeflow INSTALLATION_OPTION=$INSTALLATION_OPTION DEPLOYMENT_OPTION=$DEPLOYMENT_OPTION
+      # the Kubeflow deployment doesn't delete the SageMaker KF role...so manually delete it
+      # reF: tests/e2e/utils/ack_sm_controller_bootstrap/cleanup_sm_controller_req.py
+      - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess || true
+      - aws iam detach-role-policy --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/sm-studio-full-access-${CLUSTER_NAME} || true
+      - aws iam delete-policy --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/sm-studio-full-access-${CLUSTER_NAME} || true
+      - aws iam delete-role --role-name kf-ack-sm-controller-role-${CLUSTER_NAME} || true
+      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+      # Unattach the policy from  KF admin role and delete the policy
+      - cd $ROOT_DIR
+      - python manage_admin_user.py delete ${KF_POLICY_NAME} ${ADDF_PARAMETER_EKS_CLUSTER_MASTER_ROLE_ARN}
+build_type: BUILD_GENERAL1_SMALL

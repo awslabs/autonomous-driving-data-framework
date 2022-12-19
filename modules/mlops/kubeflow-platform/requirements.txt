@@ -1,0 +1,2 @@
+passlib==1.7.4
+passlib[bcrypt]
