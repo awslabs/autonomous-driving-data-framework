@@ -42,11 +42,11 @@ Going forward we will publish modules with functionality described in the Wirefr
 
 ![](./Data Exploration.png)
 
-### Vizualization Quicksight
+### Vizualization - Quicksight
 
 ![](./Vizualization QS.png)
 
-### Vizualization Foxglove
+### Vizualization - Foxglove
 
 ![](./Vizualization Foxglove.png)
 
