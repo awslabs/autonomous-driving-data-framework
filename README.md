@@ -10,6 +10,8 @@ You can refer to the SeedFarmer [guide](https://seed-farmer.readthedocs.io/en/la
 
 You can follow instructions in the Deployment Guide [Readme](docs/deployment_guide.md). You can also follow the [blogpost](https://aws.amazon.com/blogs/industries/develop-and-deploy-a-customized-workflow-using-autonomous-driving-data-framework-addf-on-aws/) for understanding ADDF in detail.
 
+Please see the [ADDF Security and Operations Guide](https://docs.aws.amazon.com/prescriptive-guidance/latest/addf-security-and-operations/welcome.html) for in-depth recommendations on assessing, deploying, customizing, and operating ADDF.
+
 ## Different types of modules supported by ADDF
 
 ### Use-case specific Modules
