@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Kubeflow-on-AWS support via `mlops/kubeflow-platform` module
 - Added Kubeflow-on-AWS USERS support via `mlops/kubeflow-users` module
 - Wireframes for UI - see https://github.com/awslabs/autonomous-driving-data-framework/tree/feature/webapp-wireframes/WebApp/Wireframes
+- added support for Data visualization (Camera, Radar, CAN bus, Map) with NICE DCV and Foxglove
 ### **Changed**
 
 - changing removal policy of EFS to `RETAIN` by default in core-eks module
