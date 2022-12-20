@@ -33,7 +33,7 @@ In other words, if the `dag-bucket-name` is `MY_AWESOME_BUCKET_NAME` then ONLY O
 - `airflow-version`: The Airflow version you would want to set in the module. It is defaulted to `2.2.2`
 - `mwaa-requirements-file` - Support for customized requiremements file installed on MWAA
   - ANY file referenced MUST be located `modules/core/mwaa/requirements/*.txt` and be python requirements compliant
-  - in if not provied, default is `requirements.txt`
+  - in if not provided, default is `requirements.txt`
 ### Module Metadata Outputs
 
 - `DagBucketName`: name of the S3 Bucket configured to store MWAA Environment DAG artifacts
