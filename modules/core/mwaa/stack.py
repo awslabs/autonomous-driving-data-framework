@@ -259,7 +259,7 @@ class MWAAStack(Stack):  # type: ignore
             network_configuration=mwaa_network_configuration,
             max_workers=max_workers,
             plugins_s3_path="plugins/plugins.zip",
-            requirements_s3_path=f"requirements/{unique_requirements_file}",
+            requirements_s3_path=unique_requirements_file,
             source_bucket_arn=dag_bucket.bucket_arn,
             webserver_access_mode="PUBLIC_ONLY",
         )
