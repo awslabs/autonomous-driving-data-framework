@@ -70,3 +70,6 @@ parameters:
           desired_vcpus: 0
           compute_type: FARGATE
           order: 1
+---
+name: emr-serverless
+path: modules/core/emr-serverless/

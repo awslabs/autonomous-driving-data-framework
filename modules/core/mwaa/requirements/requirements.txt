@@ -1,8 +1,9 @@
 Pillow~=9.0.1
-boto3~=1.21.37
-awscli~=1.22.80
+boto3~=1.23.9
+awscli~=1.24.9
 airflow-kubernetes-job-operator~=2.0.4
 apache-airflow-providers-cncf-kubernetes~=2.1.0
 boto3-stubs[essential]~=1.21.37
 mypy-boto3-batch~=1.22.8
 sagemaker==2.100.0
+emr_serverless @ https://github.com/aws-samples/emr-serverless-samples/releases/download/v1.0.1/mwaa_plugin.zip

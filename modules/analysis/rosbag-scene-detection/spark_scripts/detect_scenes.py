@@ -1,129 +1,22 @@
 import argparse
-import functools
-import json
 import sys
-
 import boto3
-import numpy
 import pyspark.sql.functions as func
-from pyspark.sql import Row, SparkSession, Window, types
-from pyspark.sql.types import StringType
+from pyspark.sql import SparkSession, Window
+from pyspark.sql.types import *
+from pyspark.sql.functions import from_json, col, lit, split, concat, \
+    collect_list, sum, first, count, aggregate
 
-
-def distance(p1, p2):
-    a = numpy.array((p1["x"], p1["y"], 0))
-    b = numpy.array((p2["x"], p2["y"], 0))
-    return numpy.linalg.norm(a - b)
-
-
-def get_nearest_image_point(x, y, img_pts):
-    min_pt = None
-    min_dist = 1000
-    for i, pt in enumerate(img_pts):
-        d = distance({"x": x, "y": y}, pt)
-        if d < min_dist:
-            min_dist = d
-            min_pt = pt
-            min_pt["dist"] = d
-    return min_pt
-
-
-def identify_nearest_lane_point(x, y, lane_points):
-    """
-    Given an x,y coordinate in the image, identify closest lane point per lane
-    """
-    v = json.loads(lane_points)["lanes_clean"]
-    lanes = json.loads(v)
-
-    nearest_pts = {}
-    for idx, lane in enumerate(lanes):
-        if lane:
-            img_pts = lane["image_points"]
-            nearest_pts[idx] = get_nearest_image_point(x, y, img_pts)
-
-    return nearest_pts
-
-
-def between_nums(x, i1, i2):
-    return (i1 >= x >= i2) or (i1 <= x <= i2)
-
-
-def point_in_lane(x, y, closest_points):
-    is_in_lane = False
-    lane = None
-    for lane_idx, closest_point in closest_points.items():
-        # if last_lane, then end
-        if lane_idx == len(closest_points) - 1:
-            continue
-        next_lane_closest_point = closest_points[lane_idx + 1]
-        # TODO consider y coordinates as well
-        if between_nums(x, next_lane_closest_point["x"], closest_point["x"]):
-            is_in_lane = True
-            lane = f"between_{lane_idx}_and_{lane_idx + 1}"
-            break
-    return is_in_lane, lane
-
-
-def is_object_in_lane(obj, lane_points):
-    obj_corner_x_min = obj["x"] - obj["width"] / 2
-    obj_corner_x_max = obj["x"] + obj["width"] / 2
-    obj_corner_y_min = obj["y"] - obj["height"] / 2
-    obj_corner_y_max = obj["y"] + obj["height"] / 2
-
-    corners_in_lane = 0
-    lanes = []
-    for obj_corner in [
-        (obj_corner_x_min, obj_corner_y_min),
-        (obj_corner_x_max, obj_corner_y_min),
-        (obj_corner_x_min, obj_corner_y_max),
-        (obj_corner_x_max, obj_corner_y_max),
-    ]:
-        x = obj_corner[0]
-        y = obj_corner[1]
-        closest_points = identify_nearest_lane_point(x, y, lane_points=lane_points)
-        in_lane = point_in_lane(x, y, closest_points)
-        if in_lane[0]:
-            corners_in_lane += 1
-            lane = in_lane[1]
-            if lane not in lanes:
-                lanes.append(lane)
-    return corners_in_lane, lanes
-
-
-def obj_in_lane_detection(row):
-    if row.get("rgb_right_detections_only_clean") and row.get("post_process_lane_points_rgb_front_right_clean"):
-        objects_in_lane = []
-        objects = json.loads(json.loads(row["rgb_right_detections_only_clean"]).get("detections_bboxes_clean", []))
-        lane_points = row["post_process_lane_points_rgb_front_right_clean"]
-        for o in objects:
-            corners_in_lane, lanes = is_object_in_lane(obj=o, lane_points=lane_points)
-            o.update(
-                {
-                    "corners_in_lane": corners_in_lane,
-                    "lanes": lanes,
-                }
-            )
-            if corners_in_lane:
-                objects_in_lane.append(o)
-
-        row["objects_in_lane"] = objects_in_lane
-    else:
-        row["objects_in_lane"] = None
-    return row
-
-
-def detect_scenes(synchronized_data):
-    synced_rdd = synchronized_data.rdd.map(lambda row: row.asDict())
-    return (
-        synced_rdd.map(obj_in_lane_detection)
-        .toDF()
-        .select("Time", "objects_in_lane", "bag_file", "bag_file_prefix", "bag_file_bucket")
-    )
-
-
-def union_all(dfs):
-    return functools.reduce(lambda df1, df2: df1.union(df2.select(df1.columns)), dfs)
-
+obj_schema = StructType([StructField("_c0", IntegerType(), True),
+                        StructField("xmin", DoubleType(), True),
+                        StructField("ymin", DoubleType(), True),
+                        StructField("xmax", DoubleType(), True),
+                        StructField("ymax", DoubleType(), True),
+                        StructField("confidence", DoubleType(), True),
+                        StructField("class", IntegerType(), True),
+                        StructField("name", StringType(), True),
+                        StructField("source_image", StringType(), True)
+                        ])
 
 def parse_arguments(args):
     parser = argparse.ArgumentParser()
@@ -136,10 +29,35 @@ def parse_arguments(args):
     return parser.parse_args(args=args)
 
 
+def form_object_in_lane_df(obj_df, lane_df):
+    obj_lane_df = obj_df.join(lane_df, on="source_image", how="inner")
+    obj_lane_df = obj_lane_df.withColumn("pixel_rows_at_bottom_corner",
+                                         obj_lane_df["lanes"].getItem(
+                                             obj_lane_df.ymax.cast(
+                                                 IntegerType()))).drop(
+        "lanes").drop("ymax")
+    obj_lane_df = obj_lane_df.withColumn(
+        'sum_of_pixels_intensities_at_bottom_corner_rows',
+        aggregate("pixel_rows_at_bottom_corner", lit(0),
+                  lambda acc, x: acc + x)
+    ).drop("pixel_rows_at_bottom_corner")
+    obj_lane_df = obj_lane_df.filter(
+        obj_lane_df.sum_of_pixels_intensities_at_bottom_corner_rows != 0)
+    obj_lane_df = obj_lane_df.withColumn("source_image_split",
+                                         split("source_image", "_"))
+    obj_lane_df = obj_lane_df.withColumn("Time", concat(
+        obj_lane_df["source_image_split"].getItem(2), lit("."),
+        obj_lane_df["source_image_split"].getItem(3).substr(1, 2)).cast(
+        DoubleType()))
+
+    return obj_lane_df
+
+
 def get_batch_file_metadata(table_name, batch_id, region):
     dynamodb = boto3.resource("dynamodb", region_name=region)
     table = dynamodb.Table(table_name)
-    response = table.query(KeyConditions={"BatchId": {"AttributeValueList": [batch_id], "ComparisonOperator": "EQ"}})
+    response = table.query(KeyConditions={
+        "pk": {"AttributeValueList": [batch_id], "ComparisonOperator": "EQ"}})
     data = response["Items"]
     while "LastEvaluatedKey" in response:
         response = table.query(ExclusiveStartKey=response["LastEvaluatedKey"])
@@ -147,14 +65,58 @@ def get_batch_file_metadata(table_name, batch_id, region):
     return data
 
 
-def load_data(spark, input_bucket, table_name, batch_metadata):
-    dfs = []
+def load_obj_detection(spark, batch_metadata):
+    path_list = []
     for item in batch_metadata:
-        s3_path = f"s3://{input_bucket}/{table_name}/bag_file={item['Name']}/"
-        df = spark.read.option("basePath", f"s3://{input_bucket}/{table_name}/").load(s3_path)
-        dfs.append(df)
+        path_list.append(
+            f"s3://{item['raw_image_bucket']}"
+            f"/{item['drive_id']}"
+            f"/{item['file_id'].split('.')[0]}"
+            f"/_flir_adk_rgb_front_right_image_raw_"
+            f"resized_1280_720_post_obj_dets/all_predictions.csv")
 
-    return union_all(dfs)
+    df = spark.read.schema(obj_schema).option("header", True).csv(path_list)
+    return df
+
+
+def load_lane_detection(spark, batch_metadata):
+    first_item = batch_metadata[0]
+    first_path = f"s3://{first_item['raw_image_bucket']}/" \
+                 f"{first_item['drive_id']}/" \
+                 f"{first_item['file_id'].split('.')[0]}/" \
+                 f"_flir_adk_rgb_front_right_image_raw_resized_" \
+                 f"1280_720_post_lane_dets/lanes.csv"
+
+    first_item_split = first_item['s3_key'].rpartition('/')
+    bag_file_prefix = first_item_split[0]
+    bag_file = first_item_split[2].split('.')[0]
+
+    df = spark.read.option("header", True).csv(first_path)\
+        .withColumn("bag_file_bucket", lit(first_item["s3_bucket"]))\
+        .withColumn("bag_file", lit(bag_file)) \
+        .withColumn("bag_file_prefix", lit(bag_file_prefix))
+
+    for i in range(1, len(batch_metadata)):
+        item = batch_metadata[i]
+        path = f"s3://{item['raw_image_bucket']}/" \
+               f"{item['drive_id']}/" \
+               f"{item['file_id'].split('.')[0]}/" \
+               f"_flir_adk_rgb_front_right_image_raw_resized_" \
+               f"1280_720_post_lane_dets/lanes.csv"
+        item_split = item['s3_key'].rpartition('/')
+        bag_file_prefix = item_split[0]
+        bag_file = item_split[2].split('.')[0]
+
+        df.union(spark.read.option("header", True).csv(path)
+                 .withColumn("bag_file_bucket", lit(item["s3_bucket"]))
+                 .withColumn("bag_file", lit(bag_file))\
+                 .withColumn("bag_file_prefix", lit(bag_file_prefix))
+                 )
+
+    lane_schema = ArrayType(ArrayType(IntegerType()), False)
+    df = df.withColumn("lanes", from_json(col('lanes'), lane_schema))
+
+    return df
 
 
 def write_results_s3(df, table_name, output_bucket, partition_cols=[]):
@@ -163,113 +125,113 @@ def write_results_s3(df, table_name, output_bucket, partition_cols=[]):
 
 
 def write_results_dynamo(df, output_dynamo_table, region):
-    df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format("dynamodb").save()
+    df.write.mode("append").option("tableName", output_dynamo_table).option(
+        "region", region).format("dynamodb").save()
 
 
-def people_in_scenes(row):
-    num_people_in_scene = 0
-    objects = row["objects_in_lane"]
-    if objects is not None:
-        for obj in objects:
-            if obj["Class"] == "person":
-                num_people_in_scene += 1
-        row["num_people_in_scene"] = num_people_in_scene
-    return row
+def summarize_truck_in_lane_scenes(obj_lane_df):
+    obj_lane_df = obj_lane_df.filter(obj_lane_df.name == "truck")
+    obj_lane_df = obj_lane_df.groupby("source_image").agg(
+        count("name").alias("num_trucks_in_lane"),
+        first("Time").alias("Time"),
+        first("bag_file_bucket").alias("bag_file_bucket"),
+        first("bag_file").alias("bag_file"),
+        first("bag_file_prefix").alias("bag_file_prefix")
+        )
 
+    win = Window.orderBy("Time").partitionBy("bag_file_bucket", "bag_file",
+                                             "bag_file_prefix")
 
-def summarize_person_scenes(df):
-    people_in_lane = df.rdd.map(lambda row: row.asDict()).map(people_in_scenes).toDF()
+    obj_lane_df = obj_lane_df \
+        .withColumn("num_trucks_in_lane_lag1",
+                    func.lag(func.col("num_trucks_in_lane"), 1, 0).over(win)) \
+        .withColumn("num_trucks_in_lane_lead1",
+                    func.lead(func.col("num_trucks_in_lane"), 1, 0)
+                    .over(win)) \
+        .filter("num_trucks_in_lane_lag1 == 0 or num_trucks_in_lane_lead1 ==0")
 
     scene_state_udf = func.udf(
-        lambda num, lag: "start" if num > 0 and lag == 0 else ("end" if num == 0 and lag > 0 else None),
+        lambda num, lag: "start" if num > 0 and lag is None else (
+            "end" if num == 0 and lag > 0 else None),
         StringType(),
     )
 
-    win = Window.orderBy("Time").partitionBy("bag_file", "bag_file_prefix", "bag_file_bucket")
-
-    people_in_lane = people_in_lane.withColumn(
-        "num_people_in_scene_lag1",
-        func.lag(func.col("num_people_in_scene"), 1).over(win),
-    ).filter("num_people_in_scene is not null and num_people_in_scene_lag1 is not null ")
-
-    summary = (
-        people_in_lane.withColumn(
-            "scene_state",
-            scene_state_udf(
-                people_in_lane.num_people_in_scene,
-                people_in_lane.num_people_in_scene_lag1,
-            ),
-        )
-        .filter("scene_state is not null")
-        .withColumn("end_time", func.lead(func.col("Time"), 1).over(win))
-        .filter("scene_state = 'start'")
-        .withColumnRenamed("Time", "start_time")
-        .withColumnRenamed("num_people_in_scene", "num_people_in_scene_start")
+    truck_in_lane_scenes_df = obj_lane_df \
+        .withColumn("scene_state", scene_state_udf(
+            obj_lane_df.num_trucks_in_lane,
+            obj_lane_df.num_trucks_in_lane_lag1,
+        ),) \
+        .withColumn("end_time", func.lead(func.col("Time"), 1).over(win)) \
+        .filter("num_trucks_in_lane_lag1 ==0") \
+        .withColumnRenamed("Time", "start_time") \
+        .withColumnRenamed("num_trucks_in_lane", "num_trucks_in_lane_start") \
         .select(
-            "bag_file",
-            "bag_file_prefix",
-            "bag_file_bucket",
-            "start_time",
-            "end_time",
-            "num_people_in_scene_start",
-        )
+        "bag_file",
+        "bag_file_bucket",
+        "bag_file_prefix",
+        "start_time",
+        "end_time",
+        "num_trucks_in_lane_start",
+    ) \
         .withColumn(
-            "scene_id",
-            func.concat(func.col("bag_file"), func.lit("_PersonInLane_"), func.col("start_time")),
-        )
-        .withColumn("scene_length", func.col("end_time") - func.col("start_time"))
+        "scene_id",
+        func.concat(func.col("bag_file"), func.lit("_TruckInLane_"),
+                    func.col("start_time")),
+    ) \
+        .withColumn("scene_length",
+                    func.col("end_time") - func.col("start_time")) \
         .withColumn(
-            "topics_analyzed",
-            func.lit(
-                ",".join(
-                    [
-                        "rgb_right_detections_only_clean",
-                        "post_process_lane_points_rgb_front_right_clean",
-                    ]
-                )
-            ),
-        )
+        "topics_analyzed",
+        func.lit(
+            ",".join(
+                [
+                    "rgb_right_detections_only_clean",
+                    "post_process_lane_points_rgb_front_right_clean",
+                ]
+            )
+        ),
     )
 
-    return summary
-
-
-def scene_metadata(df):
-    return summarize_person_scenes(df)
+    return truck_in_lane_scenes_df
 
 
 def main(
-    batch_metadata_table_name,
-    batch_id,
-    input_bucket,
-    output_bucket,
-    output_dynamo_table,
-    spark,
-    region,
+        batch_metadata_table_name,
+        batch_id,
+        input_bucket,
+        output_bucket,
+        output_dynamo_table,
+        spark,
+        region,
 ):
     # Load files to process
-    batch_metadata = get_batch_file_metadata(table_name=batch_metadata_table_name, batch_id=batch_id, region=region)
+    batch_metadata = get_batch_file_metadata(
+        table_name=batch_metadata_table_name, batch_id=batch_id, region=region)
 
     # Load topic data from s3 and union
-    synchronized_data = load_data(
+    obj_df = load_obj_detection(
         spark,
-        input_bucket,
         batch_metadata=batch_metadata,
-        table_name="synchronized_topics",
     )
-    detected_scenes = detect_scenes(synchronized_data)
+
+    lane_df = load_lane_detection(
+        spark,
+        batch_metadata=batch_metadata,
+    )
+
+    obj_lane_df = form_object_in_lane_df(obj_df, lane_df)
+
+    truck_in_lane_scenes_df = summarize_truck_in_lane_scenes(obj_lane_df)
 
     # Save Synchronized Signals to S3
     write_results_s3(
-        detected_scenes,
+        truck_in_lane_scenes_df,
         table_name="scene_detections",
         output_bucket=output_bucket,
         partition_cols=["bag_file"],
     )
 
-    scene_metadata_df = scene_metadata(detected_scenes)
-
-    write_results_dynamo(scene_metadata_df, output_dynamo_table, region)
+    write_results_dynamo(truck_in_lane_scenes_df, output_dynamo_table, region)
 
 
 if __name__ == "__main__":

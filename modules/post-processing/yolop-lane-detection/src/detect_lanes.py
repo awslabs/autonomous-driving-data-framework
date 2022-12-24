@@ -1,13 +1,9 @@
 import argparse
-import csv
 import json
 import os
-import shutil
 import sys
 import time
 from pathlib import Path
-
-import imageio
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
@@ -15,23 +11,22 @@ sys.path.append(BASE_DIR)
 print(sys.path)
 import cv2
 import numpy as np
-import PIL.Image as image
-import scipy.special
 import torch
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from lib.config import cfg, update_config
 from lib.core.function import AverageMeter
 from lib.core.general import non_max_suppression, scale_coords
-from lib.core.postprocess import connect_lane, morphological_process
 from lib.dataset import LoadImages, LoadStreams
 from lib.models import get_net
 from lib.utils import plot_one_box, show_seg_result
 from lib.utils.utils import create_logger, select_device, time_synchronized
 from numpy import random
 from tqdm import tqdm
+import pandas as pd
 
-normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225])
 
 transform = transforms.Compose(
     [
@@ -41,8 +36,17 @@ transform = transforms.Compose(
 )
 
 
-def detect(cfg, opt):
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
+
+name_lanes = []
+
+
+def detect(cfg, opt):
     logger, _, _ = create_logger(cfg, cfg.LOG_DIR, "demo")
 
     device = select_device(logger, opt.device)
@@ -70,14 +74,17 @@ def detect(cfg, opt):
 
     # Get names and colors
     names = model.module.names if hasattr(model, "module") else model.names
-    colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(names))]
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in
+              range(len(names))]
 
     # Run inference
     t0 = time.time()
 
     vid_path, vid_writer = None, None
-    img = torch.zeros((1, 3, opt.img_size, opt.img_size), device=device)  # init img
-    _ = model(img.half() if half else img) if device.type != "cpu" else None  # run once
+    img = torch.zeros((1, 3, opt.img_size, opt.img_size),
+                      device=device)  # init img
+    _ = model(
+        img.half() if half else img) if device.type != "cpu" else None  # run once
     model.eval()
 
     inf_time = AverageMeter()
@@ -89,7 +96,8 @@ def detect(cfg, opt):
     if not os.path.exists(opt.json_path):
         os.mkdir(opt.json_path)
 
-    for i, (path, img, img_det, vid_cap, shapes) in tqdm(enumerate(dataset), total=len(dataset)):
+    for i, (path, img, img_det, vid_cap, shapes) in tqdm(enumerate(dataset),
+                                                         total=len(dataset)):
         img = transform(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         if img.ndimension() == 3:
@@ -130,24 +138,34 @@ def detect(cfg, opt):
         pad_h = int(pad_h)
         ratio = shapes[1][0][1]
 
-        da_predict = da_seg_out[:, :, pad_h : (height - pad_h), pad_w : (width - pad_w)]
-        da_seg_mask = torch.nn.functional.interpolate(da_predict, scale_factor=int(1 / ratio), mode="bilinear")
+        da_predict = da_seg_out[:, :, pad_h: (height - pad_h), pad_w:
+                                                               (width - pad_w)]
+        da_seg_mask = torch.nn.functional.interpolate(da_predict,
+                                                      scale_factor=int(
+                                                          1 / ratio),
+                                                      mode="bilinear")
         _, da_seg_mask = torch.max(da_seg_mask, 1)
         da_seg_mask = da_seg_mask.int().squeeze().cpu().numpy()
         # da_seg_mask = morphological_process(da_seg_mask, kernel_size=7)
 
-        ll_predict = ll_seg_out[:, :, pad_h : (height - pad_h), pad_w : (width - pad_w)]
-        ll_seg_mask = torch.nn.functional.interpolate(ll_predict, scale_factor=int(1 / ratio), mode="bilinear")
+        ll_predict = ll_seg_out[:, :, pad_h: (height - pad_h),
+                     pad_w: (width - pad_w)]
+        ll_seg_mask = torch.nn.functional.interpolate(ll_predict,
+                                                      scale_factor=int(
+                                                          1 / ratio),
+                                                      mode="bilinear")
         _, ll_seg_mask = torch.max(ll_seg_mask, 1)
         ll_seg_mask = ll_seg_mask.int().squeeze().cpu().numpy()
         # Lane line post-processing
         # ll_seg_mask = morphological_process(ll_seg_mask, kernel_size=7, func_type=cv2.MORPH_OPEN)
         # ll_seg_mask = connect_lane(ll_seg_mask)
 
-        img_det = show_seg_result(img_det, (da_seg_mask, ll_seg_mask), _, _, is_demo=True)
+        img_det = show_seg_result(img_det, (da_seg_mask, ll_seg_mask), _, _,
+                                  is_demo=True)
 
         if len(det):
-            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], img_det.shape).round()
+            det[:, :4] = scale_coords(img.shape[2:], det[:, :4],
+                                      img_det.shape).round()
             for *xyxy, conf, cls in reversed(det):
                 label_det_pred = f"{names[int(cls)]} {conf:.2f}"
                 plot_one_box(
@@ -161,28 +179,18 @@ def detect(cfg, opt):
         # if dataset.mode == 'images':
         cv2.imwrite(save_path, img_det)
 
-        p = str(opt.save_dir + "/" + Path(path).name)
+        name_lane = [Path(path).name,
+                     json.dumps(ll_seg_mask, cls=NumpyEncoder)]
+        name_lanes.append(name_lane)
 
-        n = p.split("/")[-1]
-
-        json_n = f"{n[0:n.rindex('.')]}.json"
-        json_o = os.path.join(opt.json_path, json_n)
-        print(f"Writing json to {json_o}")
-        with open(json_o, "w", encoding="utf-8") as jsonf:
-            json.dump(ll_seg_out.cpu().detach().numpy().tolist(), jsonf)
-
-        fields = ["img_name", "lanes_clean"]
-        csv_n = f"{n[0:n.rindex('.')]}.csv"
-        csv_o = os.path.join(opt.csv_path, csv_n)
-        print(f"Writing csv to {csv_o}")
-        with open(csv_o, "w") as f:
-            write = csv.writer(f)
-            write.writerow(fields)
-            write.writerows([ll_seg_out])
+    df = pd.DataFrame(name_lanes, columns=['source_image',
+                                           'lanes'])
+    df.to_csv(path_or_buf=os.path.join(opt.csv_path, "lanes.csv"), index=False)
 
     print("Results saved to %s" % Path(opt.save_dir))
     print("Done. (%.3fs)" % (time.time() - t0))
-    print("inf : (%.4fs/frame)   nms : (%.4fs/frame)" % (inf_time.avg, nms_time.avg))
+    print("inf : (%.4fs/frame)   nms : (%.4fs/frame)" % (inf_time.avg,
+                                                         nms_time.avg))
 
 
 if __name__ == "__main__":
@@ -195,20 +203,27 @@ if __name__ == "__main__":
         help="model.pth path(s)",
     )
     parser.add_argument(
-        "--source", type=str, default="/opt/ml/processing/input/image", help="source"
+        "--source", type=str, default="/opt/ml/processing/input/image",
+        help="source"
     )  # file/folder   ex:inference/images
-    parser.add_argument("--img-size", type=int, default=640, help="inference size (pixels)")
-    parser.add_argument("--conf-thres", type=float, default=0.25, help="object confidence threshold")
-    parser.add_argument("--iou-thres", type=float, default=0.45, help="IOU threshold for NMS")
-    parser.add_argument("--device", default="cpu", help="cuda device, i.e. 0 or 0,1,2,3 or cpu")
+    parser.add_argument("--img-size", type=int, default=640,
+                        help="inference size (pixels)")
+    parser.add_argument("--conf-thres", type=float, default=0.25,
+                        help="object confidence threshold")
+    parser.add_argument("--iou-thres", type=float, default=0.45,
+                        help="IOU threshold for NMS")
+    parser.add_argument("--device", default="cpu",
+                        help="cuda device, i.e. 0 or 0,1,2,3 or cpu")
     parser.add_argument(
         "--save_dir",
         type=str,
         default="/opt/ml/processing/output/image",
         help="directory to save results",
     )
-    parser.add_argument("--augment", action="store_true", help="augmented inference")
-    parser.add_argument("--update", action="store_true", help="update all models")
+    parser.add_argument("--augment", action="store_true",
+                        help="augmented inference")
+    parser.add_argument("--update", action="store_true",
+                        help="update all models")
     parser.add_argument(
         "--csv_path",
         type=str,
