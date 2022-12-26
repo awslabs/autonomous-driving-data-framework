@@ -161,7 +161,7 @@ urllib3==1.26.9
     # via
     #   botocore
     #   requests
-wheel==0.37.1
+wheel==0.38.1
     # via
     #   pip-tools
     #   pyroma
