@@ -22,6 +22,7 @@ This module creates a Cloud9 instance and the option to resize the root volume
 
 #### Optional
 
+- `connection_type`: The connection type used for connecting to an Amazon EC2 environment. Valid values are CONNECT_SSM (default) and CONNECT_SSH
 - `instance_stop_time_minutes`: The number of minutes until the running instance is shut down after the environment was last used
   - default: 60min
 - `name`: The name of the Cloud9 environment

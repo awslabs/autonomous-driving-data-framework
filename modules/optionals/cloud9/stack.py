@@ -31,6 +31,7 @@ class Cloud9Stack(Stack):  # type: ignore
         self,
         scope: Construct,
         id: str,
+        connection_type: str,
         image_id: str,
         instance_stop_time_minutes: int,
         instance_type: str,
@@ -49,6 +50,9 @@ class Cloud9Stack(Stack):  # type: ignore
             The construct's parent
         id : str
             The unique identifier of the resource
+        connection_type: str
+            The connection type used for connecting to an Amazon EC2 environment.
+            Valid values are CONNECT_SSM (default) and CONNECT_SSH
         image_id : str
             The identifier for the Amazon Machine Image (AMI) that's used to create
             the EC2 instance. To choose an AMI for the instance, you must specify a
@@ -81,6 +85,6 @@ class Cloud9Stack(Stack):  # type: ignore
 
             # the properties below are optional
             automatic_stop_time_minutes=instance_stop_time_minutes,
-            connection_type="CONNECT_SSM",
+            connection_type=connection_type,
             name=name,
         )
