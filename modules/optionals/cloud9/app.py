@@ -11,21 +11,25 @@ module_name = os.getenv("ADDF_MODULE_NAME")
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
-image_id = os.getenv(_param("IMAGE_ID"), "ami-0beaa649c482330f7")
+image_id = os.getenv(_param("IMAGE_ID"), None)
 instance_stop_time_minutes = int(os.getenv(_param("INSTANCE_STOP_TIME_MINUTES"), 60))
-instance_type = os.getenv(_param("INSTANCE_TYPE"), "t3.small")
+instance_type = os.getenv(_param("INSTANCE_TYPE"), None)
 name = os.getenv(_param("NAME"), "cloud9env")
-owner_role = os.getenv(_param("OWNER_ROLE"), None)
+owner_arn = os.getenv(_param("OWNER_ARN"), None)
 storage_size = os.getenv(_param("STORAGE_SIZE"), 20)
 subnet_id = os.getenv(_param("SUBNET_ID"), None)
 
-if owner_role is None:
-    raise ValueError("owner role must not be empty. You will not be able to access your env")
+if image_id is None:
+    raise ValueError("Parameter `image_id` not found.")
+
+if instance_type is None:
+    raise ValueError("Parameter `instance_type` not found.")
+
+if owner_arn is None:
+    raise ValueError("Parameter `owner_arn` not found. You will not be able to access your env")
 
 if subnet_id is None:
-    raise ValueError("subnet_id must not be empty")
-
-owner_arn = f"arn:aws:iam::{Aws.ACCOUNT_ID}:{owner_role}"
+    raise ValueError("Parameter `subnet_id` not found")
 
 app = App()
 

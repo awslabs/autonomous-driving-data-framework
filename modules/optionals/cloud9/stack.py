@@ -74,13 +74,13 @@ class Cloud9Stack(Stack):  # type: ignore
         self.cloud9_instance = cloud9.CfnEnvironmentEC2(
             self,
             "Cloud9Env",
+            image_id=image_id,
             instance_type=instance_type,
+            owner_arn=owner_arn,
+            subnet_id=subnet_id,
 
             # the properties below are optional
             automatic_stop_time_minutes=instance_stop_time_minutes,
             connection_type="CONNECT_SSM",
-            image_id=image_id,
             name=name,
-            owner_arn=owner_arn,
-            subnet_id=subnet_id,
         )
