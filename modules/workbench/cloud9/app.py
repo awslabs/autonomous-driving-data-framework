@@ -8,10 +8,12 @@ from stack import Cloud9Stack
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
 module_name = os.getenv("ADDF_MODULE_NAME")
 
+
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
-connection_type = os.getenv(_param("CONNECTION_TYPE"), 'CONNECT_SSM')
+
+connection_type = os.getenv(_param("CONNECTION_TYPE"), "CONNECT_SSM")
 image_id = os.getenv(_param("IMAGE_ID"), None)
 instance_stop_time_minutes = int(os.getenv(_param("INSTANCE_STOP_TIME_MINUTES"), 60))
 instance_type = os.getenv(_param("INSTANCE_TYPE"), None)

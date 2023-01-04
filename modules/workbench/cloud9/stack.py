@@ -27,6 +27,7 @@ class Cloud9Stack(Stack):  # type: ignore
     ----------
     Stack : Stack
     """
+
     def __init__(
         self,
         scope: Construct,
@@ -74,7 +75,7 @@ class Cloud9Stack(Stack):  # type: ignore
             (Amazon EC2) instance
         """
         super().__init__(scope, id, description="This stack deploys Networking resources for ADDF", **kwargs)
-        
+
         self.cloud9_instance = cloud9.CfnEnvironmentEC2(
             self,
             "Cloud9Env",
@@ -82,7 +83,6 @@ class Cloud9Stack(Stack):  # type: ignore
             instance_type=instance_type,
             owner_arn=owner_arn,
             subnet_id=subnet_id,
-
             # the properties below are optional
             automatic_stop_time_minutes=instance_stop_time_minutes,
             connection_type=connection_type,
