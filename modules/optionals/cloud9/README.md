@@ -3,7 +3,6 @@
 ## Description
 
 This module creates a Cloud9 instance and the option to resize the root volume
-##### Please provide `deployspec.yaml` and `modulestack.yaml` files which will be consumed by SeedFarmer CLI.
 
 ## Inputs/Outputs
 
