@@ -19,7 +19,30 @@ volume_size = int(ADDF_METADATA.get("InstanceStorageSize"))
 
 res = ec2_client.describe_instances(Filters=[{"Name": "tag:aws:cloud9:environment", "Values": [cloud9_env_id]}])
 
+full_cloud9_instance_name = [tag["Value"] for tag in res["Reservations"][0]["Instances"][0]["Tags"] if tag["Key"] == "Name"][0]
+instance_id = res["Reservations"][0]["Instances"][0]["InstanceId"]
 volume_id = res["Reservations"][0]["Instances"][0]["BlockDeviceMappings"][0]["Ebs"]["VolumeId"]
+
+try:
+    ec2_client.create_tags(
+        Resources=[instance_id, volume_id],
+        Tags=[
+            {
+                "Key": "ADDF_DEPLOYMENT_NAME",
+                "Value": os.getenv("ADDF_DEPLOYMENT_NAME")
+            },
+            {
+                "Key": "ADDF_MODULE_NAME",
+                "Value": os.getenv("ADDF_MODULE_NAME")
+            },
+            {
+                "Key": "Name",
+                "Value": full_cloud9_instance_name
+            },
+        ]
+    )
+except Exception as err:
+    raise err
 
 try:
     ec2_client.modify_volume(

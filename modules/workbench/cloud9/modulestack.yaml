@@ -2,12 +2,9 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This stack deploys a Module specific IAM permissions
 
 Parameters:
-  # DeploymentName:
-  #   Type: String
-  #   Description: The name of the deployment
-  # ModuleName:
-  #   Type: String
-  #   Description: The name of the Module
+  InstanceName:
+    Type: String
+    Description: The name of the Cloud9 environment
   RoleName:
     Type: String
     Description: The name of the IAM Role
@@ -19,8 +16,15 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
+              - "ec2:CreateTags"
+            Resource: "*"
+          - Effect: Allow
+            Action:
               - "ec2:ModifyVolume"
             Resource: "*"
+            Condition:
+              StringLike:
+                ec2:ResourceTag/Name: !Sub 'aws-cloud9-${InstanceName}-*'
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"
       Roles: [!Ref RoleName]
