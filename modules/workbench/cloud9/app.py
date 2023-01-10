@@ -2,7 +2,7 @@ import os
 
 import aws_cdk
 import boto3
-from aws_cdk import App, Aws, CfnOutput
+from aws_cdk import App, CfnOutput
 
 from stack import Cloud9Stack
 
@@ -22,7 +22,11 @@ def is_ami_valid(image_id: str) -> None:
                 break
         else:
             raise ValueError(
-                f"The AMI provided `{image_id}` is not a valid AMI supported by Cloud9. For a list of valid images, run `aws ssm get-parameters-by-path --path '/aws/service/cloud9' --recursive` or check the README!"
+                (
+                    f"The AMI provided `{image_id}` is not a valid AMI supported by Cloud9. "
+                    "For a list of valid images, check the README or run the following command: "
+                    "`aws ssm get-parameters-by-path --path '/aws/service/cloud9' --recursive` "
+                )
             )
 
 
