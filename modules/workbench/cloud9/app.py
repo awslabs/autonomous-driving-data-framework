@@ -1,13 +1,15 @@
 import os
 
 import aws_cdk
-from aws_cdk import App, Aws, CfnOutput
 import boto3
+from aws_cdk import App, Aws, CfnOutput
 
 from stack import Cloud9Stack
 
+
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
+
 
 def is_ami_valid(image_id: str) -> None:
     if image_id.startswith("ami"):
@@ -19,7 +21,10 @@ def is_ami_valid(image_id: str) -> None:
                 image_id = f"resolve:ssm:{param['Name']}"
                 break
         else:
-            raise ValueError(f"The AMI provided `{image_id}` is not a valid AMI supported by Cloud9. For a list of valid images, run `aws ssm get-parameters-by-path --path '/aws/service/cloud9' --recursive` or check the README!")
+            raise ValueError(
+                f"The AMI provided `{image_id}` is not a valid AMI supported by Cloud9. For a list of valid images, run `aws ssm get-parameters-by-path --path '/aws/service/cloud9' --recursive` or check the README!"
+            )
+
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
 module_name = os.getenv("ADDF_MODULE_NAME")
