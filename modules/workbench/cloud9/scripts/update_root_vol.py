@@ -11,7 +11,7 @@ _logger: logging.Logger = logging.getLogger(__name__)
 
 ec2_client = boto3.client("ec2")
 
-ADDF_METADATA = json.loads(os.getenv("ADDF_MODULE_METADATA"))
+ADDF_METADATA = json.loads(os.getenv("ADDF_MODULE_METADATA"))  # type: ignore
 
 cloud9_arn = ADDF_METADATA.get("Cloud9EnvArn")
 cloud9_env_id = cloud9_arn.split(":")[-1]
