@@ -10,8 +10,6 @@ This module creates a Cloud9 instance and the option to resize the root volume
 
 #### Required
 
-- `image_id`: The identifier for the Amazon Machine Image (AMI) that's used to create the EC2 instance. To choose an AMI for the instance, you must specify a valid AMI alias or a valid AWS Systems Manager path
-  - e.g.: ami-0beaa649c482330f7
 - `instance_type`: Type of instance to launch
   - e.g.: t3.small. For more information on instance types: https://aws.amazon.com/ec2/instance-types/
 - `owner_arn`: The Amazon Resource Name (ARN) of the environment owner. This ARN can be the ARN of any AWS Identity and Access Management principal.
@@ -21,8 +19,19 @@ This module creates a Cloud9 instance and the option to resize the root volume
 
 #### Optional
 
-- `connection_type`: The connection type used for connecting to an Amazon EC2 environment. Valid values are `CONNECT_SSM` and `CONNECT_SSH`
-  - default: CONNECT_SSM
+- `image_id`: The identifier for the Amazon Machine Image (AMI) that is used to create the EC2 instance. You must specify a valid AMI alias or a valid AWS Systems Manager path. Passing an AMI alias or System Manager path will autoresolve the AMI based on your region. If this parameter is not passed, the default image is Ubuntu18.04. The Cloud9 construct only supports the following images:
+  - Amazon Linux
+    - alias: `amazonlinux-1-x86_64`
+    - SSM path: `resolve:ssm:/aws/service/cloud9/amis/amazonlinux-1-x86_64`
+  - Amazon Linux 2
+    - alias: `amazonlinux-2-x86_64`
+    - SSM path: `resolve:ssm:/aws/service/cloud9/amis/amazonlinux-2-x86_64`
+  - Ubuntu 18.04 (default if no image is specified)
+    - alias: `ubuntu-18.04-x86_64`
+    - SSM path: `resolve:ssm:/aws/service/cloud9/amis/ubuntu-18.04-x86_64`
+- `connection_type`: The connection type used for connecting to an Amazon EC2 environment. Valid values:
+  - `CONNECT_SSH` (default)
+  - `CONNECT_SSM`
 - `instance_name`: The name of the Cloud9 environment
 - `instance_stop_time_minutes`: The number of minutes until the running instance is shut down after the environment was last used
   - default: 60min
@@ -44,3 +53,11 @@ This module creates a Cloud9 instance and the option to resize the root volume
   "InstanceStorageSize": "20"
 }
 ```
+
+## Troubleshooting
+### ImageId parameter doesn't specify a valid Amazon Machine Image (AMI) supported by AWS Cloud9
+
+```
+addf-shared-infra-storage-optionals | 5:40:07 PM | CREATE_FAILED        | AWS::Cloud9::EnvironmentEC2 | Cloud9Env Value for ImageId parameter doesn't specify a valid Amazon Machine Image (AMI) supported by AWS Cloud9: resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2
+```
+This error suggest that an invalid AMI was passed to the parameter `image_id`. Please review the `Input Parameter` details above that contains a list of valid AMI's

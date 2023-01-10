@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from typing import Any
+from typing import Any, Optional
 
 import aws_cdk.aws_cloud9 as cloud9
 from aws_cdk import Stack
@@ -32,11 +32,11 @@ class Cloud9Stack(Stack):  # type: ignore
         self,
         scope: Construct,
         id: str,
-        connection_type: str,
-        image_id: str,
-        instance_stop_time_minutes: int,
+        connection_type: Optional[str],
+        image_id: Optional[str],
+        instance_stop_time_minutes: Optional[int],
         instance_type: str,
-        name: str,
+        name: Optional[str],
         owner_arn: str,
         subnet_id: str,
         **kwargs: Any,
@@ -79,11 +79,11 @@ class Cloud9Stack(Stack):  # type: ignore
         self.cloud9_instance = cloud9.CfnEnvironmentEC2(
             self,
             "Cloud9Env",
-            image_id=image_id,
             instance_type=instance_type,
             owner_arn=owner_arn,
             subnet_id=subnet_id,
             # the properties below are optional
+            image_id=image_id,
             automatic_stop_time_minutes=instance_stop_time_minutes,
             connection_type=connection_type,
             name=name,
