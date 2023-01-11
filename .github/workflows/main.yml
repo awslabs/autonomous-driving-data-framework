@@ -541,3 +541,22 @@ jobs:
           pip install -r  modules/mlops/kubeflow-users/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path   modules/mlops/kubeflow-users/
+
+  modules-workbench-cloud9:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -r modules/workbench/cloud9/requirements.txt
+      - name: Static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/workbench/cloud9/
