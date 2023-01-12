@@ -3,10 +3,6 @@ import time
 from aws_cdk import CfnOutput, Stack, aws_iam as iam
 from constructs import Construct
 
-current_time = str(time.time())
-suffix = current_time[: current_time.index(".")][-8:]
-
-
 class CustomKernelStack(Stack):
     def __init__(
         self,

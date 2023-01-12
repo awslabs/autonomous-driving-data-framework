@@ -13,7 +13,7 @@ This module builds custom kernel for SageMaker studio from Dockerfile.
 - `custom_kernel_name`: Name of the custom kernel.
 - `studio_domain_id`: SageMaker studio domain to attach the kernel to.
 - `studio_domain_name`: SageMaker studio name to attach the kernel to.
-- `sagemaker_image_name`: Name of the sagemaker image. This variable is also used to find the Dockerfile. The docker build script will be looking for file inside `modules/mlops/custom-kernel/docker/{sagemaker_image_name}`. 2 Dockerfiles are added already: `pytorch-10` and `python310-ffmpeg`.
+- `sagemaker_image_name`: Name of the sagemaker image. This variable is also used to find the Dockerfile. The docker build script will be looking for file inside `modules/mlops/custom-kernel/docker/{sagemaker_image_name}`. 1 Dockerfile is added already: `pytorch-10`.
 
 #### Optional
 
