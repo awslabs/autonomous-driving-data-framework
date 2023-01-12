@@ -3,6 +3,8 @@ toolchainRegion: us-west-2
 groups:
   - name: optionals
     path: manifests/ros-image-demo/optional-modules.yaml
+  - name: viz
+    path: manifests/ros-image-demo/visualization-modules.yaml
   - name: core
     path: manifests/ros-image-demo/core-modules.yaml
   - name: docker-images

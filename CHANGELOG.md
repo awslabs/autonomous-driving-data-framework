@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 - Cloud9 module
+- Added Visualization Instance Deployment to the ros-image-demo manifest
 
 ### **Changed**
 - modified `core/mwaa` to take a parameterized `requirements.txt` file to support various deployments
