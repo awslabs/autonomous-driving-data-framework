@@ -142,7 +142,7 @@ class DataServiceDevInstancesStack(Stack):
                     exclude_punctuation=True,
                     include_space=False,
                     exclude_characters="',. |<>=/\"\\\$#;@[]{}~:`",
-                    password_length=6,
+                    password_length=24,
                 )
                 if not demo_password
                 else None,

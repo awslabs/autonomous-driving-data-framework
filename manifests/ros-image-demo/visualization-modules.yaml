@@ -1,4 +1,4 @@
-name: dev-instance-gpu
+name: dev-instance-g4dn
 path: modules/visualization/dev-instance
 parameters:
   - name: vpc-id
