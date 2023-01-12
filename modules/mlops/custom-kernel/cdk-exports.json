@@ -1,0 +1,5 @@
+{
+    "addf-shared-infra-mlops-sagemaker-custom-kernel": {
+        "SageMakerCustomKernelRoleArn": "arn:aws:iam::021742859000:role/addf-shared-infra-mlops-s-addfsharedinframlopssage-MD8IRUIEMED5"
+    }
+}
