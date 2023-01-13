@@ -32,7 +32,7 @@ None
 ```json
 {
     "RepositoryName": "pytorch-10",
-    "RepositoryARN": "arn:aws:ecr:us-east-2:777013353734:repository/pytorch-10"
+    "RepositoryARN": "arn:aws:ecr:<REGION>:<ACCOUNT_ID>:repository/pytorch-10"
     }
 
 ```
