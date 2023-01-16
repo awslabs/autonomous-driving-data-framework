@@ -1,0 +1,13 @@
+{
+    "DomainId": "$DOMAIN_ID",
+    "DefaultUserSettings": {
+        "JupyterServerAppSettings": {
+            "DefaultResourceSpec": {
+                "LifecycleConfigArn": "$LCC_ARN"
+            },
+            "LifecycleConfigArns": [
+                "$LCC_ARN"
+            ]
+        }
+    }
+}
