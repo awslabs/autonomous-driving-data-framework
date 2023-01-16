@@ -1,8 +1,8 @@
 {
-  "codeRepositoryName": "veoneer-rcs-p-mv0gcxy8mvx5-repository",
-  "codeRepositoryUrl": "https://git-codecommit.us-east-2.amazonaws.com/v1/repos/veoneer-rcs-p-mv0gcxy8mvx5-repository",
-  "sagemakerProjectName": "veoneer-rcs",
-  "sagemakerProjectId": "p-mv0gcxy8mvx5",
-  "sagemakerPipelineName": "newid-pipeline",
-  "useCaseId": "newid"
+  "codeRepositoryName": "example-project-ze3cgxx9dg58-repository",
+  "codeRepositoryUrl": "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/example-project-ze3cgxx9dg58-repository",
+  "sagemakerProjectName": "example-project",
+  "sagemakerProjectId": "p-ze3cgxx9dg58",
+  "sagemakerPipelineName": "example-proj-pipeline",
+  "projectShortName": "ex-proj"
 }

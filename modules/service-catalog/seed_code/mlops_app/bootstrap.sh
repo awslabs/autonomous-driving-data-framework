@@ -46,11 +46,11 @@ git config --local user.name "$GIT_USER"
 
 echo "====================== Configure Project ======================="
 SM_PROJECT_NAME=$(cat .sagemaker-code-config | jq -r ".sagemakerProjectName")
-read -p "Please enter the use case id (project short-id) (default \"$SM_PROJECT_NAME\"): " input_use_case_id
-USE_CASE_ID="${input_use_case_id:-$SM_PROJECT_NAME}"
-(cat .sagemaker-code-config | jq ".useCaseId  |= \"${USE_CASE_ID}\"") > .sagemaker-code-config-tmp && mv .sagemaker-code-config-tmp .sagemaker-code-config
+read -p "Please enter the project short name (short-id) (default \"$SM_PROJECT_NAME\"): " input_PROJECT_SHORT_NAME
+PROJECT_SHORT_NAME="${input_PROJECT_SHORT_NAME:-$SM_PROJECT_NAME}"
+(cat .sagemaker-code-config | jq ".projectShortName  |= \"${PROJECT_SHORT_NAME}\"") > .sagemaker-code-config-tmp && mv .sagemaker-code-config-tmp .sagemaker-code-config
 
-PIPELINE_DEFAULT_NAME="$USE_CASE_ID-pipeline"
+PIPELINE_DEFAULT_NAME="$PROJECT_SHORT_NAME-pipeline"
 read -p "Please enter pipeline name that you want to use for the project(default \"$PIPELINE_DEFAULT_NAME\"): " input_pipeline_name
 PIPELINE_NAME="${input_pipeline_name:-$PIPELINE_DEFAULT_NAME}"
 (cat .sagemaker-code-config | jq ".sagemakerPipelineName  |= \"${PIPELINE_NAME}\"") > .sagemaker-code-config-tmp && mv .sagemaker-code-config-tmp .sagemaker-code-config

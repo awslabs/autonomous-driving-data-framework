@@ -1,6 +1,4 @@
-### Sample Use Case
+### Example Project Notebooks
 
-Notebooks:
-- exp_pipeline: Experimentation notebook for building and running experimental pipelines
-- run_local: Runs scripts locally for testing
+- run_experimental_pipeline: Experimentation notebook for building and running experimental pipelines
 - run_stable_pipeline: Executes the stable_pipeline

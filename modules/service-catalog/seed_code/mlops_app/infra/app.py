@@ -12,10 +12,9 @@ sagemaker_project_name = sagemaker_code_config["sagemakerProjectName"]
 sagemaker_project_id = sagemaker_code_config["sagemakerProjectId"]
 sagemaker_repository_name = sagemaker_code_config["codeRepositoryName"]
 sagemaker_pipeline_name = sagemaker_code_config["sagemakerPipelineName"]
-usecase_name = sagemaker_code_config["useCaseId"]
-
-model_package_group_name = f"{sagemaker_pipeline_name}-stable-models"
-
+project_short_name = sagemaker_code_config["projectShortName"]
+env_name="dev"
+model_package_group_name = f"{sagemaker_pipeline_name}-{env_name}-models"
 
 def get_account() -> str:
     if "CDK_DEFAULT_ACCOUNT" in os.environ:
@@ -43,7 +42,8 @@ PipelineStack(
     sagemaker_project_name=sagemaker_project_name,
     sagemaker_project_id=sagemaker_project_id,
     model_package_group_name=model_package_group_name,
-    usecase_name=usecase_name,
+    project_short_name=project_short_name,
+    env_name=env_name,
     env=cdk.Environment(
         account=get_account(),
         region=get_region(),

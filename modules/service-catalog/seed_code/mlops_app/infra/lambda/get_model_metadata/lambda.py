@@ -31,13 +31,13 @@ def handler(event, context):
     if model_package_approval_status == "Approved":
         print(f"[New Model Approved] Publishing new information to topic {SNS_TOPIC_ARN}")
         subject = f"[SageMaker] New Model Approved in {model_package_group_name}"
-        msg = f"Model {model_package_name=} has been approved in model group {model_package_group_name=}.\n Model can be found in s3 {s3_uri=}.\n\n\nDetails: \n {json.dumps(event, indent=2)}"
+        msg = f"Details: \n {json.dumps(event, indent=2)}"
         response = send_message(subject, msg)
 
     if model_package_approval_status == "PendingManualApproval":
         print(f"[New Model Registered] Publishing information to topic {SNS_TOPIC_ARN}")
         subject = f"[SageMaker] New Model Registered in {model_package_group_name}"
-        msg = f"New model {model_package_name=} has been published in model group {model_package_group_name=} and is pending manual approval.\n Model has been saved in s3 {s3_uri=}.\n\n\nDetails: \n {json.dumps(event, indent=2)}"
+        msg = f"Details: \n {json.dumps(event, indent=2)}"
         response = send_message(subject, msg)
 
     return response
