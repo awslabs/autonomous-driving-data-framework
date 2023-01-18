@@ -14,7 +14,7 @@ iam_client = boto3.client("iam")
 role_name = "AWSCloud9SSMAccessRole"
 instance_profile_name = "AWSCloud9SSMInstanceProfile"
 
-def attach_role_to_instance_profile(instance_profile_name: str, role_name: str): 
+def attach_role_to_instance_profile(instance_profile_name: str, role_name: str):
     try:
         iam_client.add_role_to_instance_profile(
             InstanceProfileName=instance_profile_name,
@@ -28,29 +28,24 @@ def check_access_role_exist(role_name: str) -> bool:
         iam_client.get_role(RoleName=role_name)
         _logger.info(f"Using existing role {role_name}.")
         return True
-        
     except iam_client.exceptions.NoSuchEntityException as err:
         _logger.warning(f"The role {role_name} does not exist")
-
         return False
 
 def check_instance_profile_exist(instance_profile_name: str) -> None:
     try:
         instance_profile_data = iam_client.get_instance_profile(InstanceProfileName=instance_profile_name)
         _logger.info(f"Using existing instance profile {instance_profile_name}.")
-
         return (True, instance_profile_data)
-
     except iam_client.exceptions.NoSuchEntityException as err:
         _logger.info(f"Instance profile {instance_profile_name} does not exist")
-        
         return (False, [])
 
 def create_access_role(role_name: str):
     assume_role_policy = {
         "Version": "2012-10-17",
         "Statement": [
-           {
+        {
                 "Effect": "Allow",
                 "Principal": {
                     "Service": [
@@ -101,18 +96,19 @@ def create_instance_profile(instance_profile_name: str):
     except iam_client.exceptions.NoSuchEntityException as err:
         _logger.warning(f"The role {role_name} does not exist")
 
-if not check_access_role_exist(role_name=role_name):
-    create_access_role(role_name=role_name)
+if os.getenv("ADDF_PARAMETER_CONNECTION_TYPE") == "CONNECT_SSM":
+    if not check_access_role_exist(role_name=role_name):
+        create_access_role(role_name=role_name)
 
-instance_profile_exists, instance_profile_data = check_instance_profile_exist(instance_profile_name=instance_profile_name)
-if not instance_profile_exists:
-    create_instance_profile(instance_profile_name=instance_profile_name)
-else:
-    for role in instance_profile_data.get("InstanceProfile").get("Roles", []):
-        if role["RoleName"] == role_name:
-            break
+    instance_profile_exists, instance_profile_data = check_instance_profile_exist(instance_profile_name=instance_profile_name)
+    if not instance_profile_exists:
+        create_instance_profile(instance_profile_name=instance_profile_name)
     else:
-        try:
-            attach_role_to_instance_profile(instance_profile_name=instance_profile_name, role_name=role_name)
-        except Exception as err:
-            raise err
+        for role in instance_profile_data.get("InstanceProfile").get("Roles", []):
+            if role["RoleName"] == role_name:
+                break
+        else:
+            try:
+                attach_role_to_instance_profile(instance_profile_name=instance_profile_name, role_name=role_name)
+            except Exception as err:
+                raise err
