@@ -27,6 +27,22 @@ Resources:
                 ec2:ResourceTag/Name: !Sub 'aws-cloud9-${InstanceName}-*'
           - Effect: Allow
             Action:
+              - "iam:AddRoleToInstanceProfile"
+              - "iam:CreateInstanceProfile"
+              - "iam:Get*"
+              - "iam:RemoveRoleFromInstanceProfile"
+            Resource: "arn:aws:iam::*:instance-profile/cloud9/AWSCloud9SSMInstanceProfile"
+          - Effect: Allow
+            Action:
+              - "iam:AttachRolePolicy"
+              - "iam:CreateRole"
+              - "iam:DetachRolePolicy"
+              - "iam:Get*"
+              - "iam:PassRole"
+              - "iam:TagRole"
+            Resource: "arn:aws:iam::*:role/service-role/AWSCloud9SSMAccessRole"
+          - Effect: Allow
+            Action:
               - "ssm:GetParametersByPath"
             Resource: "arn:aws:ssm:*::parameter/aws/service/cloud9"
         Version: 2012-10-17

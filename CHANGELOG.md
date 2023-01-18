@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 - modified `core/mwaa` to take a parameterized `requirements.txt` file to support various deployments
+- fixed Cloud9 SSM connection type config by creating the underlying resources needed to enable the CDK to deploy
 ### **Removed**
 
 
