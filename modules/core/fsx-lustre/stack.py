@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, List, cast
+from typing import Any, List, Optional, cast
 
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_fsx as fsx
@@ -34,9 +34,9 @@ class FsxFileSystem(Stack):
         module_name: str,
         vpc_id: str,
         private_subnet_ids: List[str],
-        raw_bucket_name: str,
-        interm_bucket_name: str,
-        curated_bucket_name: str,
+        raw_bucket_name: Optional[str],
+        interm_bucket_name: Optional[str],
+        curated_bucket_name: Optional[str],
         **kwargs: Any,
     ) -> None:
         # ADDL Env vars
@@ -45,8 +45,6 @@ class FsxFileSystem(Stack):
 
         super().__init__(scope, id, **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
-
-        dep_mod = f"addf-{deployment_name}-{module_name}"
 
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(
@@ -81,9 +79,7 @@ class FsxFileSystem(Stack):
             "Fsx",
             file_system_type="LUSTRE",
             storage_capacity=1200,
-            subnet_ids=[
-                self.private_subnet_ids[0]
-            ],
+            subnet_ids=[self.private_subnet_ids[0]],
             security_group_ids=[self.fsx_security_group.security_group_id],
             tags=[CfnTag(key="Name", value="fsx-lustre")],
             lustre_configuration=fsx.CfnFileSystem.LustreConfigurationProperty(
@@ -92,13 +88,15 @@ class FsxFileSystem(Stack):
                 data_compression_type="LZ4",
             ),
         )
-        
+
         # print("Mount Values")
         # for bucket_name in [raw_bucket_name, interm_bucket_name, curated_bucket_name]:
         #     print(f"Running data create-data-repository-association for bucket `{bucket_name}`")
-        #     data_repo_ass_cmd = f"aws fsx create-data-repository-association --file-system-id {self.fsx_filesystem.ref} --file-system-path /ns1/{bucket_name}/ --data-repository-path s3://{bucket_name}/"
+        #     data_repo_ass_cmd = f"aws fsx create-data-repository-association
+        #           --file-system-id {self.fsx_filesystem.ref}
+        #           --file-system-path /ns1/{bucket_name}/
+        #           --data-repository-path s3://{bucket_name}/"
         #     print(os.popen(data_repo_ass_cmd).read())
-
 
         Aspects.of(self).add(AwsSolutionsChecks())
 
@@ -113,7 +111,7 @@ class FsxFileSystem(Stack):
                 },
                 {
                     "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDL resources",
+                    "reason": "Resource access restriced to ADDF resources",
                     "applies_to": "*",
                 },
             ],

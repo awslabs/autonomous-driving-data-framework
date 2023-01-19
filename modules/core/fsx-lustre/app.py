@@ -11,6 +11,7 @@ module_name = os.getenv("ADDF_MODULE_NAME", "")
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
+
 vpc_id = os.getenv(_param("VPC_ID"))  # required
 private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
 raw_bucket_name = os.getenv(_param("RAW_BUCKET_NAME"))
@@ -36,10 +37,7 @@ stack = FsxFileSystem(
     raw_bucket_name=raw_bucket_name,
     interm_bucket_name=interm_bucket_name,
     curated_bucket_name=curated_bucket_name,
-    env=Environment(
-        account=os.environ["CDK_DEFAULT_ACCOUNT"],
-        region=os.environ["CDK_DEFAULT_REGION"]
-    )
+    env=Environment(account=os.environ["CDK_DEFAULT_ACCOUNT"], region=os.environ["CDK_DEFAULT_REGION"]),
 )
 
 CfnOutput(
