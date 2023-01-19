@@ -1,0 +1,39 @@
+deploy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.60.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - export FSX_LUSTRE_FILE_SYSTEM_ID=$(echo ${ADDF_MODULE_METADATA} | jq -r ".FsxLustreFileSystemId")
+      - export FSX_LUSTRE_DNS_NAME=$(echo ${ADDF_MODULE_METADATA} | jq -r ".FsxLustreAttrDnsName")
+      - export FSX_LUSTRE_MOUNT_NAME=$(echo ${ADDF_MODULE_METADATA} | jq -r ".FsxLustreAttrMountName")
+      # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path /ns1/${ADDF_PARAMETER_RAW_BUCKET_NAME}/ --data-repository-path s3://${ADDF_PARAMETER_RAW_BUCKET_NAME}/ --batch-import-meta-data-on-create --s3 '{"AutoImportPolicy":{"Events":["NEW","CHANGED","DELETED"]},"AutoExportPolicy":{"Events":["NEW","CHANGED","DELETED"]}}'
+      # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path /ns1/${ADDF_PARAMETER_INTERMEDIATE_BUCKET_NAME}/ --data-repository-path s3://${ADDF_PARAMETER_INTERMEDIATE_BUCKET_NAME}/ --batch-import-meta-data-on-create --s3 '{"AutoImportPolicy":{"Events":["NEW","CHANGED","DELETED"]},"AutoExportPolicy":{"Events":["NEW","CHANGED","DELETED"]}}'
+      # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path /ns1/${ADDF_PARAMETER_CURATED_BUCKET_NAME}/ --data-repository-path s3://${ADDF_PARAMETER_CURATED_BUCKET_NAME}/ --batch-import-meta-data-on-create --s3 '{"AutoImportPolicy":{"Events":["NEW","CHANGED","DELETED"]},"AutoExportPolicy":{"Events":["NEW","CHANGED","DELETED"]}}'
+      # # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path <value> --data-repository-path
+    post_build:
+      commands:
+      - echo "Deploy successful"
+
+destroy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.60.0
+      - pip install -r requirements.txt
+    pre_build:
+      commands:
+      - echo "Prebuild stage"
+    build:
+      commands:
+      - echo "DESTROY!"
+      # Remove DAG files
+      # - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/poc1_batch_dags
+      - cdk destroy --force --app "python app.py"
+    post_build:
+      commands:
+      - echo "Destroy successful"
