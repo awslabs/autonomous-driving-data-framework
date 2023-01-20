@@ -1,7 +1,2 @@
-# aws-cdk.core==1.158.0
-# aws-cdk.aws-fsx==1.158.0
-# cdk-nag==1.14.13
-# constructs==3.4.20
-# boto3~=1.21.0
 aws-cdk-lib==2.20.0
 cdk-nag==2.12.39
