@@ -96,15 +96,6 @@ class FsxFileSystem(Stack):
             ),
         )
 
-        # print("Mount Values")
-        # for bucket_name in [raw_bucket_name, interm_bucket_name, curated_bucket_name]:
-        #     print(f"Running data create-data-repository-association for bucket `{bucket_name}`")
-        #     data_repo_ass_cmd = f"aws fsx create-data-repository-association
-        #           --file-system-id {self.fsx_filesystem.ref}
-        #           --file-system-path /ns1/{bucket_name}/
-        #           --data-repository-path s3://{bucket_name}/"
-        #     print(os.popen(data_repo_ass_cmd).read())
-
         Aspects.of(self).add(AwsSolutionsChecks())
 
         NagSuppressions.add_stack_suppressions(

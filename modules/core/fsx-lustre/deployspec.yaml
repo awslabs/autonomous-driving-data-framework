@@ -8,10 +8,6 @@ deploy:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
-      # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path /ns1/${ADDF_PARAMETER_RAW_BUCKET_NAME}/ --data-repository-path s3://${ADDF_PARAMETER_RAW_BUCKET_NAME}/ --batch-import-meta-data-on-create --s3 '{"AutoImportPolicy":{"Events":["NEW","CHANGED","DELETED"]},"AutoExportPolicy":{"Events":["NEW","CHANGED","DELETED"]}}'
-      # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path /ns1/${ADDF_PARAMETER_INTERMEDIATE_BUCKET_NAME}/ --data-repository-path s3://${ADDF_PARAMETER_INTERMEDIATE_BUCKET_NAME}/ --batch-import-meta-data-on-create --s3 '{"AutoImportPolicy":{"Events":["NEW","CHANGED","DELETED"]},"AutoExportPolicy":{"Events":["NEW","CHANGED","DELETED"]}}'
-      # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path /ns1/${ADDF_PARAMETER_CURATED_BUCKET_NAME}/ --data-repository-path s3://${ADDF_PARAMETER_CURATED_BUCKET_NAME}/ --batch-import-meta-data-on-create --s3 '{"AutoImportPolicy":{"Events":["NEW","CHANGED","DELETED"]},"AutoExportPolicy":{"Events":["NEW","CHANGED","DELETED"]}}'
-      # # - aws fsx create-data-repository-association --file-system-id ${FSX_LUSTRE_FILE_SYSTEM_ID} --file-system-path <value> --data-repository-path
     post_build:
       commands:
       - echo "Deploy successful"
