@@ -33,10 +33,12 @@ class FsxFileSystem(Stack):
         deployment_name: str,
         module_name: str,
         vpc_id: str,
+        fs_deployment_type: str,
         private_subnet_ids: List[str],
-        raw_bucket_name: Optional[str],
-        interm_bucket_name: Optional[str],
-        curated_bucket_name: Optional[str],
+        storage_throughput: str,
+        data_bucket_name: Optional[str],
+        export_path: Optional[str],
+        import_path: Optional[str],
         **kwargs: Any,
     ) -> None:
         # ADDL Env vars
@@ -45,6 +47,9 @@ class FsxFileSystem(Stack):
 
         super().__init__(scope, id, **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+
+        import_path = f"s3://{data_bucket_name}{import_path}" if import_path else None
+        export_path = f"s3://{data_bucket_name}{export_path}" if export_path else None
 
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(
@@ -83,8 +88,10 @@ class FsxFileSystem(Stack):
             security_group_ids=[self.fsx_security_group.security_group_id],
             tags=[CfnTag(key="Name", value="fsx-lustre")],
             lustre_configuration=fsx.CfnFileSystem.LustreConfigurationProperty(
-                deployment_type="PERSISTENT_2",
-                per_unit_storage_throughput=250,
+                deployment_type=fs_deployment_type,
+                import_path=import_path,
+                export_path=export_path,
+                per_unit_storage_throughput=storage_throughput,
                 data_compression_type="LZ4",
             ),
         )

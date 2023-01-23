@@ -14,9 +14,11 @@ def _param(name: str) -> str:
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
 private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
-raw_bucket_name = os.getenv(_param("RAW_BUCKET_NAME"))
-interm_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET_NAME"))
-curated_bucket_name = os.getenv(_param("CURATED_BUCKET_NAME"))
+fs_deployment_type = os.getenv(_param("FS_DEPLOYMENT_TYPE")) # required
+import_path = os.getenv(_param("IMPORT_PATH"), None)
+export_path = os.getenv(_param("EXPORT_PATH"), None)
+data_bucket_name = os.getenv(_param("DATA_BUCKET_NAME"), None)
+storage_throughput = int(os.getenv(_param("STORAGE_THROUGHPUT"), None))
 
 
 if not vpc_id:
@@ -25,18 +27,29 @@ if not vpc_id:
 if not private_subnet_ids:
     raise Exception("missing input parameter private-subnet-ids")
 
+if fs_deployment_type == "PERSISTENT_2" and data_bucket_name is not None and import_path is not None:
+    raise Exception("File system deployment type `PERSISTENT_2` does not support an S3 import path")
+
+if fs_deployment_type == "PERSISTENT_2" and data_bucket_name is not None and export_path is not None:
+    raise Exception("File system deployment type `PERSISTENT_2` does not support an S3 export path")
+
+if "SCRATCH" in fs_deployment_type and storage_throughput is not None:
+    raise Exception(f"The storage throughput can not be specified for Lustre fs_deployment_type={fs_deployment_type}")
+
 app = App()
 
 stack = FsxFileSystem(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
     deployment_name=deployment_name,
+    data_bucket_name=data_bucket_name,
+    fs_deployment_type=fs_deployment_type,
     module_name=module_name,
-    vpc_id=vpc_id,
     private_subnet_ids=private_subnet_ids,
-    raw_bucket_name=raw_bucket_name,
-    interm_bucket_name=interm_bucket_name,
-    curated_bucket_name=curated_bucket_name,
+    vpc_id=vpc_id,
+    import_path=import_path,
+    export_path=export_path,
+    storage_throughput=storage_throughput,
     env=Environment(account=os.environ["CDK_DEFAULT_ACCOUNT"], region=os.environ["CDK_DEFAULT_REGION"]),
 )
 
@@ -45,9 +58,10 @@ CfnOutput(
     id="metadata",
     value=stack.to_json_string(
         {
-            "FsxLustreFileSystemId": stack.fsx_filesystem.ref,
-            "FsxLustreAttrDnsName": stack.fsx_filesystem.attr_dns_name,
-            "FsxLustreAttrMountName": stack.fsx_filesystem.attr_lustre_mount_name,
+            "FSxLustreAttrDnsName": stack.fsx_filesystem.attr_dns_name,
+            "FSxLustreAttrMountName": stack.fsx_filesystem.attr_lustre_mount_name,
+            "FSxLustreFileSystemId": stack.fsx_filesystem.ref,
+            "FSxLustreSecurityGroup": stack.fsx_security_group.security_group_id,
         }
     ),
 )
