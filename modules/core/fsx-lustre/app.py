@@ -69,7 +69,6 @@ CfnOutput(
     value=stack.to_json_string(
         {
             "FSxLustreAttrDnsName": stack.fsx_filesystem.attr_dns_name,
-            "FSxLustreAttrMountName": stack.fsx_filesystem.attr_lustre_mount_name,
             "FSxLustreFileSystemId": stack.fsx_filesystem.ref,
             "FSxLustreSecurityGroup": stack.fsx_security_group.security_group_id,
             "FSxLustreMountName": stack.fsx_filesystem.attr_lustre_mount_name,
