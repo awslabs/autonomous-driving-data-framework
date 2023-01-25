@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, List, Optional, cast
+from typing import Any, List, Optional, Union, cast
 
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_fsx as fsx
@@ -35,7 +35,7 @@ class FsxFileSystem(Stack):
         vpc_id: str,
         fs_deployment_type: str,
         private_subnet_ids: List[str],
-        storage_throughput: str,
+        storage_throughput: Union[int, float, None],
         data_bucket_name: Optional[str],
         export_path: Optional[str],
         import_path: Optional[str],
@@ -102,15 +102,13 @@ class FsxFileSystem(Stack):
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
-                    "applies_to": "*",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
-                    "applies_to": "*",
                 },
             ],
         )
