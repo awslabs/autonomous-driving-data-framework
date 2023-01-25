@@ -1,8 +1,13 @@
 import json
+import logging
 import os
 
 from aws_cdk import App, CfnOutput, Environment
 from stack import FsxFileSystem
+
+LOGGING_FORMAT = "[%(asctime)s][%(filename)-13s:%(lineno)3d] %(message)s"
+logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
+_logger: logging.Logger = logging.getLogger(__name__)
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
 module_name = os.getenv("ADDF_MODULE_NAME", "")
@@ -18,7 +23,8 @@ fs_deployment_type = os.getenv(_param("FS_DEPLOYMENT_TYPE")) # required
 import_path = os.getenv(_param("IMPORT_PATH"), None)
 export_path = os.getenv(_param("EXPORT_PATH"), None)
 data_bucket_name = os.getenv(_param("DATA_BUCKET_NAME"), None)
-storage_throughput = int(os.getenv(_param("STORAGE_THROUGHPUT"), None))
+storage_throughput = os.getenv(_param("STORAGE_THROUGHPUT"), None)
+storage_throughput = int(storage_throughput) if storage_throughput else None
 
 
 if not vpc_id:
@@ -34,7 +40,11 @@ if fs_deployment_type == "PERSISTENT_2" and data_bucket_name is not None and exp
     raise Exception("File system deployment type `PERSISTENT_2` does not support an S3 export path")
 
 if "SCRATCH" in fs_deployment_type and storage_throughput is not None:
-    raise Exception(f"The storage throughput can not be specified for Lustre fs_deployment_type={fs_deployment_type}")
+    _logger.warning(f"The storage throughput can not be specified for Lustre fs_deployment_type={fs_deployment_type}. Setting to None")
+    storage_throughput = None
+
+if "PERSISTENT" in fs_deployment_type and storage_throughput is None:
+    raise Exception(f"The storage throughput must be specified for Lustre fs_deployment_type={fs_deployment_type}")
 
 app = App()
 
@@ -62,6 +72,8 @@ CfnOutput(
             "FSxLustreAttrMountName": stack.fsx_filesystem.attr_lustre_mount_name,
             "FSxLustreFileSystemId": stack.fsx_filesystem.ref,
             "FSxLustreSecurityGroup": stack.fsx_security_group.security_group_id,
+            "FSxLustreMountName": stack.fsx_filesystem.attr_lustre_mount_name,
+            "FSxLustreFileSystemDeploymentType": stack.fsx_filesystem.lustre_configuration.deployment_type,
         }
     ),
 )
