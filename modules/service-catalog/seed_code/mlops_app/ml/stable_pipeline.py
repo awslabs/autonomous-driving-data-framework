@@ -4,12 +4,13 @@ import os
 
 import boto3
 import sagemaker
+import sagemaker.session
 from sagemaker.estimator import Estimator
 from sagemaker.inputs import TrainingInput
 from sagemaker.model import Model
 from sagemaker.model_metrics import MetricsSource, ModelMetrics
-from sagemaker.processing import ProcessingInput, ProcessingOutput, ScriptProcessor
-import sagemaker.session
+from sagemaker.processing import (ProcessingInput, ProcessingOutput,
+                                  ScriptProcessor)
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.workflow.condition_step import ConditionStep
 from sagemaker.workflow.conditions import ConditionLessThanOrEqualTo
@@ -25,7 +26,10 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def get_role(sagemaker_session):
-    return os.getenv("SAGEMAKER_PIPELINE_ROLE_ARN", sagemaker.session.get_execution_role(sagemaker_session))
+    return os.getenv(
+        "SAGEMAKER_PIPELINE_ROLE_ARN",
+        sagemaker.session.get_execution_role(sagemaker_session),
+    )
 
 
 def get_sagemaker_client(region):
@@ -133,7 +137,9 @@ def get_pipeline(
     pipeline_session = get_pipeline_session(region, default_bucket)
 
     # parameters for pipeline execution
-    processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
+    processing_instance_count = ParameterInteger(
+        name="ProcessingInstanceCount", default_value=1
+    )
     model_approval_status = ParameterString(
         name="ModelApprovalStatus",
         default_value="PendingManualApproval",
@@ -158,7 +164,9 @@ def get_pipeline(
     step_args = sklearn_processor.run(
         outputs=[
             ProcessingOutput(output_name="train", source="/opt/ml/processing/train"),
-            ProcessingOutput(output_name="validation", source="/opt/ml/processing/validation"),
+            ProcessingOutput(
+                output_name="validation", source="/opt/ml/processing/validation"
+            ),
             ProcessingOutput(output_name="test", source="/opt/ml/processing/test"),
         ],
         code=os.path.join(BASE_DIR, "scripts/preprocess.py"),
@@ -170,7 +178,9 @@ def get_pipeline(
     )
 
     # training step for generating model artifacts
-    model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/AbaloneTrain"
+    model_path = (
+        f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/AbaloneTrain"
+    )
     image_uri = sagemaker.image_uris.retrieve(
         framework="xgboost",
         region=region,
@@ -200,11 +210,15 @@ def get_pipeline(
     step_args = xgb_train.fit(
         inputs={
             "train": TrainingInput(
-                s3_data=step_process.properties.ProcessingOutputConfig.Outputs["train"].S3Output.S3Uri,
+                s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
+                    "train"
+                ].S3Output.S3Uri,
                 content_type="text/csv",
             ),
             "validation": TrainingInput(
-                s3_data=step_process.properties.ProcessingOutputConfig.Outputs["validation"].S3Output.S3Uri,
+                s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
+                    "validation"
+                ].S3Output.S3Uri,
                 content_type="text/csv",
             ),
         },
@@ -231,12 +245,16 @@ def get_pipeline(
                 destination="/opt/ml/processing/model",
             ),
             ProcessingInput(
-                source=step_process.properties.ProcessingOutputConfig.Outputs["test"].S3Output.S3Uri,
+                source=step_process.properties.ProcessingOutputConfig.Outputs[
+                    "test"
+                ].S3Output.S3Uri,
                 destination="/opt/ml/processing/test",
             ),
         ],
         outputs=[
-            ProcessingOutput(output_name="evaluation", source="/opt/ml/processing/evaluation"),
+            ProcessingOutput(
+                output_name="evaluation", source="/opt/ml/processing/evaluation"
+            ),
         ],
         code=os.path.join(BASE_DIR, "scripts/evaluate.py"),
     )
@@ -255,7 +273,9 @@ def get_pipeline(
     model_metrics = ModelMetrics(
         model_statistics=MetricsSource(
             s3_uri="{}/evaluation.json".format(
-                step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"],
+                step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"][
+                    "S3Uri"
+                ],
             ),
             content_type="application/json",
         ),

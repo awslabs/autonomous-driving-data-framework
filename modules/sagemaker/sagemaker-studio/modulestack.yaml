@@ -20,7 +20,9 @@ Resources:
         Statement:
           - Effect: Allow
             Action:
-              - "sagemaker:*"
+              - "sagemaker:*Domain"
+              - "sagemaker:*UserProfile"
+              - "sagemaker:*StudioLifecycleConfig"
             Resource: "*"
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"

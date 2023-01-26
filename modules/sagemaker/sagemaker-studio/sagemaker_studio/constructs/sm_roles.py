@@ -1,4 +1,6 @@
-from aws_cdk import Aws, CfnOutput, aws_iam as iam, aws_ssm as ssm
+from aws_cdk import Aws, CfnOutput
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_ssm as ssm
 from constructs import Construct
 
 

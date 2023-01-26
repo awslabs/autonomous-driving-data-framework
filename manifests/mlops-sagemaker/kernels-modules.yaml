@@ -20,11 +20,11 @@ parameters:
         name: sagemaker-studio
         key: StudioDomainName     
   - name: sagemaker-image-name
-    value: custom-kernel
+    value: echo-kernel
   - name: app-image-config-name
-    value: custom-kernel-app-config
+    value: echo-kernel-app-config
   - name: custom-kernel-name
-    value: conda-env-myenv-py
+    value: echo
   - name: kernel-user-uid
     value: '0'
   - name: kernel-user-gid

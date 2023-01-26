@@ -15,10 +15,14 @@ sm_studio_domain_id = os.environ.get("ADDF_PARAMETER_STUDIO_DOMAIN_ID")
 sm_studio_domain_name = os.environ.get("ADDF_PARAMETER_STUDIO_DOMAIN_NAME")
 uid = os.getenv("ADDF_PARAMETER_KERNEL_USER_UID", 1000)
 gid = os.getenv("ADDF_PARAMETER_KERNEL_USER_GID", 100)
-mount_path = os.getenv("ADDF_PARAMETER_KERNEL_USER_HOME_MOUNT_PATH", "/home/sagemaker-user")
+mount_path = os.getenv(
+    "ADDF_PARAMETER_KERNEL_USER_HOME_MOUNT_PATH", "/home/sagemaker-user"
+)
 
 # CDK Export
-cdk_exports_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "cdk-exports.json")
+cdk_exports_path = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), "..", "cdk-exports.json"
+)
 cdk_output_file = open(cdk_exports_path)
 cdk_output = json.load(cdk_output_file)
 app_prefix = f"addf-{deployment_name}-{module_name}"
@@ -68,7 +72,9 @@ def create_image_version():
 
 def check_image_version_exists():
     try:
-        describe_last_image_version_response = sm_client.describe_image_version(ImageName=image_name)
+        describe_last_image_version_response = sm_client.describe_image_version(
+            ImageName=image_name
+        )
         if describe_last_image_version_response["BaseImage"] == image_uri:
             return (True, describe_last_image_version_response)
         else:
@@ -91,7 +97,9 @@ def create_image_version_if_not_exists():
 
 def check_app_image_config_exists():
     try:
-        response = sm_client.describe_app_image_config(AppImageConfigName=app_image_config_name)
+        response = sm_client.describe_app_image_config(
+            AppImageConfigName=app_image_config_name
+        )
         return (True, response)
     except Exception as e:
         return (False, None)
@@ -167,15 +175,22 @@ def update_domain():
         existing_custom_images = kernel_gateway_app_settings.get("CustomImages", [])
 
         # Custom Image config we'd like to attach to Studio
-        new_custom_image = {"ImageName": image_name, "AppImageConfigName": app_image_config_name}
+        new_custom_image = {
+            "ImageName": image_name,
+            "AppImageConfigName": app_image_config_name,
+        }
 
         existing_custom_images.append(new_custom_image)
         merged_distinct_custom_images = list(
             dict((v["AppImageConfigName"], v) for v in existing_custom_images).values(),
         )
-        default_user_settings["KernelGatewayAppSettings"]["CustomImages"] = merged_distinct_custom_images
+        default_user_settings["KernelGatewayAppSettings"][
+            "CustomImages"
+        ] = merged_distinct_custom_images
 
-        print(f"Updating Sagemaker Studio Domain - {sm_studio_domain_name} ({sm_studio_domain_id})")
+        print(
+            f"Updating Sagemaker Studio Domain - {sm_studio_domain_name} ({sm_studio_domain_id})"
+        )
         print(default_user_settings)
         sm_client.update_domain(
             DomainId=sm_studio_domain_id,

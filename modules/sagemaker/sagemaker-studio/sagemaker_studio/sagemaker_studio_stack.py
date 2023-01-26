@@ -1,7 +1,7 @@
 from typing import List
 
 import aws_cdk as core
-from aws_cdk import CfnOutput, Stack
+from aws_cdk import Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
@@ -48,19 +48,8 @@ class SagemakerStudioStack(Stack):
         s3_bucket_prefix = studio_bucket_name
 
         # create roles to be used for sagemaker user profiles and attached to sagemaker studio domain
-        sm_roles = SMRoles(self, "sm-roles", s3_bucket_prefix)
-        CfnOutput(
-            self,
-            "LeadDataScientistRoleArn",
-            value=sm_roles.lead_data_scientist_role.role_arn,
-            export_name="LeadDataScientistRoleArn",
-        )
+        self.sm_roles = SMRoles(self, "sm-roles", s3_bucket_prefix)
 
-        CfnOutput(
-            self,
-            "DataScientistRoleArn",
-            value=sm_roles.data_scientist_role.role_arn,
-        )
         # setup security group to be used for sagemaker studio domain
         sagemaker_sg = ec2.SecurityGroup(
             self,
@@ -74,7 +63,7 @@ class SagemakerStudioStack(Stack):
         # create sagemaker studio domain
         self.studio_domain = self.sagemaker_studio_domain(
             domain_name,
-            sm_roles.sagemaker_studio_role,
+            self.sm_roles.sagemaker_studio_role,
             vpc_id=vpc.vpc_id,
             security_group_ids=[sagemaker_sg.security_group_id],
             subnet_ids=[subnet.subnet_id for subnet in subnets],
@@ -84,9 +73,9 @@ class SagemakerStudioStack(Stack):
 
         self.enable_sagemaker_projects(
             [
-                sm_roles.sagemaker_studio_role.role_arn,
-                sm_roles.data_scientist_role.role_arn,
-                sm_roles.lead_data_scientist_role.role_arn,
+                self.sm_roles.sagemaker_studio_role.role_arn,
+                self.sm_roles.data_scientist_role.role_arn,
+                self.sm_roles.lead_data_scientist_role.role_arn,
             ],
         )
 
@@ -97,7 +86,7 @@ class SagemakerStudioStack(Stack):
                 domain_id=self.studio_domain.attr_domain_id,
                 user_profile_name=user,
                 user_settings=sagemaker.CfnUserProfile.UserSettingsProperty(
-                    execution_role=sm_roles.data_scientist_role.role_arn,
+                    execution_role=self.sm_roles.data_scientist_role.role_arn,
                 ),
             )
             for user in data_science_users
@@ -110,28 +99,11 @@ class SagemakerStudioStack(Stack):
                 domain_id=self.studio_domain.attr_domain_id,
                 user_profile_name=user,
                 user_settings=sagemaker.CfnUserProfile.UserSettingsProperty(
-                    execution_role=sm_roles.lead_data_scientist_role.role_arn,
+                    execution_role=self.sm_roles.lead_data_scientist_role.role_arn,
                 ),
             )
             for user in lead_data_science_users
         ]
-
-        CfnOutput(
-            self,
-            "StudioDomainName",
-            value=domain_name,
-        )
-        CfnOutput(
-            self,
-            "StudioBucketName",
-            value=s3_bucket_prefix,
-        )
-
-        CfnOutput(
-            self,
-            "StudioDomainId",
-            value=self.studio_domain.attr_domain_id,
-        )
 
     def enable_sagemaker_projects(self, roles):
         event_handler = PythonFunction(

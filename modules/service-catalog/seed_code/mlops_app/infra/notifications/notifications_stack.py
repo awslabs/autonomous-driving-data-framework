@@ -1,11 +1,9 @@
-from aws_cdk import (
-    Stack,
-    aws_events as events,
-    aws_events_targets as targets,
-    aws_iam as iam,
-    aws_lambda as lambda_,
-    aws_sns as sns,
-)
+from aws_cdk import Stack
+from aws_cdk import aws_events as events
+from aws_cdk import aws_events_targets as targets
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_lambda as lambda_
+from aws_cdk import aws_sns as sns
 from constructs import Construct
 
 
@@ -25,7 +23,9 @@ class NotificationsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         prefix = f"{sagemaker_project_name}-{sagemaker_project_id}"
         topic_name = f"{project_short_name}-sns-{env_name}"
-        new_model_topic = sns.Topic(self, topic_name, display_name=topic_name, topic_name=topic_name)
+        new_model_topic = sns.Topic(
+            self, topic_name, display_name=topic_name, topic_name=topic_name
+        )
 
         get_metadata_function = lambda_.Function(
             self,

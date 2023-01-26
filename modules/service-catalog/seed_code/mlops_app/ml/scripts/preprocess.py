@@ -82,7 +82,10 @@ if __name__ == "__main__":
     numeric_features = list(feature_columns_names)
     numeric_features.remove("sex")
     numeric_transformer = Pipeline(
-        steps=[("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())],
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+        ],
     )
 
     categorical_features = ["sex"]
@@ -107,7 +110,9 @@ if __name__ == "__main__":
 
     X = np.concatenate((y_pre, X_pre), axis=1)
 
-    logger.info("Splitting %d rows of data into train, validation, test datasets.", len(X))
+    logger.info(
+        "Splitting %d rows of data into train, validation, test datasets.", len(X)
+    )
     np.random.shuffle(X)
     train, validation, test = np.split(X, [int(0.7 * len(X)), int(0.85 * len(X))])
 

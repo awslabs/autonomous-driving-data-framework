@@ -2,7 +2,8 @@
 import os
 
 import aws_cdk as cdk
-from custom_kernel.custom_kernel_stack import CustomKernelStack
+from aws_cdk import CfnOutput
+from stack import CustomKernelStack
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
 module_name = os.getenv("ADDF_MODULE_NAME", "")
@@ -16,8 +17,12 @@ def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
 
-sagemaker_image_name = os.getenv(_param("SAGEMAKER_IMAGE_NAME"), DEFAULT_SAGEMAKER_IMAGE_NAME)
-app_image_config_name = os.getenv(_param("APP_IMAGE_CONFIG_NAME"), DEFAULT_APP_IMAGE_CONFIG_NAME)
+sagemaker_image_name = os.getenv(
+    _param("SAGEMAKER_IMAGE_NAME"), DEFAULT_SAGEMAKER_IMAGE_NAME
+)
+app_image_config_name = os.getenv(
+    _param("APP_IMAGE_CONFIG_NAME"), DEFAULT_APP_IMAGE_CONFIG_NAME
+)
 
 environment = cdk.Environment(
     account=os.environ["CDK_DEFAULT_ACCOUNT"],
@@ -25,11 +30,17 @@ environment = cdk.Environment(
 )
 
 app = cdk.App()
-CustomKernelStack(
+stack = CustomKernelStack(
     app,
     app_prefix,
     app_prefix=app_prefix,
     env=environment,
+)
+
+CfnOutput(
+    stack,
+    "SageMakerCustomKernelRoleArn",
+    value=stack.sagemaker_studio_image_role.role_arn,
 )
 
 app.synth()

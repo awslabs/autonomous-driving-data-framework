@@ -27,7 +27,8 @@ Resources:
             Effect: Allow
             Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
           - Action:
-              - "ecr:*"
+              - "ecr:*Repository"
+              - "ecr:*LifecyclePolicy"
             Effect: Allow
             Resource:
               - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*"
