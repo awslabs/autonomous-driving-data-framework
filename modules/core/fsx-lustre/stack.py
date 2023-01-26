@@ -70,7 +70,7 @@ class FsxFileSystem(Stack):
             "FsxSg",
             vpc=self.vpc,
             allow_all_outbound=True,
-            security_group_name="fsx-lustre-sg",
+            security_group_name=f"{self.deployment_name}-{self.module_name}-fsx-lustre",
         )
 
         self.fsx_security_group.add_ingress_rule(

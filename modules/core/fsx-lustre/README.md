@@ -3,10 +3,18 @@ FSx on Lustre
 
 ## Description
 
-This module creates FSx for Lustre
+Amazon FSx for Lustre provides fully managed shared storage with the scalability and performance of the popular Lustre file system.
+
+Amazon FSx also integrates with Amazon S3, making it easy for you to process cloud data sets with the Lustre high-performance file system. When linked to an S3 bucket, an FSx for Lustre file system transparently presents S3 objects as files and automatically updates the contents of the linked S3 bucket as files are added to, changed in, or deleted from the file system.
+
+Amazon FSx for Lustre uses parallel data transfer techniques to transfer data to and from S3 at up to hundreds of GB/s. Use Amazon FSx for Lustre for workloads where speed matters.
 
 ## Inputs/Outputs
+Amazon FSx for Lustre provides two deployment options: `scratch` and `persistent`.
 
+Scratch file systems are designed for temporary storage and shorter-term processing of data. Data is not replicated and does not persist if a file server fails.
+
+Persistent file systems are designed for longer-term storage and workloads. The file servers are highly available, and data is automatically replicated within the AWS Availability Zone (AZ) that is associated with the file system. The data volumes attached to the file servers are replicated independently from the file servers to which they are attached.
 
 ### Input Parameters
 
@@ -31,8 +39,8 @@ This module creates FSx for Lustre
   - For `PERSISTENT_1` HDD storage: 12, 40 MB/s/TiB.
   - For `PERSISTENT_2` SSD storage: 125, 250, 500, 1000 MB/s/TiB.
 
-#### Input Example
-module manifest example:
+### Input Example
+Stand-alone module manifest example:
 
 ```yaml
 name: storage
@@ -49,6 +57,27 @@ parameters:
   - name: storage_throughput
     value: 250
 ```
+
+Module manifest leveraging the `networking` module:
+```yaml
+name: storage
+path: modules/core/fsx-lustre/
+parameters:
+  - name: private_subnet_ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: vpc_id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  ...
+```
+
 ### Module Metadata Outputs
 
 
