@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys a Module specific IAM permissions
+
+Parameters:
+  RoleName:
+    Type: String
+    Description: The name of the IAM Role
+
+Resources:
+  Policy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: 'fsx:CreateDataRepositoryAssociation'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - "iam:CreateServiceLinkedRole"
+              - "iam:AttachRolePolicy"
+              - "iam:PutRolePolicy"
+            Resource: "arn:aws:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"
+        Version: 2012-10-17
+      PolicyName: "addl-modulespecific-policy"
+      Roles: [!Ref RoleName]
