@@ -13,8 +13,9 @@ sagemaker_project_id = sagemaker_code_config["sagemakerProjectId"]
 sagemaker_repository_name = sagemaker_code_config["codeRepositoryName"]
 sagemaker_pipeline_name = sagemaker_code_config["sagemakerPipelineName"]
 project_short_name = sagemaker_code_config["projectShortName"]
-env_name="dev"
+env_name = "dev"
 model_package_group_name = f"{sagemaker_pipeline_name}-{env_name}-models"
+
 
 def get_account() -> str:
     if "CDK_DEFAULT_ACCOUNT" in os.environ:

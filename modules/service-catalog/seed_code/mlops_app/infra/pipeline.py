@@ -1,18 +1,15 @@
 import aws_cdk as cdk
-from aws_cdk import (
-    Aws,
-    Stack,
-    Stage,
-    aws_codebuild as codebuild,
-    aws_codecommit as codecommit,
-    aws_codepipeline as codepipeline,
-    aws_iam as iam,
-    aws_s3 as s3,
-    pipelines,
-)
+import yaml
+from aws_cdk import Aws, Stack, Stage
+from aws_cdk import aws_codebuild as codebuild
+from aws_cdk import aws_codecommit as codecommit
+from aws_cdk import aws_codepipeline as codepipeline
+from aws_cdk import aws_iam as iam
+from aws_cdk import aws_s3 as s3
+from aws_cdk import pipelines
 from constructs import Construct
 from notifications.notifications_stack import NotificationsStack
-import yaml
+
 
 class PipelineStack(Stack):
     def __init__(
@@ -64,9 +61,7 @@ class PipelineStack(Stack):
 
         # use default value for s3 bucket if not provided through 'cdk.json' file
         if not artifact_bucket_arn:
-            artifact_bucket_arn = (
-                f"arn:aws:s3:::sagemaker-{Stack.of(self).region}-{Stack.of(self).account}"
-            )
+            artifact_bucket_arn = f"arn:aws:s3:::sagemaker-{Stack.of(self).region}-{Stack.of(self).account}"
 
         artifact_bucket = s3.Bucket.from_bucket_arn(
             self,
@@ -174,4 +169,3 @@ class NotificationStage(Stage):
             project_short_name=project_short_name,
             env_name=env_name,
         )
-

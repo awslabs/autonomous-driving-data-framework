@@ -2,7 +2,7 @@ deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.46.0
+      - npm install -g aws-cdk@2.62.0
       - pip install -r requirements.txt
       - apt-get install gettext-base
     build:

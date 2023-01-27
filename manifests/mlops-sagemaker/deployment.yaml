@@ -21,6 +21,5 @@ targetAccountMappings:
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
     regionMappings:
-      - region: 
-          valueFrom: AWS_DEFAULT_REGION
+      - region: us-east-2
         default: true

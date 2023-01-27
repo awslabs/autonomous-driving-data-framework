@@ -2,6 +2,7 @@ import json
 import os
 
 import aws_cdk
+from aws_cdk import CfnOutput
 from sagemaker_studio.sagemaker_studio_stack import SagemakerStudioStack
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
@@ -17,12 +18,17 @@ DEFAULT_CUSTOM_KERNEL_IMAGE_NAME = None
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
+
 vpc_id = os.getenv(_param("VPC_ID"))
 subnet_ids = json.loads(os.getenv(_param("SUBNET_IDS"), "[]"))
 studio_domain_name = os.getenv(_param("STUDIO_DOMAIN_NAME"), DEFAULT_STUDIO_DOMAIN_NAME)
 studio_bucket_name = os.getenv(_param("STUDIO_BUCKET_NAME"), DEFAULT_STUDIO_BUCKET_NAME)
-app_image_config_name = os.getenv(_param("CUSTOM_KERNEL_APP_CONFIG_NAME"), DEFAULT_CUSTOM_KERNEL_APP_CONFIG_NAME)
-image_name = os.getenv(_param("CUSTOM_KERNEL_IMAGE_NAME"), DEFAULT_CUSTOM_KERNEL_IMAGE_NAME)
+app_image_config_name = os.getenv(
+    _param("CUSTOM_KERNEL_APP_CONFIG_NAME"), DEFAULT_CUSTOM_KERNEL_APP_CONFIG_NAME
+)
+image_name = os.getenv(
+    _param("CUSTOM_KERNEL_IMAGE_NAME"), DEFAULT_CUSTOM_KERNEL_IMAGE_NAME
+)
 
 environment = aws_cdk.Environment(
     account=os.environ["CDK_DEFAULT_ACCOUNT"],
@@ -33,7 +39,7 @@ data_science_users = json.loads(os.getenv(_param("DATA_SCIENCE_USERS"), "[]"))
 lead_data_science_users = json.loads(os.getenv(_param("LEAD_DATA_SCIENCE_USERS"), "[]"))
 
 app = aws_cdk.App()
-sagemaker_studio_stack = SagemakerStudioStack(
+stack = SagemakerStudioStack(
     app,
     f"addf-{deployment_name}-{module_name}",
     deployment_name=deployment_name,
@@ -49,5 +55,24 @@ sagemaker_studio_stack = SagemakerStudioStack(
     image_name=image_name,
 )
 
-
+CfnOutput(
+    stack,
+    "LeadDataScientistRoleArn",
+    value=stack.sm_roles.lead_data_scientist_role.role_arn,
+)
+CfnOutput(
+    stack,
+    "DataScientistRoleArn",
+    value=stack.sm_roles.data_scientist_role.role_arn,
+)
+CfnOutput(
+    stack,
+    "StudioDomainName",
+    value=stack.studio_domain.domain_name,
+)
+CfnOutput(
+    stack,
+    "StudioDomainId",
+    value=stack.studio_domain.attr_domain_id,
+)
 app.synth()
