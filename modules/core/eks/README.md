@@ -25,6 +25,7 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
 - `deploy_external_dns`: We deploy the External DNS to interact with AWS Route53 by default, unless you set it to False
 - `deploy_aws_ebs_csi`: We deploy the EBS CSI Driver AWS EBS by default, unless you set it to False
 - `deploy_aws_efs_csi`: We deploy the EFS CSI Driver AWS EFS by default, unless you set it to False
+- `deploy_aws_fsx_csi`: We deploy the FSX CSI Driver AWS FSX by default, unless you set it to False
 - `deploy_cluster_autoscaler`: We deploy the Cluster Autoscaler to scale EKS Workers by default, unless you set it to False
 - `deploy_metrics_server`: We deploy the Metrics Autoscaler to deploy HPA for scaling out/in pods, unless you set it to False
 - `deploy_secretsmanager_csi`: We deploy Secrets Manager CSI to interact with Secrets mounted as files, unless you set it to False
