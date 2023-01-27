@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 - Cloud9 module
+- FSx on Lustre module
 - FSx-Lustre support on EKS (`integration/fsx-lustre-on-eks`)
 
 ### **Changed**
