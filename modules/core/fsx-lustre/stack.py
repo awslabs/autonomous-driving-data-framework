@@ -41,7 +41,7 @@ class FsxFileSystem(Stack):
         import_path: Optional[str],
         **kwargs: Any,
     ) -> None:
-        # ADDL Env vars
+        # ADDF Env vars
         self.deployment_name = deployment_name
         self.module_name = module_name
 
