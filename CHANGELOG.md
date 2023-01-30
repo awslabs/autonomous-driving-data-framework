@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated requirements for seed-farmer
 - updated `core-eks` module to support install the FSX driver
 ### **Removed**
+- removed `jest: ^29.3.1` from `autonomous-driving-data-framework/modules/demo-only/rosbag-webviz/package.json` due to lib conflicts
 
 
 =======
