@@ -64,7 +64,7 @@ class Cloud9Stack(Stack):  # type: ignore
         instance_type : str
             Type of instance to launch
         name : str
-            The name of the environment
+            The name of the Cloud9 instance
         owner_arn : str
             The Amazon Resource Name (ARN) of the environment owner. This ARN can be the
             ARN of any AWS Identity and Access Management principal. If this value is

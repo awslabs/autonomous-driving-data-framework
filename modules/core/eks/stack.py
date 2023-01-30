@@ -34,12 +34,12 @@ project_dir = os.path.dirname(os.path.abspath(__file__))
 
 
 ALB_CONTROLLER_VERSION = "alb_contoller_version"
-
+FSX_DRIVER_VERSION = "fsx_driver_version"
 version_mappings = {
-    "1.21": {ALB_CONTROLLER_VERSION: "1.3.3"},
-    "1.22": {ALB_CONTROLLER_VERSION: "1.4.5"},
-    "1.23": {ALB_CONTROLLER_VERSION: "1.4.5"},
-    "default": {ALB_CONTROLLER_VERSION: "1.3.3"},
+    "1.21": {ALB_CONTROLLER_VERSION: "1.3.3", FSX_DRIVER_VERSION: "1.5.0"},
+    "1.22": {ALB_CONTROLLER_VERSION: "1.4.5", FSX_DRIVER_VERSION: "1.5.0"},
+    "1.23": {ALB_CONTROLLER_VERSION: "1.4.5", FSX_DRIVER_VERSION: "1.5.0"},
+    "default": {ALB_CONTROLLER_VERSION: "1.3.3", FSX_DRIVER_VERSION: "1.5.0"},
 }
 
 
@@ -407,6 +407,42 @@ class Eks(Stack):  # type: ignore
                 },
             )
             efs_csi_storageclass.node.add_dependency(awsefscsi_chart)
+
+        # AWS FSx CSI Driver
+        if self.eks_addons_config.get("deploy_aws_fsx_csi", True):
+            awsfsxcsidriver_service_account = eks_cluster.add_service_account(
+                "awsfsxcsidriver", name="awsfsxcsidriver", namespace="kube-system"
+            )
+
+            awsfsxcsidriver_policy_statement_json_path = os.path.join(
+                project_dir, "addons-iam-policies", "fsx-csi-iam.json"
+            )
+            with open(awsfsxcsidriver_policy_statement_json_path) as json_file:
+                awsfsxcsidriver_policy_statement_json = json.load(json_file)
+
+            # Attach the necessary permissions
+            awsfsxcsidriver_policy = iam.Policy(
+                self,
+                "awsfsxcsidriverpolicy",
+                document=iam.PolicyDocument.from_json(awsfsxcsidriver_policy_statement_json),
+            )
+            awsfsxcsidriver_service_account.role.attach_inline_policy(awsfsxcsidriver_policy)
+
+            # Install the AWS FSx CSI Driver
+            # https://github.com/kubernetes-sigs/aws-fsx-csi-driver/tree/release-0.9/charts/aws-fsx-csi-driver
+            awsfsxcsi_chart = eks_cluster.add_helm_chart(
+                "aws-fsx-csi-driver",
+                chart="aws-fsx-csi-driver",
+                version=get_version(str(self.eks_compute_config["eks_version"]), FSX_DRIVER_VERSION),
+                release="awsfsxcsidriver",
+                repository="https://kubernetes-sigs.github.io/aws-fsx-csi-driver",
+                namespace="kube-system",
+                values={
+                    "controller": {"serviceAccount": {"create": False, "name": "awsfsxcsidriver"}},
+                    "node": {"serviceAccount": {"create": False, "name": "awsfsxcsidriver"}},
+                },
+            )
+            awsfsxcsi_chart.node.add_dependency(awsfsxcsidriver_service_account)
 
         # Cluster Autoscaler
         if self.eks_addons_config.get("deploy_cluster_autoscaler", True):

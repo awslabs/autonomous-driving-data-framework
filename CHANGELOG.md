@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 - Cloud9 module
 - Added Visualization Instance Deployment to the ros-image-demo manifest
+- FSx on Lustre module
+- FSx-Lustre support on EKS (`integration/fsx-lustre-on-eks`)
 
 ### **Changed**
 - modified `core/mwaa` to take a parameterized `requirements.txt` file to support various deployments
+- fixed Cloud9 SSM connection type config by creating the underlying resources needed to enable the CDK to deploy
+- updated requirements for seed-farmer
+- updated `core-eks` module to support install the FSX driver
 ### **Removed**
 
 
