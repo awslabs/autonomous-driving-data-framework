@@ -10,6 +10,11 @@ deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
 module_name = os.getenv("ADDF_MODULE_NAME")
 vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")  # required
 private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # required
+isolated_subnet_ids = (
+    json.loads(os.getenv("ADDF_PARAMETER_ISOLATED_SUBNET_IDS"))
+    if os.getenv("ADDF_PARAMETER_ISOLATED_SUBNET_IDS")
+    else None
+)  # required only for isolated environments
 eks_compute_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_COMPUTE"))  # required
 eks_addons_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_ADDONS"))  # required
 
@@ -32,6 +37,7 @@ config = {
     "module_name": module_name,
     "vpc_id": vpc_id,
     "private_subnet_ids": private_subnet_ids,
+    "isolated_subnet_ids": isolated_subnet_ids,
     "eks_compute_config": eks_compute_config,
     "eks_addons_config": eks_addons_config,
 }

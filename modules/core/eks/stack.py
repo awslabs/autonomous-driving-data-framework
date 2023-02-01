@@ -25,6 +25,7 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_efs as efs
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_kms as kms
 from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -79,6 +80,19 @@ class Eks(Stack):  # type: ignore
             vpc_id=self.vpc_id,
         )
 
+        self.private_subnets = []
+        for idx, subnet_id in enumerate(self.private_subnet_ids):
+            self.private_subnets.append(
+                ec2.Subnet.from_subnet_id(scope=self, id=f"pri-subnet{idx}", subnet_id=subnet_id)
+            )
+
+        if self.isolated_subnet_ids:
+            self.isolated_subnets = []
+            for idx, subnet_id in enumerate(self.isolated_subnet_ids):
+                self.isolated_subnets.append(
+                    ec2.Subnet.from_subnet_id(scope=self, id=f"iso-subnet{idx}", subnet_id=subnet_id)
+                )
+
         cluster_admin_role = iam.Role(
             self,
             "ClusterAdminRole",
@@ -121,16 +135,21 @@ class Eks(Stack):  # type: ignore
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_2))
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_3))
 
+        # KMS key for Envelope encryption
+        secrets_key = kms.Key(self, "SecretsKey")
+
         # Creates an EKS Cluster
         eks_cluster = eks.Cluster(
             self,
             "cluster",
             vpc=self.vpc,
+            vpc_subnets=[ec2.SubnetSelection(subnets=self.private_subnets)],
             cluster_name=f"addf-{self.deployment_name}-{self.module_name}-cluster",
             masters_role=cluster_admin_role,
-            endpoint_access=eks.EndpointAccess.PUBLIC,
+            endpoint_access=eks.EndpointAccess.PRIVATE if self.isolated_subnet_ids else eks.EndpointAccess.PUBLIC,
             version=eks.KubernetesVersion.of(str(self.eks_compute_config["eks_version"])),
             default_capacity=0,
+            secrets_encryption_key=secrets_key,
             cluster_logging=[
                 eks.ClusterLoggingTypes.API,
                 eks.ClusterLoggingTypes.AUDIT,
@@ -197,6 +216,9 @@ class Eks(Stack):  # type: ignore
                     force_update=False,
                     instance_types=instance_types,
                     labels=ng.get("eks_node_labels") if ng.get("eks_node_labels") else None,
+                    subnets=ec2.SubnetSelection(subnets=self.isolated_subnets)
+                    if self.isolated_subnet_ids
+                    else ec2.SubnetSelection(subnets=self.private_subnets)
                     # release_version=self.eks_compute_config["eks_node_ami_version"],
                 ).role.add_managed_policy(
                     iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
@@ -408,42 +430,6 @@ class Eks(Stack):  # type: ignore
             )
             efs_csi_storageclass.node.add_dependency(awsefscsi_chart)
 
-        # AWS FSx CSI Driver
-        if self.eks_addons_config.get("deploy_aws_fsx_csi", True):
-            awsfsxcsidriver_service_account = eks_cluster.add_service_account(
-                "awsfsxcsidriver", name="awsfsxcsidriver", namespace="kube-system"
-            )
-
-            awsfsxcsidriver_policy_statement_json_path = os.path.join(
-                project_dir, "addons-iam-policies", "fsx-csi-iam.json"
-            )
-            with open(awsfsxcsidriver_policy_statement_json_path) as json_file:
-                awsfsxcsidriver_policy_statement_json = json.load(json_file)
-
-            # Attach the necessary permissions
-            awsfsxcsidriver_policy = iam.Policy(
-                self,
-                "awsfsxcsidriverpolicy",
-                document=iam.PolicyDocument.from_json(awsfsxcsidriver_policy_statement_json),
-            )
-            awsfsxcsidriver_service_account.role.attach_inline_policy(awsfsxcsidriver_policy)
-
-            # Install the AWS FSx CSI Driver
-            # https://github.com/kubernetes-sigs/aws-fsx-csi-driver/tree/release-0.9/charts/aws-fsx-csi-driver
-            awsfsxcsi_chart = eks_cluster.add_helm_chart(
-                "aws-fsx-csi-driver",
-                chart="aws-fsx-csi-driver",
-                version=get_version(str(self.eks_compute_config["eks_version"]), FSX_DRIVER_VERSION),
-                release="awsfsxcsidriver",
-                repository="https://kubernetes-sigs.github.io/aws-fsx-csi-driver",
-                namespace="kube-system",
-                values={
-                    "controller": {"serviceAccount": {"create": False, "name": "awsfsxcsidriver"}},
-                    "node": {"serviceAccount": {"create": False, "name": "awsfsxcsidriver"}},
-                },
-            )
-            awsfsxcsi_chart.node.add_dependency(awsfsxcsidriver_service_account)
-
         # Cluster Autoscaler
         if self.eks_addons_config.get("deploy_cluster_autoscaler", True):
             clusterautoscaler_service_account = eks_cluster.add_service_account(
@@ -500,7 +486,7 @@ class Eks(Stack):  # type: ignore
                 values={"resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}}},
             )
 
-        if self.eks_addons_config.get("deploy_external_dns", True):
+        if self.eks_addons_config.get("deploy_external_dns", False):
             externaldns_service_account = eks_cluster.add_service_account(
                 "external-dns", name="external-dns", namespace="kube-system"
             )
@@ -595,7 +581,7 @@ class Eks(Stack):  # type: ignore
                 manifest.node.add_dependency(secrets_csi_sa)
 
         # Kubernetes External Secrets
-        if self.eks_addons_config.get("deploy_external_secrets"):
+        if self.eks_addons_config.get("deploy_external_secrets", True):
             # Deploy the External Secrets Controller
             # Create the Service Account
             externalsecrets_service_account = eks_cluster.add_service_account(
@@ -637,7 +623,7 @@ class Eks(Stack):  # type: ignore
             )
 
         # CloudWatch Container Insights - Metrics
-        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_metrics", True):
+        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_metrics", False):
             # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-setup-metrics.html
 
             # Create the Service Account
@@ -678,7 +664,7 @@ class Eks(Stack):  # type: ignore
                 eks_cluster.add_manifest(manifest_id, value)
 
         # CloudWatch Container Insights - Logs
-        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_logs"):
+        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_logs", False):
             # Create the Service Account
             fluentbit_cw_service_account = eks_cluster.add_service_account(
                 "fluentbit-cw", name="fluentbit-cw", namespace="kube-system"
@@ -728,7 +714,7 @@ class Eks(Stack):  # type: ignore
             fluentbit_chart_cw.node.add_dependency(fluentbit_cw_service_account)
 
         # Amazon Managed Prometheus (AMP)
-        if self.eks_addons_config.get("deploy_amp"):
+        if self.eks_addons_config.get("deploy_amp", False):
             # https://aws.amazon.com/blogs/mt/getting-started-amazon-managed-service-for-prometheus/
             # Create AMP workspace
             amp_workspace = aps.CfnWorkspace(self, "AMPWorkspace")
@@ -806,7 +792,7 @@ class Eks(Stack):  # type: ignore
             amp_prometheus_chart.node.add_dependency(amp_sa)
 
         # Self-Managed Grafana for AMP
-        if self.eks_addons_config.get("deploy_grafana_for_amp"):
+        if self.eks_addons_config.get("deploy_grafana_for_amp", False):
             # Install a self-managed Grafana to visualise the AMP metrics
             # NOTE You likely want to use the AWS Managed Grafana (AMG) in production
             # We are using this as AMG requires SSO/SAML and is harder to include in the template
