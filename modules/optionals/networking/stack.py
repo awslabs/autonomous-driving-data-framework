@@ -25,7 +25,13 @@ _logger: logging.Logger = logging.getLogger(__name__)
 
 class NetworkingStack(Stack):  # type: ignore
     def __init__(
-        self, scope: Construct, id: str, deployment_name: str, module_name: str, internet_accessible: str, **kwargs: Any
+        self,
+        scope: Construct,
+        id: str,
+        deployment_name: str,
+        module_name: str,
+        internet_accessible: bool,
+        **kwargs: Any,
     ) -> None:
         super().__init__(scope, id, description="This stack deploys Networking resources for ADDF", **kwargs)
         self.deployment_name = deployment_name
@@ -40,7 +46,7 @@ class NetworkingStack(Stack):  # type: ignore
         self.public_subnets = (
             self.vpc.select_subnets(subnet_type=ec2.SubnetType.PUBLIC)
             if self.vpc.public_subnets
-            else self.vpc.select_subnets(subnet_name="")
+            else self.vpc.select_subnets(subnet_group_name="")
         )
 
         # Private Subnets
@@ -82,7 +88,7 @@ class NetworkingStack(Stack):  # type: ignore
             ]
         else:
             subnet_configuration = [
-                ec2.SubnetConfiguration(name="Public", subnet_type=ec2.SubnetType.PUBLIC, cidr_mask=21),
+                ec2.SubnetConfiguration(name="Public", subnet_type=ec2.SubnetType.PUBLIC, cidr_mask=24),
                 ec2.SubnetConfiguration(
                     name="Private", subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT, cidr_mask=21  # type: ignore
                 ),

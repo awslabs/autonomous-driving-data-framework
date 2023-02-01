@@ -1,4 +1,5 @@
 import os
+from typing import cast
 
 import aws_cdk
 from aws_cdk import App, CfnOutput
@@ -25,9 +26,9 @@ app = App()
 stack = NetworkingStack(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
-    deployment_name=deployment_name,
-    module_name=module_name,
-    internet_accessible=internet_accessible,
+    deployment_name=cast(str, deployment_name),
+    module_name=cast(str, module_name),
+    internet_accessible=cast(bool, internet_accessible),
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
