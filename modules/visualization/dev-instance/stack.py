@@ -50,11 +50,7 @@ class DataServiceDevInstancesStack(Stack):
         **kwargs,
     ) -> None:
         super().__init__(
-            scope, 
-            id, 
-            description="(SO9154) Autonomous Driving Data Framework (ADDF) - dev-instance", 
-            env=env, 
-            **kwargs
+            scope, id, description="(SO9154) Autonomous Driving Data Framework (ADDF) - dev-instance", env=env, **kwargs
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"addf-{deployment_name}")
 
