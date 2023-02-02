@@ -45,6 +45,7 @@ class AwsBatchPipeline(Stack):
         super().__init__(
             scope,
             id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-image-pipeline",
             **kwargs,
         )
 

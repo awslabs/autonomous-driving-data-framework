@@ -49,7 +49,13 @@ class DataServiceDevInstancesStack(Stack):
         s3_script_bucket: str = None,
         **kwargs,
     ) -> None:
-        super().__init__(scope, id, env=env, **kwargs)
+        super().__init__(
+            scope, 
+            id, 
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - dev-instance", 
+            env=env, 
+            **kwargs
+        )
         Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"addf-{deployment_name}")
 
         region = Stack.of(self).region

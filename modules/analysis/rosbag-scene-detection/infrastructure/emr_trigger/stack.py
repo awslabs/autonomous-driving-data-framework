@@ -22,7 +22,12 @@ class EmrTriggerStack(aws_cdk.Stack):
         num_rosbag_topics: int,
         **kwargs: Any,
     ):
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-scene-detection",
+            **kwargs,
+        )
 
         # SNS Triggered Pipeline
         lambda_code = aws_lambda.Code.from_asset("infrastructure/emr_trigger/lambda_source/")

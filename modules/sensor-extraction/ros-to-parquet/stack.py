@@ -47,6 +47,7 @@ class RosToParquetBatchJob(Stack):
         super().__init__(
             scope,
             id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - ros-to-parquet",
             **kwargs,
         )
 

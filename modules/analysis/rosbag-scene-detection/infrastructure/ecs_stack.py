@@ -77,7 +77,12 @@ class Fargate(aws_cdk.Stack):
         :param cpu: CPUs to allocate per task
         :param kwargs:
         """
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-scene-detection",
+            **kwargs,
+        )
 
         # Importing from ADDF Networking and Core Modules
         self.vpc_id = vpc_id

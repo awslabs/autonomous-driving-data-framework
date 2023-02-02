@@ -45,7 +45,7 @@ class SimulationDags(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack deploys Kubernetes based Simulation environment(s) on AWS EKS for ADDF",
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - k8s-managed",
             **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
