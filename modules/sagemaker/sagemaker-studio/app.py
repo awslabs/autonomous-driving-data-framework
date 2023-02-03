@@ -3,7 +3,7 @@ import os
 
 import aws_cdk
 from aws_cdk import CfnOutput
-from sagemaker_studio.sagemaker_studio_stack import SagemakerStudioStack
+from stack import SagemakerStudioStack
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
 module_name = os.getenv("ADDF_MODULE_NAME", "")

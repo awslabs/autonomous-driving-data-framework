@@ -34,11 +34,20 @@ stack = ServiceCatalogStack(
 
 
 CfnOutput(
-    scope=stack,
-    id="metadata",
-    value=stack.to_json_string(
-        {},
-    ),
+    stack,
+    "PortfolioARN",
+    value=stack.portfolio.portfolio_arn,
 )
+if portfolio_access_role_arn is not None:
+    CfnOutput(
+        stack,
+        "PortfolioAccessRoleName",
+        value=stack.portfolio_access_role.role_name,
+    )
+    CfnOutput(
+        stack,
+        "PortfolioAccessRoleARN",
+        value=stack.portfolio_access_role.role_arn,
+    )
 
 app.synth(force=True)
