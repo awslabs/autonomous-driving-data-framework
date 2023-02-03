@@ -10,6 +10,7 @@ class SMRoles(Construct):
         scope: Construct,
         construct_id: str,
         s3_bucket_prefix: str,
+        env: str,
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -22,7 +23,7 @@ class SMRoles(Construct):
                     actions=[
                         "cloudformation:*",
                     ],
-                    resources=["*"],
+                    resources=["*"],  # TODO scope down
                 ),
                 iam.PolicyStatement(
                     effect=iam.Effect.ALLOW,

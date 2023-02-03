@@ -9,8 +9,8 @@ from aws_cdk import aws_sagemaker as sagemaker
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from aws_cdk.custom_resources import Provider
 from constructs import Construct
-from sagemaker_studio.constructs.networking import Networking
-from sagemaker_studio.constructs.sm_roles import SMRoles
+from helper_constructs.networking import Networking
+from helper_constructs.sm_roles import SMRoles
 
 
 class SagemakerStudioStack(Stack):
@@ -48,7 +48,7 @@ class SagemakerStudioStack(Stack):
         s3_bucket_prefix = studio_bucket_name
 
         # create roles to be used for sagemaker user profiles and attached to sagemaker studio domain
-        self.sm_roles = SMRoles(self, "sm-roles", s3_bucket_prefix)
+        self.sm_roles = SMRoles(self, "sm-roles", s3_bucket_prefix, kwargs["env"])
 
         # setup security group to be used for sagemaker studio domain
         sagemaker_sg = ec2.SecurityGroup(
