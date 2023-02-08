@@ -39,6 +39,7 @@ class AwsBatchPipeline(Stack):
         super().__init__(
             scope,
             id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - aws-batch-demo",
             **kwargs,
         )
 
