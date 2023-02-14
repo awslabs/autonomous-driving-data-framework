@@ -29,12 +29,10 @@ constructs==10.0.91
     #   -r requirements.in
     #   aws-cdk-lib
     #   cdk-nag
-cryptography==38.0.3
+cryptography==39.0.1
     # via
     #   -r requirements.in
     #   pyopenssl
-exceptiongroup==1.0.0rc8
-    # via cattrs
 jmespath==1.0.1
     # via
     #   boto3

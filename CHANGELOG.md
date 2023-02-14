@@ -15,10 +15,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `service-catalog` module: Allows creating Service Catalog Products and Portfolios, including custom SageMaker Project Organizational Templates from Seed Code. The module also includes a sample project that deploys full MLOPs solution with extendable CDK code inside of Studio.
 - Added `optionals/ecr` module: Creates Elastic Container Registry repositories with CDK
 - Added SageMaker `manifests/mlops-sagemaker` manifests: Deploys the ECR, SageMaker Studio, Service Catalog and Custom SageMaker Project Template together
+- FSx on Lustre module
+- FSx-Lustre support on EKS (`integration/fsx-lustre-on-eks`)
 
 ### **Changed**
 - modified `core/mwaa` to take a parameterized `requirements.txt` file to support various deployments
+- fixed Cloud9 SSM connection type config by creating the underlying resources needed to enable the CDK to deploy
+- updated requirements for seed-farmer
+- updated `core-eks` module to support install the FSX driver
+- existing modules addign `Guidance Solution ID` to the stack
 ### **Removed**
+- removed `"ts-jest": "^29.0.3"` from `demo-only/rosbag-webviz/package.json` due to lib conflicts (introduced bu dependabot)
 
 
 =======

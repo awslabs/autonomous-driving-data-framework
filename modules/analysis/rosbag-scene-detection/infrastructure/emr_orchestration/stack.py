@@ -29,7 +29,12 @@ class StepFunctionStack(aws_cdk.Stack):
         rosbag_scene_metadata_table: str,
         **kwargs: Any,
     ):
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-scene-detection",
+            **kwargs,
+        )
 
         launch_function = emr_launch_stack.launch_function
 
