@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This stack deploys a Module specific IAM permissions
+
+Parameters:
+
+  RoleName:
+    Type: String
+    Description: The name of the IAM Role
+
+Resources:
+  Policy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ecr:Describe*"
+              - "ecr:Get*"
+              - "ecr:List*"
+              - "sagemaker:CreateImage"
+              - "sagemaker:CreateImageVersion"
+              - "sagemaker:DescribeImage"
+              - "sagemaker:DescribeImageVersion"
+              - "sagemaker:DescribeAppImageConfig"
+              - "sagemaker:CreateAppImageConfig"
+              - "sagemaker:UpdateAppImageConfig"
+              - "sagemaker:UpdateDomain"
+              - "sagemaker:DescribeDomain"
+              - "iam:PassRole"
+            Resource: "*"
+          - Action:
+              - "ecr:Create*"
+              - "ecr:Delete*"
+              - "ecr:*LayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:Batch*"
+              - "ecr:Put*"
+            Effect: Allow
+            Resource:
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*"
+        Version: 2012-10-17
+      PolicyName: "addf-modulespecific-policy"
+      Roles: [!Ref RoleName]
