@@ -1,3 +1,5 @@
+from typing import Any
+
 from aws_cdk import Aws, CfnOutput
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_ssm as ssm
@@ -11,7 +13,7 @@ class SMRoles(Construct):
         construct_id: str,
         s3_bucket_prefix: str,
         env: str,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         cdk_deploy_policy = iam.Policy(
@@ -23,7 +25,7 @@ class SMRoles(Construct):
                     actions=[
                         "cloudformation:*",
                     ],
-                    resources=["*"],  # TODO scope down
+                    resources=["*"],
                 ),
                 iam.PolicyStatement(
                     effect=iam.Effect.ALLOW,

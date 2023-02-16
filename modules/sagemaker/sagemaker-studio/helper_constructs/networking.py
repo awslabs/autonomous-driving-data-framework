@@ -1,8 +1,11 @@
+from typing import Any
+
 from aws_cdk import aws_ec2 as ec2
 from constructs import Construct
 
 """
-This is an optional construct to setup the Networking resources (VPC and Subnets) from existing resources in the account to be used in the CDK APP.
+This is an optional construct to setup the Networking resources (VPC and Subnets)
+from existing resources in the account to be used in the CDK APP.
 """
 from typing import List
 
@@ -14,7 +17,7 @@ class Networking(Construct):
         construct_id: str,
         vpc_id: str,
         subnet_ids: List[str],
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 

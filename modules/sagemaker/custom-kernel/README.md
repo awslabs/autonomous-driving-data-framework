@@ -32,7 +32,7 @@ This module builds custom kernel for SageMaker studio from Dockerfile.
 
 ```json
 {
-    "SageMakerCustomKernelRoleArn": "arn:aws:iam::777013353734:role/addf-shared-infra-kernels-addfsharedinfrakernelske-9O6FZXGI0MM8",
+    "SageMakerCustomKernelRoleArn": "arn:aws:iam::{ACCOUNT}:role/addf-shared-infra-kernels-addfsharedinfrakernelske-9O6FZXGI0MM8",
     "CustomKernelImageName": "pytorch-10",
     "AppImageConfigName": "pytorch-10-app-config"
 }

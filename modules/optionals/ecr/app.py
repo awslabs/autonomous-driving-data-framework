@@ -9,7 +9,7 @@ deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
 module_name = os.getenv("ADDF_MODULE_NAME", "")
 app_prefix = f"addf-{deployment_name}-{module_name}"
 
-DEFAULT_REPOSITORY_NAME = f"addf-ecr-repository"
+DEFAULT_REPOSITORY_NAME = "addf-ecr-repository"
 DEFAULT_IMAGE_MUTABILITY = "IMMUTABLE"
 DEFAULT_LIFECYCLE = None  # No lifecycle policy
 

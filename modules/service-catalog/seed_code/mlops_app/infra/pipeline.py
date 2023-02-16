@@ -1,4 +1,3 @@
-import aws_cdk as cdk
 import yaml
 from aws_cdk import Aws, Stack, Stage
 from aws_cdk import aws_codebuild as codebuild
@@ -65,7 +64,7 @@ class PipelineStack(Stack):
 
         artifact_bucket = s3.Bucket.from_bucket_arn(
             self,
-            f"code-pipeline-artifacts-bucket",
+            "code-pipeline-artifacts-bucket",
             artifact_bucket_arn,
         )
 
@@ -113,7 +112,7 @@ class PipelineStack(Stack):
         sm_pipelines_buildspec = self.convert_yaml_to_json("../buildspec.yaml")
         notification_stage.add_post(
             pipelines.CodeBuildStep(
-                f"SageMakerPipeline.Upsert",
+                "SageMakerPipeline.Upsert",
                 input=source,
                 commands=[],
                 build_environment=codebuild.BuildEnvironment(

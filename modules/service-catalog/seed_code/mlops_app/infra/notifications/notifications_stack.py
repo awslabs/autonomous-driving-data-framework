@@ -19,7 +19,6 @@ class NotificationsStack(Stack):
         env_name: str,
         **kwargs,
     ) -> None:
-
         super().__init__(scope, construct_id, **kwargs)
         prefix = f"{sagemaker_project_name}-{sagemaker_project_id}"
         topic_name = f"{project_short_name}-sns-{env_name}"

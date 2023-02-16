@@ -1,5 +1,6 @@
 import json
 import os
+from typing import cast
 
 import aws_cdk
 from aws_cdk import CfnOutput
@@ -44,15 +45,15 @@ stack = SagemakerStudioStack(
     f"addf-{deployment_name}-{module_name}",
     deployment_name=deployment_name,
     module_name=module_name,
-    vpc_id=vpc_id,
+    vpc_id=cast(str, vpc_id),
     subnet_ids=subnet_ids,
     studio_domain_name=studio_domain_name,
     studio_bucket_name=studio_bucket_name,
     data_science_users=data_science_users,
     lead_data_science_users=lead_data_science_users,
     env=environment,
-    app_image_config_name=app_image_config_name,
-    image_name=image_name,
+    app_image_config_name=cast(str, app_image_config_name),
+    image_name=cast(str, image_name),
 )
 
 CfnOutput(

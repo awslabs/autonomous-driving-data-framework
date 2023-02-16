@@ -3,12 +3,10 @@ import argparse
 import logging
 import os
 import pathlib
-import tempfile
 
 import boto3
 import numpy as np
 import pandas as pd
-import requests
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
