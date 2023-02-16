@@ -58,7 +58,7 @@ def create_image_if_not_exist():
         image = create_image()
         print("Image Created:", image)
     except Exception as e:
-        print("Warning already exists. Skipping creation...")
+        print(f"Warning: already exists [error: {e}]. Skipping creation...")
 
 
 def create_image_version():
@@ -80,7 +80,7 @@ def check_image_version_exists():
         else:
             return (False, describe_last_image_version_response)
     except Exception as e:
-        print("No versions exist. Need to create")
+        print(f"No versions exist [error: {e}]. Need to create")
         return (False, None)
 
 
@@ -88,7 +88,7 @@ def create_image_version_if_not_exists():
     print("Attempting to create image version with BaseImage:", image_uri)
     exists, last_version = check_image_version_exists()
     print("Last Image Version:", last_version)
-    if exists == False:
+    if not exists:
         image_version = create_image_version()
         print("Updated Image Version:", image_version)
     else:
@@ -101,7 +101,7 @@ def check_app_image_config_exists():
             AppImageConfigName=app_image_config_name
         )
         return (True, response)
-    except Exception as e:
+    except Exception:
         return (False, None)
 
 
@@ -149,7 +149,7 @@ def create_app_image_config_if_not_exists():
     try:
         exists, existing_config = check_app_image_config_exists()
         print("Existing App Image Config:", existing_config)
-        if exists == False:
+        if not exists:
             created_config = create_app_image_config()
             print("Created Image Config:", created_config)
         else:

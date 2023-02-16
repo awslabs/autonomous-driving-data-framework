@@ -1,5 +1,3 @@
-import json
-
 import boto3
 import cfnresponse
 from botocore.exceptions import ClientError
@@ -11,7 +9,6 @@ sc_client = boto3.client("servicecatalog")
 def handler(event, context):
     try:
         if "RequestType" in event and event["RequestType"] in {"Create", "Update"}:
-
             properties = event["ResourceProperties"]
             roles = properties.get("ExecutionRoles", [])
 

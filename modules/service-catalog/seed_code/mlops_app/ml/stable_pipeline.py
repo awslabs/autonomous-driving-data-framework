@@ -1,4 +1,3 @@
-import argparse
 import json
 import os
 
@@ -9,8 +8,7 @@ from sagemaker.estimator import Estimator
 from sagemaker.inputs import TrainingInput
 from sagemaker.model import Model
 from sagemaker.model_metrics import MetricsSource, ModelMetrics
-from sagemaker.processing import (ProcessingInput, ProcessingOutput,
-                                  ScriptProcessor)
+from sagemaker.processing import ProcessingInput, ProcessingOutput, ScriptProcessor
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.workflow.condition_step import ConditionStep
 from sagemaker.workflow.conditions import ConditionLessThanOrEqualTo
@@ -132,8 +130,6 @@ def get_pipeline(
     sagemaker_session = get_session(region, default_bucket)
     if role is None:
         role = get_role(sagemaker_session)
-    bucket_name = sagemaker_session.default_bucket()
-    execution_role = role
     pipeline_session = get_pipeline_session(region, default_bucket)
 
     # parameters for pipeline execution
@@ -335,7 +331,7 @@ def get_pipeline(
 def upsert(region="us-east-2"):
     pipeline, role = get_pipeline(region=region)
 
-    upsert_response = pipeline.upsert(
+    pipeline.upsert(
         role_arn=role,
         description=role,
     )

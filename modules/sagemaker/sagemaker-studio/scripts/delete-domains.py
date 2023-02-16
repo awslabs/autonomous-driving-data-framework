@@ -32,7 +32,7 @@ if __name__ == "__main__":
     print(
         f"Are you certain you want to delete Sagemaker domain in: {region}. [{accept_input}]"
     )
-    print(f"This action cannot be undone")
+    print("This action cannot be undone")
     user_input = input()
 
     if user_input != accept_input:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             try:
                 print(app["Status"])
                 if app["Status"] != "Deleted":
-                    req = client.delete_app(
+                    client.delete_app(
                         DomainId=app["DomainId"],
                         UserProfileName=app["UserProfileName"],
                         AppType=app["AppType"],
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
         def delete_user_profile(profile):
             try:
-                req = client.delete_user_profile(
+                client.delete_user_profile(
                     DomainId=profile["DomainId"],
                     UserProfileName=profile["UserProfileName"],
                 )
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
         def delete_domain(domainId):
             try:
-                req = client.delete_domain(
+                client.delete_domain(
                     DomainId=domainId, RetentionPolicy={"HomeEfsFileSystem": "Delete"}
                 )
             except Exception as e:

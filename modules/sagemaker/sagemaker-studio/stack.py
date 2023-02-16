@@ -1,4 +1,18 @@
-from typing import List
+#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License").
+#    You may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+from typing import Any, List
 
 import aws_cdk as core
 from aws_cdk import Stack
@@ -9,6 +23,7 @@ from aws_cdk import aws_sagemaker as sagemaker
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from aws_cdk.custom_resources import Provider
 from constructs import Construct
+
 from helper_constructs.networking import Networking
 from helper_constructs.sm_roles import SMRoles
 
@@ -27,9 +42,9 @@ class SagemakerStudioStack(Stack):
         studio_bucket_name: str,
         data_science_users: List[str],
         lead_data_science_users: List[str],
-        app_image_config_name,
-        image_name,
-        **kwargs,
+        app_image_config_name: str,
+        image_name: str,
+        **kwargs: Any,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         app_prefix = f"addf-{deployment_name}-{module_name}"
@@ -105,7 +120,7 @@ class SagemakerStudioStack(Stack):
             for user in lead_data_science_users
         ]
 
-    def enable_sagemaker_projects(self, roles):
+    def enable_sagemaker_projects(self, roles: List[str]) -> None:
         event_handler = PythonFunction(
             self,
             "sg-project-function",
@@ -148,14 +163,14 @@ class SagemakerStudioStack(Stack):
 
     def sagemaker_studio_domain(
         self,
-        domain_name,
-        sagemaker_studio_role,
-        security_group_ids,
-        subnet_ids,
-        vpc_id,
-        app_image_config_name,
-        image_name,
-    ):
+        domain_name: str,
+        sagemaker_studio_role: iam.Role,
+        security_group_ids: List[str],
+        subnet_ids: List[str],
+        vpc_id: str,
+        app_image_config_name: str,
+        image_name: str,
+    ) -> sagemaker.CfnDomain:
         """
         Create the SageMaker Studio Domain
 
@@ -187,8 +202,8 @@ class SagemakerStudioStack(Stack):
             default_user_settings=sagemaker.CfnDomain.UserSettingsProperty(
                 execution_role=sagemaker_studio_role.role_arn,
                 security_groups=security_group_ids,
-                sharing_settings=sagemaker.CfnDomain.SharingSettingsProperty(),  # disable notebook output sharing,
-                **custom_kernel_settings,
+                sharing_settings=sagemaker.CfnDomain.SharingSettingsProperty(),
+                **custom_kernel_settings,  # type:ignore
             ),
             domain_name=domain_name,
             subnet_ids=subnet_ids,

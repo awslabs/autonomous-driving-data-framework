@@ -23,11 +23,7 @@ def handler(event, context):
     payload = json.loads(json.dumps(event))
     print(payload)
     model_package_approval_status = payload["detail"]["ModelApprovalStatus"]
-    model_package_name = payload["detail"]["ModelPackageName"]
     model_package_group_name = payload["detail"]["ModelPackageGroupName"]
-    s3_uri = payload["detail"]["InferenceSpecification"]["Containers"][0][
-        "ModelDataUrl"
-    ]
     response = {}
 
     if model_package_approval_status == "Approved":

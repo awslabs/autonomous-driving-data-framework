@@ -7,6 +7,7 @@ import aws_cdk.aws_servicecatalog as servicecatalog
 import cdk_nag
 from aws_cdk import Aspects, Stack, Tags
 from constructs import Construct, IConstruct
+
 from service_catalog.products import products
 
 
