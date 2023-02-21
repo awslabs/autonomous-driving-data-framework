@@ -1,4 +1,5 @@
 import os
+from typing import cast
 
 from aws_cdk import App, CfnOutput, Environment
 
@@ -26,7 +27,7 @@ stack = ServiceCatalogStack(
     id=f"addf-{deployment_name}-{module_name}",
     deployment_name=deployment_name,
     module_name=module_name,
-    portfolio_access_role_arn=portfolio_access_role_arn,
+    portfolio_access_role_arn=cast(str, portfolio_access_role_arn),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

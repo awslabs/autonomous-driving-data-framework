@@ -1,10 +1,12 @@
 import aws_cdk.aws_codecommit as codecommit
+import aws_cdk.aws_s3_assets as assets
 import aws_cdk.aws_servicecatalog as servicecatalog
 from aws_cdk import CfnOutput, CfnParameter
+from constructs import Construct
 
 
 class MLopsAppTemplateProduct(servicecatalog.ProductStack):
-    def __init__(self, scope, id, code_asset):
+    def __init__(self, scope: Construct, id: str, code_asset: assets.Asset) -> None:
         super().__init__(scope, id)
 
         sagemaker_project_name = CfnParameter(

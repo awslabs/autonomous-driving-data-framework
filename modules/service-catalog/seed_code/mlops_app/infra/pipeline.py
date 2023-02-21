@@ -1,3 +1,5 @@
+from typing import Any, Dict, cast
+
 import yaml
 from aws_cdk import Aws, Stack, Stage
 from aws_cdk import aws_codebuild as codebuild
@@ -21,8 +23,8 @@ class PipelineStack(Stack):
         model_package_group_name: str,
         project_short_name: str,
         env_name: str,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         source = pipelines.CodePipelineSource.code_commit(
             repository=codecommit.Repository.from_repository_name(
@@ -141,9 +143,9 @@ class PipelineStack(Stack):
 
         artifact_bucket.grant_read_write(code_build_role)
 
-    def convert_yaml_to_json(self, file_name):
+    def convert_yaml_to_json(self, file_name: str) -> Dict[Any, Any]:
         with open(file_name, "r") as buildspec_yaml:
-            return yaml.safe_load(buildspec_yaml)
+            return cast(Dict[Any, Any], yaml.safe_load(buildspec_yaml))
 
 
 class NotificationStage(Stage):
@@ -156,8 +158,8 @@ class NotificationStage(Stage):
         model_package_group_name: str,
         project_short_name: str,
         env_name: str,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         self.notification_stack = NotificationsStack(
             self,

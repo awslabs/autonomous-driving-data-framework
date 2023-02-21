@@ -1,3 +1,5 @@
+from typing import Any
+
 from aws_cdk import Stack
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as targets
@@ -17,7 +19,7 @@ class NotificationsStack(Stack):
         model_package_group_name: str,
         project_short_name: str,
         env_name: str,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
         prefix = f"{sagemaker_project_name}-{sagemaker_project_id}"

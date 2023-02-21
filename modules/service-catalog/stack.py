@@ -32,7 +32,7 @@ class ServiceCatalogStack(Stack):
             key="Deployment",
             value="aws",
         )
-        portfolio = servicecatalog.Portfolio(
+        self.portfolio = servicecatalog.Portfolio(
             self,
             "Portfolio",
             display_name="ADDF_Portfolio",
@@ -47,13 +47,13 @@ class ServiceCatalogStack(Stack):
             assumed_by=iam.AccountRootPrincipal(),
         )
 
-        portfolio.give_access_to_role(account_root_principle)
+        self.portfolio.give_access_to_role(account_root_principle)
 
         if portfolio_access_role_arn is not None:
-            portfolio_access_role = iam.Role.from_role_arn(
+            self.portfolio_access_role = iam.Role.from_role_arn(
                 self, "portfolio-access-role", portfolio_access_role_arn
             )
-            portfolio.give_access_to_role(portfolio_access_role)
+            self.portfolio.give_access_to_role(self.portfolio_access_role)
 
         seed_code_dir = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "seed_code"
@@ -86,6 +86,6 @@ class ServiceCatalogStack(Stack):
             )
             Tags.of(product).add(key="sagemaker:studio-visibility", value="true")
 
-            portfolio.add_product(product)
+            self.portfolio.add_product(product)
 
             Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
