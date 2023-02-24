@@ -228,7 +228,7 @@ class AwsBatch(Stack):
                     )
 
         # Outputs
-        self.on_demand_jobqueue  = None
+        self.on_demand_jobqueue = None
         if on_demand_compute_env_list:
             self.on_demand_jobqueue = batch.JobQueue(
                 self,
@@ -238,7 +238,7 @@ class AwsBatch(Stack):
                 priority=1,
             )
 
-        self.spot_jobqueue  = None
+        self.spot_jobqueue = None
         if spot_compute_env_list:
             self.spot_jobqueue = batch.JobQueue(
                 self,
@@ -248,7 +248,7 @@ class AwsBatch(Stack):
                 priority=1,
             )
 
-        self.fargate_jobqueue  = None
+        self.fargate_jobqueue = None
         if fargate_compute_env_list:
             self.fargate_jobqueue = batch.JobQueue(
                 self,
