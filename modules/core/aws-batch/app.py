@@ -53,9 +53,7 @@ CfnOutput(
             "OnDemandJobQueueArn": stack.on_demand_jobqueue.job_queue_arn
             if stack.on_demand_jobqueue
             else "QUEUE NOT CREATED",
-            "SpotJobQueueArn": stack.spot_jobqueue.job_queue_name
-            if stack.spot_jobqueue
-            else "QUEUE NOT CREATED",
+            "SpotJobQueueArn": stack.spot_jobqueue.job_queue_name if stack.spot_jobqueue else "QUEUE NOT CREATED",
             "FargateJobQueueArn": stack.fargate_jobqueue.job_queue_name
             if stack.fargate_jobqueue
             else "QUEUE NOT CREATED",
