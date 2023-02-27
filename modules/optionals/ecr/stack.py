@@ -1,3 +1,5 @@
+from typing import Optional
+
 import cdk_nag
 from aws_cdk import Aspects, Duration, Stack
 from aws_cdk import aws_ecr as ecr
@@ -14,10 +16,10 @@ class EcrStack(Stack):
         self,
         scope: Construct,
         construct_id: str,
-        repository_name,
-        image_tag_mutability,
-        lifecycle_max_image_count,
-        lifecycle_max_days,
+        repository_name: str,
+        image_tag_mutability: str,
+        lifecycle_max_image_count: Optional[str],
+        lifecycle_max_days: Optional[str],
         **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -31,12 +33,12 @@ class EcrStack(Stack):
 
         if lifecycle_max_days is not None:
             self.repository.add_lifecycle_rule(
-                max_image_age=Duration.days(lifecycle_max_days)
+                max_image_age=Duration.days(int(lifecycle_max_days))
             )
 
         if lifecycle_max_image_count is not None:
             self.repository.add_lifecycle_rule(
-                max_image_count=lifecycle_max_image_count
+                max_image_count=int(lifecycle_max_image_count)
             )
 
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())

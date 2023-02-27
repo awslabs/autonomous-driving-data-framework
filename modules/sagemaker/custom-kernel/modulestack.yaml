@@ -27,6 +27,7 @@ Resources:
               - "sagemaker:UpdateAppImageConfig"
               - "sagemaker:UpdateDomain"
               - "sagemaker:DescribeDomain"
+              - "sagemaker:AddTags"
               - "iam:PassRole"
             Resource: "*"
           - Action:

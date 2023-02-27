@@ -40,6 +40,7 @@ CfnOutput(
     "PortfolioARN",
     value=stack.portfolio.portfolio_arn,
 )
+
 if portfolio_access_role_arn is not None:
     CfnOutput(
         stack,

@@ -35,8 +35,8 @@ lifecycle_max_days = os.getenv(_param("LIFECYCLE_MAX_DAYS"), DEFAULT_LIFECYCLE)
 
 app = cdk.App()
 stack = EcrStack(
-    app,
-    app_prefix,
+    scope=app,
+    construct_id=app_prefix,
     repository_name=repository_name,
     image_tag_mutability=image_tag_mutability,
     lifecycle_max_image_count=lifecycle_max_image_count,

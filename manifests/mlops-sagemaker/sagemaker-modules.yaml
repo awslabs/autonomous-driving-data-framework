@@ -19,18 +19,6 @@ parameters:
   - name: lead_data_science_users
     value:
     - lead-ds-user-1
-  - name: custom_kernel_app_config_name
-    valueFrom:
-      moduleMetadata:
-        group: sagemaker
-        name: sagemaker-custom-kernel
-        key: AppImageConfigName
-  - name: custom_kernel_image_name
-    valueFrom:
-      moduleMetadata:
-        group: sagemaker
-        name: sagemaker-custom-kernel
-        key: CustomKernelImageName
   - name: server_lifecycle_name
     value: studio-auto-shutdown
   - name: studio_bucket_name

@@ -3,10 +3,16 @@
 This module contains the resources that are required to deploy the SageMaker Studio infrastructure. It defines the setup for Amazon SageMaker Studio Domain and creates SageMaker Studio User Profiles for Data Scientists and Lead Data Scientists.
 
 **NOTE** To effectively use this repository you would need to have a good understanding around AWS networking services, AWS CloudFormation and AWS CDK.
-  - [SageMaker Studio Stack](#sagemaker-studio-stack)
+- [SageMaker studio Infrastructure](#sagemaker-studio-infrastructure)
+    - [SageMaker Studio Stack](#sagemaker-studio-stack)
+  - [Inputs and outputs:](#inputs-and-outputs)
+    - [Required inputs:](#required-inputs)
+    - [Optional Inputs:](#optional-inputs)
+    - [Outputs (module metadata):](#outputs-module-metadata)
+    - [Example Output:](#example-output)
   - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
-    - [Module Structure](#repository-structure)
+    - [Module Structure](#module-structure)
   - [Troubleshooting](#troubleshooting)
 
 ### SageMaker Studio Stack
@@ -36,13 +42,26 @@ This stack handles the deployment of the following resources:
   - `studio_bucket_name`
 ### Outputs (module metadata):
   - `StudioDomainName`
+  - `StudioDomainId`
   - `StudioBucketName`
   - `DataScientistRoleArn`
-  - `DataScientistRoleSSMName`
   - `LeadDataScientistRoleArn`
-  - `LeadDataScientistRoleSSMName`
-  - `SageMakerExecutionRoleSSMName`
-  - `SageMakerExecutionRoleArn`
+
+### Example Output:
+```yaml
+{
+  "DataScientistRoleArn": "arn:aws:iam::xxxxxxxxxxxx:role/addf-mlops-sagemaker-sage-SMdatascientistrole9DB5A-17QIYJHY5NO7Y",
+  "LeadDataScientistRoleArn": "arn:aws:iam::xxxxxxxxxxxx:role/addf-mlops-sagemaker-sage-SMleaddatascientistroleE-17Y0TIS9SZRF6",
+  "SMDataScientistRoleSSMName6C3F343A": "/mlops/role/ds",
+  "SMLeadDataScientistRoleSSMName0C38BCE1": "/mlops/role/lead",
+  "SMSageMakerExecutionRoleArn1D5092EF": "arn:aws:iam::xxxxxxxxxxxx:role/addf-mlops-sagemaker-sage-SMsagemakerstudiorole3BB-QJIRKFE6ZOUA",
+  "SMSageMakerExecutionRoleSSMNameE8C48C67": "/mlops/role/execution",
+  "StudioBucketName": "addf-*",
+  "StudioDomainId": "d-wewvpkwm7bi0",
+  "StudioDomainName": "addf-mlops-sagemaker-sagemaker-sagemaker-studio-studio-domain"
+}
+```
+
 ## Getting Started
 
 ### Prerequisites

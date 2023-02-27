@@ -77,4 +77,5 @@ CfnOutput(
     "StudioDomainId",
     value=stack.studio_domain.attr_domain_id,
 )
+CfnOutput(stack, "StudioBucketName", value=studio_bucket_name)
 app.synth()

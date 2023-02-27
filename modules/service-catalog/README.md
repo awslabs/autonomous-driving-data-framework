@@ -19,7 +19,16 @@ This module creates Service catalog portfolio together with Custom SageMaker pro
 
 
 ### Module Metadata Outputs
-
+- PortfolioARN
+- PortfolioAccessRoleARN
+- PortfolioAccessRoleName
 
 
 #### Output Example
+```yaml
+{
+  "PortfolioARN": "arn:aws:servicecatalog:us-east-1:xxxxxxxxxxxx:portfolio/port-hl6pznl5rjkls",
+  "PortfolioAccessRoleARN": "arn:aws:iam::xxxxxxxxxxxx:role/addf-mlops-sagemaker-sage-smrolesleaddatascientist-O5OLKFYVYA75",
+  "PortfolioAccessRoleName": "addf-mlops-sagemaker-sage-smrolesleaddatascientist-O5OLKFYVYA75"
+}
+```

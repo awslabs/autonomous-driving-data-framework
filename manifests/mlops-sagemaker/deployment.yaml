@@ -1,6 +1,5 @@
 name: mlops-sagemaker
 toolchainRegion: us-east-1
-
 groups:
   - name: storage
     path: manifests/mlops-sagemaker/storage-modules.yaml
@@ -21,5 +20,5 @@ targetAccountMappings:
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
     regionMappings:
-      - region: AWS_DEFAULT_REGION
+      - region: us-east-1
         default: true

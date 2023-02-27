@@ -28,10 +28,12 @@ class ServiceCatalogStack(Stack):
             **kwargs,
         )
 
+        self.deployment_name = deployment_name
+        self.module_name = module_name
         Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment",
-            value="aws",
+            key="Deployment", value=f"addf-{self.deployment_name}-{self.module_name}"
         )
+
         self.portfolio = servicecatalog.Portfolio(
             self,
             "Portfolio",

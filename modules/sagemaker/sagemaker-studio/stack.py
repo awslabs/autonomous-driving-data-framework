@@ -63,7 +63,7 @@ class SagemakerStudioStack(Stack):
         s3_bucket_prefix = studio_bucket_name
 
         # create roles to be used for sagemaker user profiles and attached to sagemaker studio domain
-        self.sm_roles = SMRoles(self, "sm-roles", s3_bucket_prefix, kwargs["env"])
+        self.sm_roles = SMRoles(self, "SM", s3_bucket_prefix, kwargs["env"])
 
         # setup security group to be used for sagemaker studio domain
         sagemaker_sg = ec2.SecurityGroup(

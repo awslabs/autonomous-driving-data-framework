@@ -32,8 +32,8 @@ environment = cdk.Environment(
 
 app = cdk.App()
 stack = CustomKernelStack(
-    app,
-    app_prefix,
+    scope=app,
+    construct_id=app_prefix,
     app_prefix=app_prefix,
     env=environment,
 )

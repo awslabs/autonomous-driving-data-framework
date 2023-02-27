@@ -3,6 +3,3 @@ path: modules/optionals/networking/
 parameters:
   - name: internet-accessible
     value: True
-  - name: interface-endpoints
-    value:
-    - efs
