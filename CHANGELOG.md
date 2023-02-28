@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cloud9 module
 - FSx on Lustre module
 - FSx-Lustre support on EKS (`integration/fsx-lustre-on-eks`)
+- Added a sample demo module to deploy Terraform IAC using seedfarmer
 
 ### **Changed**
 - modified `core/mwaa` to take a parameterized `requirements.txt` file to support various deployments
