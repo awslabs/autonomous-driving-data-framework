@@ -40,10 +40,13 @@ This stack handles the deployment of the following resources:
 ### Optional Inputs:
   - `studio_domain_name`
   - `studio_bucket_name`
+  - `retain_efs` - True | False -- if set to True, the EFS volume will persist after domain deletion.  Default is True
+
 ### Outputs (module metadata):
-  - `StudioDomainName`
-  - `StudioDomainId`
-  - `StudioBucketName`
+  - `StudioDomainName` - the name of the domain created by Sagemaker Studio
+  - `StudioDomainId` - the Id of the domain created by Sagemaker Studio
+  - `StudioBucketName` - the Bucket (or prefix) given access to Sagemaker Studio
+  - `StudioDomainEFSId` - the EFS created by Sagemaker Studio
   - `DataScientistRoleSSMName`
   - `DataScientistRoleArn`
   - `LeadDataScientistRoleArn`
@@ -54,14 +57,15 @@ This stack handles the deployment of the following resources:
 ### Example Output:
 ```yaml
 {
-  "DataScientistRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolesdatascientistrole-1X9NVOANA9Z2A",
+  "DataScientistRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolesdatascientistrole-DYPIVQ6NUSP9",
   "DataScientistRoleSSMName": "/mlops/role/ds",
-  "LeadDataScientistRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolesleaddatascientist-13E5MXYFRJV5Y",
+  "LeadDataScientistRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolesleaddatascientist-V1YL0FQONH62",
   "LeadDataScientistRoleSSMName": "/mlops/role/lead",
-  "SageMakerExecutionRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolessagemakerstudioro-SPUANLZXCOF9",
+  "SageMakerExecutionRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolessagemakerstudioro-F6HGOUX0JGTI",
   "SageMakerExecutionRoleSSMName": "/mlops/role/execution",
   "StudioBucketName": "addf-*",
-  "StudioDomainId": "d-artzryovvapb",
+  "StudioDomainEFSId": "fs-0a550ea71ecac4978",
+  "StudioDomainId": "d-flfqmvy84hfq",
   "StudioDomainName": "addf-mlops-sagemaker-sagemaker-sagemaker-studio-studio-domain"
 }
 ```

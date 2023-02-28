@@ -12,19 +12,18 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from typing import Any, List
+from typing import Any, List, cast
 
 import aws_cdk as core
-from aws_cdk import Stack
+from aws_cdk import Stack, Tags
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_sagemaker as sagemaker
 from aws_cdk.aws_lambda_python_alpha import PythonFunction
 from aws_cdk.custom_resources import Provider
-from constructs import Construct
+from constructs import Construct, IConstruct
 
-from helper_constructs.networking import Networking
 from helper_constructs.sm_roles import SMRoles
 
 
@@ -47,16 +46,16 @@ class SagemakerStudioStack(Stack):
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        app_prefix = f"addf-{deployment_name}-{module_name}"
-        networking = Networking(
-            self,
-            f"{app_prefix}-networking-construct",
-            vpc_id=vpc_id,
-            subnet_ids=subnet_ids,
-        )
 
-        vpc = networking.vpc
-        subnets = networking.subnets
+        Tags.of(scope=cast(IConstruct, self)).add(
+            key="Deployment", value=f"addf-{deployment_name}"
+        )
+        self.vpc = ec2.Vpc.from_lookup(self, "VPC", vpc_id=vpc_id)
+
+        self.subnets = [
+            ec2.Subnet.from_subnet_id(self, f"SUBNET-{subnet_id}", subnet_id)
+            for subnet_id in subnet_ids
+        ]
 
         domain_name = studio_domain_name
 
@@ -69,7 +68,7 @@ class SagemakerStudioStack(Stack):
         sagemaker_sg = ec2.SecurityGroup(
             self,
             "SecurityGroup",
-            vpc=vpc,
+            vpc=self.vpc,
             description="Security Group for SageMaker Studio Notebook, Training Job and Hosting Endpoint",
         )
 
@@ -79,9 +78,9 @@ class SagemakerStudioStack(Stack):
         self.studio_domain = self.sagemaker_studio_domain(
             domain_name,
             self.sm_roles.sagemaker_studio_role,
-            vpc_id=vpc.vpc_id,
+            vpc_id=self.vpc.vpc_id,
             security_group_ids=[sagemaker_sg.security_group_id],
-            subnet_ids=[subnet.subnet_id for subnet in subnets],
+            subnet_ids=[subnet.subnet_id for subnet in self.subnets],
             app_image_config_name=app_image_config_name,
             image_name=image_name,
         )

@@ -57,39 +57,24 @@ stack = SagemakerStudioStack(
     image_name=cast(str, image_name),
 )
 
+
 CfnOutput(
-    stack,
-    "LeadDataScientistRoleArn",
-    value=stack.sm_roles.lead_data_scientist_role.role_arn,
+    scope=stack,
+    id="metadata",
+    value=stack.to_json_string(
+        {
+            "StudioDomainName": stack.studio_domain.domain_name,
+            "StudioDomainEFSId": stack.studio_domain.attr_home_efs_file_system_id,
+            "StudioDomainId": stack.studio_domain.attr_domain_id,
+            "StudioBucketName": studio_bucket_name,
+            "DataScientistRoleArn": stack.sm_roles.data_scientist_role.role_arn,
+            "DataScientistRoleSSMName": stack.sm_roles.ds_role_ssm_name,
+            "LeadDataScientistRoleArn": stack.sm_roles.lead_data_scientist_role.role_arn,
+            "LeadDataScientistRoleSSMName": stack.sm_roles.lead_ds_role_ssm_name,
+            "SageMakerExecutionRoleSSMName": stack.sm_roles.sagemaker_execution_role_SSM_name,
+            "SageMakerExecutionRoleArn": stack.sm_roles.sagemaker_studio_role.role_arn,
+        }
+    ),
 )
-CfnOutput(
-    stack,
-    "DataScientistRoleArn",
-    value=stack.sm_roles.data_scientist_role.role_arn,
-)
-CfnOutput(
-    stack,
-    "StudioDomainName",
-    value=stack.studio_domain.domain_name,
-)
-CfnOutput(
-    stack,
-    "StudioDomainId",
-    value=stack.studio_domain.attr_domain_id,
-)
-CfnOutput(stack, "DataScientistRoleSSMName", value=stack.sm_roles.ds_role_ssm_name)
-CfnOutput(
-    stack, "LeadDataScientistRoleSSMName", value=stack.sm_roles.lead_ds_role_ssm_name
-)
-CfnOutput(
-    stack,
-    "SageMakerExecutionRoleSSMName",
-    value=stack.sm_roles.sagemaker_execution_role_SSM_name,
-)
-CfnOutput(
-    stack,
-    "SageMakerExecutionRoleArn",
-    value=stack.sm_roles.sagemaker_studio_role.role_arn,
-)
-CfnOutput(stack, "StudioBucketName", value=studio_bucket_name)
+
 app.synth()

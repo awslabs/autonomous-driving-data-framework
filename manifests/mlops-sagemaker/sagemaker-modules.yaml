@@ -23,3 +23,5 @@ parameters:
     value: studio-auto-shutdown
   - name: studio_bucket_name
     value: addf-*
+  - name: retain_efs
+    value: 'False'
