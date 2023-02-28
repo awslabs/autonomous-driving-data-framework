@@ -1,6 +1,6 @@
 from typing import Any
 
-from aws_cdk import Aws, CfnOutput
+from aws_cdk import Aws
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_ssm as ssm
 from constructs import Construct
@@ -228,17 +228,12 @@ class SMRoles(Construct):
         kms_policy.attach_to_role(self.data_scientist_role)
         s3_policy.attach_to_role(self.data_scientist_role)
 
-        ds_role_ssm_name = "/mlops/role/ds"
+        self.ds_role_ssm_name = "/mlops/role/ds"
         ssm.StringParameter(
             self,
             "ssm-sg-ds-role",
-            parameter_name=ds_role_ssm_name,
+            parameter_name=self.ds_role_ssm_name,
             string_value=self.data_scientist_role.role_arn,
-        )
-        CfnOutput(
-            self,
-            "DataScientistRoleSSMName",
-            value=ds_role_ssm_name,
         )
 
         # role for Lead Data Scientist persona
@@ -274,17 +269,12 @@ class SMRoles(Construct):
         s3_policy.attach_to_role(self.lead_data_scientist_role)
         cdk_deploy_policy.attach_to_role(self.lead_data_scientist_role)
 
-        lead_ds_role_ssm_name = "/mlops/role/lead"
+        self.lead_ds_role_ssm_name = "/mlops/role/lead"
         ssm.StringParameter(
             self,
             "ssm-sg-lead-role",
-            parameter_name=lead_ds_role_ssm_name,
+            parameter_name=self.lead_ds_role_ssm_name,
             string_value=self.lead_data_scientist_role.role_arn,
-        )
-        CfnOutput(
-            self,
-            "LeadDataScientistRoleSSMName",
-            value=lead_ds_role_ssm_name,
         )
 
         # default role for sagemaker persona
@@ -316,20 +306,10 @@ class SMRoles(Construct):
         kms_policy.attach_to_role(self.sagemaker_studio_role)
         s3_policy.attach_to_role(self.sagemaker_studio_role)
 
-        sagemaker_execution_role_SSM_name = "/mlops/role/execution"
+        self.sagemaker_execution_role_SSM_name = "/mlops/role/execution"
         ssm.StringParameter(
             self,
             "ssm-sg-execution-role",
-            parameter_name=sagemaker_execution_role_SSM_name,
+            parameter_name=self.sagemaker_execution_role_SSM_name,
             string_value=self.sagemaker_studio_role.role_arn,
-        )
-        CfnOutput(
-            self,
-            "SageMakerExecutionRoleSSMName",
-            value=sagemaker_execution_role_SSM_name,
-        )
-        CfnOutput(
-            self,
-            "SageMakerExecutionRoleArn",
-            value=self.sagemaker_studio_role.role_arn,
         )

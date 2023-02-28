@@ -77,5 +77,19 @@ CfnOutput(
     "StudioDomainId",
     value=stack.studio_domain.attr_domain_id,
 )
+CfnOutput(stack, "DataScientistRoleSSMName", value=stack.sm_roles.ds_role_ssm_name)
+CfnOutput(
+    stack, "LeadDataScientistRoleSSMName", value=stack.sm_roles.lead_ds_role_ssm_name
+)
+CfnOutput(
+    stack,
+    "SageMakerExecutionRoleSSMName",
+    value=stack.sm_roles.sagemaker_execution_role_SSM_name,
+)
+CfnOutput(
+    stack,
+    "SageMakerExecutionRoleArn",
+    value=stack.sm_roles.sagemaker_studio_role.role_arn,
+)
 CfnOutput(stack, "StudioBucketName", value=studio_bucket_name)
 app.synth()

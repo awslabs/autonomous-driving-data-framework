@@ -44,20 +44,24 @@ This stack handles the deployment of the following resources:
   - `StudioDomainName`
   - `StudioDomainId`
   - `StudioBucketName`
+  - `DataScientistRoleSSMName`
   - `DataScientistRoleArn`
   - `LeadDataScientistRoleArn`
+  - `LeadDataScientistRoleSSMName`
+  - `SageMakerExecutionRoleSSMName`
+  - `SageMakerExecutionRoleArn`
 
 ### Example Output:
 ```yaml
 {
-  "DataScientistRoleArn": "arn:aws:iam::xxxxxxxxxxxx:role/addf-mlops-sagemaker-sage-SMdatascientistrole9DB5A-17QIYJHY5NO7Y",
-  "LeadDataScientistRoleArn": "arn:aws:iam::xxxxxxxxxxxx:role/addf-mlops-sagemaker-sage-SMleaddatascientistroleE-17Y0TIS9SZRF6",
-  "SMDataScientistRoleSSMName6C3F343A": "/mlops/role/ds",
-  "SMLeadDataScientistRoleSSMName0C38BCE1": "/mlops/role/lead",
-  "SMSageMakerExecutionRoleArn1D5092EF": "arn:aws:iam::xxxxxxxxxxxx:role/addf-mlops-sagemaker-sage-SMsagemakerstudiorole3BB-QJIRKFE6ZOUA",
-  "SMSageMakerExecutionRoleSSMNameE8C48C67": "/mlops/role/execution",
+  "DataScientistRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolesdatascientistrole-1X9NVOANA9Z2A",
+  "DataScientistRoleSSMName": "/mlops/role/ds",
+  "LeadDataScientistRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolesleaddatascientist-13E5MXYFRJV5Y",
+  "LeadDataScientistRoleSSMName": "/mlops/role/lead",
+  "SageMakerExecutionRoleArn": "arn:aws:iam::XXXXXXXXXXXX:role/addf-mlops-sagemaker-sage-smrolessagemakerstudioro-SPUANLZXCOF9",
+  "SageMakerExecutionRoleSSMName": "/mlops/role/execution",
   "StudioBucketName": "addf-*",
-  "StudioDomainId": "d-wewvpkwm7bi0",
+  "StudioDomainId": "d-artzryovvapb",
   "StudioDomainName": "addf-mlops-sagemaker-sagemaker-sagemaker-studio-studio-domain"
 }
 ```
