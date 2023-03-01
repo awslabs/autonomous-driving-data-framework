@@ -49,7 +49,7 @@ class BatchDags(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack deploys Managed AWS Batch Compute environment(s) for simulations in ADDF",
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - batch-managed",
             **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")

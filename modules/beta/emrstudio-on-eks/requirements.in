@@ -3,4 +3,4 @@ cdk-nag==2.12.29
 constructs==10.0.91
 boto3~=1.24.0
 pyOpenSSL==22.0.0
-cryptography~=38.0.3
+cryptography~=39.0.1
