@@ -1,0 +1,42 @@
+deploy:
+  phases:
+    install:
+      commands:
+        - npm install -g aws-cdk@2.63.0
+        - pip install -r requirements.txt
+        - apt-get install gettext-base
+    build:
+      commands:
+        - LCC_CONTENT=`openssl base64 -A -in scripts/on-jupyter-server-start.sh`
+        - export LCC_CONTENT=$LCC_CONTENT
+        - aws sagemaker create-studio-lifecycle-config --studio-lifecycle-config-name $ADDF_PARAMETER_SERVER_LIFECYCLE_NAME --studio-lifecycle-config-content $LCC_CONTENT --studio-lifecycle-config-app-type JupyterServer || true
+        - export LCC_ARN=$(aws sagemaker describe-studio-lifecycle-config --studio-lifecycle-config-name $ADDF_PARAMETER_SERVER_LIFECYCLE_NAME | jq -r ."StudioLifecycleConfigArn")
+        - echo $LCC_ARN
+        - ./check_lcc_state.sh
+        - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+        - cat cdk-exports.json
+        - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+        - export DOMAIN_ID=$(echo ${ADDF_MODULE_METADATA} | jq -r ".StudioDomainId")
+        - echo $DOMAIN_ID
+        - envsubst < "update-domain-input.template.json" > "update-domain-input.json"
+        - aws sagemaker update-domain --cli-input-json file://update-domain-input.json
+destroy:
+  phases:
+    install:
+      commands:
+        - npm install -g aws-cdk@2.63.0
+        - pip install -r requirements.txt
+    build:
+      commands:
+        - cdk destroy --force --app "python app.py"
+        - export EFS_ID=$(echo ${ADDF_MODULE_METADATA} | jq -r ".StudioDomainEFSId")
+        - export DOMAIN_ID=$(echo ${ADDF_MODULE_METADATA} | jq -r ".StudioDomainId")
+        - RETAIN_EFS=$(echo $ADDF_PARAMETER_RETAIN_EFS | tr '[:lower:]' '[:upper:]') 
+        - echo $RETAIN_EFS
+        - echo $EFS_ID
+        - echo $DOMAIN_ID
+        - >
+          if [[ $RETAIN_EFS == "FALSE"  ]]; then 
+              echo "DELETING EFS"
+              python scripts/delete_efs.py ${EFS_ID} ${DOMAIN_ID} || true
+          fi;

@@ -1,0 +1,10 @@
+name: datalake-buckets
+path: modules/optionals/datalake-buckets
+---
+name: ecr-custom-kernel
+path: modules/optionals/ecr/
+parameters:
+  - name: repository_name
+    value: "custom-kernel"
+  - name: "image_tag_mutability"
+    value: "MUTABLE"
