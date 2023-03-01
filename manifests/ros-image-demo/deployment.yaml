@@ -9,6 +9,8 @@ groups:
     path: manifests/ros-image-demo/docker-image-modules.yaml
   - name: dags
     path: manifests/ros-image-demo/image-pipeline-modules.yaml
+  - name: viz
+    path: manifests/ros-image-demo/visualization-modules.yaml
 targetAccountMappings:
   - alias: primary
     accountId: 1234567890
