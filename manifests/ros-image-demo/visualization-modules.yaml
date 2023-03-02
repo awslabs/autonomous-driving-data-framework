@@ -1,0 +1,19 @@
+name: dev-instance-g4dn
+path: modules/visualization/dev-instance
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: instance-type
+    value: g4dn.xlarge
+  - name: instance-count
+    value: 1
+  - name: s3-script-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
