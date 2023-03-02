@@ -382,3 +382,6 @@ codeseeder.out
 manifests/local
 manifests/demo
 archive/
+
+# terraform
+.terraform*

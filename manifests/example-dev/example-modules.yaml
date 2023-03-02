@@ -31,3 +31,11 @@ path: modules/examples/docker-build/
 parameters:
   - name: ecr-repo-name
     value: python-sample-app
+---
+name: tf-pattern
+path: modules/examples/example-tf/
+parameters:
+  - name: tf-s3-bucket
+    value: "addf-tfstate"
+  - name: tf-ddb-table
+    value: "addf-tfstate-lock"

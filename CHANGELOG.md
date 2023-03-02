@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added SageMaker `manifests/mlops-sagemaker` manifests: Deploys the ECR, SageMaker Studio, Service Catalog and Custom SageMaker Project Template together
 - FSx on Lustre module
 - FSx-Lustre support on EKS (`integration/fsx-lustre-on-eks`)
+- Added a sample demo module to deploy Terraform IAC using seedfarmer
 - Added Sagemaker Project support for MLOps
 
 ### **Changed**

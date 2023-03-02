@@ -1,0 +1,50 @@
+deploy:
+  phases:
+    install:
+      commands:
+        - TERRAFORM_VERSION=1.3.1
+        - wget https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
+        - unzip terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
+        - mv terraform /usr/local/bin/
+    pre_build:
+      commands:
+        # Backend vars configuration
+        - echo region=\"$AWS_DEFAULT_REGION\" >> vars/backend.tfvars
+        - echo bucket=\"$ADDF_PARAMETER_TF_S3_BUCKET\" >> vars/backend.tfvars
+        - echo key=\"$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/terraform.tfstate\" >> vars/backend.tfvars
+        - echo dynamodb_table=\"$ADDF_PARAMETER_TF_DDB_TABLE\" >> vars/backend.tfvars
+        - cat vars/backend.tfvars
+        # App specific vars configuration
+        - echo aws_region=\"$AWS_DEFAULT_REGION\" >> vars/variables.tfvars
+        - cat vars/variables.tfvars
+    build:
+      commands:
+       - terraform init -input=false -backend=true -backend-config=vars/backend.tfvars -reconfigure
+       - terraform plan -input=false -out tf.plan -var-file=vars/variables.tfvars -no-color
+       - terraform apply -auto-approve -var-file=vars/variables.tfvars
+       - terraform output -json > ./tf-exports.json
+       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('tf-exports.json'); print(json.load(file))")
+
+destroy:
+  phases:
+    install:
+      commands:
+        - TERRAFORM_VERSION=1.3.1
+        - wget https://releases.hashicorp.com/terraform/"$TERRAFORM_VERSION"/terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
+        - unzip terraform_"$TERRAFORM_VERSION"_linux_amd64.zip
+        - mv terraform /usr/local/bin/
+    pre_build:
+      commands:
+        # Backend vars configuration
+        - echo region=\"$AWS_DEFAULT_REGION\" >> vars/backend.tfvars
+        - echo bucket=\"$ADDF_PARAMETER_TF_S3_BUCKET\" >> vars/backend.tfvars
+        - echo key=\"$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/terraform.tfstate\" >> vars/backend.tfvars
+        - echo dynamodb_table=\"$ADDF_PARAMETER_TF_DDB_TABLE\" >> vars/backend.tfvars
+        - cat vars/backend.tfvars
+        # App specific vars configuration
+        - echo aws_region=\"$AWS_DEFAULT_REGION\" >> vars/variables.tfvars
+        - cat vars/variables.tfvars
+    build:
+      commands:
+      - terraform init -input=false -backend=true -backend-config=vars/backend.tfvars -reconfigure
+      - terraform destroy -auto-approve -var-file=vars/variables.tfvars
