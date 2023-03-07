@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [V1.2.0] - [UNRELEASED]
 
 ### **Added**
+
 - Cloud9 module
 - Added Visualization Instance Deployment to the ros-image-demo manifest
 - Added `sagemaker/sagemaker-studio` module: Deploy's SageMaker Studio, including user Management and auto-stop lifecycle hooks
@@ -19,15 +20,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FSx on Lustre module
 - FSx-Lustre support on EKS (`integration/fsx-lustre-on-eks`)
 - Added a sample demo module to deploy Terraform IAC using seedfarmer
+- Added a prereq module to deploy terraform backend resources
 - Added Sagemaker Project support for MLOps
 
 ### **Changed**
+
 - modified `core/mwaa` to take a parameterized `requirements.txt` file to support various deployments
 - fixed Cloud9 SSM connection type config by creating the underlying resources needed to enable the CDK to deploy
 - updated requirements for seed-farmer
 - updated `core-eks` module to support install the FSX driver
 - existing modules addign `Guidance Solution ID` to the stack
+- Updated seedfarmer version from `2.4.0` to `2.5.0`
+
 ### **Removed**
+
 - removed `"ts-jest": "^29.0.3"` from `demo-only/rosbag-webviz/package.json` due to lib conflicts (introduced bu dependabot)
 
 
