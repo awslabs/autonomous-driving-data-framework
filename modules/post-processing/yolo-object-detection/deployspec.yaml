@@ -32,3 +32,4 @@ destroy:
       commands:
       # Remove DAG files
       - cdk destroy --force --app "python app.py"
+build_type: BUILD_GENERAL1_LARGE
