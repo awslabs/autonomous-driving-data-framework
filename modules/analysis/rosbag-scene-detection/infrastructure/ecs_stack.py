@@ -376,6 +376,6 @@ class Fargate(aws_cdk.Stack):
             database_name=glue_db_name,
             schedule=None,
             targets=glue.CfnCrawler.TargetsProperty(
-                s3_targets=[glue.CfnCrawler.S3TargetProperty(path=f"s3://{module_name}/" + dest_bucket.bucket_name)]
+                s3_targets=[glue.CfnCrawler.S3TargetProperty(path=f"s3://{dest_bucket.bucket_name}/{module_name}")]
             ),
         )
