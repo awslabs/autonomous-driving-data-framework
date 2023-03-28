@@ -28,3 +28,9 @@ ensure_newline_before_comments = true
 line_length = 120
 py_version = 36
 skip_gitignore = false
+
+[tool.pytest.ini_options]
+addopts = "-v --cov=. --cov-report term --cov-config=coverage.ini"
+pythonpath = [
+  "."
+]

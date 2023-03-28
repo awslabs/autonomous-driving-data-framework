@@ -25,12 +25,8 @@ vpc_id = os.getenv(_param("VPC_ID"))
 subnet_ids = json.loads(os.getenv(_param("SUBNET_IDS"), "[]"))
 studio_domain_name = os.getenv(_param("STUDIO_DOMAIN_NAME"), DEFAULT_STUDIO_DOMAIN_NAME)
 studio_bucket_name = os.getenv(_param("STUDIO_BUCKET_NAME"), DEFAULT_STUDIO_BUCKET_NAME)
-app_image_config_name = os.getenv(
-    _param("CUSTOM_KERNEL_APP_CONFIG_NAME"), DEFAULT_CUSTOM_KERNEL_APP_CONFIG_NAME
-)
-image_name = os.getenv(
-    _param("CUSTOM_KERNEL_IMAGE_NAME"), DEFAULT_CUSTOM_KERNEL_IMAGE_NAME
-)
+app_image_config_name = os.getenv(_param("CUSTOM_KERNEL_APP_CONFIG_NAME"), DEFAULT_CUSTOM_KERNEL_APP_CONFIG_NAME)
+image_name = os.getenv(_param("CUSTOM_KERNEL_IMAGE_NAME"), DEFAULT_CUSTOM_KERNEL_IMAGE_NAME)
 
 environment = aws_cdk.Environment(
     account=os.environ["CDK_DEFAULT_ACCOUNT"],

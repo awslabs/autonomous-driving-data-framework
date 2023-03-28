@@ -25,12 +25,8 @@ environment = cdk.Environment(
 )
 
 repository_name = os.getenv(_param("REPOSITORY_NAME"), DEFAULT_REPOSITORY_NAME)
-image_tag_mutability = os.getenv(
-    _param("IMAGE_TAG_MUTABILITY"), DEFAULT_IMAGE_MUTABILITY
-)
-lifecycle_max_image_count = os.getenv(
-    _param("LIFECYCLE_MAX_IMAGE_COUNT"), DEFAULT_LIFECYCLE
-)
+image_tag_mutability = os.getenv(_param("IMAGE_TAG_MUTABILITY"), DEFAULT_IMAGE_MUTABILITY)
+lifecycle_max_image_count = os.getenv(_param("LIFECYCLE_MAX_IMAGE_COUNT"), DEFAULT_LIFECYCLE)
 lifecycle_max_days = os.getenv(_param("LIFECYCLE_MAX_DAYS"), DEFAULT_LIFECYCLE)
 
 app = cdk.App()
