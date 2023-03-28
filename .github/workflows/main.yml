@@ -29,6 +29,8 @@ jobs:
           pip install -r modules/analysis/rosbag-scene-detection/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-scene-detection/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/analysis/rosbag-scene-detection/ && pytest
 
   modules-analysis-rosbag-image-pipeline:
     runs-on: ubuntu-latest
@@ -48,6 +50,8 @@ jobs:
           pip install -r modules/analysis/rosbag-image-pipeline/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-image-pipeline/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/analysis/rosbag-image-pipeline/ && pytest
 
   modules-ros-sensor-extraction:
     runs-on: ubuntu-latest
@@ -144,6 +148,8 @@ jobs:
           pip install -r modules/core/eks/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/eks/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/core/eks/ && pytest
 
   modules-core-emr-on-eks:
     runs-on: ubuntu-latest
@@ -163,6 +169,8 @@ jobs:
           pip install -r modules/core/emr-on-eks/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/emr-on-eks/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/core/emr-on-eks/ && pytest
 
   modules-core-aws-batch:
     runs-on: ubuntu-latest
@@ -182,6 +190,9 @@ jobs:
           pip install -r modules/core/aws-batch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/aws-batch/
+      - name: PyTest based Unit Tests
+        run: cd modules/core/aws-batch/ && pytest
+      
 
   modules-example-eventbridge-stepfunc-awsbatch:
     runs-on: ubuntu-latest
@@ -239,6 +250,8 @@ jobs:
           pip install -r modules/analysis/aws-batch-demo/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/aws-batch-demo/
+      - name: PyTest based Unit Tests
+        run: cd modules/analysis/aws-batch-demo/ && pytest
 
   modules-core-metadata-storage:
     runs-on: ubuntu-latest
@@ -258,6 +271,8 @@ jobs:
           pip install -r modules/core/metadata-storage/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/metadata-storage/
+      - name: PyTest based Unit Tests
+        run: cd modules/core/metadata-storage/ && pytest
 
   modules-core-mwaa:
     runs-on: ubuntu-latest
@@ -277,6 +292,8 @@ jobs:
           pip install -r modules/core/mwaa/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/mwaa/
+      - name: PyTest based Unit Tests
+        run: cd modules/core/mwaa/ && pytest
 
   modules-core-neptune:
     runs-on: ubuntu-latest
@@ -296,6 +313,8 @@ jobs:
           pip install -r modules/core/neptune/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/neptune/
+      - name: PyTest based Unit Tests
+        run: cd modules/core/neptune/ && pytest
 
   modules-core-opensearch:
     runs-on: ubuntu-latest
@@ -315,6 +334,8 @@ jobs:
           pip install -r modules/core/opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/opensearch/
+      - name: PyTest based Unit Tests
+        run: cd modules/core/opensearch/ && pytest
 
   modules-integration-ddb-to-opensearch:
     runs-on: ubuntu-latest
@@ -334,6 +355,8 @@ jobs:
           pip install -r modules/integration/ddb-to-opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/integration/ddb-to-opensearch/
+      - name: PyTest based Unit Tests
+        run: cd modules/integration/ddb-to-opensearch/ && pytest
 
   modules-integration-eks-to-opensearch:
     runs-on: ubuntu-latest
@@ -353,6 +376,8 @@ jobs:
           pip install -r modules/integration/eks-to-opensearch/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/integration/eks-to-opensearch/
+      - name: PyTest based Unit Tests
+        run: cd modules/integration/eks-to-opensearch/ && pytest
 
   modules-integration-emr-to-opensearch:
     runs-on: ubuntu-latest
@@ -371,6 +396,8 @@ jobs:
           pip install -r requirements-dev.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/integration/emr-to-opensearch/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/integration/emr-to-opensearch/ && pytest
 
   modules-optionals-datalake-buckets:
     runs-on: ubuntu-latest
@@ -483,6 +510,8 @@ jobs:
           pip install -r modules/core/efs/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/efs/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/core/efs/ && pytest
 
   modules-integration-efs-on-eks:
     runs-on: ubuntu-latest
@@ -502,6 +531,8 @@ jobs:
           pip install -r modules/integration/efs-on-eks/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/integration/efs-on-eks/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/integration/efs-on-eks/ && pytest
 
   modules-integration-fsx-lustre-on-eks:
     runs-on: ubuntu-latest
@@ -521,6 +552,8 @@ jobs:
           pip install -r modules/integration/fsx-lustre-on-eks/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/integration/fsx-lustre-on-eks/
+      - name: PyTest based Unit Tests
+        run: cd modules/integration/fsx-lustre-on-eks/ && pytest
 
   modules-mlops-kubeflow-platform:
     runs-on: ubuntu-latest
@@ -597,6 +630,8 @@ jobs:
           pip install -r modules/core/fsx-lustre/requirements.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/core/fsx-lustre/
+      - name: PyTest based Unit Tests
+        run: cd modules/core/fsx-lustre/ && pytest
 
   modules-sagemaker-sagemaker-studio:
     runs-on: ubuntu-latest
