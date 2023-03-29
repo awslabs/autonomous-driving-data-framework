@@ -29,16 +29,12 @@ if __name__ == "__main__":
     )
 
     accept_input = f"delete-{region}"
-    print(
-        f"Are you certain you want to delete Sagemaker domain in: {region}. [{accept_input}]"
-    )
+    print(f"Are you certain you want to delete Sagemaker domain in: {region}. [{accept_input}]")
     print("This action cannot be undone")
     user_input = input()
 
     if user_input != accept_input:
-        print(
-            f"Cancelled. If you wish to delete the domain, please enter {accept_input}"
-        )
+        print(f"Cancelled. If you wish to delete the domain, please enter {accept_input}")
         exit(1)
     else:
         session = boto3.session.Session(profile_name=aws_profile)
@@ -84,9 +80,7 @@ if __name__ == "__main__":
 
         def delete_domain(domainId):
             try:
-                client.delete_domain(
-                    DomainId=domainId, RetentionPolicy={"HomeEfsFileSystem": "Delete"}
-                )
+                client.delete_domain(DomainId=domainId, RetentionPolicy={"HomeEfsFileSystem": "Delete"})
             except Exception as e:
                 print(f"\tError deleting domain: {e}")
 

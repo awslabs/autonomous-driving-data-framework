@@ -47,15 +47,10 @@ class SagemakerStudioStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{deployment_name}"
-        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
         self.vpc = ec2.Vpc.from_lookup(self, "VPC", vpc_id=vpc_id)
 
-        self.subnets = [
-            ec2.Subnet.from_subnet_id(self, f"SUBNET-{subnet_id}", subnet_id)
-            for subnet_id in subnet_ids
-        ]
+        self.subnets = [ec2.Subnet.from_subnet_id(self, f"SUBNET-{subnet_id}", subnet_id) for subnet_id in subnet_ids]
 
         domain_name = studio_domain_name
 

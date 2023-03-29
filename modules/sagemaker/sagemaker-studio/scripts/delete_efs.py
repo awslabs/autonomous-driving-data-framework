@@ -21,13 +21,9 @@ def delete_security_groups(sg_ids: List[str]) -> None:
 
     for sg in resp["SecurityGroups"]:
         if sg["IpPermissionsEgress"]:
-            client_ec2.revoke_security_group_egress(
-                GroupId=sg["GroupId"], IpPermissions=sg["IpPermissionsEgress"]
-            )
+            client_ec2.revoke_security_group_egress(GroupId=sg["GroupId"], IpPermissions=sg["IpPermissionsEgress"])
         if sg["IpPermissions"]:
-            client_ec2.revoke_security_group_ingress(
-                GroupId=sg["GroupId"], IpPermissions=sg["IpPermissions"]
-            )
+            client_ec2.revoke_security_group_ingress(GroupId=sg["GroupId"], IpPermissions=sg["IpPermissions"])
 
     for sg in resp["SecurityGroups"]:
         client_ec2.delete_security_group(GroupId=sg["GroupId"])

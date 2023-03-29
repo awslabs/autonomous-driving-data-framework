@@ -18,12 +18,8 @@ def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
 
-sagemaker_image_name = os.getenv(
-    _param("SAGEMAKER_IMAGE_NAME"), DEFAULT_SAGEMAKER_IMAGE_NAME
-)
-app_image_config_name = os.getenv(
-    _param("APP_IMAGE_CONFIG_NAME"), DEFAULT_APP_IMAGE_CONFIG_NAME
-)
+sagemaker_image_name = os.getenv(_param("SAGEMAKER_IMAGE_NAME"), DEFAULT_SAGEMAKER_IMAGE_NAME)
+app_image_config_name = os.getenv(_param("APP_IMAGE_CONFIG_NAME"), DEFAULT_APP_IMAGE_CONFIG_NAME)
 
 environment = cdk.Environment(
     account=os.environ["CDK_DEFAULT_ACCOUNT"],

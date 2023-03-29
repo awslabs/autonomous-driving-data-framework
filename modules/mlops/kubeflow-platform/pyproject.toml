@@ -28,3 +28,9 @@ line_length = 120
 src_paths = ["kubeflow"]
 py_version = 36
 skip_gitignore = false
+
+[tool.pytest.ini_options]
+addopts = "-v --cov=. --cov-report term --cov-config=coverage.ini"
+pythonpath = [
+  "."
+]
