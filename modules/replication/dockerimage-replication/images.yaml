@@ -1,0 +1,3 @@
+ingress-nginx/controller: 163864951651.dkr.ecr.eu-central-1.amazonaws.com/addf-registry.k8s.io/ingress-nginx/controller:v1.6.4
+ingress-nginx/kube-webhook-certgen: 163864951651.dkr.ecr.eu-central-1.amazonaws.com/addf-registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.3.0
+ingress-nginx/kube-webhook-certgen: 163864951651.dkr.ecr.eu-central-1.amazonaws.com/addf-registry.k8s.io/ingress-nginx/kube-webhook-certgen:v20220916-gd32f8c343
