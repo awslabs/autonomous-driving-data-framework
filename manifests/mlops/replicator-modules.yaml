@@ -1,0 +1,6 @@
+parameters:
+  - name: eks-version
+    valueFrom:
+      envVariable: GLOBAL_EKS_VERSION
+name: replication
+path: modules/replication/dockerimage-replication/
