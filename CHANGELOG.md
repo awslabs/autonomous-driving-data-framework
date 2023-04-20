@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated `core-eks` module to support install the FSX driver
 - existing modules addign `Guidance Solution ID` to the stack
 - Updated seedfarmer version from `2.4.0` to `2.5.0`
+- Refactored Networking module to create isolated subnets added to the existing public/private subnets
 
 ### **Removed**
 

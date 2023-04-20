@@ -13,23 +13,31 @@
 #    limitations under the License.
 
 import logging
-import os
 from typing import Any, List, cast
 
 import aws_cdk.aws_ec2 as ec2
 import cdk_nag
 from aws_cdk import Aspects, Stack, Tags
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
 class NetworkingStack(Stack):  # type: ignore
-    def __init__(self, scope: Construct, id: str, **kwargs: Any) -> None:
-        self.deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
-        self.internet_accessible = os.getenv("ADDF_PARAMETER_INTERNET_ACCESSIBLE", True)
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        deployment_name: str,
+        module_name: str,
+        internet_accessible: bool,
+        **kwargs: Any,
+    ) -> None:
+
         super().__init__(scope, id, description="This stack deploys Networking resources for ADDF", **kwargs)
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        self.internet_accessible = internet_accessible
         self.vpc: ec2.Vpc = self._create_vpc()
 
         self.public_subnets = (
@@ -44,7 +52,7 @@ class NetworkingStack(Stack):  # type: ignore
         )
         if not self.internet_accessible:
             self.isolated_subnets = (
-                self.vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)  # type: ignore
+                self.vpc.select_subnets(subnet_type=ec2.SubnetType.PRIVATE_ISOLATED)  # type: ignore
                 if self.vpc.isolated_subnets
                 else self.vpc.select_subnets(subnet_group_name="")
             )
@@ -60,23 +68,27 @@ class NetworkingStack(Stack):  # type: ignore
             peer=ec2.Peer.ipv4(self.vpc.vpc_cidr_block), connection=ec2.Port.all_tcp()
         )
 
-        # Creating Gateway Endpoints
-        vpc_gateway_endpoints = {
-            "s3": ec2.GatewayVpcEndpointAwsService.S3,
-            "dynamodb": ec2.GatewayVpcEndpointAwsService.DYNAMODB,
-        }
-
-        for name, gateway_vpc_endpoint_service in vpc_gateway_endpoints.items():
-            self.vpc.add_gateway_endpoint(
-                id=name,
-                service=gateway_vpc_endpoint_service,
-                subnets=[
-                    ec2.SubnetSelection(subnets=self.nodes_subnets.subnets),
-                ],
-            )
-
         if not self.internet_accessible:
             self._create_vpc_endpoints()
+
+        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
+
+        suppressions = [
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-VPC7",
+                    "reason": "Flowlogs not enabled for this module",
+                }
+            ),
+            NagPackSuppression(
+                **{
+                    "id": "AwsSolutions-EC23",
+                    "reason": "Intrinsic Function Warning",
+                }
+            ),
+        ]
+
+        NagSuppressions.add_stack_suppressions(self, suppressions)
 
     def _create_vpc(self) -> ec2.Vpc:
         if self.internet_accessible:
@@ -122,6 +134,21 @@ class NetworkingStack(Stack):  # type: ignore
 
     def _create_vpc_endpoints(self) -> None:
 
+        # Creating Gateway Endpoints
+        vpc_gateway_endpoints = {
+            "s3": ec2.GatewayVpcEndpointAwsService.S3,
+            "dynamodb": ec2.GatewayVpcEndpointAwsService.DYNAMODB,
+        }
+
+        for name, gateway_vpc_endpoint_service in vpc_gateway_endpoints.items():
+            self.vpc.add_gateway_endpoint(
+                id=name,
+                service=gateway_vpc_endpoint_service,
+                subnets=[
+                    ec2.SubnetSelection(subnets=self.nodes_subnets.subnets),
+                ],
+            )
+        # Creating Interface Endpoints
         vpc_interface_endpoints = {
             "cloudwatch_endpoint": ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH,
             "cloudwatch_logs_endpoint": ec2.InterfaceVpcEndpointAwsService.CLOUDWATCH_LOGS,
@@ -155,6 +182,9 @@ class NetworkingStack(Stack):  # type: ignore
             "codebuild_endpoint": ec2.InterfaceVpcEndpointAwsService("codebuild"),
             "emr-containers": ec2.InterfaceVpcEndpointAwsService("emr-containers"),
             "databrew": ec2.InterfaceVpcEndpointAwsService("databrew"),
+            "lambda": ec2.InterfaceVpcEndpointAwsService.LAMBDA_,
+            "code_artifact_repo_endpoint": ec2.InterfaceVpcEndpointAwsService("codeartifact.repositories"),
+            "code_artifact_api_endpoint": ec2.InterfaceVpcEndpointAwsService("codeartifact.api"),
         }
 
         for name, interface_service in vpc_interface_endpoints.items():
@@ -165,29 +195,8 @@ class NetworkingStack(Stack):  # type: ignore
                 private_dns_enabled=True,
                 security_groups=[cast(ec2.ISecurityGroup, self._vpc_security_group)],
             )
-        # Adding CodeArtifact VPC endpoints
-        self.vpc.add_interface_endpoint(
-            id="code_artifact_repo_endpoint",
-            service=cast(
-                ec2.IInterfaceVpcEndpointService,
-                ec2.InterfaceVpcEndpointAwsService("codeartifact.repositories"),
-            ),
-            subnets=ec2.SubnetSelection(subnets=self.nodes_subnets.subnets),
-            private_dns_enabled=False,
-            security_groups=[cast(ec2.ISecurityGroup, self._vpc_security_group)],
-        )
-        self.vpc.add_interface_endpoint(
-            id="code_artifact_api_endpoint",
-            service=cast(
-                ec2.IInterfaceVpcEndpointService,
-                ec2.InterfaceVpcEndpointAwsService("codeartifact.api"),
-            ),
-            subnets=ec2.SubnetSelection(subnets=self.nodes_subnets.subnets),
-            private_dns_enabled=False,
-            security_groups=[cast(ec2.ISecurityGroup, self._vpc_security_group)],
-        )
 
-        # Adding Lambda and Redshift endpoints with CDK low level APIs
+        # Adding Redshift endpoints with CDK low level APIs
         endpoint_url_template = "com.amazonaws.{}.{}"
         ec2.CfnVPCEndpoint(
             self,
@@ -199,15 +208,3 @@ class NetworkingStack(Stack):  # type: ignore
             subnet_ids=self.nodes_subnets.subnet_ids,
             private_dns_enabled=True,
         )
-        ec2.CfnVPCEndpoint(
-            self,
-            "lambda_endpoint",
-            vpc_endpoint_type="Interface",
-            service_name=endpoint_url_template.format(self.region, "lambda"),
-            vpc_id=self.vpc.vpc_id,
-            security_group_ids=[self._vpc_security_group.security_group_id],
-            subnet_ids=self.nodes_subnets.subnet_ids,
-            private_dns_enabled=True,
-        )
-
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
