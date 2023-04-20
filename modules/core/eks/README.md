@@ -19,8 +19,12 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
 
 #### Optional
 
+- `custom-subnet-ids`: The custom subnets for assigning IP addresses to the pods. Usually used when there is a limited number of IP addresses available for EKS.
 - `eks_admin_role_name`: The Admin Role to be mapped to the `systems:masters` group of RBAC
+- `eks_poweruser_role_name`: The PowerUser Role to be mapped to the `poweruser-group` group of RBAC
+- `eks_readonly_role_name`: The ReadOnly Role to be mapped to the `readonly-group` group of RBAC
 - `eks_node_spot`: If `eks_node_spot` is set to True, we deploy SPOT instances of the above `nodegroup_config` for you else we deploy `ON_DEMAND` instances.
+- `eks_api_endpoint_private`: If set to True, we deploy EKS cluster with API endpoint set to private mode.
 - `deploy_aws_lb_controller`: We deploy the ALB Ingress controller by default, unless you set it to False
 - `deploy_external_dns`: We deploy the External DNS to interact with AWS Route53 by default, unless you set it to False
 - `deploy_aws_ebs_csi`: We deploy the EBS CSI Driver AWS EBS by default, unless you set it to False
@@ -33,12 +37,19 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
 - `deploy_cloudwatch_container_insights_logs`: If set to True, we deploy CloudWatch Container Insights plugin to ingest containers logs into AWS Cloudwatch for you. Default behavior is set to False
 - `deploy_amp`: If set to True, we deploy AWS Managed Prometheus for you. Default behavior is set to False
 - `deploy_grafana_for_amp`: If set to True, we deploy grafana boards. Default behavior is set to False
+- `deploy_kured`: If set to True, we deploy kured reboot daemon. Default behavior is set to False
+- `deploy_calico`: If set to True, we deploy calico network engine and default-deny network policies. Default behavior is set to False
+- `deploy_nginx_controller`: If set to True, we deploy nginx ingress controller. Default behavior is set to False
+- `nginx_additional_annotations`: Optional list of nginx annotations.
+- `deploy_kyverno`: If set to True, we deploy Kyverno policy engine. Default behavior is set to False
+- `kyverno_policies`: Optional list of validate and mutate kyverno policies.
 
 ### Sample declaration of EKS Compute Configuration
 
 ```yaml
 - name: eks-compute
   value:
+    eks_version: 1.25
     eks_admin_role_name: "Admin" 
     eks_nodegroup_config:
       - eks_ng_name: ng1
@@ -57,9 +68,8 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
           - "m5.xlarge"
         eks_node_labels:
           usage: visualization
-    eks_version: 1.21
     eks_node_spot: False
-
+    eks_api_endpoint_private: False
 ```
 
 > We have enabled [Security groups for pods](https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html) by default as the best security practise and the feature is supported by most Nitro-based Amazon EC2 instance families. For finding the right instance type which supports the feature, refer to [limits.go](https://github.com/aws/amazon-vpc-resource-controller-k8s/blob/master/pkg/aws/vpc/limits.go)
@@ -82,7 +92,47 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
     cloudwatch_container_insights_logs_retention_days: 7
     deploy_amp: False 
     deploy_grafana_for_amp: False
-
+    deploy_kured: False
+    deploy_calico: False
+    deploy_nginx_controller: False
+    nginx_additional_annotations:
+      nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
+    deploy_kyverno: False
+    kyverno_policies:
+      validate:
+        - block-ephemeral-containers
+        - block-stale-images
+        - block-updates-deletes
+        - check-deprecated-apis
+        - disallow-cri-sock-mount
+        - disallow-custom-snippets
+        - disallow-empty-ingress-host
+        - disallow-helm-tiller
+        - disallow-latest-tag
+        - disallow-localhost-services
+        - disallow-secrets-from-env-vars
+        - ensure-probes-different
+        - ingress-host-match-tls
+        - limit-hostpath-vols
+        - prevent-naked-pods
+        - require-drop-cap-net-raw
+        - require-emptydir-requests-limits
+        - require-labels
+        - require-pod-requests-limits
+        - require-probes
+        - restrict-annotations
+        - restrict-automount-sa-token
+        - restrict-binding-clusteradmin
+        - restrict-clusterrole-nodesproxy
+        - restrict-escalation-verbs-roles
+        - restrict-ingress-classes
+        - restrict-ingress-defaultbackend
+        - restrict-node-selection
+        - restrict-path
+        - restrict-service-external-ips
+        - restrict-wildcard-resources
+        - restrict-wildcard-verbs
+        - unique-ingress-host-and-path
 ```
 
 #### Logging & Monitoring

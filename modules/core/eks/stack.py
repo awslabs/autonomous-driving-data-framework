@@ -15,39 +15,230 @@
 import json
 import logging
 import os
-from typing import Any, Dict, cast
+from copy import deepcopy
+from typing import Any, Dict, List, cast
 
+import boto3
+import botocore
 import cdk_nag
 import yaml
 from aws_cdk import Aspects, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_aps as aps
 from aws_cdk import aws_ec2 as ec2
-from aws_cdk import aws_efs as efs
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_kms as kms
+from aws_cdk.lambda_layer_kubectl_v23 import KubectlV23Layer
 from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
+from deepmerge import always_merger
 
 _logger: logging.Logger = logging.getLogger(__name__)
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-ALB_CONTROLLER_VERSION = "alb_contoller_version"
-FSX_DRIVER_VERSION = "fsx_driver_version"
-version_mappings = {
-    "1.21": {ALB_CONTROLLER_VERSION: "1.3.3", FSX_DRIVER_VERSION: "1.5.0"},
-    "1.22": {ALB_CONTROLLER_VERSION: "1.4.5", FSX_DRIVER_VERSION: "1.5.0"},
-    "1.23": {ALB_CONTROLLER_VERSION: "1.4.5", FSX_DRIVER_VERSION: "1.5.0"},
-    "default": {ALB_CONTROLLER_VERSION: "1.3.3", FSX_DRIVER_VERSION: "1.5.0"},
-}
+ALB_CONTROLLER = "alb_controller"
+NGINX_CONTROLLER = "nginx_controller"
+AWS_VPC_CNI = "aws_vpc_cni"
+CALICO = "calico"
+CLUSTER_AUTOSCALER = "cluster_autoscaler"
+EBS_CSI_DRIVER = "ebs_csi_driver"
+EFS_CSI_DRIVER = "efs_csi_driver"
+EXTERNAL_DNS = "external_dns"
+EXTERNAL_SECRETS = "external_secrets"
+FLUENTBIT = "fluentbit"
+FSX_DRIVER = "fsx_driver"
+GRAFANA = "grafana"
+KURED = "kured"
+KYVERNO = "kyverno"
+KYVERNO_POLICY_REPORTER = "kyverno_policy_reporter"
+METRICS_SERVER = "metrics_server"
+PROMETHEUS_STACK = "prometheus_stack"
+SECRETS_MANAGER_CSI_DRIVER = "secrets_manager_csi_driver"
+workload_versions = {}
 
 
-def get_version(eks_version: str, controller_name) -> str:
-    if version_mappings.get(eks_version) and version_mappings[eks_version].get(controller_name):
-        return version_mappings[eks_version][controller_name]
-    else:
-        return version_mappings["default"][controller_name]
+def _get_ssm_parameter_raw(name: str) -> str:
+    """Get SSM parameter as a string
+
+    Args:
+        name (str): Name of the SSM parameter
+
+    Returns:
+        str: Value of the SSM parameter
+    """
+    # There are two ways to get SSM parameter using CDK:
+    # 1) ssm.StringParameter.value_from_lookup() which pulls parameter during synthesize phase.
+    #    Unfortunately, it does not return the actual value, but a dummy value.
+    #    There is an issue about this which is closed, but not solved: https://github.com/aws/aws-cdk/issues/8699
+    # 2) ssm.StringParameter.value_for_string_parameter() which returns a token: ${Token[TOKEN.723]}
+    #    that will be resolved during deployment phase. Unfortunately this is too late, as we need to convert
+    #    the data to dictionary before deployment
+    # To mitigate this we use boto3
+
+    ssm = boto3.client("ssm")
+
+    try:
+        response = ssm.get_parameter(Name=name)
+    except botocore.exceptions.ClientError as error:
+        if error.response["Error"]["Code"] == "InternalServerError":
+            _logger.error("Internal server error")
+        elif error.response["Error"]["Code"] == "InvalidKeyId":
+            _logger.error("Invalid Key Id")
+        elif error.response["Error"]["Code"] == "ParameterNotFound":
+            _logger.error("Parameter not found")
+        elif error.response["Error"]["Code"] == "ParameterVersionNotFound":
+            _logger.error("Parameter version not found")
+        raise error
+
+    if "Parameter" in response and "Value" in response["Parameter"]:
+        return response["Parameter"]["Value"]
+
+    return ""
+
+
+def _get_ssm_parameter_as_dict(eks_version: str, workload_name: str) -> Dict:
+    """Get SSM parameter and converts it to dictionary
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        Dict: Parsed SSM parameter
+    """
+    response = _get_ssm_parameter_raw(f"/addf/eks/chart/{workload_name}-{eks_version}")
+
+    if response:
+        return json.loads(response)
+
+    return {}
+
+
+def get_ami_version(eks_version: str) -> str:
+    """Get AMI version
+
+    Args:
+        eks_version (str): EKS version
+
+    Returns:
+        str: AMI version
+    """
+    return _get_ssm_parameter_raw(f"/addf/eks/ami/{eks_version}")
+
+
+def get_chart_repo(eks_version: str, workload_name: str) -> str:
+    """Get chart repository URL
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart repository URL
+    """
+    if workload_name not in workload_versions:
+        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+
+    if "helm" in workload_versions[workload_name] and "repository" in workload_versions[workload_name]["helm"]:
+        return workload_versions[workload_name]["helm"]["repository"]
+
+    return ""
+
+
+def get_chart_release(eks_version: str, workload_name: str) -> str:
+    """Get chart name
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart name
+    """
+    if workload_name not in workload_versions:
+        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+
+    if "helm" in workload_versions[workload_name] and "name" in workload_versions[workload_name]["helm"]:
+        return workload_versions[workload_name]["helm"]["name"]
+
+    return ""
+
+
+def get_chart_version(eks_version: str, workload_name: str) -> str:
+    """Get chart version
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart version
+    """
+    if workload_name not in workload_versions:
+        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+
+    if "helm" in workload_versions[workload_name] and "version" in workload_versions[workload_name]["helm"]:
+        return workload_versions[workload_name]["helm"]["version"]
+
+    return ""
+
+
+def get_chart_values(eks_version: str, workload_name: str) -> Dict:
+    """Get chart additional valuess
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        Dict: Chart additional values
+    """
+    if workload_name not in workload_versions:
+        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+
+    if "values" in workload_versions[workload_name]:
+        return workload_versions[workload_name]["values"]
+
+    return {}
+
+
+def get_az_from_subnet(subnets: List[str]) -> Dict[str, str]:
+    """Get availability zone for subnet
+
+    Args:
+        subnets (List[str]): List of subnets
+
+    Returns:
+        Dict[str, str]: Correlation between subnet and availability zone
+    """
+    ec2_client = boto3.client("ec2")
+    _logger.info("Subnets info: %s", subnets)
+    az_subnet_map = {}
+    try:
+        response = ec2_client.describe_subnets(SubnetIds=subnets)
+        az_subnet_map = {entry["SubnetId"]: entry["AvailabilityZone"] for entry in response["Subnets"]}
+    except botocore.exceptions.ClientError as ex:
+        _logger.error("Error Describing Subnets: %s", ex)
+        if ex.response.get("Error", {}).get("Code", "Unknown") != "InvalidSubnetID.NotFound":
+            raise
+        else:
+            _logger.debug("Exception caught while describing subnets: %s", ex)
+    return az_subnet_map
+
+
+def deep_merge(*dicts: Dict) -> Dict:
+    """Merges two dictionaries
+
+    Returns:
+        Dict: Merged dictionary
+    """
+    merged = {}
+    for d in dicts:
+        tmp = deepcopy(d)
+        merged = always_merger.merge(merged, tmp)
+    return merged
 
 
 class Eks(Stack):  # type: ignore
@@ -65,12 +256,15 @@ class Eks(Stack):  # type: ignore
             description="This stack deploys EKS Cluster, Managed Nodegroup(s) with standard plugins for ADDF",
             **kwargs,
         )
-
         for k, v in config.items():
             setattr(self, k, v)
 
         # Tagging all resources
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
+
+        # add kinesis_stream_name attribute
+        self.kinesis_stream_name = config.get("kinesis_stream_name", "")
+        self.pipeline_version = config.get("pipeline_version", "1.0")
 
         # Importing the VPC
         self.vpc = ec2.Vpc.from_lookup(
@@ -78,6 +272,19 @@ class Eks(Stack):  # type: ignore
             "VPC",
             vpc_id=self.vpc_id,
         )
+
+        self.private_subnets = []
+        for idx, subnet_id in enumerate(self.private_subnet_ids):
+            self.private_subnets.append(
+                ec2.Subnet.from_subnet_id(scope=self, id=f"pri-subnet{idx}", subnet_id=subnet_id)
+            )
+
+        if self.isolated_subnet_ids:
+            self.isolated_subnets = []
+            for idx, subnet_id in enumerate(self.isolated_subnet_ids):
+                self.isolated_subnets.append(
+                    ec2.Subnet.from_subnet_id(scope=self, id=f"iso-subnet{idx}", subnet_id=subnet_id)
+                )
 
         cluster_admin_role = iam.Role(
             self,
@@ -110,7 +317,14 @@ class Eks(Stack):  # type: ignore
         self.cni_metrics_role_name = cni_metrics_role_name[:60]
         cluster_admin_policy_statement_json_3 = {
             "Effect": "Allow",
-            "Action": ["iam:Create*", "iam:Put*", "iam:List*", "iam:Detach*", "iam:Attach*", "iam:DeleteRole"],
+            "Action": [
+                "iam:Create*",
+                "iam:Put*",
+                "iam:List*",
+                "iam:Detach*",
+                "iam:Attach*",
+                "iam:DeleteRole",
+            ],
             "Resource": [
                 f"arn:aws:iam::{self.account}:role/AmazonEKSVPCCNIMetricsHelperRole",
                 f"arn:aws:iam::{self.account}:policy/AmazonEKSVPCCNIMetricsHelperPolicy",
@@ -121,16 +335,25 @@ class Eks(Stack):  # type: ignore
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_2))
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_3))
 
+        # KMS key for Envelope encryption
+        secrets_key = kms.Key(self, "SecretsKey")
+
         # Creates an EKS Cluster
         eks_cluster = eks.Cluster(
             self,
             "cluster",
             vpc=self.vpc,
+            vpc_subnets=[ec2.SubnetSelection(subnets=self.private_subnets)],
             cluster_name=f"addf-{self.deployment_name}-{self.module_name}-cluster",
             masters_role=cluster_admin_role,
-            endpoint_access=eks.EndpointAccess.PUBLIC,
-            version=eks.KubernetesVersion.of(str(self.eks_compute_config["eks_version"])),
+            endpoint_access=eks.EndpointAccess.PRIVATE
+            if self.eks_compute_config.get("eks_api_endpoint_private")
+            else eks.EndpointAccess.PUBLIC,
+            version=eks.KubernetesVersion.of(str(self.eks_version)),
+            # Work around until CDK team makes kubectl upto date https://github.com/aws/aws-cdk/issues/23376
+            kubectl_layer=KubectlV23Layer(self, "Kubectlv23Layer"),
             default_capacity=0,
+            secrets_encryption_key=secrets_key,
             cluster_logging=[
                 eks.ClusterLoggingTypes.API,
                 eks.ClusterLoggingTypes.AUDIT,
@@ -139,6 +362,15 @@ class Eks(Stack):  # type: ignore
                 eks.ClusterLoggingTypes.SCHEDULER,
             ],
         )
+
+        # Whitelist traffic between Codebuild SG and EKS SG conditionally
+        if self.eks_compute_config.get("eks_api_endpoint_private") and self.codebuild_sg_id:
+            codebuild_sg = ec2.SecurityGroup.from_security_group_id(self, "eks-codebuild-sg", self.codebuild_sg_id)
+            eks_cluster.kubectl_security_group.add_ingress_rule(
+                codebuild_sg,
+                ec2.Port.all_traffic(),
+                description="Allowing traffic between private codebuild (codeseeder) and private API server",
+            )
 
         # Managing core-dns, kube-proxy and vpc-cni as Server Side softwares using Addons.
         # https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html
@@ -157,721 +389,9 @@ class Eks(Stack):  # type: ignore
             resolve_conflicts="OVERWRITE",
             cluster_name=eks_cluster.cluster_name,
         )
-        vpc_cni_addon = eks.CfnAddon(
-            self,
-            "vpc-cni",
-            addon_name="vpc-cni",
-            resolve_conflicts="OVERWRITE",
-            cluster_name=eks_cluster.cluster_name,
-        )
 
         coredns_addon.node.add_dependency(eks_cluster)
         kube_proxy_addon.node.add_dependency(eks_cluster)
-        vpc_cni_addon.node.add_dependency(eks_cluster)
-
-        # Add a Managed Node Group
-        if self.eks_compute_config.get("eks_nodegroup_config"):
-            # Spot InstanceType
-            if self.eks_compute_config.get("eks_node_spot"):
-                node_capacity_type = eks.CapacityType.SPOT
-            # OnDemand InstanceType
-            else:
-                node_capacity_type = eks.CapacityType.ON_DEMAND
-
-            for ng in self.eks_compute_config.get("eks_nodegroup_config", [{}]):
-                # Parse the instance types as comma seperated list turn into instance_types[]
-                instance_types_context = ng.get("eks_node_instance_types")
-                instance_types = []
-                for value in instance_types_context:
-                    instance_type = ec2.InstanceType(value)
-                    instance_types.append(instance_type)
-
-                eks_cluster.add_nodegroup_capacity(
-                    f"cluster-default-{ng}",
-                    capacity_type=node_capacity_type,
-                    desired_size=ng.get("eks_node_quantity"),
-                    min_size=ng.get("eks_node_min_quantity"),
-                    max_size=ng.get("eks_node_max_quantity"),
-                    disk_size=ng.get("eks_node_disk_size"),
-                    # The default in CDK is to force upgrades through even if they violate - it is safer to not do that
-                    force_update=False,
-                    instance_types=instance_types,
-                    labels=ng.get("eks_node_labels") if ng.get("eks_node_labels") else None,
-                    # release_version=self.eks_compute_config["eks_node_ami_version"],
-                ).role.add_managed_policy(
-                    iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
-                )
-
-        # AWS Load Balancer Controller
-        if self.eks_addons_config.get("deploy_aws_lb_controller", True):
-            awslbcontroller_service_account = eks_cluster.add_service_account(
-                "aws-load-balancer-controller",
-                name="aws-load-balancer-controller",
-                namespace="kube-system",
-            )
-
-            # Create the PolicyStatements to attach to the role
-            # https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
-            awslbcontroller_policy_document_path = os.path.join(
-                project_dir, "addons-iam-policies", "ingress-controller.json"
-            )
-            with open(awslbcontroller_policy_document_path) as json_file:
-                awslbcontroller_policy_document_json = json.load(json_file)
-            # Attach the necessary permissions
-            awslbcontroller_policy = iam.Policy(
-                self,
-                "awslbcontrollerpolicy",
-                document=iam.PolicyDocument.from_json(awslbcontroller_policy_document_json),
-            )
-            awslbcontroller_service_account.role.attach_inline_policy(awslbcontroller_policy)
-
-            # Deploy the AWS Load Balancer Controller from the AWS Helm Chart
-            # For more info check out https://github.com/aws/eks-charts/tree/master/stable/aws-load-balancer-controller
-            awslbcontroller_chart = eks_cluster.add_helm_chart(
-                "aws-load-balancer-controller",
-                chart="aws-load-balancer-controller",
-                version=get_version(str(self.eks_compute_config["eks_version"]), ALB_CONTROLLER_VERSION),
-                release="awslbcontroller",
-                repository="https://aws.github.io/eks-charts",
-                namespace="kube-system",
-                values={
-                    "clusterName": eks_cluster.cluster_name,
-                    "region": self.region,
-                    "vpcId": self.vpc_id,
-                    "serviceAccount": {
-                        "create": False,
-                        "name": "aws-load-balancer-controller",
-                    },
-                    "replicaCount": 2,
-                    "podDisruptionBudget": {"maxUnavailable": 1},
-                    "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
-                },
-            )
-            awslbcontroller_chart.node.add_dependency(awslbcontroller_service_account)
-
-        # AWS EBS CSI Driver
-        if self.eks_addons_config.get("deploy_aws_ebs_csi", True):
-            awsebscsidriver_service_account = eks_cluster.add_service_account(
-                "awsebscsidriver", name="awsebscsidriver", namespace="kube-system"
-            )
-
-            # Reference: https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/example-iam-policy.json
-            awsebscsidriver_policy_document_json_path = os.path.join(
-                project_dir, "addons-iam-policies", "ebs-csi-iam.json"
-            )
-            with open(awsebscsidriver_policy_document_json_path) as json_file:
-                awsebscsidriver_policy_document_json = json.load(json_file)
-
-            # Attach the necessary permissions
-            awsebscsidriver_policy = iam.Policy(
-                self,
-                "awsebscsidriverpolicy",
-                document=iam.PolicyDocument.from_json(awsebscsidriver_policy_document_json),
-            )
-            awsebscsidriver_service_account.role.attach_inline_policy(awsebscsidriver_policy)
-
-            # Install the AWS EBS CSI Driver
-            # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/tree/master/charts/aws-ebs-csi-driver
-            awsebscsi_chart = eks_cluster.add_helm_chart(
-                "aws-ebs-csi-driver",
-                chart="aws-ebs-csi-driver",
-                version="2.6.2",
-                release="awsebscsidriver",
-                repository="https://kubernetes-sigs.github.io/aws-ebs-csi-driver",
-                namespace="kube-system",
-                values={
-                    "controller": {
-                        "region": self.region,
-                        "serviceAccount": {"create": False, "name": "awsebscsidriver"},
-                    },
-                    "node": {"serviceAccount": {"create": False, "name": "awsebscsidriver"}},
-                },
-            )
-            awsebscsi_chart.node.add_dependency(awsebscsidriver_service_account)
-
-            # Set up the StorageClass pointing at the new CSI Driver
-            # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/examples/kubernetes/dynamic-provisioning/specs/storageclass.yaml
-            ebs_csi_storageclass = eks_cluster.add_manifest(
-                "EBSCSIStorageClass",
-                {
-                    "kind": "StorageClass",
-                    "apiVersion": "storage.k8s.io/v1",
-                    "metadata": {"name": "ebs"},
-                    "provisioner": "ebs.csi.aws.com",
-                    "volumeBindingMode": "WaitForFirstConsumer",
-                },
-            )
-            ebs_csi_storageclass.node.add_dependency(awsebscsi_chart)
-
-        # AWS EFS CSI Driver
-        if self.eks_addons_config.get("deploy_aws_efs_csi", True):
-            awsefscsidriver_service_account = eks_cluster.add_service_account(
-                "awsefscsidriver", name="awsefscsidriver", namespace="kube-system"
-            )
-
-            awsefscsidriver_policy_statement_json_path = os.path.join(
-                project_dir, "addons-iam-policies", "efs-csi-iam.json"
-            )
-            with open(awsefscsidriver_policy_statement_json_path) as json_file:
-                awsefscsidriver_policy_statement_json = json.load(json_file)
-
-            # Attach the necessary permissions
-            awsefscsidriver_policy = iam.Policy(
-                self,
-                "awsefscsidriverpolicy",
-                document=iam.PolicyDocument.from_json(awsefscsidriver_policy_statement_json),
-            )
-            awsefscsidriver_service_account.role.attach_inline_policy(awsefscsidriver_policy)
-
-            # Install the AWS EFS CSI Driver
-            # https://github.com/kubernetes-sigs/aws-efs-csi-driver/tree/release-1.3/charts/aws-efs-csi-driver
-            awsefscsi_chart = eks_cluster.add_helm_chart(
-                "aws-efs-csi-driver",
-                chart="aws-efs-csi-driver",
-                version="2.2.3",
-                release="awsefscsidriver",
-                repository="https://kubernetes-sigs.github.io/aws-efs-csi-driver/",
-                namespace="kube-system",
-                values={
-                    "controller": {
-                        "serviceAccount": {"create": False, "name": "awsefscsidriver"},
-                        "deleteAccessPointRootDir": True,
-                    },
-                    "node": {"serviceAccount": {"create": False, "name": "awsefscsidriver"}},
-                },
-            )
-            awsefscsi_chart.node.add_dependency(awsefscsidriver_service_account)
-
-            # Create Security Group for the EFS Filesystem
-            # Create SecurityGroup for OpenSearch
-            efs_security_group = ec2.SecurityGroup(self, "EFSSecurityGroup", vpc=self.vpc, allow_all_outbound=True)
-            # Add a rule to allow the EKS Nodes to talk to our new EFS (will not work with SGs for Pods by default)
-            efs_security_group.add_ingress_rule(eks_cluster.cluster_security_group, ec2.Port.tcp(2049))
-
-            # Add a rule to allow our our VPC CIDR to talk to the EFS (SG for Pods will work by default)
-            # eks_cluster.cluster_security_group.add_ingress_rule(
-            #    ec2.Peer.prefix_list(eks_vpc.vpc_cidr_block)
-            #    ec2.Port.all_traffic()
-            # )
-
-            # Create an EFS Filesystem
-            # NOTE In production you likely want to change the removal_policy to RETAIN to avoid accidental data loss
-            efs_filesystem = efs.FileSystem(
-                self,
-                "EFSFilesystem",
-                vpc=self.vpc,
-                security_group=efs_security_group,
-                removal_policy=RemovalPolicy.RETAIN,
-            )
-            cfn_efs_filesystem = cast(efs.CfnFileSystem, efs_filesystem.node.default_child)
-            cfn_efs_filesystem.file_system_policy = iam.PolicyDocument(
-                statements=[
-                    iam.PolicyStatement(
-                        effect=iam.Effect.ALLOW,
-                        principals=[iam.AnyPrincipal()],
-                        actions=[
-                            "elasticfilesystem:ClientMount",
-                            "elasticfilesystem:ClientWrite",
-                            "elasticfilesystem:ClientRootAccess",
-                        ],
-                        resources=["*"],
-                        conditions={"Bool": {"elasticfilesystem:AccessedViaMountTarget": "true"}},
-                    ),
-                    iam.PolicyStatement(
-                        effect=iam.Effect.DENY,
-                        principals=[iam.AnyPrincipal()],
-                        actions=["*"],
-                        resources=["*"],
-                        conditions={"Bool": {"aws:SecureTransport": "false"}},
-                    ),
-                ]
-            )
-
-            # Set up the StorageClass pointing at the new CSI Driver
-            # https://github.com/kubernetes-sigs/aws-efs-csi-driver/blob/master/examples/kubernetes/dynamic_provisioning/specs/storageclass.yaml
-            efs_csi_storageclass = eks_cluster.add_manifest(
-                "EFSCSIStorageClass",
-                {
-                    "kind": "StorageClass",
-                    "apiVersion": "storage.k8s.io/v1",
-                    "metadata": {"name": "efs"},
-                    "provisioner": "efs.csi.aws.com",
-                    "parameters": {
-                        "provisioningMode": "efs-ap",
-                        "fileSystemId": efs_filesystem.file_system_id,
-                        "directoryPerms": "700",
-                        "gidRangeStart": "1000",
-                        "gidRangeEnd": "2000",
-                        "basePath": "/dynamic_provisioning",
-                    },
-                },
-            )
-            efs_csi_storageclass.node.add_dependency(awsefscsi_chart)
-
-        # AWS FSx CSI Driver
-        if self.eks_addons_config.get("deploy_aws_fsx_csi", True):
-            awsfsxcsidriver_service_account = eks_cluster.add_service_account(
-                "awsfsxcsidriver", name="awsfsxcsidriver", namespace="kube-system"
-            )
-
-            awsfsxcsidriver_policy_statement_json_path = os.path.join(
-                project_dir, "addons-iam-policies", "fsx-csi-iam.json"
-            )
-            with open(awsfsxcsidriver_policy_statement_json_path) as json_file:
-                awsfsxcsidriver_policy_statement_json = json.load(json_file)
-
-            # Attach the necessary permissions
-            awsfsxcsidriver_policy = iam.Policy(
-                self,
-                "awsfsxcsidriverpolicy",
-                document=iam.PolicyDocument.from_json(awsfsxcsidriver_policy_statement_json),
-            )
-            awsfsxcsidriver_service_account.role.attach_inline_policy(awsfsxcsidriver_policy)
-
-            # Install the AWS FSx CSI Driver
-            # https://github.com/kubernetes-sigs/aws-fsx-csi-driver/tree/release-0.9/charts/aws-fsx-csi-driver
-            awsfsxcsi_chart = eks_cluster.add_helm_chart(
-                "aws-fsx-csi-driver",
-                chart="aws-fsx-csi-driver",
-                version=get_version(str(self.eks_compute_config["eks_version"]), FSX_DRIVER_VERSION),
-                release="awsfsxcsidriver",
-                repository="https://kubernetes-sigs.github.io/aws-fsx-csi-driver",
-                namespace="kube-system",
-                values={
-                    "controller": {"serviceAccount": {"create": False, "name": "awsfsxcsidriver"}},
-                    "node": {"serviceAccount": {"create": False, "name": "awsfsxcsidriver"}},
-                },
-            )
-            awsfsxcsi_chart.node.add_dependency(awsfsxcsidriver_service_account)
-
-        # Cluster Autoscaler
-        if self.eks_addons_config.get("deploy_cluster_autoscaler", True):
-            clusterautoscaler_service_account = eks_cluster.add_service_account(
-                "clusterautoscaler", name="clusterautoscaler", namespace="kube-system"
-            )
-
-            clusterautoscaler_policy_statement_json_path = os.path.join(
-                project_dir, "addons-iam-policies", "cluster-autoscaler-iam.json"
-            )
-            with open(clusterautoscaler_policy_statement_json_path) as json_file:
-                clusterautoscaler_policy_statement_json = json.load(json_file)
-
-            # Attach the necessary permissions
-            clusterautoscaler_policy = iam.Policy(
-                self,
-                "clusterautoscalerpolicy",
-                document=iam.PolicyDocument.from_json(clusterautoscaler_policy_statement_json),
-            )
-            clusterautoscaler_service_account.role.attach_inline_policy(clusterautoscaler_policy)
-
-            # Install the Cluster Autoscaler
-            # For more info see https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler
-            clusterautoscaler_chart = eks_cluster.add_helm_chart(
-                "cluster-autoscaler",
-                chart="cluster-autoscaler",
-                version="9.11.0",
-                release="clusterautoscaler",
-                repository="https://kubernetes.github.io/autoscaler",
-                namespace="kube-system",
-                values={
-                    "autoDiscovery": {"clusterName": eks_cluster.cluster_name},
-                    "awsRegion": self.region,
-                    "rbac": {"serviceAccount": {"create": False, "name": "clusterautoscaler"}},
-                    "replicaCount": 2,
-                    "extraArgs": {
-                        "skip-nodes-with-system-pods": False,
-                        "balance-similar-node-groups": True,
-                    },
-                },
-            )
-            clusterautoscaler_chart.node.add_dependency(clusterautoscaler_service_account)
-
-        # Metrics Server (required for the Horizontal Pod Autoscaler (HPA))
-        if self.eks_addons_config.get("deploy_metrics_server", True):
-            # For more info see https://github.com/kubernetes-sigs/metrics-server/tree/master/charts/metrics-server
-            # Changed from the Bitnami chart for Graviton/ARM64 support
-            eks_cluster.add_helm_chart(
-                "metrics-server",
-                chart="metrics-server",
-                version="3.7.0",
-                release="metricsserver",
-                repository="https://kubernetes-sigs.github.io/metrics-server/",
-                namespace="kube-system",
-                values={"resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}}},
-            )
-
-        if self.eks_addons_config.get("deploy_external_dns", True):
-            externaldns_service_account = eks_cluster.add_service_account(
-                "external-dns", name="external-dns", namespace="kube-system"
-            )
-
-            # Create the PolicyStatements to attach to the role
-            # See https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/aws.md#iam-policy
-            # NOTE that this will give External DNS access to all Route53 zones
-            # For production you'll likely want to replace 'Resource *' with specific resources
-            externaldns_policy_statement_json_1 = {
-                "Effect": "Allow",
-                "Action": ["route53:ChangeResourceRecordSets"],
-                "Resource": ["arn:aws:route53:::hostedzone/*"],
-            }
-            externaldns_policy_statement_json_2 = {
-                "Effect": "Allow",
-                "Action": ["route53:ListHostedZones", "route53:ListResourceRecordSets"],
-                "Resource": ["*"],
-            }
-
-            # Attach the necessary permissions
-            externaldns_service_account.add_to_principal_policy(
-                iam.PolicyStatement.from_json(externaldns_policy_statement_json_1)
-            )
-            externaldns_service_account.add_to_principal_policy(
-                iam.PolicyStatement.from_json(externaldns_policy_statement_json_2)
-            )
-
-            # Deploy External DNS from the bitnami Helm chart
-            # For more info see https://github.com/kubernetes-sigs/external-dns/tree/master/charts/external-dns
-            # Changed from the Bitnami chart for Graviton/ARM64 support
-            externaldns_chart = eks_cluster.add_helm_chart(
-                "external-dns",
-                chart="external-dns",
-                version="1.7.1",
-                release="externaldns",
-                repository="https://kubernetes-sigs.github.io/external-dns/",
-                namespace="kube-system",
-                values={
-                    "serviceAccount": {"create": False, "name": "external-dns"},
-                    "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
-                },
-            )
-            externaldns_chart.node.add_dependency(externaldns_service_account)
-
-        # Secrets Manager CSI Driver
-        if self.eks_addons_config.get("deploy_secretsmanager_csi", True):
-            # https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html
-
-            # First we install the Secrets Store CSI Driver Helm Chart
-            # https://github.com/kubernetes-sigs/secrets-store-csi-driver/tree/main/charts/secrets-store-csi-driver
-            eks_cluster.add_helm_chart(
-                "csi-secrets-store",
-                chart="secrets-store-csi-driver",
-                version="1.0.1",
-                release="csi-secrets-store",
-                repository="https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts",
-                namespace="kube-system",
-                # Since sometimes you want these secrets as environment variables enabling syncSecret
-                # For more info see https://secrets-store-csi-driver.sigs.k8s.io/topics/sync-as-kubernetes-secret.html
-                values={"syncSecret": {"enabled": True}},
-            )
-
-            # Install the AWS Provider
-            # See https://github.com/aws/secrets-store-csi-driver-provider-aws for more info
-
-            # Create the IRSA Mapping
-            secrets_csi_sa = eks_cluster.add_service_account(
-                "secrets-csi-sa", name="csi-secrets-store-provider-aws", namespace="kube-system"
-            )
-
-            # Associate the IAM Policy
-            # NOTE: you really want to specify the secret ARN rather than * in the Resource
-            # Consider namespacing these by cluster/environment name or some such as in this example:
-            # "Resource": ["arn:aws:secretsmanager:Region:AccountId:secret:TestEnv/*"]
-            secrets_csi_policy_statement_json_1 = {
-                "Effect": "Allow",
-                "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
-                "Resource": ["*"],
-            }
-            secrets_csi_sa.add_to_principal_policy(iam.PolicyStatement.from_json(secrets_csi_policy_statement_json_1))
-
-            # Deploy the manifests from secrets-store-csi-driver-provider-aws.yaml
-            secrets_csi_provider_yaml_file = open("secrets-store-csi-driver-provider-aws.yaml", "r")
-            secrets_csi_provider_yaml = list(yaml.load_all(secrets_csi_provider_yaml_file, Loader=yaml.FullLoader))
-            secrets_csi_provider_yaml_file.close()
-            loop_iteration = 0
-            for value in secrets_csi_provider_yaml:
-                # print(value)
-                loop_iteration = loop_iteration + 1
-                manifest_id = "SecretsCSIProviderManifest" + str(loop_iteration)
-                manifest = eks_cluster.add_manifest(manifest_id, value)
-                manifest.node.add_dependency(secrets_csi_sa)
-
-        # Kubernetes External Secrets
-        if self.eks_addons_config.get("deploy_external_secrets"):
-            # Deploy the External Secrets Controller
-            # Create the Service Account
-            externalsecrets_service_account = eks_cluster.add_service_account(
-                "kubernetes-external-secrets", name="kubernetes-external-secrets", namespace="kube-system"
-            )
-
-            # Define the policy in JSON
-            externalsecrets_policy_statement_json_1 = {
-                "Effect": "Allow",
-                "Action": [
-                    "secretsmanager:GetResourcePolicy",
-                    "secretsmanager:GetSecretValue",
-                    "secretsmanager:DescribeSecret",
-                    "secretsmanager:ListSecretVersionIds",
-                ],
-                "Resource": ["*"],
-            }
-
-            # Add the policies to the service account
-            externalsecrets_service_account.add_to_principal_policy(
-                iam.PolicyStatement.from_json(externalsecrets_policy_statement_json_1)
-            )
-
-            # Deploy the Helm Chart
-            # https://github.com/external-secrets/kubernetes-external-secrets/tree/master/charts/kubernetes-external-secrets
-            eks_cluster.add_helm_chart(
-                "external-secrets",
-                chart="kubernetes-external-secrets",
-                version="8.5.1",
-                repository="https://external-secrets.github.io/kubernetes-external-secrets/",
-                namespace="kube-system",
-                release="external-secrets",
-                values={
-                    "env": {"AWS_REGION": self.region},
-                    "serviceAccount": {"name": "kubernetes-external-secrets", "create": False},
-                    "securityContext": {"fsGroup": 65534},
-                    "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
-                },
-            )
-
-        # CloudWatch Container Insights - Metrics
-        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_metrics", True):
-            # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-setup-metrics.html
-
-            # Create the Service Account
-            cw_container_insights_sa = eks_cluster.add_service_account(
-                "cloudwatch-agent", name="cloudwatch-agent", namespace="kube-system"
-            )
-            cw_container_insights_sa.role.add_managed_policy(
-                iam.ManagedPolicy.from_aws_managed_policy_name("CloudWatchAgentServerPolicy")
-            )
-
-            # Set up the settings ConfigMap
-            eks_cluster.add_manifest(
-                "CWAgentConfigMap",
-                {
-                    "apiVersion": "v1",
-                    "data": {
-                        "cwagentconfig.json": '{\n  "logs": {\n    "metrics_collected": {\n      '
-                        + '"kubernetes": {\n        "cluster_name": "'
-                        + eks_cluster.cluster_name
-                        + '",\n        "metrics_collection_interval": 60\n      }\n    },\n    '
-                        + '"force_flush_interval": 5\n  }\n}\n'
-                    },
-                    "kind": "ConfigMap",
-                    "metadata": {"name": "cwagentconfig", "namespace": "kube-system"},
-                },
-            )
-
-            # Import cloudwatch-agent.yaml to a list of dictionaries and submit them as a manifest to EKS
-            # Read the YAML file
-            cw_agent_yaml_file = open("cloudwatch-agent.yaml", "r")
-            cw_agent_yaml = list(yaml.load_all(cw_agent_yaml_file, Loader=yaml.FullLoader))
-            cw_agent_yaml_file.close()
-            loop_iteration = 0
-            for value in cw_agent_yaml:
-                # print(value)
-                loop_iteration = loop_iteration + 1
-                manifest_id = "CWAgent" + str(loop_iteration)
-                eks_cluster.add_manifest(manifest_id, value)
-
-        # CloudWatch Container Insights - Logs
-        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_logs"):
-            # Create the Service Account
-            fluentbit_cw_service_account = eks_cluster.add_service_account(
-                "fluentbit-cw", name="fluentbit-cw", namespace="kube-system"
-            )
-
-            fluentbit_cw_policy_statement_json_1 = {
-                "Effect": "Allow",
-                "Action": [
-                    "logs:PutLogEvents",
-                    "logs:DescribeLogStreams",
-                    "logs:DescribeLogGroups",
-                    "logs:CreateLogStream",
-                    "logs:CreateLogGroup",
-                    "logs:PutRetentionPolicy",
-                ],
-                "Resource": ["*"],
-            }
-
-            # Add the policies to the service account
-            fluentbit_cw_service_account.add_to_principal_policy(
-                iam.PolicyStatement.from_json(fluentbit_cw_policy_statement_json_1)
-            )
-
-            # https://github.com/fluent/helm-charts/tree/main/charts/fluent-bit
-            # https://docs.aws.amazon.com/eks/latest/userguide/fargate-logging.html
-            fluentbit_chart_cw = eks_cluster.add_helm_chart(
-                "fluentbit-cw",
-                chart="fluent-bit",
-                version="0.19.17",
-                release="fluent-bit-cw",
-                repository="https://fluent.github.io/helm-charts",
-                namespace="kube-system",
-                values={
-                    "serviceAccount": {"create": False, "name": "fluentbit-cw"},
-                    "config": {
-                        "outputs": "[OUTPUT]\n    Name cloudwatch_logs\n    Match   *\n    region "
-                        + self.region
-                        + "\n    log_group_name fluent-bit-cloudwatch\n    log_stream_prefix from-fluent-bit-\n "
-                        + "   auto_create_group true\n    log_retention_days "
-                        + str(self.node.try_get_context("cloudwatch_container_insights_logs_retention_days"))
-                        + "\n",
-                        "filters.conf": "[FILTER]\n  Name  kubernetes\n  Match  kube.*\n  Merge_Log  On\n  "
-                        + "Buffer_Size  0\n  Kube_Meta_Cache_TTL  300s",
-                    },
-                },
-            )
-            fluentbit_chart_cw.node.add_dependency(fluentbit_cw_service_account)
-
-        # Amazon Managed Prometheus (AMP)
-        if self.eks_addons_config.get("deploy_amp"):
-            # https://aws.amazon.com/blogs/mt/getting-started-amazon-managed-service-for-prometheus/
-            # Create AMP workspace
-            amp_workspace = aps.CfnWorkspace(self, "AMPWorkspace")
-
-            # Create IRSA mapping
-            amp_sa = eks_cluster.add_service_account(
-                "amp-sa", name="amp-iamproxy-service-account", namespace="kube-system"
-            )
-
-            # Associate the IAM Policy
-            amp_policy_statement_json_1 = {
-                "Effect": "Allow",
-                "Action": [
-                    "aps:RemoteWrite",
-                    "aps:QueryMetrics",
-                    "aps:GetSeries",
-                    "aps:GetLabels",
-                    "aps:GetMetricMetadata",
-                ],
-                "Resource": ["*"],
-            }
-            amp_sa.add_to_principal_policy(iam.PolicyStatement.from_json(amp_policy_statement_json_1))
-
-            # Install Prometheus with a low 1 hour local retention to ship the metrics to the AMP
-            # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
-            # Changed this from just Prometheus to the Prometheus Operator for the additional functionality
-            # Changed this to not use EBS PersistentVolumes so it'll work with Fargate Only Clusters
-            # This should be acceptable as the metrics are immediatly streamed to the AMP
-            amp_prometheus_chart = eks_cluster.add_helm_chart(
-                "prometheus-chart",
-                chart="kube-prometheus-stack",
-                version="30.2.0",
-                release="prometheus-for-amp",
-                repository="https://prometheus-community.github.io/helm-charts",
-                namespace="kube-system",
-                values={
-                    "prometheus": {
-                        "serviceAccount": {
-                            "create": False,
-                            "name": "amp-iamproxy-service-account",
-                            "annotations": {
-                                "eks.amazonaws.com/role-arn": amp_sa.role.role_arn,
-                            },
-                        },
-                        "prometheusSpec": {
-                            "storageSpec": {"emptyDir": {"medium": "Memory"}},
-                            "remoteWrite": [
-                                {
-                                    "queueConfig": {
-                                        "maxSamplesPerSend": 1000,
-                                        "maxShards": 200,
-                                        "capacity": 2500,
-                                    },
-                                    "url": amp_workspace.attr_prometheus_endpoint + "api/v1/remote_write",
-                                    "sigv4": {"region": self.region},
-                                }
-                            ],
-                            "retention": "1h",
-                            "resources": {"limits": {"cpu": 1, "memory": "1Gi"}},
-                        },
-                    },
-                    "alertmanager": {"enabled": False},
-                    "grafana": {"enabled": False},
-                    "prometheusOperator": {
-                        "admissionWebhooks": {"enabled": False},
-                        "tls": {"enabled": False},
-                        "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
-                    },
-                    "kubeControllerManager": {"enabled": False},
-                    "kubeScheduler": {"enabled": False},
-                    "kubeProxy": {"enabled": False},
-                    "nodeExporter": {"enabled": False},
-                },
-            )
-            amp_prometheus_chart.node.add_dependency(amp_sa)
-
-        # Self-Managed Grafana for AMP
-        if self.eks_addons_config.get("deploy_grafana_for_amp"):
-            # Install a self-managed Grafana to visualise the AMP metrics
-            # NOTE You likely want to use the AWS Managed Grafana (AMG) in production
-            # We are using this as AMG requires SSO/SAML and is harder to include in the template
-            # NOTE We are not enabling PersistentVolumes to allow this to run in Fargate making this immutable
-            # Any changes to which dashboards to use should be deployed via the ConfigMaps in order to persist
-            # https://github.com/grafana/helm-charts/tree/main/charts/grafana#sidecar-for-dashboards
-            # For more information see https://github.com/grafana/helm-charts/tree/main/charts/grafana
-            amp_grafana_chart = eks_cluster.add_helm_chart(
-                "amp-grafana-chart",
-                chart="grafana",
-                version="6.21.1",
-                release="grafana-for-amp",
-                repository="https://grafana.github.io/helm-charts",
-                namespace="kube-system",
-                values={
-                    "serviceAccount": {
-                        "name": "amp-iamproxy-service-account",
-                        "annotations": {"eks.amazonaws.com/role-arn": amp_sa.role.role_arn},
-                        "create": False,
-                    },
-                    "grafana.ini": {"auth": {"sigv4_auth_enabled": True}},
-                    "service": {
-                        "type": "LoadBalancer",
-                        "annotations": {
-                            "service.beta.kubernetes.io/aws-load-balancer-type": "nlb-ip",
-                            "service.beta.kubernetes.io/aws-load-balancer-internal": "true",
-                        },
-                    },
-                    "datasources": {
-                        "datasources.yaml": {
-                            "apiVersion": 1,
-                            "datasources": [
-                                {
-                                    "name": "Prometheus",
-                                    "type": "prometheus",
-                                    "access": "proxy",
-                                    "url": amp_workspace.attr_prometheus_endpoint,
-                                    "isDefault": True,
-                                    "editable": True,
-                                    "jsonData": {
-                                        "httpMethod": "POST",
-                                        "sigV4Auth": True,
-                                        "sigV4AuthType": "default",
-                                        "sigV4Region": self.region,
-                                    },
-                                }
-                            ],
-                        }
-                    },
-                    "sidecar": {"dashboards": {"enabled": True, "label": "grafana_dashboard"}},
-                    "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
-                },
-            )
-            amp_grafana_chart.node.add_dependency(amp_prometheus_chart)
-            amp_grafana_chart.node.add_dependency(awslbcontroller_chart)
-
-            # Dashboards for Grafana from the grafana-dashboards.yaml file
-            grafana_dashboards_yaml_file = open("grafana-dashboards.yaml", "r")
-            grafana_dashboards_yaml = list(yaml.load_all(grafana_dashboards_yaml_file, Loader=yaml.FullLoader))
-            grafana_dashboards_yaml_file.close()
-            loop_iteration = 0
-            for value in grafana_dashboards_yaml:
-                loop_iteration = loop_iteration + 1
-                manifest_id = "GrafanaDashboard" + str(loop_iteration)
-                eks_cluster.add_manifest(manifest_id, value)
 
         # Security Group for Pods
         # The EKS Cluster was still defaulting to 1.7.5 on 12/9/21 and SG for Pods requires 1.7.7
@@ -922,34 +442,917 @@ class Eks(Stack):  # type: ignore
             iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEKSVPCResourceController")
         )
 
+        custom_subnet_ids = get_az_from_subnet(self.custom_subnet_ids)
+        custom_subnets_values = {}
+        for subnet_id, subnet_availability_zone in custom_subnet_ids.items():
+            custom_subnets_values[subnet_availability_zone] = {"id": subnet_id}
+
+        custom_subnet_values = {}
+        if self.custom_subnet_ids:
+            custom_subnet_values = {
+                "init": {
+                    "env": {
+                        "AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG": True,
+                        "ENI_CONFIG_LABEL_DEF": "failure-domain.beta.kubernetes.io/zone",
+                    },
+                },
+                "env": {
+                    "AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG": True,
+                    "ENI_CONFIG_LABEL_DEF": "failure-domain.beta.kubernetes.io/zone",
+                },
+                "eniConfig": {
+                    "create": True,
+                    "subnets": custom_subnets_values,
+                },
+            }
+
         # https://github.com/aws/eks-charts/tree/master/stable/aws-vpc-cni
         # https://docs.aws.amazon.com/eks/latest/userguide/add-ons-images.html
         sg_pods_chart = eks_cluster.add_helm_chart(
             "aws-vpc-cni",
-            chart="aws-vpc-cni",
-            version="1.1.12",
+            chart=get_chart_release(str(self.eks_version), AWS_VPC_CNI),
+            version=get_chart_version(str(self.eks_version), AWS_VPC_CNI),
+            repository=get_chart_repo(str(self.eks_version), AWS_VPC_CNI),
             release="aws-vpc-cni",
-            repository="https://aws.github.io/eks-charts",
             namespace="kube-system",
-            values={
-                "init": {
-                    "image": {
-                        "region": self.region,
-                        "account": "602401143452",
+            values=deep_merge(
+                {
+                    "init": {
+                        "image": {
+                            "region": self.region,
+                            "account": "602401143452",
+                        },
+                        "env": {"DISABLE_TCP_EARLY_DEMUX": True},
                     },
-                    "env": {"DISABLE_TCP_EARLY_DEMUX": True},
+                    "image": {"region": self.region, "account": "602401143452"},
+                    "env": {"ENABLE_POD_ENI": True},
+                    "serviceAccount": {"create": False, "name": "aws-node-helm"},
+                    "crd": {"create": False},
+                    "originalMatchLabels": True,
                 },
-                "image": {"region": self.region, "account": "602401143452"},
-                "env": {"ENABLE_POD_ENI": True},
-                "serviceAccount": {"create": False, "name": "aws-node-helm"},
-                "crd": {"create": False},
-                "originalMatchLabels": True,
-            },
+                custom_subnet_values,
+                get_chart_values(str(self.eks_version), AWS_VPC_CNI),
+            ),
         )
+
         # This depends both on the service account and the patches to the existing CNI resources having been done first
         sg_pods_chart.node.add_dependency(sg_pods_service_account)
         for patch in patches:
             sg_pods_chart.node.add_dependency(patch)
+
+        # Add a Managed Node Group
+        if self.eks_compute_config.get("eks_nodegroup_config"):
+            # Spot InstanceType
+            if self.eks_compute_config.get("eks_node_spot"):
+                node_capacity_type = eks.CapacityType.SPOT
+            # OnDemand InstanceType
+            else:
+                node_capacity_type = eks.CapacityType.ON_DEMAND
+
+            for ng in self.eks_compute_config.get("eks_nodegroup_config", [{}]):
+                lt = ec2.CfnLaunchTemplate(
+                    self,
+                    f"ng-lt-{str(ng.get('eks_ng_name'))}",
+                    launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
+                        instance_type=str(ng.get("eks_node_instance_type")),
+                        block_device_mappings=[
+                            ec2.CfnLaunchTemplate.BlockDeviceMappingProperty(
+                                device_name="/dev/xvda",
+                                ebs=ec2.CfnLaunchTemplate.EbsProperty(
+                                    volume_type="gp3",
+                                    volume_size=ng.get("eks_node_disk_size"),
+                                    encrypted=True,
+                                ),
+                            )
+                        ],
+                    ),
+                )
+
+                nodegroup = eks_cluster.add_nodegroup_capacity(
+                    f"cluster-default-{ng}",
+                    capacity_type=node_capacity_type,
+                    desired_size=ng.get("eks_node_quantity"),
+                    min_size=ng.get("eks_node_min_quantity"),
+                    max_size=ng.get("eks_node_max_quantity"),
+                    # The default in CDK is to force upgrades through even if they violate - it is safer to not do that
+                    force_update=False,
+                    launch_template_spec=eks.LaunchTemplateSpec(id=lt.ref, version=lt.attr_latest_version_number),
+                    labels=ng.get("eks_node_labels") if ng.get("eks_node_labels") else None,
+                    release_version=get_ami_version(str(self.eks_version)),
+                    subnets=ec2.SubnetSelection(subnets=self.isolated_subnets)
+                    if self.isolated_subnet_ids
+                    else ec2.SubnetSelection(subnets=self.private_subnets),
+                )
+
+                nodegroup.role.add_managed_policy(
+                    iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
+                )
+
+                nodegroup.node.add_dependency(sg_pods_chart)
+
+        # AWS Load Balancer Controller
+        if self.eks_addons_config.get("deploy_aws_lb_controller"):
+            awslbcontroller_service_account = eks_cluster.add_service_account(
+                "aws-load-balancer-controller",
+                name="aws-load-balancer-controller",
+                namespace="kube-system",
+            )
+
+            # Create the PolicyStatements to attach to the role
+            # https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+            awslbcontroller_policy_document_path = os.path.join(
+                project_dir, "addons-iam-policies", "ingress-controller.json"
+            )
+            with open(awslbcontroller_policy_document_path) as json_file:
+                awslbcontroller_policy_document_json = json.load(json_file)
+            # Attach the necessary permissions
+            awslbcontroller_policy = iam.Policy(
+                self,
+                "awslbcontrollerpolicy",
+                document=iam.PolicyDocument.from_json(awslbcontroller_policy_document_json),
+            )
+            awslbcontroller_service_account.role.attach_inline_policy(awslbcontroller_policy)
+
+            # Deploy the AWS Load Balancer Controller from the AWS Helm Chart
+            # For more info check out https://github.com/aws/eks-charts/tree/master/stable/aws-load-balancer-controller
+
+            awslbcontroller_chart = eks_cluster.add_helm_chart(
+                "aws-load-balancer-controller",
+                chart=get_chart_release(str(self.eks_version), ALB_CONTROLLER),
+                version=get_chart_version(str(self.eks_version), ALB_CONTROLLER),
+                repository=get_chart_repo(str(self.eks_version), ALB_CONTROLLER),
+                release="awslbcontroller",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "clusterName": eks_cluster.cluster_name,
+                        "region": self.region,
+                        "vpcId": self.vpc_id,
+                        "serviceAccount": {
+                            "create": False,
+                            "name": "aws-load-balancer-controller",
+                        },
+                        "replicaCount": 2,
+                        "podDisruptionBudget": {"maxUnavailable": 1},
+                        "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
+                    },
+                    get_chart_values(str(self.eks_version), ALB_CONTROLLER),
+                ),
+            )
+            awslbcontroller_chart.node.add_dependency(awslbcontroller_service_account)
+
+        # NGINX Ingress Controller
+        if self.eks_addons_config.get("deploy_nginx_controller"):
+            nginx_controller_service_account = eks_cluster.add_service_account(
+                "nginx-controller",
+                name="nginx-controller",
+                namespace="kube-system",
+            )
+
+            # Create the PolicyStatements to attach to the role
+            nginx_controller_policy_statement = iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "acm:DescribeCertificate",
+                    "acm:ListCertificates",
+                    "acm:GetCertificate",
+                    "ec2:AuthorizeSecurityGroupIngress",
+                    "ec2:CreateSecurityGroup",
+                    "ec2:CreateTags",
+                    "ec2:DeleteTags",
+                    "ec2:DeleteSecurityGroup",
+                    "ec2:DescribeAccountAttributes",
+                    "ec2:DescribeAddresses",
+                    "ec2:DescribeInstances",
+                    "ec2:DescribeInstanceStatus",
+                    "ec2:DescribeInternetGateways",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSecurityGroups",
+                    "ec2:DescribeSubnets",
+                    "ec2:DescribeTags",
+                    "ec2:DescribeVpcs",
+                    "ec2:ModifyInstanceAttribute",
+                    "ec2:ModifyNetworkInterfaceAttribute",
+                    "ec2:RevokeSecurityGroupIngress",
+                ],
+                resources=["*"],
+            )
+
+            # Attach the necessary permissions
+            nginx_controller_policy = iam.Policy(
+                self,
+                "nginx-controller-policy",
+                policy_name="nginx-controller-policy",
+                statements=[nginx_controller_policy_statement],
+            )
+            nginx_controller_service_account.role.attach_inline_policy(nginx_controller_policy)
+
+            custom_values = {}
+            if self.eks_addons_config.get("nginx_additional_annotations"):
+                custom_values = {
+                    "controller": {"configAnnotations": self.eks_addons_config.get("nginx_additional_annotations")}
+                }
+            # Deploy the Nginx Ingress Controller
+            # For more info check out https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
+            nginx_controller_chart = eks_cluster.add_helm_chart(
+                "nginx-ingress",
+                chart=get_chart_release(str(self.eks_version), NGINX_CONTROLLER),
+                version=get_chart_version(str(self.eks_version), NGINX_CONTROLLER),
+                repository=get_chart_repo(str(self.eks_version), NGINX_CONTROLLER),
+                release="nginxcontroller",
+                namespace="kube-system",
+                values=deep_merge(
+                    custom_values,
+                    get_chart_values(str(self.eks_version), NGINX_CONTROLLER),
+                ),
+            )
+            nginx_controller_chart.node.add_dependency(nginx_controller_service_account)
+
+        # AWS EBS CSI Driver
+        if self.eks_addons_config.get("deploy_aws_ebs_csi"):
+            awsebscsidriver_service_account = eks_cluster.add_service_account(
+                "awsebscsidriver", name="awsebscsidriver", namespace="kube-system"
+            )
+
+            # Reference: https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/example-iam-policy.json
+            awsebscsidriver_policy_document_json_path = os.path.join(
+                project_dir, "addons-iam-policies", "ebs-csi-iam.json"
+            )
+            with open(awsebscsidriver_policy_document_json_path) as json_file:
+                awsebscsidriver_policy_document_json = json.load(json_file)
+
+            # Attach the necessary permissions
+            awsebscsidriver_policy = iam.Policy(
+                self,
+                "awsebscsidriverpolicy",
+                document=iam.PolicyDocument.from_json(awsebscsidriver_policy_document_json),
+            )
+            awsebscsidriver_service_account.role.attach_inline_policy(awsebscsidriver_policy)
+
+            # Install the AWS EBS CSI Driver
+            # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/tree/master/charts/aws-ebs-csi-driver
+            awsebscsi_chart = eks_cluster.add_helm_chart(
+                "aws-ebs-csi-driver",
+                chart=get_chart_release(str(self.eks_version), EBS_CSI_DRIVER),
+                version=get_chart_version(str(self.eks_version), EBS_CSI_DRIVER),
+                repository=get_chart_repo(str(self.eks_version), EBS_CSI_DRIVER),
+                release="awsebscsidriver",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "controller": {
+                            "region": self.region,
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "awsebscsidriver",
+                            },
+                        },
+                        "node": {
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "awsebscsidriver",
+                            }
+                        },
+                    },
+                    get_chart_values(str(self.eks_version), EBS_CSI_DRIVER),
+                ),
+            )
+            awsebscsi_chart.node.add_dependency(awsebscsidriver_service_account)
+
+            # Set up the StorageClass pointing at the new CSI Driver
+            # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/examples/kubernetes/dynamic-provisioning/specs/storageclass.yaml
+            ebs_csi_storageclass = eks_cluster.add_manifest(
+                "EBSCSIStorageClassGP2",
+                {
+                    "kind": "StorageClass",
+                    "apiVersion": "storage.k8s.io/v1",
+                    "metadata": {"name": "ebs-gp2"},
+                    "parameters": {"type": "gp2", "encrypted": "true"},
+                    "provisioner": "ebs.csi.aws.com",
+                    "volumeBindingMode": "WaitForFirstConsumer",
+                },
+            )
+            ebs_csi_storageclass.node.add_dependency(awsebscsi_chart)
+
+            # Set up the StorageClass pointing at the new CSI Driver
+            # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/examples/kubernetes/dynamic-provisioning/specs/storageclass.yaml
+            ebs_csi_storageclass_gp3 = eks_cluster.add_manifest(
+                "EBSCSIStorageClassGP3",
+                {
+                    "kind": "StorageClass",
+                    "apiVersion": "storage.k8s.io/v1",
+                    "metadata": {"name": "ebs-gp3"},
+                    "parameters": {"type": "gp3", "encrypted": "true"},
+                    "provisioner": "ebs.csi.aws.com",
+                    "volumeBindingMode": "WaitForFirstConsumer",
+                },
+            )
+            ebs_csi_storageclass_gp3.node.add_dependency(awsebscsi_chart)
+
+        # AWS EFS CSI Driver
+        if self.eks_addons_config.get("deploy_aws_efs_csi"):
+            awsefscsidriver_service_account = eks_cluster.add_service_account(
+                "awsefscsidriver", name="awsefscsidriver", namespace="kube-system"
+            )
+
+            awsefscsidriver_policy_statement_json_path = os.path.join(
+                project_dir, "addons-iam-policies", "efs-csi-iam.json"
+            )
+            with open(awsefscsidriver_policy_statement_json_path) as json_file:
+                awsefscsidriver_policy_statement_json = json.load(json_file)
+
+            # Attach the necessary permissions
+            awsefscsidriver_policy = iam.Policy(
+                self,
+                "awsefscsidriverpolicy",
+                document=iam.PolicyDocument.from_json(awsefscsidriver_policy_statement_json),
+            )
+            awsefscsidriver_service_account.role.attach_inline_policy(awsefscsidriver_policy)
+
+            awsefscsi_chart = eks_cluster.add_helm_chart(
+                "aws-efs-csi-driver",
+                chart=get_chart_release(str(self.eks_version), EFS_CSI_DRIVER),
+                version=get_chart_version(str(self.eks_version), EFS_CSI_DRIVER),
+                repository=get_chart_repo(str(self.eks_version), EFS_CSI_DRIVER),
+                release="awsefscsidriver",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "controller": {
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "awsefscsidriver",
+                            },
+                            "deleteAccessPointRootDir": True,
+                        },
+                        "node": {
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "awsefscsidriver",
+                            }
+                        },
+                    },
+                    get_chart_values(str(self.eks_version), EFS_CSI_DRIVER),
+                ),
+            )
+
+            awsefscsi_chart.node.add_dependency(awsefscsidriver_service_account)
+
+        # AWS FSx CSI Driver doesnt work in isolated subnets ATM of developing the module
+        if self.eks_addons_config.get("deploy_aws_fsx_csi") and not self.isolated_subnet_ids:
+            awsfsxcsidriver_service_account = eks_cluster.add_service_account(
+                "awsfsxcsidriver", name="awsfsxcsidriver", namespace="kube-system"
+            )
+
+            awsfsxcsidriver_policy_statement_json_path = os.path.join(
+                project_dir, "addons-iam-policies", "fsx-csi-iam.json"
+            )
+            with open(awsfsxcsidriver_policy_statement_json_path) as json_file:
+                awsfsxcsidriver_policy_statement_json = json.load(json_file)
+
+            # Attach the necessary permissions
+            awsfsxcsidriver_policy = iam.Policy(
+                self,
+                "awsfsxcsidriverpolicy",
+                document=iam.PolicyDocument.from_json(awsfsxcsidriver_policy_statement_json),
+            )
+            awsfsxcsidriver_service_account.role.attach_inline_policy(awsfsxcsidriver_policy)
+
+            # Install the AWS FSx CSI Driver
+            # https://github.com/kubernetes-sigs/aws-fsx-csi-driver/tree/release-0.9/charts/aws-fsx-csi-driver
+            awsfsxcsi_chart = eks_cluster.add_helm_chart(
+                "aws-fsx-csi-driver",
+                chart=get_chart_release(str(self.eks_version), FSX_DRIVER),
+                version=get_chart_version(str(self.eks_version), FSX_DRIVER),
+                repository=get_chart_repo(str(self.eks_version), FSX_DRIVER),
+                release="awsfsxcsidriver",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "controller": {
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "awsfsxcsidriver",
+                            }
+                        },
+                        "node": {
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "awsfsxcsidriver",
+                            }
+                        },
+                    },
+                    get_chart_values(str(self.eks_version), FSX_DRIVER),
+                ),
+            )
+            awsfsxcsi_chart.node.add_dependency(awsfsxcsidriver_service_account)
+
+        # Cluster Autoscaler
+        if self.eks_addons_config.get("deploy_cluster_autoscaler"):
+            clusterautoscaler_service_account = eks_cluster.add_service_account(
+                "clusterautoscaler", name="clusterautoscaler", namespace="kube-system"
+            )
+
+            clusterautoscaler_policy_statement_json_path = os.path.join(
+                project_dir, "addons-iam-policies", "cluster-autoscaler-iam.json"
+            )
+            with open(clusterautoscaler_policy_statement_json_path) as json_file:
+                clusterautoscaler_policy_statement_json = json.load(json_file)
+
+            # Attach the necessary permissions
+            clusterautoscaler_policy = iam.Policy(
+                self,
+                "clusterautoscalerpolicy",
+                document=iam.PolicyDocument.from_json(clusterautoscaler_policy_statement_json),
+            )
+            clusterautoscaler_service_account.role.attach_inline_policy(clusterautoscaler_policy)
+
+            # Install the Cluster Autoscaler
+            # For more info see https://github.com/kubernetes/autoscaler/tree/master/charts/cluster-autoscaler
+            clusterautoscaler_chart = eks_cluster.add_helm_chart(
+                "cluster-autoscaler",
+                chart=get_chart_release(str(self.eks_version), CLUSTER_AUTOSCALER),
+                version=get_chart_version(str(self.eks_version), CLUSTER_AUTOSCALER),
+                repository=get_chart_repo(str(self.eks_version), CLUSTER_AUTOSCALER),
+                release="clusterautoscaler",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "autoDiscovery": {"clusterName": eks_cluster.cluster_name},
+                        "awsRegion": self.region,
+                        "rbac": {
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "clusterautoscaler",
+                            }
+                        },
+                        "replicaCount": 2,
+                        "extraArgs": {
+                            "skip-nodes-with-system-pods": False,
+                            "balance-similar-node-groups": True,
+                        },
+                    },
+                    get_chart_values(str(self.eks_version), CLUSTER_AUTOSCALER),
+                ),
+            )
+            clusterautoscaler_chart.node.add_dependency(clusterautoscaler_service_account)
+
+        # Metrics Server (required for the Horizontal Pod Autoscaler (HPA))
+        if self.eks_addons_config.get("deploy_metrics_server"):
+            # For more info see https://github.com/kubernetes-sigs/metrics-server/tree/master/charts/metrics-server
+            # Changed from the Bitnami chart for Graviton/ARM64 support
+            eks_cluster.add_helm_chart(
+                "metrics-server",
+                chart=get_chart_release(str(self.eks_version), METRICS_SERVER),
+                version=get_chart_version(str(self.eks_version), METRICS_SERVER),
+                repository=get_chart_repo(str(self.eks_version), METRICS_SERVER),
+                release="metricsserver",
+                namespace="kube-system",
+                values=deep_merge(
+                    {"resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}}},
+                    get_chart_values(str(self.eks_version), METRICS_SERVER),
+                ),
+            )
+
+        if self.eks_addons_config.get("deploy_external_dns"):
+            externaldns_service_account = eks_cluster.add_service_account(
+                "external-dns", name="external-dns", namespace="kube-system"
+            )
+
+            # Create the PolicyStatements to attach to the role
+            # See https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/aws.md#iam-policy
+            # NOTE that this will give External DNS access to all Route53 zones
+            # For production you'll likely want to replace 'Resource *' with specific resources
+            externaldns_policy_statement_json_1 = {
+                "Effect": "Allow",
+                "Action": ["route53:ChangeResourceRecordSets"],
+                "Resource": ["arn:aws:route53:::hostedzone/*"],
+            }
+            externaldns_policy_statement_json_2 = {
+                "Effect": "Allow",
+                "Action": ["route53:ListHostedZones", "route53:ListResourceRecordSets"],
+                "Resource": ["*"],
+            }
+
+            # Attach the necessary permissions
+            externaldns_service_account.add_to_principal_policy(
+                iam.PolicyStatement.from_json(externaldns_policy_statement_json_1)
+            )
+            externaldns_service_account.add_to_principal_policy(
+                iam.PolicyStatement.from_json(externaldns_policy_statement_json_2)
+            )
+
+            # Deploy External DNS from the bitnami Helm chart
+            # For more info see https://github.com/kubernetes-sigs/external-dns/tree/master/charts/external-dns
+            # Changed from the Bitnami chart for Graviton/ARM64 support
+            externaldns_chart = eks_cluster.add_helm_chart(
+                "external-dns",
+                chart=get_chart_release(str(self.eks_version), EXTERNAL_DNS),
+                version=get_chart_version(str(self.eks_version), EXTERNAL_DNS),
+                repository=get_chart_repo(str(self.eks_version), EXTERNAL_DNS),
+                release="externaldns",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "serviceAccount": {"create": False, "name": "external-dns"},
+                        "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
+                    },
+                    get_chart_values(str(self.eks_version), EXTERNAL_DNS),
+                ),
+            )
+            externaldns_chart.node.add_dependency(externaldns_service_account)
+
+        # Secrets Manager CSI Driver
+        if self.eks_addons_config.get("deploy_secretsmanager_csi"):
+            # https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html
+
+            # First we install the Secrets Store CSI Driver Helm Chart
+            # https://github.com/kubernetes-sigs/secrets-store-csi-driver/tree/main/charts/secrets-store-csi-driver
+            eks_cluster.add_helm_chart(
+                "csi-secrets-store",
+                chart=get_chart_release(
+                    str(self.eks_version),
+                    SECRETS_MANAGER_CSI_DRIVER,
+                ),
+                version=get_chart_version(
+                    str(self.eks_version),
+                    SECRETS_MANAGER_CSI_DRIVER,
+                ),
+                repository=get_chart_repo(
+                    str(self.eks_version),
+                    SECRETS_MANAGER_CSI_DRIVER,
+                ),
+                release="csi-secrets-store",
+                namespace="kube-system",
+                # Since sometimes you want these secrets as environment variables enabling syncSecret
+                # For more info see https://secrets-store-csi-driver.sigs.k8s.io/topics/sync-as-kubernetes-secret.html
+                values=deep_merge(
+                    {"syncSecret": {"enabled": True}},
+                    get_chart_values(
+                        str(self.eks_version),
+                        SECRETS_MANAGER_CSI_DRIVER,
+                    ),
+                ),
+            )
+            # Install the AWS Provider
+            # See https://github.com/aws/secrets-store-csi-driver-provider-aws for more info
+
+            # Create the IRSA Mapping
+            secrets_csi_sa = eks_cluster.add_service_account(
+                "secrets-csi-sa",
+                name="csi-secrets-store-provider-aws",
+                namespace="kube-system",
+            )
+
+            # Associate the IAM Policy
+            # NOTE: you really want to specify the secret ARN rather than * in the Resource
+            # Consider namespacing these by cluster/environment name or some such as in this example:
+            # "Resource": ["arn:aws:secretsmanager:Region:AccountId:secret:TestEnv/*"]
+            secrets_csi_policy_statement_json_1 = {
+                "Effect": "Allow",
+                "Action": [
+                    "secretsmanager:GetSecretValue",
+                    "secretsmanager:DescribeSecret",
+                ],
+                "Resource": ["*"],
+            }
+            secrets_csi_sa.add_to_principal_policy(iam.PolicyStatement.from_json(secrets_csi_policy_statement_json_1))
+
+            # Deploy the manifests from secrets-store-csi-driver-provider-aws.yaml
+            secrets_csi_provider_yaml_file = open("secrets-config/secrets-store-csi-driver-provider-aws.yaml", "r")
+            secrets_csi_provider_yaml = list(yaml.load_all(secrets_csi_provider_yaml_file, Loader=yaml.FullLoader))
+            secrets_csi_provider_yaml_file.close()
+            loop_iteration = 0
+            for value in secrets_csi_provider_yaml:
+                if self.isolated_subnet_ids:
+                    if value["kind"] == "DaemonSet":
+                        value["spec"]["template"]["spec"]["containers"][0][
+                            "image"
+                        ] = self.secrets_store_csi_driver_provider_aws
+                loop_iteration = loop_iteration + 1
+                manifest_id = "SecretsCSIProviderManifest" + str(loop_iteration)
+                manifest = eks_cluster.add_manifest(manifest_id, value)
+                manifest.node.add_dependency(secrets_csi_sa)
+
+        # Kubernetes External Secrets
+        if self.eks_addons_config.get("deploy_external_secrets"):
+            # Deploy the External Secrets Controller
+            # Create the Service Account
+            externalsecrets_service_account = eks_cluster.add_service_account(
+                "kubernetes-external-secrets",
+                name="kubernetes-external-secrets",
+                namespace="kube-system",
+            )
+
+            # Define the policy in JSON
+            externalsecrets_policy_statement_json_1 = {
+                "Effect": "Allow",
+                "Action": [
+                    "secretsmanager:GetResourcePolicy",
+                    "secretsmanager:GetSecretValue",
+                    "secretsmanager:DescribeSecret",
+                    "secretsmanager:ListSecretVersionIds",
+                ],
+                "Resource": ["*"],
+            }
+
+            # Add the policies to the service account
+            externalsecrets_service_account.add_to_principal_policy(
+                iam.PolicyStatement.from_json(externalsecrets_policy_statement_json_1)
+            )
+
+            # Deploy the Helm Chart
+            # https://github.com/external-secrets/external-secrets/tree/main/deploy/charts/external-secrets
+            eks_cluster.add_helm_chart(
+                "external-secrets",
+                chart=get_chart_release(str(self.eks_version), EXTERNAL_SECRETS),
+                version=get_chart_version(str(self.eks_version), EXTERNAL_SECRETS),
+                repository=get_chart_repo(str(self.eks_version), EXTERNAL_SECRETS),
+                release="external-secrets",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "env": {"AWS_REGION": self.region},
+                        "serviceAccount": {
+                            "name": "kubernetes-external-secrets",
+                            "create": False,
+                        },
+                        "securityContext": {"fsGroup": 65534},
+                        "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
+                    },
+                    get_chart_values(str(self.eks_version), EXTERNAL_SECRETS),
+                ),
+            )
+
+        # CloudWatch Container Insights - Metrics
+        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_metrics"):
+            # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-setup-metrics.html
+
+            # Create the Service Account
+            cw_container_insights_sa = eks_cluster.add_service_account(
+                "cloudwatch-agent", name="cloudwatch-agent", namespace="kube-system"
+            )
+            cw_container_insights_sa.role.add_managed_policy(
+                iam.ManagedPolicy.from_aws_managed_policy_name("CloudWatchAgentServerPolicy")
+            )
+
+            # It opens cwagentconfig.json file in read mode ("r") and reads its content using the read() method. The content is stored in the cwagentconfig_content variable.
+            with open(os.path.join(project_dir, "monitoring-config/cwagentconfig.json"), "r") as f:
+                cwagentconfig_content = f.read()
+
+            # Set up the settings ConfigMap
+            eks_cluster.add_manifest(
+                "CWAgentConfigMap",
+                {
+                    "apiVersion": "v1",
+                    "kind": "ConfigMap",
+                    "data": {
+                        "cwagentconfig.json": cwagentconfig_content,
+                    },
+                    "metadata": {"name": "cwagentconfig", "namespace": "kube-system"},
+                },
+            )
+
+            # Import cloudwatch-agent.yaml to a list of dictionaries and submit them as a manifest to EKS
+            # Read the YAML file
+            cw_agent_yaml_file = open(os.path.join(project_dir, "monitoring-config/cloudwatch-agent.yaml"), "r")
+            cw_agent_yaml = list(yaml.load_all(cw_agent_yaml_file, Loader=yaml.FullLoader))
+            cw_agent_yaml_file.close()
+            loop_iteration = 0
+            for value in cw_agent_yaml:
+                if self.isolated_subnet_ids:
+                    if value["kind"] == "DaemonSet":
+                        value["spec"]["template"]["spec"]["containers"][0]["image"] = self.cloudwatch_agent
+                loop_iteration = loop_iteration + 1
+                manifest_id = "CWAgent" + str(loop_iteration)
+                eks_cluster.add_manifest(manifest_id, value)
+
+        # CloudWatch Container Insights - Logs
+        if self.eks_addons_config.get("deploy_cloudwatch_container_insights_logs"):
+            # Create the Service Account
+            fluentbit_cw_service_account = eks_cluster.add_service_account(
+                "fluentbit-cw", name="fluentbit-cw", namespace="kube-system"
+            )
+
+            fluentbit_cw_policy_statement_json_1 = {
+                "Effect": "Allow",
+                "Action": [
+                    "logs:PutLogEvents",
+                    "logs:DescribeLogStreams",
+                    "logs:DescribeLogGroups",
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:PutRetentionPolicy",
+                ],
+                "Resource": ["*"],
+            }
+
+            # Add the policies to the service account
+            fluentbit_cw_service_account.add_to_principal_policy(
+                iam.PolicyStatement.from_json(fluentbit_cw_policy_statement_json_1)
+            )
+
+            # https://github.com/fluent/helm-charts/tree/main/charts/fluent-bit
+            fluentbit_chart_cw = eks_cluster.add_helm_chart(
+                "fluentbit-cw",
+                chart=get_chart_release(str(self.eks_version), FLUENTBIT),
+                version=get_chart_version(str(self.eks_version), FLUENTBIT),
+                repository=get_chart_repo(str(self.eks_version), FLUENTBIT),
+                release="fluent-bit-cw",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "serviceAccount": {"create": False, "name": "fluentbit-cw"},
+                        "config": {
+                            "outputs": "[OUTPUT]\n    Name cloudwatch_logs\n    Match   *\n    region "
+                            + self.region
+                            + "\n    log_group_name "
+                            + eks_cluster.cluster_name
+                            + "fluent-bit-cloudwatch\n    log_stream_prefix from-fluent-bit-\n "
+                            + "   auto_create_group true\n    log_retention_days "
+                            + str(self.node.try_get_context("cloudwatch_container_insights_logs_retention_days"))
+                            + "\n",
+                            # + "[OUTPUT]\n    Name kinesis\n    Match *\n    region "
+                            # + self.region
+                            # + "\n    stream "
+                            # + self.kinesis_stream_name
+                            # + "\n",
+                            "filters.conf": "[FILTER]\n  Name  kubernetes\n  Match  kube.*\n  Merge_Log  On\n  Buffer_Size  0\n  Kube_Meta_Cache_TTL  300s\n"
+                            + "[FILTER]\n    Name modify\n    Match *\n    Rename log log_data\n    Rename stream stream_name\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type startup\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type shutdown\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type error\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type exception\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type ingestion\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type processing\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type output\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type performance\n"
+                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record pipeline_version "
+                            + self.pipeline_version
+                            + "\n",
+                        },
+                    },
+                    get_chart_values(str(self.eks_version), FLUENTBIT),
+                ),
+            )
+            fluentbit_chart_cw.node.add_dependency(fluentbit_cw_service_account)
+
+        # Amazon Managed Prometheus (AMP)
+        if self.eks_addons_config.get("deploy_amp"):
+            # https://aws.amazon.com/blogs/mt/getting-started-amazon-managed-service-for-prometheus/
+            # Create AMP workspace
+            amp_workspace = aps.CfnWorkspace(self, "AMPWorkspace")
+
+            # Create IRSA mapping
+            amp_sa = eks_cluster.add_service_account(
+                "amp-sa", name="amp-iamproxy-service-account", namespace="kube-system"
+            )
+
+            # Associate the IAM Policy
+            amp_policy_statement_json_1 = {
+                "Effect": "Allow",
+                "Action": [
+                    "aps:RemoteWrite",
+                    "aps:QueryMetrics",
+                    "aps:GetSeries",
+                    "aps:GetLabels",
+                    "aps:GetMetricMetadata",
+                ],
+                "Resource": ["*"],
+            }
+            amp_sa.add_to_principal_policy(iam.PolicyStatement.from_json(amp_policy_statement_json_1))
+
+            # Install Prometheus with a low 1 hour local retention to ship the metrics to the AMP
+            # https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+            # Changed this from just Prometheus to the Prometheus Operator for the additional functionality
+            # Changed this to not use EBS PersistentVolumes so it'll work with Fargate Only Clusters
+            # This should be acceptable as the metrics are immediatly streamed to the AMP
+            amp_prometheus_chart = eks_cluster.add_helm_chart(
+                "prometheus-chart",
+                chart=get_chart_release(str(self.eks_version), PROMETHEUS_STACK),
+                version=get_chart_version(str(self.eks_version), PROMETHEUS_STACK),
+                repository=get_chart_repo(str(self.eks_version), PROMETHEUS_STACK),
+                release="prometheus-for-amp",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "prometheus": {
+                            "serviceAccount": {
+                                "create": False,
+                                "name": "amp-iamproxy-service-account",
+                                "annotations": {
+                                    "eks.amazonaws.com/role-arn": amp_sa.role.role_arn,
+                                },
+                            },
+                            "prometheusSpec": {
+                                "storageSpec": {"emptyDir": {"medium": "Memory"}},
+                                "remoteWrite": [
+                                    {
+                                        "queueConfig": {
+                                            "maxSamplesPerSend": 1000,
+                                            "maxShards": 200,
+                                            "capacity": 2500,
+                                        },
+                                        "url": amp_workspace.attr_prometheus_endpoint + "api/v1/remote_write",
+                                        "sigv4": {"region": self.region},
+                                    }
+                                ],
+                                "retention": "1h",
+                                "resources": {"limits": {"cpu": 1, "memory": "1Gi"}},
+                            },
+                        },
+                        "alertmanager": {"enabled": False},
+                        "grafana": {"enabled": False},
+                        "prometheusOperator": {
+                            "admissionWebhooks": {"enabled": False},
+                            "tls": {"enabled": False},
+                            "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
+                        },
+                        "kubeControllerManager": {"enabled": False},
+                        "kubeScheduler": {"enabled": False},
+                        "kubeProxy": {"enabled": False},
+                        "nodeExporter": {"enabled": False},
+                    },
+                    get_chart_values(str(self.eks_version), PROMETHEUS_STACK),
+                ),
+            )
+            amp_prometheus_chart.node.add_dependency(amp_sa)
+
+        # Self-Managed Grafana for AMP
+        if self.eks_addons_config.get("deploy_grafana_for_amp"):
+            # Install a self-managed Grafana to visualise the AMP metrics
+            # NOTE You likely want to use the AWS Managed Grafana (AMG) in production
+            # We are using this as AMG requires SSO/SAML and is harder to include in the template
+            # NOTE We are not enabling PersistentVolumes to allow this to run in Fargate making this immutable
+            # Any changes to which dashboards to use should be deployed via the ConfigMaps in order to persist
+            # https://github.com/grafana/helm-charts/tree/main/charts/grafana#sidecar-for-dashboards
+            # For more information see https://github.com/grafana/helm-charts/tree/main/charts/grafana
+            amp_grafana_chart = eks_cluster.add_helm_chart(
+                "amp-grafana-chart",
+                chart=get_chart_release(str(self.eks_version), GRAFANA),
+                version=get_chart_version(str(self.eks_version), GRAFANA),
+                repository=get_chart_repo(str(self.eks_version), GRAFANA),
+                release="grafana-for-amp",
+                namespace="kube-system",
+                values=deep_merge(
+                    {
+                        "serviceAccount": {
+                            "name": "amp-iamproxy-service-account",
+                            "annotations": {"eks.amazonaws.com/role-arn": amp_sa.role.role_arn},
+                            "create": False,
+                        },
+                        "grafana.ini": {"auth": {"sigv4_auth_enabled": True}},
+                        "service": {
+                            "type": "LoadBalancer",
+                            "annotations": {
+                                "service.beta.kubernetes.io/aws-load-balancer-type": "nlb-ip",
+                                "service.beta.kubernetes.io/aws-load-balancer-internal": "true",
+                            },
+                        },
+                        "datasources": {
+                            "datasources.yaml": {
+                                "apiVersion": 1,
+                                "datasources": [
+                                    {
+                                        "name": "Prometheus",
+                                        "type": "prometheus",
+                                        "access": "proxy",
+                                        "url": amp_workspace.attr_prometheus_endpoint,
+                                        "isDefault": True,
+                                        "editable": True,
+                                        "jsonData": {
+                                            "httpMethod": "POST",
+                                            "sigV4Auth": True,
+                                            "sigV4AuthType": "default",
+                                            "sigV4Region": self.region,
+                                        },
+                                    }
+                                ],
+                            }
+                        },
+                        "sidecar": {
+                            "dashboards": {
+                                "enabled": True,
+                                "label": "grafana_dashboard",
+                            }
+                        },
+                        "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
+                    },
+                    get_chart_values(str(self.eks_version), GRAFANA),
+                ),
+            )
+            amp_grafana_chart.node.add_dependency(amp_prometheus_chart)
+            amp_grafana_chart.node.add_dependency(awslbcontroller_chart)
+
+            # Dashboards for Grafana from the grafana-dashboards.yaml file
+            grafana_dashboards_yaml_file = open("monitoring-config/grafana-dashboards.yaml", "r")
+            grafana_dashboards_yaml = list(yaml.load_all(grafana_dashboards_yaml_file, Loader=yaml.FullLoader))
+            grafana_dashboards_yaml_file.close()
+            loop_iteration = 0
+            for value in grafana_dashboards_yaml:
+                loop_iteration = loop_iteration + 1
+                manifest_id = "GrafanaDashboard" + str(loop_iteration)
+                eks_cluster.add_manifest(manifest_id, value)
 
         eks_cluster.add_manifest(
             "cluster-role",
@@ -966,6 +1369,139 @@ class Eks(Stack):  # type: ignore
                 ],
             },
         )
+
+        # Defining the read only access role
+        readonly_role_access_manifest = {
+            "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "Role",
+            "metadata": {"name": "readonly-role"},
+            "rules": [
+                {
+                    "apiGroups": [""],
+                    "resources": ["*"],
+                    "verbs": ["get", "list", "watch"],
+                }
+            ],
+        }
+
+        # Deploying the read only access role to the EKS cluster
+        eks_cluster.add_manifest("readonly_role_access_manifest", readonly_role_access_manifest)
+
+        # Defining the admin role access role
+        admin_role_access_manifest = {
+            "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRole",
+            "metadata": {"name": "admin-role"},
+            "rules": [
+                {
+                    "apiGroups": ["*"],
+                    "resources": ["*"],
+                    "verbs": [
+                        "get",
+                        "list",
+                        "watch",
+                        "create",
+                        "delete",
+                        "update",
+                        "patch",
+                    ],
+                }
+            ],
+        }
+
+        # Deploying the admin role access role to the EKS cluster
+        eks_cluster.add_manifest("admin_role_access_manifest", admin_role_access_manifest)
+
+        # Defining the poweruser role access role
+        poweruser_role_access_manifest = {
+            "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "Role",
+            "metadata": {"name": "poweruser-role"},
+            "rules": [
+                {
+                    "apiGroups": ["", "apps", "extensions"],
+                    "resources": ["*"],
+                    "verbs": [
+                        "get",
+                        "list",
+                        "watch",
+                        "create",
+                        "delete",
+                        "update",
+                        "patch",
+                    ],
+                }
+            ],
+        }
+
+        # Deploying the poweruser role access role to the EKS cluster
+        eks_cluster.add_manifest("poweruser_role_access_manifest", poweruser_role_access_manifest)
+
+        # Define the RoleBinding manifest as a dictionary for readonly role
+        readonly_role_binding_manifest = {
+            "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "RoleBinding",
+            "metadata": {"name": "readonly-role-binding"},
+            "subjects": [
+                {
+                    "kind": "Group",
+                    "name": "readonly-group",
+                    "apiGroup": "rbac.authorization.k8s.io",
+                }
+            ],
+            "roleRef": {
+                "kind": "Role",
+                "name": "readonly-role",
+                "apiGroup": "rbac.authorization.k8s.io",
+            },
+        }
+
+        # Deploy the RoleBinding manifest to the EKS cluster for readonly role
+        eks_cluster.add_manifest("readonly_role_binding_manifest", readonly_role_binding_manifest)
+
+        # Define the RoleBinding manifest as a dictionary for admin role
+        admin_role_binding_manifest = {
+            "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "ClusterRoleBinding",
+            "metadata": {"name": "admin-role-binding"},
+            "subjects": [
+                {
+                    "kind": "Group",
+                    "name": "admin",
+                    "apiGroup": "rbac.authorization.k8s.io",
+                }
+            ],
+            "roleRef": {
+                "kind": "ClusterRole",
+                "name": "admin-role",
+                "apiGroup": "rbac.authorization.k8s.io",
+            },
+        }
+
+        # Deploy the RoleBinding manifest to the EKS cluster for admin role
+        eks_cluster.add_manifest("admin_role_binding_manifest", admin_role_binding_manifest)
+
+        # Define the RoleBinding manifest as a dictionary for poweruser role
+        poweruser_role_binding_manifest = {
+            "apiVersion": "rbac.authorization.k8s.io/v1",
+            "kind": "RoleBinding",
+            "metadata": {"name": "poweruser-role-binding"},
+            "subjects": [
+                {
+                    "kind": "Group",
+                    "name": "poweruser-group",
+                    "apiGroup": "rbac.authorization.k8s.io",
+                }
+            ],
+            "roleRef": {
+                "kind": "Role",
+                "name": "poweruser-role",
+                "apiGroup": "rbac.authorization.k8s.io",
+            },
+        }
+
+        # Deploy the RoleBinding manifest to the EKS cluster for admin role
+        eks_cluster.add_manifest("poweruser_role_binding_manifest", poweruser_role_binding_manifest)
 
         # Create a PodDisruptionBudget for ADDF Jobs
         eks_cluster.add_manifest(
@@ -984,6 +1520,176 @@ class Eks(Stack):  # type: ignore
                 },
             },
         )
+
+        if self.eks_addons_config.get("deploy_kured"):
+            # https://kubereboot.github.io/charts/
+            kured_chart = eks_cluster.add_helm_chart(
+                "kured",
+                chart=get_chart_release(str(self.eks_version), KURED),
+                version=get_chart_version(str(self.eks_version), KURED),
+                repository=get_chart_repo(str(self.eks_version), KURED),
+                release="kured",
+                namespace="kured",
+                values=deep_merge(
+                    {
+                        "nodeSelector": {"kubernetes.io/os": "linux"},
+                    },
+                    get_chart_values(str(self.eks_version), KURED),
+                ),
+            )
+
+        if self.eks_addons_config.get("deploy_calico"):
+            calico_values = get_chart_values(str(self.eks_version), CALICO)
+            if calico_values and "tigeraOperator" in calico_values and "registry" in calico_values["tigeraOperator"]:
+                # https://docs.tigera.io/calico/3.25/reference/installation/api#operator.tigera.io/v1.InstallationSpec
+                calico_values["installation"] = {}
+                calico_values["installation"]["registry"] = calico_values["tigeraOperator"]["registry"]
+
+            # https://docs.projectcalico.org/charts
+            calico_chart = eks_cluster.add_helm_chart(
+                "tigera-operator",
+                chart=get_chart_release(str(self.eks_version), CALICO),
+                version=get_chart_version(str(self.eks_version), CALICO),
+                repository=get_chart_repo(str(self.eks_version), CALICO),
+                values=deep_merge(
+                    calico_values,
+                ),
+                release="calico",
+                namespace="tigera-operator",
+            )
+
+            allow_kube_system_policy = eks_cluster.add_manifest(
+                "default-allow-kube-system",
+                {
+                    "apiVersion": "networking.k8s.io/v1",
+                    "kind": "NetworkPolicy",
+                    "metadata": {
+                        "name": "default-allow-kube-system",
+                        "namespace": "kube-system",
+                    },
+                    "spec": {
+                        "ingress": [{}],
+                        "podSelector": {},
+                        "policyTypes": ["Ingress"],
+                    },
+                },
+            )
+
+            allow_kube_system_policy.node.add_dependency(calico_chart)
+
+            allow_tigera_operator_policy = eks_cluster.add_manifest(
+                "default-allow-tigera-operator",
+                {
+                    "apiVersion": "networking.k8s.io/v1",
+                    "kind": "NetworkPolicy",
+                    "metadata": {
+                        "name": "default-allow-tigera-operator",
+                        "namespace": "tigera-operator",
+                    },
+                    "spec": {
+                        "ingress": [{}],
+                        "podSelector": {},
+                        "policyTypes": ["Ingress"],
+                    },
+                },
+            )
+
+            allow_tigera_operator_policy.node.add_dependency(allow_kube_system_policy)
+
+            default_deny_policy = eks_cluster.add_manifest(
+                "default-deny-policy",
+                {
+                    "apiVersion": "crd.projectcalico.org/v1",
+                    "kind": "GlobalNetworkPolicy",
+                    "metadata": {"name": "default-deny-app-policy"},
+                    "spec": {"selector": "all()", "types": ["Ingress"]},
+                },
+            )
+
+            default_deny_policy.node.add_dependency(allow_tigera_operator_policy)
+
+        if self.eks_addons_config.get("deploy_kyverno"):
+            # https://kyverno.github.io/kyverno/
+            kyverno_chart = eks_cluster.add_helm_chart(
+                "kyverno",
+                chart=get_chart_release(str(self.eks_version), KYVERNO),
+                version=get_chart_version(str(self.eks_version), KYVERNO),
+                repository=get_chart_repo(str(self.eks_version), KYVERNO),
+                values=deep_merge(
+                    {
+                        "resources": {
+                            "limits": {"memory": "4Gi"},
+                            "requests": {"cpu": "1", "memory": "1Gi"},
+                        }
+                    },
+                    get_chart_values(str(self.eks_version), KYVERNO),
+                ),
+                release="kyverno",
+                namespace="kyverno",
+            )
+
+            if self.eks_addons_config.get("deploy_calico"):
+                allow_kyverno_policy = eks_cluster.add_manifest(
+                    "default-allow-kyverno",
+                    {
+                        "apiVersion": "networking.k8s.io/v1",
+                        "kind": "NetworkPolicy",
+                        "metadata": {
+                            "name": "default-allow-kyverno",
+                            "namespace": "kyverno",
+                        },
+                        "spec": {
+                            "ingress": [{}],
+                            "podSelector": {},
+                            "policyTypes": ["Ingress"],
+                        },
+                    },
+                )
+
+                allow_kyverno_policy.node.add_dependency(kyverno_chart)
+
+            if self.eks_addons_config.get("kyverno_policies"):
+                all_policies = self.eks_addons_config.get("kyverno_policies")
+                for policy_type, policies in all_policies.items():
+                    for policy in policies:
+                        f = open(
+                            os.path.join(project_dir, "kyverno-policies", policy_type, f"{policy}.yaml"),
+                            "r",
+                        ).read()
+                        manifest_yaml = list(yaml.load_all(f, Loader=yaml.FullLoader))
+                        previous_manifest = None
+                        for value in manifest_yaml:
+                            manifest_name = value["metadata"]["name"]
+                            manifest = eks_cluster.add_manifest(manifest_name, value)
+                            if previous_manifest == None:
+                                manifest.node.add_dependency(kyverno_chart)
+                            else:
+                                manifest.node.add_dependency(previous_manifest)
+                            previous_manifest = manifest
+
+            kyverno_policy_reporter_chart = eks_cluster.add_helm_chart(
+                "kyverno-policy-reporter",
+                chart=get_chart_release(str(self.eks_version), KYVERNO_POLICY_REPORTER),
+                version=get_chart_version(str(self.eks_version), KYVERNO_POLICY_REPORTER),
+                repository=get_chart_repo(str(self.eks_version), KYVERNO_POLICY_REPORTER),
+                release="policy-reporter",
+                namespace="policy-reporter",
+                values=deep_merge(
+                    {
+                        "kyvernoPlugin": {"enabled": True},
+                        "ui": {
+                            "enabled": True,
+                            "plugins": {"kyverno": True},
+                        },
+                    },
+                    get_chart_values(
+                        str(self.eks_version),
+                        KYVERNO_POLICY_REPORTER,
+                    ),
+                ),
+            )
+
+            kyverno_policy_reporter_chart.node.add_dependency(kyverno_chart)
 
         # Outputs
         self.eks_cluster = eks_cluster
@@ -1006,6 +1712,10 @@ class Eks(Stack):  # type: ignore
                 {
                     "id": "AwsSolutions-EKS1",
                     "reason": "No Customer data resides on the compute resources",
+                },
+                {
+                    "id": "AwsSolutions-KMS5",
+                    "reason": "The KMS Symmetric key does not have automatic key rotation enabled",
                 },
             ],
         )
