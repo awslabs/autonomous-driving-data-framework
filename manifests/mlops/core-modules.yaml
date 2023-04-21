@@ -64,51 +64,53 @@ parameters:
       cloudwatch_container_insights_logs_retention_days: 7
       deploy_kured: False
       deploy_calico: False
-      deploy_nginx_controller: False
-      nginx_additional_annotations:
-        nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
-      deploy_kyverno: False
-      kyverno_policies:
-        validate:
-          - block-ephemeral-containers
-          - block-stale-images
-          - block-updates-deletes
-          - check-deprecated-apis
-          - disallow-cri-sock-mount
-          - disallow-custom-snippets
-          - disallow-empty-ingress-host
-          - disallow-helm-tiller
-          - disallow-latest-tag
-          - disallow-localhost-services
-          - disallow-secrets-from-env-vars
-          - ensure-probes-different
-          - ingress-host-match-tls
-          - limit-hostpath-vols
-          - prevent-naked-pods
-          - require-drop-cap-net-raw
-          - require-emptydir-requests-limits
-          - require-labels
-          - require-pod-requests-limits
-          - require-probes
-          - restrict-annotations
-          - restrict-automount-sa-token
-          - restrict-binding-clusteradmin
-          - restrict-clusterrole-nodesproxy
-          - restrict-escalation-verbs-roles
-          - restrict-ingress-classes
-          - restrict-ingress-defaultbackend
-          - restrict-node-selection
-          - restrict-path
-          - restrict-service-external-ips
-          - restrict-wildcard-resources
-          - restrict-wildcard-verbs
-          - unique-ingress-host-and-path
-        # mutate:
-        #   - add-networkpolicy-dns
-        #   - add-pod-priorityclassname
-        #   - add-ttl-jobs
-        #   - always-pull-images
-        #   - mitigate-log4shell
+      deploy_nginx_controller:
+        value: False
+        nginx_additional_annotations:
+          nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
+      deploy_kyverno:
+        value: False
+        kyverno_policies:
+          validate:
+            - block-ephemeral-containers
+            - block-stale-images
+            - block-updates-deletes
+            - check-deprecated-apis
+            - disallow-cri-sock-mount
+            - disallow-custom-snippets
+            - disallow-empty-ingress-host
+            - disallow-helm-tiller
+            - disallow-latest-tag
+            - disallow-localhost-services
+            - disallow-secrets-from-env-vars
+            - ensure-probes-different
+            - ingress-host-match-tls
+            - limit-hostpath-vols
+            - prevent-naked-pods
+            - require-drop-cap-net-raw
+            - require-emptydir-requests-limits
+            - require-labels
+            - require-pod-requests-limits
+            - require-probes
+            - restrict-annotations
+            - restrict-automount-sa-token
+            - restrict-binding-clusteradmin
+            - restrict-clusterrole-nodesproxy
+            - restrict-escalation-verbs-roles
+            - restrict-ingress-classes
+            - restrict-ingress-defaultbackend
+            - restrict-node-selection
+            - restrict-path
+            - restrict-service-external-ips
+            - restrict-wildcard-resources
+            - restrict-wildcard-verbs
+            - unique-ingress-host-and-path
+          # mutate:
+          #   - add-networkpolicy-dns
+          #   - add-pod-priorityclassname
+          #   - add-ttl-jobs
+          #   - always-pull-images
+          #   - mitigate-log4shell
 ---
 name: efs
 path: modules/core/efs

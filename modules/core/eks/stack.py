@@ -262,10 +262,6 @@ class Eks(Stack):  # type: ignore
         # Tagging all resources
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
 
-        # add kinesis_stream_name attribute
-        self.kinesis_stream_name = config.get("kinesis_stream_name", "")
-        self.pipeline_version = config.get("pipeline_version", "1.0")
-
         # Importing the VPC
         self.vpc = ec2.Vpc.from_lookup(
             self,
@@ -278,13 +274,6 @@ class Eks(Stack):  # type: ignore
             self.private_subnets.append(
                 ec2.Subnet.from_subnet_id(scope=self, id=f"pri-subnet{idx}", subnet_id=subnet_id)
             )
-
-        if self.isolated_subnet_ids:
-            self.isolated_subnets = []
-            for idx, subnet_id in enumerate(self.isolated_subnet_ids):
-                self.isolated_subnets.append(
-                    ec2.Subnet.from_subnet_id(scope=self, id=f"iso-subnet{idx}", subnet_id=subnet_id)
-                )
 
         cluster_admin_role = iam.Role(
             self,
@@ -539,9 +528,7 @@ class Eks(Stack):  # type: ignore
                     launch_template_spec=eks.LaunchTemplateSpec(id=lt.ref, version=lt.attr_latest_version_number),
                     labels=ng.get("eks_node_labels") if ng.get("eks_node_labels") else None,
                     release_version=get_ami_version(str(self.eks_version)),
-                    subnets=ec2.SubnetSelection(subnets=self.isolated_subnets)
-                    if self.isolated_subnet_ids
-                    else ec2.SubnetSelection(subnets=self.private_subnets),
+                    subnets=ec2.SubnetSelection(subnets=self.private_subnets),
                 )
 
                 nodegroup.role.add_managed_policy(
@@ -602,7 +589,10 @@ class Eks(Stack):  # type: ignore
             awslbcontroller_chart.node.add_dependency(awslbcontroller_service_account)
 
         # NGINX Ingress Controller
-        if self.eks_addons_config.get("deploy_nginx_controller"):
+        if (
+            "value" in self.eks_addons_config.get("deploy_nginx_controller")
+            and self.eks_addons_config.get("deploy_nginx_controller")["value"]
+        ):
             nginx_controller_service_account = eks_cluster.add_service_account(
                 "nginx-controller",
                 name="nginx-controller",
@@ -648,10 +638,15 @@ class Eks(Stack):  # type: ignore
             nginx_controller_service_account.role.attach_inline_policy(nginx_controller_policy)
 
             custom_values = {}
-            if self.eks_addons_config.get("nginx_additional_annotations"):
+            if "nginx_additional_annotations" in self.eks_addons_config.get("deploy_nginx_controller"):
                 custom_values = {
-                    "controller": {"configAnnotations": self.eks_addons_config.get("nginx_additional_annotations")}
+                    "controller": {
+                        "configAnnotations": self.eks_addons_config.get("deploy_nginx_controller")[
+                            "nginx_additional_annotations"
+                        ]
+                    }
                 }
+
             # Deploy the Nginx Ingress Controller
             # For more info check out https://github.com/kubernetes/ingress-nginx/tree/main/charts/ingress-nginx
             nginx_controller_chart = eks_cluster.add_helm_chart(
@@ -798,8 +793,8 @@ class Eks(Stack):  # type: ignore
 
             awsefscsi_chart.node.add_dependency(awsefscsidriver_service_account)
 
-        # AWS FSx CSI Driver doesnt work in isolated subnets ATM of developing the module
-        if self.eks_addons_config.get("deploy_aws_fsx_csi") and not self.isolated_subnet_ids:
+        # AWS FSx CSI Driver does not work in isolated subnets at the time of developing the module
+        if self.eks_addons_config.get("deploy_aws_fsx_csi"):
             awsfsxcsidriver_service_account = eks_cluster.add_service_account(
                 "awsfsxcsidriver", name="awsfsxcsidriver", namespace="kube-system"
             )
@@ -1024,11 +1019,6 @@ class Eks(Stack):  # type: ignore
             secrets_csi_provider_yaml_file.close()
             loop_iteration = 0
             for value in secrets_csi_provider_yaml:
-                if self.isolated_subnet_ids:
-                    if value["kind"] == "DaemonSet":
-                        value["spec"]["template"]["spec"]["containers"][0][
-                            "image"
-                        ] = self.secrets_store_csi_driver_provider_aws
                 loop_iteration = loop_iteration + 1
                 manifest_id = "SecretsCSIProviderManifest" + str(loop_iteration)
                 manifest = eks_cluster.add_manifest(manifest_id, value)
@@ -1120,9 +1110,6 @@ class Eks(Stack):  # type: ignore
             cw_agent_yaml_file.close()
             loop_iteration = 0
             for value in cw_agent_yaml:
-                if self.isolated_subnet_ids:
-                    if value["kind"] == "DaemonSet":
-                        value["spec"]["template"]["spec"]["containers"][0]["image"] = self.cloudwatch_agent
                 loop_iteration = loop_iteration + 1
                 manifest_id = "CWAgent" + str(loop_iteration)
                 eks_cluster.add_manifest(manifest_id, value)
@@ -1172,11 +1159,6 @@ class Eks(Stack):  # type: ignore
                             + "   auto_create_group true\n    log_retention_days "
                             + str(self.node.try_get_context("cloudwatch_container_insights_logs_retention_days"))
                             + "\n",
-                            # + "[OUTPUT]\n    Name kinesis\n    Match *\n    region "
-                            # + self.region
-                            # + "\n    stream "
-                            # + self.kinesis_stream_name
-                            # + "\n",
                             "filters.conf": "[FILTER]\n  Name  kubernetes\n  Match  kube.*\n  Merge_Log  On\n  Buffer_Size  0\n  Kube_Meta_Cache_TTL  300s\n"
                             + "[FILTER]\n    Name modify\n    Match *\n    Rename log log_data\n    Rename stream stream_name\n"
                             + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type startup\n"
@@ -1187,8 +1169,6 @@ class Eks(Stack):  # type: ignore
                             + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type processing\n"
                             + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type output\n"
                             + "[FILTER]\n    Name record_modifier\n    Match *\n    Record log_type performance\n"
-                            + "[FILTER]\n    Name record_modifier\n    Match *\n    Record pipeline_version "
-                            + self.pipeline_version
                             + "\n",
                         },
                     },
@@ -1608,7 +1588,10 @@ class Eks(Stack):  # type: ignore
 
             default_deny_policy.node.add_dependency(allow_tigera_operator_policy)
 
-        if self.eks_addons_config.get("deploy_kyverno"):
+        if (
+            "value" in self.eks_addons_config.get("deploy_kyverno")
+            and self.eks_addons_config.get("deploy_kyverno")["value"]
+        ):
             # https://kyverno.github.io/kyverno/
             kyverno_chart = eks_cluster.add_helm_chart(
                 "kyverno",
@@ -1648,8 +1631,8 @@ class Eks(Stack):  # type: ignore
 
                 allow_kyverno_policy.node.add_dependency(kyverno_chart)
 
-            if self.eks_addons_config.get("kyverno_policies"):
-                all_policies = self.eks_addons_config.get("kyverno_policies")
+            if "kyverno_policies" in self.eks_addons_config.get("deploy_kyverno"):
+                all_policies = self.eks_addons_config.get("deploy_kyverno")["kyverno_policies"]
                 for policy_type, policies in all_policies.items():
                     for policy in policies:
                         f = open(

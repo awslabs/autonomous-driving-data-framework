@@ -11,11 +11,6 @@ module_name = os.getenv("ADDF_MODULE_NAME")
 vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")  # required
 private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # required
 custom_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_CUSTOM_SUBNET_IDS"))
-isolated_subnet_ids = (
-    json.loads(os.getenv("ADDF_PARAMETER_ISOLATED_SUBNET_IDS"))
-    if os.getenv("ADDF_PARAMETER_ISOLATED_SUBNET_IDS")
-    else None
-)  # required only for isolated environments
 eks_version = os.getenv("ADDF_PARAMETER_EKS_VERSION")  # required
 eks_compute_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_COMPUTE"))  # required
 eks_addons_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_ADDONS"))  # required
@@ -41,30 +36,11 @@ config = {
     "module_name": module_name,
     "vpc_id": vpc_id,
     "private_subnet_ids": private_subnet_ids,
-    "isolated_subnet_ids": isolated_subnet_ids,
     "eks_version": eks_version,
     "eks_compute_config": eks_compute_config,
     "eks_addons_config": eks_addons_config,
     "custom_subnet_ids": custom_subnet_ids,
     "codebuild_sg_id": codebuild_sg_id if os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID") else None,
-    # "efs_csi_provisioner": efs_csi_provisioner if isolated_subnet_ids else None,
-    # "efs_plugin": efs_plugin if isolated_subnet_ids else None,
-    # "efs_liveness_probe": efs_liveness_probe if isolated_subnet_ids else None,
-    # "efs_node_registrar": efs_node_registrar if isolated_subnet_ids else None,
-    # "cluster_autoscaler": cluster_autoscaler if isolated_subnet_ids else None,
-    # "metrics_server": metrics_server if isolated_subnet_ids else None,
-    # "fluent_bit": fluent_bit if isolated_subnet_ids else None,
-    # "cloudwatch_agent": cloudwatch_agent if isolated_subnet_ids else None,
-    # "csi_secrets_driver_crds": csi_secrets_driver_crds if isolated_subnet_ids else None,
-    # "csi_secrets_driver": csi_secrets_driver if isolated_subnet_ids else None,
-    # "csi_secrets_driver_registrar": csi_secrets_driver_registrar if isolated_subnet_ids else None,
-    # "csi_secrets_driver_livenessprobe": csi_secrets_driver_livenessprobe if isolated_subnet_ids else None,
-    # "secrets_store_csi_driver_provider_aws": secrets_store_csi_driver_provider_aws if isolated_subnet_ids else None,
-    # "aws_load_balancer_controller": aws_load_balancer_controller if isolated_subnet_ids else None,
-    # "external_dns": external_dns if isolated_subnet_ids else None,
-    # "kured": kured if isolated_subnet_ids else None,
-    # "calico": calico if isolated_subnet_ids else None,
-    # "kyverno": kyverno if isolated_subnet_ids else None,
 }
 
 print(f"{module_name}")

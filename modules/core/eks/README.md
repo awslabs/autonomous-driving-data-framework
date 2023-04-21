@@ -135,6 +135,13 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
         - unique-ingress-host-and-path
 ```
 
+#### IAM integration
+
+EKS integrates with AWS Identity and Access Management (IAM) to control access to Kubernetes resources. IAM policies can be used to control access to Kubernetes API server and resources. EKS also supports role-based access control (RBAC), which allows you to define fine-grained access controls for users and groups. As of now we defined three roles, more roles can be added and refined as the requirements:
+1. Admin role - allows full access to the namespaced and cluster-wide resources of EKS
+2. Poweruser role - allows CRUD operations for namespaced resources of the EKS cluster
+3. Read-only role - allows read operations for namespaced resources of the EKS cluster
+
 #### Logging & Monitoring
 
 - We have enabled [CloudWatch Container Insights](https://docs.aws.amazon.com/prescriptive-guidance/latest/implementing-logging-monitoring-cloudwatch/kubernetes-eks-metrics.html) by default as the standard practise for ingesting Cluster metrics to AWS CloudWatch
