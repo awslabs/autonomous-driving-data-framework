@@ -218,13 +218,13 @@ class Eks(Stack):  # type: ignore
             iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEKSVPCResourceController")
         )
 
-        custom_subnet_ids = get_az_from_subnet(self.custom_subnet_ids)
-        custom_subnets_values = {}
-        for subnet_id, subnet_availability_zone in custom_subnet_ids.items():
-            custom_subnets_values[subnet_availability_zone] = {"id": subnet_id}
-
         custom_subnet_values = {}
         if self.custom_subnet_ids:
+            custom_subnet_ids = get_az_from_subnet(self.custom_subnet_ids)
+            custom_subnets_values = {}
+            for subnet_id, subnet_availability_zone in custom_subnet_ids.items():
+                custom_subnets_values[subnet_availability_zone] = {"id": subnet_id}
+
             custom_subnet_values = {
                 "init": {
                     "env": {
