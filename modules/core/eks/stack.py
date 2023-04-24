@@ -13,16 +13,12 @@
 #    limitations under the License.
 
 import json
-import logging
 import os
-from copy import deepcopy
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, cast
 
-import boto3
-import botocore
 import cdk_nag
 import yaml
-from aws_cdk import Aspects, RemovalPolicy, Stack, Tags
+from aws_cdk import Aspects, Stack, Tags
 from aws_cdk import aws_aps as aps
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_eks as eks
@@ -31,13 +27,21 @@ from aws_cdk import aws_kms as kms
 from aws_cdk.lambda_layer_kubectl_v23 import KubectlV23Layer
 from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
-from deepmerge import always_merger
 
-_logger: logging.Logger = logging.getLogger(__name__)
+from helpers import (
+    deep_merge,
+    get_ami_version,
+    get_az_from_subnet,
+    get_chart_release,
+    get_chart_repo,
+    get_chart_values,
+    get_chart_version,
+)
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
 
-
+# We are loading the data from docker replication module and use the following constants
+# to get correct values from SSM
 ALB_CONTROLLER = "alb_controller"
 NGINX_CONTROLLER = "nginx_controller"
 AWS_VPC_CNI = "aws_vpc_cni"
@@ -56,189 +60,6 @@ KYVERNO_POLICY_REPORTER = "kyverno_policy_reporter"
 METRICS_SERVER = "metrics_server"
 PROMETHEUS_STACK = "prometheus_stack"
 SECRETS_MANAGER_CSI_DRIVER = "secrets_manager_csi_driver"
-workload_versions = {}
-
-
-def _get_ssm_parameter_raw(name: str) -> str:
-    """Get SSM parameter as a string
-
-    Args:
-        name (str): Name of the SSM parameter
-
-    Returns:
-        str: Value of the SSM parameter
-    """
-    # There are two ways to get SSM parameter using CDK:
-    # 1) ssm.StringParameter.value_from_lookup() which pulls parameter during synthesize phase.
-    #    Unfortunately, it does not return the actual value, but a dummy value.
-    #    There is an issue about this which is closed, but not solved: https://github.com/aws/aws-cdk/issues/8699
-    # 2) ssm.StringParameter.value_for_string_parameter() which returns a token: ${Token[TOKEN.723]}
-    #    that will be resolved during deployment phase. Unfortunately this is too late, as we need to convert
-    #    the data to dictionary before deployment
-    # To mitigate this we use boto3
-
-    ssm = boto3.client("ssm")
-
-    try:
-        response = ssm.get_parameter(Name=name)
-    except botocore.exceptions.ClientError as error:
-        if error.response["Error"]["Code"] == "InternalServerError":
-            _logger.error("Internal server error")
-        elif error.response["Error"]["Code"] == "InvalidKeyId":
-            _logger.error("Invalid Key Id")
-        elif error.response["Error"]["Code"] == "ParameterNotFound":
-            _logger.error("Parameter not found")
-        elif error.response["Error"]["Code"] == "ParameterVersionNotFound":
-            _logger.error("Parameter version not found")
-        raise error
-
-    if "Parameter" in response and "Value" in response["Parameter"]:
-        return response["Parameter"]["Value"]
-
-    return ""
-
-
-def _get_ssm_parameter_as_dict(eks_version: str, workload_name: str) -> Dict:
-    """Get SSM parameter and converts it to dictionary
-
-    Args:
-        eks_version (str): EKS version
-        workload_name (str): Workload name
-
-    Returns:
-        Dict: Parsed SSM parameter
-    """
-    response = _get_ssm_parameter_raw(f"/addf/eks/chart/{workload_name}-{eks_version}")
-
-    if response:
-        return json.loads(response)
-
-    return {}
-
-
-def get_ami_version(eks_version: str) -> str:
-    """Get AMI version
-
-    Args:
-        eks_version (str): EKS version
-
-    Returns:
-        str: AMI version
-    """
-    return _get_ssm_parameter_raw(f"/addf/eks/ami/{eks_version}")
-
-
-def get_chart_repo(eks_version: str, workload_name: str) -> str:
-    """Get chart repository URL
-
-    Args:
-        eks_version (str): EKS version
-        workload_name (str): Workload name
-
-    Returns:
-        str: Chart repository URL
-    """
-    if workload_name not in workload_versions:
-        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
-
-    if "helm" in workload_versions[workload_name] and "repository" in workload_versions[workload_name]["helm"]:
-        return workload_versions[workload_name]["helm"]["repository"]
-
-    return ""
-
-
-def get_chart_release(eks_version: str, workload_name: str) -> str:
-    """Get chart name
-
-    Args:
-        eks_version (str): EKS version
-        workload_name (str): Workload name
-
-    Returns:
-        str: Chart name
-    """
-    if workload_name not in workload_versions:
-        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
-
-    if "helm" in workload_versions[workload_name] and "name" in workload_versions[workload_name]["helm"]:
-        return workload_versions[workload_name]["helm"]["name"]
-
-    return ""
-
-
-def get_chart_version(eks_version: str, workload_name: str) -> str:
-    """Get chart version
-
-    Args:
-        eks_version (str): EKS version
-        workload_name (str): Workload name
-
-    Returns:
-        str: Chart version
-    """
-    if workload_name not in workload_versions:
-        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
-
-    if "helm" in workload_versions[workload_name] and "version" in workload_versions[workload_name]["helm"]:
-        return workload_versions[workload_name]["helm"]["version"]
-
-    return ""
-
-
-def get_chart_values(eks_version: str, workload_name: str) -> Dict:
-    """Get chart additional valuess
-
-    Args:
-        eks_version (str): EKS version
-        workload_name (str): Workload name
-
-    Returns:
-        Dict: Chart additional values
-    """
-    if workload_name not in workload_versions:
-        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
-
-    if "values" in workload_versions[workload_name]:
-        return workload_versions[workload_name]["values"]
-
-    return {}
-
-
-def get_az_from_subnet(subnets: List[str]) -> Dict[str, str]:
-    """Get availability zone for subnet
-
-    Args:
-        subnets (List[str]): List of subnets
-
-    Returns:
-        Dict[str, str]: Correlation between subnet and availability zone
-    """
-    ec2_client = boto3.client("ec2")
-    _logger.info("Subnets info: %s", subnets)
-    az_subnet_map = {}
-    try:
-        response = ec2_client.describe_subnets(SubnetIds=subnets)
-        az_subnet_map = {entry["SubnetId"]: entry["AvailabilityZone"] for entry in response["Subnets"]}
-    except botocore.exceptions.ClientError as ex:
-        _logger.error("Error Describing Subnets: %s", ex)
-        if ex.response.get("Error", {}).get("Code", "Unknown") != "InvalidSubnetID.NotFound":
-            raise
-        else:
-            _logger.debug("Exception caught while describing subnets: %s", ex)
-    return az_subnet_map
-
-
-def deep_merge(*dicts: Dict) -> Dict:
-    """Merges two dictionaries
-
-    Returns:
-        Dict: Merged dictionary
-    """
-    merged = {}
-    for d in dicts:
-        tmp = deepcopy(d)
-        merged = always_merger.merge(merged, tmp)
-    return merged
 
 
 class Eks(Stack):  # type: ignore
@@ -256,6 +77,9 @@ class Eks(Stack):  # type: ignore
             description="This stack deploys EKS Cluster, Managed Nodegroup(s) with standard plugins for ADDF",
             **kwargs,
         )
+
+        # Disable pylint class has no member becase we load class attributes dynamically
+        # pylint: disable=no-member
         for k, v in config.items():
             setattr(self, k, v)
 
@@ -382,51 +206,14 @@ class Eks(Stack):  # type: ignore
         coredns_addon.node.add_dependency(eks_cluster)
         kube_proxy_addon.node.add_dependency(eks_cluster)
 
-        # Security Group for Pods
-        # The EKS Cluster was still defaulting to 1.7.5 on 12/9/21 and SG for Pods requires 1.7.7
-        # Upgrading that to the latest version 1.9.0 via the Helm Chart
-        # If this process somehow breaks the CNI you can repair it manually by following the steps here:
-        # https://docs.aws.amazon.com/eks/latest/userguide/managing-vpc-cni.html#updating-vpc-cni-add-on
-        # TODO: Move this to the CNI Managed Add-on when that supports flipping the required ENABLE_POD_ENI setting
-
-        # Adopting the existing aws-node resources to Helm
-        patch_types = ["DaemonSet", "ClusterRole", "ClusterRoleBinding"]
-        patches = []
-        for kind in patch_types:
-            patch = eks.KubernetesPatch(
-                self,
-                "CNI-Patch-" + kind,
-                cluster=eks_cluster,
-                resource_name=kind + "/aws-node",
-                resource_namespace="kube-system",
-                apply_patch={
-                    "metadata": {
-                        "annotations": {
-                            "meta.helm.sh/release-name": "aws-vpc-cni",
-                            "meta.helm.sh/release-namespace": "kube-system",
-                        },
-                        "labels": {"app.kubernetes.io/managed-by": "Helm"},
-                    }
-                },
-                restore_patch={},
-                patch_type=eks.PatchType.STRATEGIC,
-            )
-            # We don't want to clean this up on Delete - it is a one-time patch to let the Helm Chart own the resources
-            patch_resource = patch.node.find_child("Resource")
-            patch_resource.apply_removal_policy(RemovalPolicy.RETAIN)
-            # Keep track of all the patches to set dependencies down below
-            patches.append(patch)
-
         # Create the Service Account
         sg_pods_service_account = eks_cluster.add_service_account(
             "aws-node", name="aws-node-helm", namespace="kube-system"
         )
-
         # Give it the required policies
         sg_pods_service_account.role.add_managed_policy(
             iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEKS_CNI_Policy")
         )
-        # sg_pods_service_account.role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEKSVPCResourceController"))
         eks_cluster.role.add_managed_policy(
             iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEKSVPCResourceController")
         )
@@ -455,9 +242,13 @@ class Eks(Stack):  # type: ignore
                 },
             }
 
+        # Unfortunately vpc addon is always installed last, after the nodes are created and
+        # we are unable to influence pod cidrs without recreating the nodes after the cluster creation.
+        # To mitigate this and support out-of-the-box custom cidr for pods, we install
+        # VPC CNI as a helm chart instead of vpc addon.
         # https://github.com/aws/eks-charts/tree/master/stable/aws-vpc-cni
         # https://docs.aws.amazon.com/eks/latest/userguide/add-ons-images.html
-        sg_pods_chart = eks_cluster.add_helm_chart(
+        vpc_cni_chart = eks_cluster.add_helm_chart(
             "aws-vpc-cni",
             chart=get_chart_release(str(self.eks_version), AWS_VPC_CNI),
             version=get_chart_version(str(self.eks_version), AWS_VPC_CNI),
@@ -476,7 +267,6 @@ class Eks(Stack):  # type: ignore
                     "image": {"region": self.region, "account": "602401143452"},
                     "env": {"ENABLE_POD_ENI": True},
                     "serviceAccount": {"create": False, "name": "aws-node-helm"},
-                    "crd": {"create": False},
                     "originalMatchLabels": True,
                 },
                 custom_subnet_values,
@@ -485,9 +275,7 @@ class Eks(Stack):  # type: ignore
         )
 
         # This depends both on the service account and the patches to the existing CNI resources having been done first
-        sg_pods_chart.node.add_dependency(sg_pods_service_account)
-        for patch in patches:
-            sg_pods_chart.node.add_dependency(patch)
+        vpc_cni_chart.node.add_dependency(sg_pods_service_account)
 
         # Add a Managed Node Group
         if self.eks_compute_config.get("eks_nodegroup_config"):
@@ -535,7 +323,7 @@ class Eks(Stack):  # type: ignore
                     iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
                 )
 
-                nodegroup.node.add_dependency(sg_pods_chart)
+                nodegroup.node.add_dependency(vpc_cni_chart)
 
         # AWS Load Balancer Controller
         if self.eks_addons_config.get("deploy_aws_lb_controller"):
@@ -1538,53 +1326,28 @@ class Eks(Stack):  # type: ignore
                 namespace="tigera-operator",
             )
 
+            with open(os.path.join(project_dir, "network-policies/default-allow-kube-system.json"), "r") as f:
+                default_allow_kube_system_policy_file = f.read()
+
             allow_kube_system_policy = eks_cluster.add_manifest(
-                "default-allow-kube-system",
-                {
-                    "apiVersion": "networking.k8s.io/v1",
-                    "kind": "NetworkPolicy",
-                    "metadata": {
-                        "name": "default-allow-kube-system",
-                        "namespace": "kube-system",
-                    },
-                    "spec": {
-                        "ingress": [{}],
-                        "podSelector": {},
-                        "policyTypes": ["Ingress"],
-                    },
-                },
+                "default-allow-kube-system", default_allow_kube_system_policy_file
             )
 
             allow_kube_system_policy.node.add_dependency(calico_chart)
 
+            with open(os.path.join(project_dir, "network-policies/default-allow-tigera-operator.json"), "r") as f:
+                default_allow_tigera_operator_policy_file = f.read()
+
             allow_tigera_operator_policy = eks_cluster.add_manifest(
-                "default-allow-tigera-operator",
-                {
-                    "apiVersion": "networking.k8s.io/v1",
-                    "kind": "NetworkPolicy",
-                    "metadata": {
-                        "name": "default-allow-tigera-operator",
-                        "namespace": "tigera-operator",
-                    },
-                    "spec": {
-                        "ingress": [{}],
-                        "podSelector": {},
-                        "policyTypes": ["Ingress"],
-                    },
-                },
+                "default-allow-tigera-operator", default_allow_tigera_operator_policy_file
             )
 
             allow_tigera_operator_policy.node.add_dependency(allow_kube_system_policy)
 
-            default_deny_policy = eks_cluster.add_manifest(
-                "default-deny-policy",
-                {
-                    "apiVersion": "crd.projectcalico.org/v1",
-                    "kind": "GlobalNetworkPolicy",
-                    "metadata": {"name": "default-deny-app-policy"},
-                    "spec": {"selector": "all()", "types": ["Ingress"]},
-                },
-            )
+            with open(os.path.join(project_dir, "network-policies/default-deny.json"), "r") as f:
+                default_deny_policy_file = f.read()
+
+            default_deny_policy = eks_cluster.add_manifest("default-deny-policy", default_deny_policy_file)
 
             default_deny_policy.node.add_dependency(allow_tigera_operator_policy)
 
@@ -1612,21 +1375,12 @@ class Eks(Stack):  # type: ignore
             )
 
             if self.eks_addons_config.get("deploy_calico"):
+
+                with open(os.path.join(project_dir, "network-policies/default-allow-kyverno.json"), "r") as f:
+                    default_allow_kyverno_policy_file = f.read()
+
                 allow_kyverno_policy = eks_cluster.add_manifest(
-                    "default-allow-kyverno",
-                    {
-                        "apiVersion": "networking.k8s.io/v1",
-                        "kind": "NetworkPolicy",
-                        "metadata": {
-                            "name": "default-allow-kyverno",
-                            "namespace": "kyverno",
-                        },
-                        "spec": {
-                            "ingress": [{}],
-                            "podSelector": {},
-                            "policyTypes": ["Ingress"],
-                        },
-                    },
+                    "default-allow-kyverno", default_allow_kyverno_policy_file
                 )
 
                 allow_kyverno_policy.node.add_dependency(kyverno_chart)

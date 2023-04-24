@@ -10,7 +10,9 @@ deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
 module_name = os.getenv("ADDF_MODULE_NAME")
 vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")  # required
 private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # required
-custom_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_CUSTOM_SUBNET_IDS"))
+custom_subnet_ids = (
+    json.loads(os.getenv("ADDF_PARAMETER_CUSTOM_SUBNET_IDS")) if os.getenv("ADDF_PARAMETER_CUSTOM_SUBNET_IDS") else None
+)
 eks_version = os.getenv("ADDF_PARAMETER_EKS_VERSION")  # required
 eks_compute_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_COMPUTE"))  # required
 eks_addons_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_ADDONS"))  # required
@@ -18,16 +20,16 @@ if os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID"):
     codebuild_sg_id = json.loads(os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID"))[0]
 
 if not vpc_id:
-    raise Exception("missing input parameter vpc-id")
+    raise ValueError("missing input parameter vpc-id")
 
 if not private_subnet_ids:
-    raise Exception("missing input parameter private-subnet-ids")
+    raise ValueError("missing input parameter private-subnet-ids")
 
 if not eks_compute_config:
-    raise ValueError("EKS Compute Configuration is missing.")
+    raise ValueError("EKS Compute Configuration is missing")
 
 if not eks_addons_config:
-    raise ValueError("EKS Addons Configuration is missing.")
+    raise ValueError("EKS Addons Configuration is missing")
 
 app = App()
 
