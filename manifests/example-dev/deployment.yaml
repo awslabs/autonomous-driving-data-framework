@@ -3,6 +3,8 @@ toolchainRegion: us-west-2
 groups:
   - name: optionals
     path: manifests/example-dev/optional-modules.yaml
+  - name: replication
+    path: manifests/example-dev/replicator-modules.yaml
   - name: core
     path: manifests/example-dev/core-modules.yaml
   - name: prereqs

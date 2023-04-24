@@ -3,15 +3,17 @@ toolchainRegion: us-east-1
 groups:
   - name: optionals
     path: manifests/mlops/optional-modules.yaml
+  - name: replication
+    path: manifests/mlops/replicator-modules.yaml
   - name: core
     path: manifests/mlops/core-modules.yaml
   - name: platform
     path: manifests/mlops/kf-platform.yaml
   - name: users
-    path: manifests/mlops/kf-users.yaml   
+    path: manifests/mlops/kf-users.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 
+    accountId:
       valueFrom:
         envVariable: PRIMARY_ACCOUNT
     default: true

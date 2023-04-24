@@ -1,0 +1,7 @@
+ami:
+  version: 1.22.17-20230217
+charts:
+  alb_controller:
+    version: 1.3.3
+  kyverno:
+    version: v2.5.5
