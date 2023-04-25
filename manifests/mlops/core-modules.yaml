@@ -26,26 +26,23 @@ parameters:
     value:
       eks_nodegroup_config:
         - eks_ng_name: ng1
-          eks_node_quantity: 3
-          eks_node_max_quantity: 6
-          eks_node_min_quantity: 2
-          eks_node_disk_size: 50
-          eks_node_instance_types:
-            - "m5.large"
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_type: "m5.large"
         - eks_ng_name: ng2
-          eks_node_quantity: 3
-          eks_node_max_quantity: 6
-          eks_node_min_quantity: 2
-          eks_node_disk_size: 50
-          eks_node_instance_types:
-            - "m5.xlarge"
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_type: "m5.xlarge"
         - eks_ng_name: gpung1
           eks_node_quantity: 1
           eks_node_max_quantity: 3
           eks_node_min_quantity: 1
           eks_node_disk_size: 100
-          eks_node_instance_types:
-            - "g4dn.xlarge"
+          eks_node_instance_type: "g4dn.xlarge"
           eks_node_labels:
             usage: visualization
       eks_node_spot: False

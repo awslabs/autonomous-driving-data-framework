@@ -18,7 +18,7 @@ from typing import Any, Dict, cast
 
 import cdk_nag
 import yaml
-from aws_cdk import Aspects, Stack, Tags
+from aws_cdk import Aspects, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_aps as aps
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_eks as eks
@@ -205,6 +205,34 @@ class Eks(Stack):  # type: ignore
 
         coredns_addon.node.add_dependency(eks_cluster)
         kube_proxy_addon.node.add_dependency(eks_cluster)
+
+        # Adopting the existing aws-node resources to Helm to fix error `helm ownership errors`
+        patch_types = ["DaemonSet", "ClusterRole", "ClusterRoleBinding"]
+        patches = []
+        for kind in patch_types:
+            patch = eks.KubernetesPatch(
+                self,
+                "CNI-Patch-" + kind,
+                cluster=eks_cluster,
+                resource_name=kind + "/aws-node",
+                resource_namespace="kube-system",
+                apply_patch={
+                    "metadata": {
+                        "annotations": {
+                            "meta.helm.sh/release-name": "aws-vpc-cni",
+                            "meta.helm.sh/release-namespace": "kube-system",
+                        },
+                        "labels": {"app.kubernetes.io/managed-by": "Helm"},
+                    }
+                },
+                restore_patch={},
+                patch_type=eks.PatchType.STRATEGIC,
+            )
+            # We don't want to clean this up on Delete - it is a one-time patch to let the Helm Chart own the resources
+            patch_resource = patch.node.find_child("Resource")
+            patch_resource.apply_removal_policy(RemovalPolicy.RETAIN)
+            # Keep track of all the patches to set dependencies down below
+            patches.append(patch)
 
         # Create the Service Account
         sg_pods_service_account = eks_cluster.add_service_account(
