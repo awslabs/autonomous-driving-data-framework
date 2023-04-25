@@ -148,8 +148,9 @@ class Eks(Stack):  # type: ignore
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_2))
         cluster_admin_role.add_to_principal_policy(iam.PolicyStatement.from_json(cluster_admin_policy_statement_json_3))
 
-        # KMS key for Envelope encryption
-        secrets_key = kms.Key(self, "SecretsKey")
+        if self.eks_compute_config.get("eks_secrets_envelope_encryption"):
+            # KMS key for Kubernetes secrets envelope encryption
+            secrets_key = kms.Key(self, "SecretsKey")
 
         # Creates an EKS Cluster
         eks_cluster = eks.Cluster(
@@ -166,7 +167,9 @@ class Eks(Stack):  # type: ignore
             # Work around until CDK team makes kubectl upto date https://github.com/aws/aws-cdk/issues/23376
             kubectl_layer=KubectlV23Layer(self, "Kubectlv23Layer"),
             default_capacity=0,
-            secrets_encryption_key=secrets_key,
+            secrets_encryption_key=secrets_key
+            if self.eks_compute_config.get("eks_secrets_envelope_encryption")
+            else None,
             cluster_logging=[
                 eks.ClusterLoggingTypes.API,
                 eks.ClusterLoggingTypes.AUDIT,

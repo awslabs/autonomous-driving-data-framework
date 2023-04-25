@@ -46,6 +46,7 @@ parameters:
           eks_node_labels:
             usage: visualization
       eks_node_spot: False
+      eks_secrets_envelope_encryption: False
       eks_api_endpoint_private: False
   - name: eks-addons
     value:

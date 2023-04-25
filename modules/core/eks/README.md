@@ -24,6 +24,7 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
 - `eks_poweruser_role_name`: The PowerUser Role to be mapped to the `poweruser-group` group of RBAC
 - `eks_readonly_role_name`: The ReadOnly Role to be mapped to the `readonly-group` group of RBAC
 - `eks_node_spot`: If `eks_node_spot` is set to True, we deploy SPOT instances of the above `nodegroup_config` for you else we deploy `ON_DEMAND` instances.
+- `eks_secrets_envelope_encryption`: If set to True, we enable KMS secret for envelope encryption for Kubernetes secrets.
 - `eks_api_endpoint_private`: If set to True, we deploy EKS cluster with API endpoint set to private mode.
 - `deploy_aws_lb_controller`: We deploy the ALB Ingress controller by default, unless you set it to False
 - `deploy_external_dns`: We deploy the External DNS to interact with AWS Route53 by default, unless you set it to False
