@@ -1,2 +1,0 @@
-mypy-boto3-sqs
-mypy-boto3-batch
