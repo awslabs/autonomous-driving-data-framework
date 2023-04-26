@@ -1,2 +1,2 @@
-apache-airflow~=2.2.4
-airflow-kubernetes-job-operator~=2.0.4
+# apache-airflow~=2.2.4
+# airflow-kubernetes-job-operator~=2.0.4

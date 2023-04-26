@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Removed**
 - removing MWAA dependenies to `requirements-dev.txt` for FSx-Lustre module
+- removing MWAA dependenies to `requirements-dev.txt` in analysis, sensor-extraction, simulations modules
 
 ## [V1.2.0] - [3/20/2023]
 
