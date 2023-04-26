@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updating seed-farmer to `2.6.0`
 
 ### **Removed**
-
+- removing MWAA dependenies to `requirements-dev.txt` for FSx-Lustre module
 
 ## [V1.2.0] - [3/20/2023]
 
