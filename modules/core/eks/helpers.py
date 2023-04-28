@@ -177,7 +177,7 @@ def _get_chart_repo_from_ssm(eks_version: str, workload_name: str) -> str:
 
 
 def _get_chart_values_from_file(eks_version: str, workload_name: str) -> Dict:
-    """Get chart additional valuess
+    """Get chart additional values
 
     Args:
         eks_version (str): EKS version
@@ -198,7 +198,7 @@ def _get_chart_values_from_file(eks_version: str, workload_name: str) -> Dict:
 
 
 def _get_chart_values_from_ssm(eks_version: str, workload_name: str) -> Dict:
-    """Get chart additional valuess
+    """Get chart additional values
 
     Args:
         eks_version (str): EKS version
@@ -351,7 +351,7 @@ def get_chart_repo(eks_version: str, workload_name: str) -> str:
 
 
 def get_chart_values(eks_version: str, workload_name: str) -> Dict:
-    """Get chart additional valuess
+    """Get chart additional values
 
     Args:
         eks_version (str): EKS version
