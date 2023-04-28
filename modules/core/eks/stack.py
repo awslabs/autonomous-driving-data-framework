@@ -1361,7 +1361,7 @@ class Eks(Stack):  # type: ignore
                 default_allow_kube_system_policy_file = f.read()
 
             allow_kube_system_policy = eks_cluster.add_manifest(
-                "default-allow-kube-system", default_allow_kube_system_policy_file
+                "default-allow-kube-system", json.loads(default_allow_kube_system_policy_file)
             )
 
             allow_kube_system_policy.node.add_dependency(calico_chart)
@@ -1370,7 +1370,7 @@ class Eks(Stack):  # type: ignore
                 default_allow_tigera_operator_policy_file = f.read()
 
             allow_tigera_operator_policy = eks_cluster.add_manifest(
-                "default-allow-tigera-operator", default_allow_tigera_operator_policy_file
+                "default-allow-tigera-operator", json.loads(default_allow_tigera_operator_policy_file)
             )
 
             allow_tigera_operator_policy.node.add_dependency(allow_kube_system_policy)
@@ -1378,7 +1378,7 @@ class Eks(Stack):  # type: ignore
             with open(os.path.join(project_dir, "network-policies/default-deny.json"), "r") as f:
                 default_deny_policy_file = f.read()
 
-            default_deny_policy = eks_cluster.add_manifest("default-deny-policy", default_deny_policy_file)
+            default_deny_policy = eks_cluster.add_manifest("default-deny-policy", json.loads(default_deny_policy_file))
 
             default_deny_policy.node.add_dependency(allow_tigera_operator_policy)
 
@@ -1411,7 +1411,7 @@ class Eks(Stack):  # type: ignore
                     default_allow_kyverno_policy_file = f.read()
 
                 allow_kyverno_policy = eks_cluster.add_manifest(
-                    "default-allow-kyverno", default_allow_kyverno_policy_file
+                    "default-allow-kyverno", json.loads(default_allow_kyverno_policy_file)
                 )
 
                 allow_kyverno_policy.node.add_dependency(kyverno_chart)

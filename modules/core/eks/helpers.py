@@ -1,15 +1,18 @@
 """Helper utilities"""
 import json
 import logging
+import os
 from copy import deepcopy
 from typing import Dict, List
 
 import boto3
 import botocore
+import yaml
 from deepmerge import always_merger
 
 _logger: logging.Logger = logging.getLogger(__name__)
 
+project_dir = os.path.dirname(os.path.abspath(__file__))
 workload_versions = {}
 
 
@@ -70,7 +73,20 @@ def _get_ssm_parameter_as_dict(eks_version: str, workload_name: str) -> Dict:
     return {}
 
 
-def get_ami_version(eks_version: str) -> str:
+def _get_ami_version_from_file(eks_version: str) -> str:
+    """Get AMI version
+
+    Args:
+        eks_version (str): EKS version
+
+    Returns:
+        str: AMI version
+    """
+    _parse_versions_file(eks_version)
+    return workload_versions[eks_version]["ami"]["version"]
+
+
+def _get_ami_version_from_ssm(eks_version: str) -> str:
     """Get AMI version
 
     Args:
@@ -82,26 +98,27 @@ def get_ami_version(eks_version: str) -> str:
     return _get_ssm_parameter_raw(f"/addf/eks/ami/{eks_version}")
 
 
-def get_chart_repo(eks_version: str, workload_name: str) -> str:
-    """Get chart repository URL
+def _get_chart_release_from_file(eks_version: str, workload_name: str) -> str:
+    """Get chart name
 
     Args:
         eks_version (str): EKS version
         workload_name (str): Workload name
 
     Returns:
-        str: Chart repository URL
+        str: Chart name
     """
-    if workload_name not in workload_versions:
-        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+    _parse_versions_file(eks_version)
+    if (
+        workload_name in workload_versions[eks_version]["charts"]
+        and "name" in workload_versions[eks_version]["charts"][workload_name]
+    ):
+        return workload_versions[eks_version]["charts"][workload_name]["name"]
 
-    if "helm" in workload_versions[workload_name] and "repository" in workload_versions[workload_name]["helm"]:
-        return workload_versions[workload_name]["helm"]["repository"]
-
-    return ""
+    return workload_versions["default"]["charts"][workload_name]["name"]
 
 
-def get_chart_release(eks_version: str, workload_name: str) -> str:
+def _get_chart_release_from_ssm(eks_version: str, workload_name: str) -> str:
     """Get chart name
 
     Args:
@@ -120,7 +137,106 @@ def get_chart_release(eks_version: str, workload_name: str) -> str:
     return ""
 
 
-def get_chart_version(eks_version: str, workload_name: str) -> str:
+def _get_chart_repo_from_file(eks_version: str, workload_name: str) -> str:
+    """Get chart repository URL
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart repository URL
+    """
+    _parse_versions_file(eks_version)
+    if (
+        workload_name in workload_versions[eks_version]["charts"]
+        and "repository" in workload_versions[eks_version]["charts"][workload_name]
+    ):
+        return workload_versions[eks_version]["charts"][workload_name]["repository"]
+
+    return workload_versions["default"]["charts"][workload_name]["repository"]
+
+
+def _get_chart_repo_from_ssm(eks_version: str, workload_name: str) -> str:
+    """Get chart repository URL
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart repository URL
+    """
+    if workload_name not in workload_versions:
+        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+
+    if "helm" in workload_versions[workload_name] and "repository" in workload_versions[workload_name]["helm"]:
+        return workload_versions[workload_name]["helm"]["repository"]
+
+    return ""
+
+
+def _get_chart_values_from_file(eks_version: str, workload_name: str) -> Dict:
+    """Get chart additional valuess
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        Dict: Chart additional values
+    """
+    _parse_versions_file(eks_version)
+    if workload_name in workload_versions[eks_version]["charts"]:
+        if "values" in workload_versions[eks_version]["charts"][workload_name]:
+            return workload_versions[eks_version]["charts"][workload_name]["values"]
+
+    if "values" in workload_versions["default"]["charts"][workload_name]:
+        return workload_versions["default"]["charts"][workload_name]["values"]
+
+    return {}
+
+
+def _get_chart_values_from_ssm(eks_version: str, workload_name: str) -> Dict:
+    """Get chart additional valuess
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        Dict: Chart additional values
+    """
+    if workload_name not in workload_versions:
+        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+
+    if "values" in workload_versions[workload_name]:
+        return workload_versions[workload_name]["values"]
+
+    return {}
+
+
+def _get_chart_version_from_file(eks_version: str, workload_name: str) -> str:
+    """Get chart version
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart version
+    """
+    _parse_versions_file(eks_version)
+    if (
+        workload_name in workload_versions[eks_version]["charts"]
+        and "version" in workload_versions[eks_version]["charts"][workload_name]
+    ):
+        return workload_versions[eks_version]["charts"][workload_name]["version"]
+
+    return workload_versions["default"]["charts"][workload_name]["version"]
+
+
+def _get_chart_version_from_ssm(eks_version: str, workload_name: str) -> str:
     """Get chart version
 
     Args:
@@ -139,23 +255,47 @@ def get_chart_version(eks_version: str, workload_name: str) -> str:
     return ""
 
 
-def get_chart_values(eks_version: str, workload_name: str) -> Dict:
-    """Get chart additional valuess
+def _parse_versions_file(eks_version: str) -> dict:
+    """Parse versions file
 
     Args:
         eks_version (str): EKS version
-        workload_name (str): Workload name
 
     Returns:
-        Dict: Chart additional values
+        dict: Parsed file
     """
-    if workload_name not in workload_versions:
-        workload_versions[workload_name] = _get_ssm_parameter_as_dict(eks_version, workload_name)
+    # we do not want to load and parse yaml file for every workload
+    if eks_version not in workload_versions:
+        yaml_path = os.path.join(project_dir, "versions", f"{eks_version}.yaml")
 
-    if "values" in workload_versions[workload_name]:
-        return workload_versions[workload_name]["values"]
+        with open(yaml_path, encoding="utf-8") as yaml_file:
+            workload_versions[eks_version] = yaml.safe_load(yaml_file)
 
-    return {}
+
+def deep_merge(*dicts: Dict) -> Dict:
+    """Merges two dictionaries
+
+    Returns:
+        Dict: Merged dictionary
+    """
+    merged = {}
+    for d in dicts:
+        tmp = deepcopy(d)
+        merged = always_merger.merge(merged, tmp)
+    return merged
+
+
+def get_ami_version(eks_version: str) -> str:
+    """Get AMI version
+
+    Args:
+        eks_version (str): EKS version
+
+    Returns:
+        str: AMI version
+    """
+    return _get_ami_version_from_file(eks_version)
+    # return _get_ami_version_from_ssm(eks_version)
 
 
 def get_az_from_subnet(subnets: List[str]) -> Dict[str, str]:
@@ -182,14 +322,59 @@ def get_az_from_subnet(subnets: List[str]) -> Dict[str, str]:
     return az_subnet_map
 
 
-def deep_merge(*dicts: Dict) -> Dict:
-    """Merges two dictionaries
+def get_chart_release(eks_version: str, workload_name: str) -> str:
+    """Get chart name
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
 
     Returns:
-        Dict: Merged dictionary
+        str: Chart name
     """
-    merged = {}
-    for d in dicts:
-        tmp = deepcopy(d)
-        merged = always_merger.merge(merged, tmp)
-    return merged
+    return _get_chart_release_from_file(eks_version, workload_name)
+    # return _get_chart_release_from_ssm(eks_version, workload_name)
+
+
+def get_chart_repo(eks_version: str, workload_name: str) -> str:
+    """Get chart repository URL
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart repository URL
+    """
+    return _get_chart_repo_from_file(eks_version, workload_name)
+    # return _get_chart_repo_from_ssm(eks_version, workload_name)
+
+
+def get_chart_values(eks_version: str, workload_name: str) -> Dict:
+    """Get chart additional valuess
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        Dict: Chart additional values
+    """
+
+    return _get_chart_values_from_file(eks_version, workload_name)
+    # return _get_chart_values_from_ssm(eks_version, workload_name)
+
+
+def get_chart_version(eks_version: str, workload_name: str) -> str:
+    """Get chart version
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Chart version
+    """
+
+    return _get_chart_version_from_file(eks_version, workload_name)
+    # return _get_chart_version_from_ssm(eks_version, workload_name)
