@@ -20,6 +20,14 @@ def main() -> None:
 
     logger.info("EKS version: %s", args.eks_version)
 
+    # Loading the EKS Version files
+    # TODO: Rosty you can use the below files or refactor them accordingly
+    with open (f"data/eks_dockerimage-replication/versions/{args.eks_version}.yaml", 'r') as fp_eksversion:
+        f_eksversion = json.loads(fp_eksversion)
+
+    with open ("data/eks_dockerimage-replication/versions/default.yaml", 'r') as fp_default:
+        f_default = json.loads(fp_default)
+
     logger.info(
         "EKS node AMI image version: %s",
         parser.get_ami_version(project_path, args.versions_dir, args.eks_version),

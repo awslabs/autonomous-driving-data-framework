@@ -5,3 +5,6 @@ parameters:
     #   envVariable: GLOBAL_EKS_VERSION
 name: replication
 path: modules/replication/dockerimage-replication/
+dataFiles:
+  - filePath: data/eks_dockerimage-replication/versions/1.25.yaml
+  - filePath: data/eks_dockerimage-replication/versions/default.yaml

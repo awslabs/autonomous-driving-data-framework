@@ -62,6 +62,9 @@ parameters:
 ---
 name: eks
 path: modules/core/eks/
+dataFiles:
+  - filePath: data/eks_dockerimage-replication/versions/1.25.yaml
+  - filePath: data/eks_dockerimage-replication/versions/default.yaml
 parameters:
   - name: vpc-id
     valueFrom:

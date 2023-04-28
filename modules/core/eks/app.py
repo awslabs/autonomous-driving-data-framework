@@ -19,6 +19,14 @@ eks_addons_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_ADDONS"))  # requir
 if os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID"):
     codebuild_sg_id = json.loads(os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID"))[0]
 
+# Loading the EKS Version files
+# TODO: Rosty you can use the below files or refactor them accordingly
+with open (f"data/eks_dockerimage-replication/versions/{eks_version}.yaml", 'r') as fp_eksversion:
+    f_eksversion = json.loads(fp_eksversion)
+
+with open ("data/eks_dockerimage-replication/versions/default.yaml", 'r') as fp_default:
+    f_default = json.loads(fp_default)
+
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
 
