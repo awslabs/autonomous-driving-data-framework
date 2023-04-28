@@ -109,6 +109,7 @@ def _get_chart_release_from_file(eks_version: str, workload_name: str) -> str:
         str: Chart name
     """
     _parse_versions_file(eks_version)
+    _parse_versions_file("default")
     if (
         workload_name in workload_versions[eks_version]["charts"]
         and "name" in workload_versions[eks_version]["charts"][workload_name]
@@ -148,6 +149,7 @@ def _get_chart_repo_from_file(eks_version: str, workload_name: str) -> str:
         str: Chart repository URL
     """
     _parse_versions_file(eks_version)
+    _parse_versions_file("default")
     if (
         workload_name in workload_versions[eks_version]["charts"]
         and "repository" in workload_versions[eks_version]["charts"][workload_name]
@@ -187,6 +189,7 @@ def _get_chart_values_from_file(eks_version: str, workload_name: str) -> Dict:
         Dict: Chart additional values
     """
     _parse_versions_file(eks_version)
+    _parse_versions_file("default")
     if workload_name in workload_versions[eks_version]["charts"]:
         if "values" in workload_versions[eks_version]["charts"][workload_name]:
             return workload_versions[eks_version]["charts"][workload_name]["values"]
@@ -227,6 +230,7 @@ def _get_chart_version_from_file(eks_version: str, workload_name: str) -> str:
         str: Chart version
     """
     _parse_versions_file(eks_version)
+    _parse_versions_file("default")
     if (
         workload_name in workload_versions[eks_version]["charts"]
         and "version" in workload_versions[eks_version]["charts"][workload_name]
