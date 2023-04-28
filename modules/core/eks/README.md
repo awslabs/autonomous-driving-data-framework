@@ -3,7 +3,47 @@
 
 ## Description
 
-This module creates an EKS Cluster with the commonly preferred addons for use in ADDF
+This module creates an EKS Cluster with the following features and addons available for use:
+
+- Can create EKS Control plane and data plane in private subnets (having NATG in the route tables)
+- Can create EKS Control plane and data plane in Isolated subnets (having Link local route in the route tables)
+- Encrypts the root EBS volumes of managed node groups
+- Can encrypt the EKS Control plane using Envelope encryption
+
+### Plugins supported by category
+
+Load balancing:
+
+- ALB Ingress Controller
+- Nginx Ingress Controller
+
+Storage:
+
+- EBS CSI Driver
+- EFS CSI Driver
+- FSX Lustre Driver
+
+Secrets:
+
+- Secrets Manager CSI Driver
+
+Scaling:
+
+- Horizontal Pod Autoscaler (HPA)
+- CLuster Autoscaler (CA)
+
+Monitoring/Logging/Alerting:
+
+- Cloudwatch Container Insights (Metrics & logs)
+
+Networking:
+
+- Custom CIDR implementation
+- Calico for network isolation/security
+
+Security:
+
+- Kyverno policies (policy as enforcement in k8s)
 
 
 ## Inputs/Outputs
@@ -58,19 +98,18 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
         eks_node_max_quantity: 5
         eks_node_min_quantity: 1
         eks_node_disk_size: 20
-        eks_node_instance_types: 
-          - "m5.large"
+        eks_node_instance_type: "m5.large"
       - eks_ng_name: ng2
         eks_node_quantity: 2
         eks_node_max_quantity: 5
         eks_node_min_quantity: 1
         eks_node_disk_size: 20
-        eks_node_instance_types: 
-          - "m5.xlarge"
+        eks_node_instance_type: "m5.xlarge"
         eks_node_labels:
           usage: visualization
     eks_node_spot: False
     eks_api_endpoint_private: False
+    eks_secrets_envelope_encryption: True
 ```
 
 > We have enabled [Security groups for pods](https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html) by default as the best security practise and the feature is supported by most Nitro-based Amazon EC2 instance families. For finding the right instance type which supports the feature, refer to [limits.go](https://github.com/aws/amazon-vpc-resource-controller-k8s/blob/master/pkg/aws/vpc/limits.go)
@@ -95,50 +134,53 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
     deploy_grafana_for_amp: False
     deploy_kured: False
     deploy_calico: False
-    deploy_nginx_controller: False
-    nginx_additional_annotations:
-      nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
-    deploy_kyverno: False
-    kyverno_policies:
-      validate:
-        - block-ephemeral-containers
-        - block-stale-images
-        - block-updates-deletes
-        - check-deprecated-apis
-        - disallow-cri-sock-mount
-        - disallow-custom-snippets
-        - disallow-empty-ingress-host
-        - disallow-helm-tiller
-        - disallow-latest-tag
-        - disallow-localhost-services
-        - disallow-secrets-from-env-vars
-        - ensure-probes-different
-        - ingress-host-match-tls
-        - limit-hostpath-vols
-        - prevent-naked-pods
-        - require-drop-cap-net-raw
-        - require-emptydir-requests-limits
-        - require-labels
-        - require-pod-requests-limits
-        - require-probes
-        - restrict-annotations
-        - restrict-automount-sa-token
-        - restrict-binding-clusteradmin
-        - restrict-clusterrole-nodesproxy
-        - restrict-escalation-verbs-roles
-        - restrict-ingress-classes
-        - restrict-ingress-defaultbackend
-        - restrict-node-selection
-        - restrict-path
-        - restrict-service-external-ips
-        - restrict-wildcard-resources
-        - restrict-wildcard-verbs
-        - unique-ingress-host-and-path
+    deploy_nginx_controller:
+        value: False
+        nginx_additional_annotations:
+          nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
+    deploy_kyverno:
+        value: False
+        kyverno_policies:
+          validate:
+            - block-ephemeral-containers
+            - block-stale-images
+            - block-updates-deletes
+            - check-deprecated-apis
+            - disallow-cri-sock-mount
+            - disallow-custom-snippets
+            - disallow-empty-ingress-host
+            - disallow-helm-tiller
+            - disallow-latest-tag
+            - disallow-localhost-services
+            - disallow-secrets-from-env-vars
+            - ensure-probes-different
+            - ingress-host-match-tls
+            - limit-hostpath-vols
+            - prevent-naked-pods
+            - require-drop-cap-net-raw
+            - require-emptydir-requests-limits
+            - require-labels
+            - require-pod-requests-limits
+            - require-probes
+            - restrict-annotations
+            - restrict-automount-sa-token
+            - restrict-binding-clusteradmin
+            - restrict-clusterrole-nodesproxy
+            - restrict-escalation-verbs-roles
+            - restrict-ingress-classes
+            - restrict-ingress-defaultbackend
+            - restrict-node-selection
+            - restrict-path
+            - restrict-service-external-ips
+            - restrict-wildcard-resources
+            - restrict-wildcard-verbs
+            - unique-ingress-host-and-path
 ```
 
 #### IAM integration
 
 EKS integrates with AWS Identity and Access Management (IAM) to control access to Kubernetes resources. IAM policies can be used to control access to Kubernetes API server and resources. EKS also supports role-based access control (RBAC), which allows you to define fine-grained access controls for users and groups. As of now we defined three roles, more roles can be added and refined as the requirements:
+
 1. Admin role - allows full access to the namespaced and cluster-wide resources of EKS
 2. Poweruser role - allows CRUD operations for namespaced resources of the EKS cluster
 3. Read-only role - allows read operations for namespaced resources of the EKS cluster
