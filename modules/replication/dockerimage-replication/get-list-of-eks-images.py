@@ -10,23 +10,14 @@ from helmparser.logging import logger
 
 
 project_path = os.path.realpath(os.path.dirname(__file__))
+data_dir = "data/eks_dockerimage-replication/versions/"
 
 
 def main() -> None:
     """Main handler"""
-    workloads_data = parser.get_workloads(
-        project_path, args.versions_dir, args.eks_version
-    )
+    workloads_data = parser.get_workloads(data_dir, args.versions_dir, args.eks_version)
 
     logger.info("EKS version: %s", args.eks_version)
-
-    # Loading the EKS Version files
-    # TODO: Rosty you can use the below files or refactor them accordingly
-    with open (f"data/eks_dockerimage-replication/versions/{args.eks_version}.yaml", 'r') as fp_eksversion:
-        f_eksversion = json.loads(fp_eksversion)
-
-    with open ("data/eks_dockerimage-replication/versions/default.yaml", 'r') as fp_default:
-        f_default = json.loads(fp_default)
 
     logger.info(
         "EKS node AMI image version: %s",

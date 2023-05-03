@@ -13,6 +13,7 @@ from deepmerge import always_merger
 _logger: logging.Logger = logging.getLogger(__name__)
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
+data_dir = "data/eks_dockerimage-replication/versions/"
 workload_versions = {}
 
 
@@ -268,9 +269,10 @@ def _parse_versions_file(eks_version: str) -> dict:
     Returns:
         dict: Parsed file
     """
+
     # we do not want to load and parse yaml file for every workload
     if eks_version not in workload_versions:
-        yaml_path = os.path.join(project_dir, "versions", f"{eks_version}.yaml")
+        yaml_path = os.path.join(data_dir, f"{eks_version}.yaml")
 
         with open(yaml_path, encoding="utf-8") as yaml_file:
             workload_versions[eks_version] = yaml.safe_load(yaml_file)
