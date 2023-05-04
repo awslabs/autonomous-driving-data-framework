@@ -10,9 +10,9 @@ deploy:
       commands:
         - |
           if [[ -n ${ADDF_PARAMETER_NO_REPLICATE} ]]; then
-            python3 get-list-of-eks-images.py --eks-version ${ADDF_PARAMETER_EKS_VERSION} --versions-directory versions --update-helm-repos --registry-prefix "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_CODESEEDER_NAME}-" --no-replicate
+            python3 get-list-of-eks-images.py --eks-version ${ADDF_PARAMETER_EKS_VERSION} --versions-directory data/eks_dockerimage-replication/versions --update-helm-repos --registry-prefix "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_CODESEEDER_NAME}-" --no-replicate
           else
-            python3 get-list-of-eks-images.py --eks-version ${ADDF_PARAMETER_EKS_VERSION} --versions-directory versions --update-helm-repos --registry-prefix "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_CODESEEDER_NAME}-"
+            python3 get-list-of-eks-images.py --eks-version ${ADDF_PARAMETER_EKS_VERSION} --versions-directory data/eks_dockerimage-replication/versions --update-helm-repos --registry-prefix "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_CODESEEDER_NAME}-"
           fi
         - chmod +x replication.sh
         - bash replication.sh create

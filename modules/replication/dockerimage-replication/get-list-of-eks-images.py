@@ -10,18 +10,17 @@ from helmparser.logging import logger
 
 
 project_path = os.path.realpath(os.path.dirname(__file__))
-data_dir = "data/eks_dockerimage-replication/versions/"
 
 
 def main() -> None:
     """Main handler"""
-    workloads_data = parser.get_workloads(data_dir, args.versions_dir, args.eks_version)
+    workloads_data = parser.get_workloads(args.versions_dir, args.eks_version)
 
     logger.info("EKS version: %s", args.eks_version)
 
     logger.info(
         "EKS node AMI image version: %s",
-        parser.get_ami_version(project_path, args.versions_dir, args.eks_version),
+        parser.get_ami_version(args.versions_dir, args.eks_version),
     )
 
     if args.update_helm:
@@ -167,7 +166,7 @@ def main() -> None:
 
     ssm.put_parameter(
         f"/addf/eks/ami/{args.eks_version}",
-        parser.get_ami_version(project_path, args.versions_dir, args.eks_version),
+        parser.get_ami_version(args.versions_dir, args.eks_version),
     )
 
     with open(
