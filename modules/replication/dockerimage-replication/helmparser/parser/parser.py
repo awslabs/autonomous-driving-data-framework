@@ -1,6 +1,7 @@
 """Parsing utilities"""
 import os
 from functools import reduce
+
 import yaml
 
 _parsed_file = {}
