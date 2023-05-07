@@ -45,7 +45,7 @@ config = {
     "codebuild_sg_id": codebuild_sg_id if os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID") else None,
 }
 
-print(f"{module_name}")
+
 stack = Eks(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
