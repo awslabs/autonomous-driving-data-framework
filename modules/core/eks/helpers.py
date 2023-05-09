@@ -367,8 +367,8 @@ def get_chart_values(eks_version: str, workload_name: str) -> Dict:
         Dict: Chart additional values
     """
 
-    return _get_chart_values_from_file(eks_version, workload_name)
-    # return _get_chart_values_from_ssm(eks_version, workload_name)
+    # return _get_chart_values_from_file(eks_version, workload_name)
+    return _get_chart_values_from_ssm(eks_version, workload_name)
 
 
 def get_chart_version(eks_version: str, workload_name: str) -> str:

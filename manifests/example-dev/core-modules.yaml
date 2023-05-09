@@ -66,6 +66,9 @@ dataFiles:
   - filePath: data/eks_dockerimage-replication/versions/1.25.yaml
   - filePath: data/eks_dockerimage-replication/versions/default.yaml
 parameters:
+  - name: replicated-ecr-images-metadata
+    valueFrom:
+      parameterStore: /addf/demo-ssriche/replication/replication/metadata
   - name: vpc-id
     valueFrom:
       moduleMetadata:
