@@ -51,12 +51,4 @@ parser.add_argument(
     required=True,
 )
 
-parser.add_argument(
-    "-n",
-    "--no-replicate",
-    action="store_true",
-    dest="no_replicate",
-    help="set flag if you do not need image replication",
-)
-
 args = parser.parse_args()

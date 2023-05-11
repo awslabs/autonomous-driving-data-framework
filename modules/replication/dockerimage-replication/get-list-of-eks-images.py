@@ -83,7 +83,7 @@ def main() -> None:
 
         logger.debug("Chart %s:", workload)
 
-        if not args.no_replicate and "images" in values:
+        if "images" in values:
             logger.debug("\tImages:")
 
             for image_name, image_data in values["images"].items():
@@ -178,7 +178,7 @@ def main() -> None:
     charts_json = {"charts": custom_chart_values}
 
     with open(
-        os.path.join(project_path, "charts.yaml"),
+        os.path.join(project_path, "replication-result.json"),
         "w",
         encoding="utf-8",
     ) as file:

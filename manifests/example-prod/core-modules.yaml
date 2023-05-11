@@ -66,6 +66,12 @@ dataFiles:
   - filePath: data/eks_dockerimage-replication/versions/1.25.yaml
   - filePath: data/eks_dockerimage-replication/versions/default.yaml
 parameters:
+  - name: replicated-ecr-images-metadata-s3-path
+    valueFrom:
+      moduleMetadata:
+        group: replication
+        name: replication
+        key: s3_full_path
   - name: vpc-id
     valueFrom:
       moduleMetadata:
