@@ -19,10 +19,8 @@ eks_addons_config = json.loads(os.getenv("ADDF_PARAMETER_EKS_ADDONS"))  # requir
 if os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID"):
     codebuild_sg_id = json.loads(os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID"))[0]
 
-# TODO: rosty use the below to grab the images metadata
-replicated_ecr_images_metadata = (
-    json.loads(os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA")) if os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA") else None
-)
+if os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA"):
+    replicated_ecr_images_metadata = json.loads(os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA"))
 
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
@@ -48,6 +46,7 @@ config = {
     "eks_addons_config": eks_addons_config,
     "custom_subnet_ids": custom_subnet_ids,
     "codebuild_sg_id": codebuild_sg_id if os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID") else None,
+    "replicated_ecr_images_metadata": replicated_ecr_images_metadata if os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA") else None,
 }
 
 

@@ -78,7 +78,7 @@ class Eks(Stack):  # type: ignore
             **kwargs,
         )
 
-        # Disable pylint class has no member becase we load class attributes dynamically
+        # Disable pylint class has no member because we load class attributes dynamically
         # pylint: disable=no-member
         for k, v in config.items():
             setattr(self, k, v)
@@ -301,7 +301,7 @@ class Eks(Stack):  # type: ignore
                     "originalMatchLabels": True,
                 },
                 custom_subnet_values,
-                get_chart_values(str(self.eks_version), AWS_VPC_CNI),
+                get_chart_values(self.replicated_ecr_images_metadata, AWS_VPC_CNI),
             ),
         )
 
@@ -402,7 +402,7 @@ class Eks(Stack):  # type: ignore
                         "podDisruptionBudget": {"maxUnavailable": 1},
                         "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
                     },
-                    get_chart_values(str(self.eks_version), ALB_CONTROLLER),
+                    get_chart_values(self.replicated_ecr_images_metadata, ALB_CONTROLLER),
                 ),
             )
             awslbcontroller_chart.node.add_dependency(awslbcontroller_service_account)
@@ -477,7 +477,7 @@ class Eks(Stack):  # type: ignore
                 namespace="kube-system",
                 values=deep_merge(
                     custom_values,
-                    get_chart_values(str(self.eks_version), NGINX_CONTROLLER),
+                    get_chart_values(self.replicated_ecr_images_metadata, NGINX_CONTROLLER),
                 ),
             )
             nginx_controller_chart.node.add_dependency(nginx_controller_service_account)
@@ -528,7 +528,7 @@ class Eks(Stack):  # type: ignore
                             }
                         },
                     },
-                    get_chart_values(str(self.eks_version), EBS_CSI_DRIVER),
+                    get_chart_values(self.replicated_ecr_images_metadata, EBS_CSI_DRIVER),
                 ),
             )
             awsebscsi_chart.node.add_dependency(awsebscsidriver_service_account)
@@ -606,7 +606,7 @@ class Eks(Stack):  # type: ignore
                             }
                         },
                     },
-                    get_chart_values(str(self.eks_version), EFS_CSI_DRIVER),
+                    get_chart_values(self.replicated_ecr_images_metadata, EFS_CSI_DRIVER),
                 ),
             )
 
@@ -656,7 +656,7 @@ class Eks(Stack):  # type: ignore
                             }
                         },
                     },
-                    get_chart_values(str(self.eks_version), FSX_DRIVER),
+                    get_chart_values(self.replicated_ecr_images_metadata, FSX_DRIVER),
                 ),
             )
             awsfsxcsi_chart.node.add_dependency(awsfsxcsidriver_service_account)
@@ -706,7 +706,7 @@ class Eks(Stack):  # type: ignore
                             "balance-similar-node-groups": True,
                         },
                     },
-                    get_chart_values(str(self.eks_version), CLUSTER_AUTOSCALER),
+                    get_chart_values(self.replicated_ecr_images_metadata, CLUSTER_AUTOSCALER),
                 ),
             )
             clusterautoscaler_chart.node.add_dependency(clusterautoscaler_service_account)
@@ -724,7 +724,7 @@ class Eks(Stack):  # type: ignore
                 namespace="kube-system",
                 values=deep_merge(
                     {"resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}}},
-                    get_chart_values(str(self.eks_version), METRICS_SERVER),
+                    get_chart_values(self.replicated_ecr_images_metadata, METRICS_SERVER),
                 ),
             )
 
@@ -771,7 +771,7 @@ class Eks(Stack):  # type: ignore
                         "serviceAccount": {"create": False, "name": "external-dns"},
                         "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
                     },
-                    get_chart_values(str(self.eks_version), EXTERNAL_DNS),
+                    get_chart_values(self.replicated_ecr_images_metadata, EXTERNAL_DNS),
                 ),
             )
             externaldns_chart.node.add_dependency(externaldns_service_account)
@@ -889,7 +889,7 @@ class Eks(Stack):  # type: ignore
                         "securityContext": {"fsGroup": 65534},
                         "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
                     },
-                    get_chart_values(str(self.eks_version), EXTERNAL_SECRETS),
+                    get_chart_values(self.replicated_ecr_images_metadata, EXTERNAL_SECRETS),
                 ),
             )
 
@@ -991,7 +991,7 @@ class Eks(Stack):  # type: ignore
                             + "\n",
                         },
                     },
-                    get_chart_values(str(self.eks_version), FLUENTBIT),
+                    get_chart_values(self.replicated_ecr_images_metadata, FLUENTBIT),
                 ),
             )
             fluentbit_chart_cw.node.add_dependency(fluentbit_cw_service_account)
@@ -1072,7 +1072,7 @@ class Eks(Stack):  # type: ignore
                         "kubeProxy": {"enabled": False},
                         "nodeExporter": {"enabled": False},
                     },
-                    get_chart_values(str(self.eks_version), PROMETHEUS_STACK),
+                    get_chart_values(self.replicated_ecr_images_metadata, PROMETHEUS_STACK),
                 ),
             )
             amp_prometheus_chart.node.add_dependency(amp_sa)
@@ -1137,7 +1137,7 @@ class Eks(Stack):  # type: ignore
                         },
                         "resources": {"requests": {"cpu": "0.25", "memory": "0.5Gi"}},
                     },
-                    get_chart_values(str(self.eks_version), GRAFANA),
+                    get_chart_values(self.replicated_ecr_images_metadata, GRAFANA),
                 ),
             )
             amp_grafana_chart.node.add_dependency(amp_prometheus_chart)
@@ -1333,12 +1333,12 @@ class Eks(Stack):  # type: ignore
                     {
                         "nodeSelector": {"kubernetes.io/os": "linux"},
                     },
-                    get_chart_values(str(self.eks_version), KURED),
+                    get_chart_values(self.replicated_ecr_images_metadata, KURED),
                 ),
             )
 
         if self.eks_addons_config.get("deploy_calico"):
-            calico_values = get_chart_values(str(self.eks_version), CALICO)
+            calico_values = get_chart_values(self.replicated_ecr_images_metadata, CALICO)
             if calico_values and "tigeraOperator" in calico_values and "registry" in calico_values["tigeraOperator"]:
                 # https://docs.tigera.io/calico/3.25/reference/installation/api#operator.tigera.io/v1.InstallationSpec
                 calico_values["installation"] = {}
@@ -1399,7 +1399,7 @@ class Eks(Stack):  # type: ignore
                             "requests": {"cpu": "1", "memory": "1Gi"},
                         }
                     },
-                    get_chart_values(str(self.eks_version), KYVERNO),
+                    get_chart_values(self.replicated_ecr_images_metadata, KYVERNO),
                 ),
                 release="kyverno",
                 namespace="kyverno",

@@ -35,7 +35,9 @@ Resources:
             Resource:
               - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-*"
           - Action:
-              - "ssm:PutParameter"
+              - "s3:CreateBucket"
+              - "s3:ListBucket"
+              - "s3:PutObject"
             Effect: Allow
             Resource: "*"
         Version: 2012-10-17

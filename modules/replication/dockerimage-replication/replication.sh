@@ -20,8 +20,7 @@ create() {
     # Tagging and pushing Docker images according to https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-pull-ecr-image.html
     docker tag $image $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/${AWS_CODESEEDER_NAME}-${image_name}:${image_tag}
     docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/${AWS_CODESEEDER_NAME}-${image_name}:${image_tag}
-    echo "${image_name#*/}": $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/${AWS_CODESEEDER_NAME}-${image_name}:${image_tag} >> images.yaml
-    # Deleting so it wouldnt cause issues with codebuild storage space for huge images
+    # Deleting so it wouldn't cause issues with codebuild storage space for huge images
     docker rmi $image
     done < images.txt
 }

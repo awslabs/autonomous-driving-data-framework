@@ -1,6 +1,7 @@
 """Main application"""
 import json
 import os
+from copy import deepcopy
 
 import helmparser.helm.commands as helm
 from helmparser.arguments import args
@@ -8,7 +9,22 @@ from helmparser.aws import ssm
 from helmparser.logging import logger
 from helmparser.parser import parser
 
+from deepmerge import always_merger
+
 project_path = os.path.realpath(os.path.dirname(__file__))
+
+def deep_merge(*dicts: dict) -> dict:
+    """Merges two dictionaries
+
+    Returns:
+        dict: Merged dictionary
+    """
+    merged = {}
+    for d in dicts:
+        tmp = deepcopy(d)
+        merged = always_merger.merge(merged, tmp)
+    return merged
+
 
 
 def main() -> None:
@@ -156,17 +172,17 @@ def main() -> None:
         logger.debug("\tSSM parameter variables:")
         logger.debug("\t\t%s", json.dumps(custom_chart_values[workload]))
 
-        ssm.put_parameter(
-            f"/addf/eks/chart/{workload}-{args.eks_version}",
-            json.dumps(custom_chart_values[workload]),
-        )
-
     sorted_images = sorted(set(images))
 
-    ssm.put_parameter(
-        f"/addf/eks/ami/{args.eks_version}",
-        parser.get_ami_version(args.versions_dir, args.eks_version),
-    )
+    ami_json = {"ami": {"version": parser.get_ami_version(args.versions_dir, args.eks_version)}}
+    charts_json = {"charts": custom_chart_values}
+
+    with open(
+        os.path.join(project_path, "charts.yaml"),
+        "w",
+        encoding="utf-8",
+    ) as file:
+        file.write(json.dumps(deep_merge(ami_json, charts_json)))
 
     with open(
         os.path.join(project_path, "images.txt"),

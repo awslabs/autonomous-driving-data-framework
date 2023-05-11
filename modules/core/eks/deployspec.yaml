@@ -6,6 +6,11 @@ deploy:
         - pip install -r requirements.txt
     build:
       commands:
+        - |
+          if aws s3 ls s3://addf-metadata-${AWS_REGION}-${AWS_ACCOUNT_ID}/replication-metadata.json; then
+            aws s3 cp s3://addf-metadata-${AWS_REGION}-${AWS_ACCOUNT_ID}/replication-metadata.json .
+            export ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA=$(cat replication-metadata.json)
+          fi
         - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
         - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
         - export CNI_METRICS_ROLE_NAME=$(echo ${ADDF_MODULE_METADATA} | jq -r ".CNIMetricsHelperRoleName")
