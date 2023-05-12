@@ -803,7 +803,7 @@ class Eks(Stack):  # type: ignore
                 values=deep_merge(
                     {"syncSecret": {"enabled": True}},
                     get_chart_values(
-                        str(self.eks_version),
+                        self.replicated_ecr_images_metadata,
                         SECRETS_MANAGER_CSI_DRIVER,
                     ),
                 ),

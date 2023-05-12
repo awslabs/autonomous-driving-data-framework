@@ -46,7 +46,9 @@ config = {
     "eks_addons_config": eks_addons_config,
     "custom_subnet_ids": custom_subnet_ids,
     "codebuild_sg_id": codebuild_sg_id if os.getenv("ADDF_PARAMETER_CODEBUILD_SG_ID") else None,
-    "replicated_ecr_images_metadata": replicated_ecr_images_metadata if os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA") else None,
+    "replicated_ecr_images_metadata": replicated_ecr_images_metadata
+    if os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA")
+    else {},
 }
 
 

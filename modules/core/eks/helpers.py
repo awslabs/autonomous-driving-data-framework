@@ -30,7 +30,6 @@ def _get_ami_version_from_file(eks_version: str) -> str:
     return workload_versions[eks_version]["ami"]["version"]
 
 
-
 def _get_chart_release_from_file(eks_version: str, workload_name: str) -> str:
     """Get chart name
 
