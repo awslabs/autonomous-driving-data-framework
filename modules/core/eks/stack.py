@@ -93,10 +93,18 @@ class Eks(Stack):  # type: ignore
             vpc_id=self.vpc_id,
         )
 
-        self.private_subnets = []
-        for idx, subnet_id in enumerate(self.private_subnet_ids):
-            self.private_subnets.append(
-                ec2.Subnet.from_subnet_id(scope=self, id=f"pri-subnet{idx}", subnet_id=subnet_id)
+        # DataPlane Subnets
+        self.dataplane_subnets = []
+        for idx, subnet_id in enumerate(self.dataplane_subnet_ids):
+            self.dataplane_subnets.append(
+                ec2.Subnet.from_subnet_id(scope=self, id=f"dp-subnet{idx}", subnet_id=subnet_id)
+            )
+
+        # ControlPlane Subnets
+        self.controlplane_subnets = []
+        for idx, subnet_id in enumerate(self.controlplane_subnet_ids):
+            self.controlplane_subnets.append(
+                ec2.Subnet.from_subnet_id(scope=self, id=f"cp-subnet{idx}", subnet_id=subnet_id)
             )
 
         cluster_admin_role = iam.Role(
@@ -157,7 +165,7 @@ class Eks(Stack):  # type: ignore
             self,
             "cluster",
             vpc=self.vpc,
-            vpc_subnets=[ec2.SubnetSelection(subnets=self.private_subnets)],
+            vpc_subnets=[ec2.SubnetSelection(subnets=self.controlplane_subnets)],
             cluster_name=f"addf-{self.deployment_name}-{self.module_name}-cluster",
             masters_role=cluster_admin_role,
             endpoint_access=eks.EndpointAccess.PRIVATE
@@ -347,7 +355,7 @@ class Eks(Stack):  # type: ignore
                     launch_template_spec=eks.LaunchTemplateSpec(id=lt.ref, version=lt.attr_latest_version_number),
                     labels=ng.get("eks_node_labels") if ng.get("eks_node_labels") else None,
                     release_version=get_ami_version(str(self.eks_version)),
-                    subnets=ec2.SubnetSelection(subnets=self.private_subnets),
+                    subnets=ec2.SubnetSelection(subnets=self.dataplane_subnets),
                 )
 
                 nodegroup.role.add_managed_policy(

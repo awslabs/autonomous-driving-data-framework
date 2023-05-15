@@ -9,7 +9,8 @@ from stack import Eks
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
 module_name = os.getenv("ADDF_MODULE_NAME")
 vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")  # required
-private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # required
+dataplane_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_DATAPLANE_SUBNET_IDS"))  # required
+controlplane_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_CONTROLPLANE_SUBNET_IDS"))  # required
 custom_subnet_ids = (
     json.loads(os.getenv("ADDF_PARAMETER_CUSTOM_SUBNET_IDS")) if os.getenv("ADDF_PARAMETER_CUSTOM_SUBNET_IDS") else None
 )
@@ -25,8 +26,11 @@ if os.getenv("ADDF_PARAMETER_REPLICATED_ECR_IMAGES_METADATA"):
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
 
-if not private_subnet_ids:
-    raise ValueError("missing input parameter private-subnet-ids")
+if not dataplane_subnet_ids:
+    raise ValueError("missing input parameter dataplane-subnet-ids")
+
+if not controlplane_subnet_ids:
+    raise ValueError("missing input parameter controlplane-subnet-ids")
 
 if not eks_compute_config:
     raise ValueError("EKS Compute Configuration is missing")
@@ -40,7 +44,8 @@ config = {
     "deployment_name": deployment_name,
     "module_name": module_name,
     "vpc_id": vpc_id,
-    "private_subnet_ids": private_subnet_ids,
+    "dataplane_subnet_ids": dataplane_subnet_ids,
+    "controlplane_subnet_ids": controlplane_subnet_ids,
     "eks_version": eks_version,
     "eks_compute_config": eks_compute_config,
     "eks_addons_config": eks_addons_config,
