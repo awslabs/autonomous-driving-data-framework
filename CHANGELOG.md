@@ -12,12 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 - Adding unit-tests layout
+- integration with custom CIDR of eks for grabbing IPs from extended VPC CIDR
+- being able to launch EKS module separately with no external module dependency
+- being able to launch EKS module in isolated subnets by replicating docker images beforehand
+- started sourcing k8s plugin/apps versions w/ eks versions from yaml files - dataDir
+- integration with calico for network level isolation
+- integration with kyverno for implementing gov policy as code for k8s
 
 ### **Changed**
 
 - updating seed-farmer to `2.6.0`
+- the way node groups are built by accepting only single instancetypes per asg, encrypting the disks at rest
+- integration with custom CIDR of eks for grabbing IPs from extended VPC CIDR
+- the helm chart values, registries and repo info being loaded from versions files than being hardcoded locally for EKS module
 
 ### **Removed**
+
 - removing `requirements-dev.txt` for FSx-Lustre module
 - removing MWAA dependencies to `requirements-dev.txt` in analysis, sensor-extraction, simulations modules
 
