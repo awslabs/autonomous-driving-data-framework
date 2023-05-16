@@ -1,6 +1,12 @@
 name: eks
 path: modules/core/eks/
 parameters:
+  - name: replicated-ecr-images-metadata-s3-path
+    valueFrom:
+      moduleMetadata:
+        group: replication
+        name: replication
+        key: s3_full_path
   - name: vpc-id
     valueFrom:
       moduleMetadata:
@@ -15,34 +21,39 @@ parameters:
         key: PrivateSubnetIds
   - name: eks-admin-role-name
     value: Admin
+  - name: eks-poweruser-role-name
+    value: PowerUser
+  - name: eks-read-only-role-name
+    value: ReadOnly
+  - name: eks-version
+    valueFrom:
+      envVariable: GLOBAL_EKS_VERSION
   - name: eks-compute
     value:
       eks_nodegroup_config:
         - eks_ng_name: ng1
-          eks_node_quantity: 3
-          eks_node_max_quantity: 6
-          eks_node_min_quantity: 2
-          eks_node_disk_size: 50
-          eks_node_instance_types:
-            - "m5.large"
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_type: "m5.large"
         - eks_ng_name: ng2
-          eks_node_quantity: 3
-          eks_node_max_quantity: 6
-          eks_node_min_quantity: 2
-          eks_node_disk_size: 50
-          eks_node_instance_types:
-            - "m5.xlarge"
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_type: "m5.xlarge"
         - eks_ng_name: gpung1
           eks_node_quantity: 1
           eks_node_max_quantity: 3
           eks_node_min_quantity: 1
           eks_node_disk_size: 100
-          eks_node_instance_types:
-            - "g4dn.xlarge"
+          eks_node_instance_type: "g4dn.xlarge"
           eks_node_labels:
             usage: visualization
-      eks_version: 1.23
       eks_node_spot: False
+      eks_secrets_envelope_encryption: False
+      eks_api_endpoint_private: False
   - name: eks-addons
     value:
       deploy_aws_lb_controller: True # We deploy it unless set to False
@@ -55,10 +66,8 @@ parameters:
       deploy_secretsmanager_csi: True # We deploy it unless set to False
       deploy_external_secrets: False
       deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
-      deploy_cloudwatch_container_insights_logs: False
+      deploy_cloudwatch_container_insights_logs: True
       cloudwatch_container_insights_logs_retention_days: 7
-      deploy_amp: False
-      deploy_grafana_for_amp: False
 ---
 name: efs
 path: modules/core/efs

@@ -380,7 +380,7 @@ cdk.json
 # codeseeder
 codeseeder.out
 manifests/local
-manifests/demo
+manifests/demo*
 archive/
 
 # terraform

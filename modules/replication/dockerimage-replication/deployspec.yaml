@@ -8,15 +8,25 @@ deploy:
         - mv linux-amd64/helm /usr/local/bin/helm
     build:
       commands:
+        - S3_BUCKET_NAME="addf-dockerimages-replications-metadata-${AWS_DEFAULT_REGION}-${AWS_ACCOUNT_ID}"
+        - S3_OBJECT_NAME="${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-metadata.json"
         - |
-          if [[ -n ${ADDF_PARAMETER_NO_REPLICATE} ]]; then
-            python3 get-list-of-eks-images.py --eks-version ${ADDF_PARAMETER_EKS_VERSION} --versions-directory versions --update-helm-repos --registry-prefix "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_CODESEEDER_NAME}-" --no-replicate
-          else
-            python3 get-list-of-eks-images.py --eks-version ${ADDF_PARAMETER_EKS_VERSION} --versions-directory versions --update-helm-repos --registry-prefix "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_CODESEEDER_NAME}-"
+          if ! aws s3api head-bucket --bucket "${S3_BUCKET_NAME}"; then
+            aws s3api create-bucket --bucket "${S3_BUCKET_NAME}" --region "${AWS_DEFAULT_REGION}" --create-bucket-configuration LocationConstraint=${AWS_DEFAULT_REGION}
           fi
+        - python3 get-list-of-eks-images.py --eks-version ${ADDF_PARAMETER_EKS_VERSION} --versions-directory data/eks_dockerimage-replication/versions --update-helm-repos --registry-prefix "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${AWS_CODESEEDER_NAME}-"
         - chmod +x replication.sh
         - bash replication.sh create
-        - export ADDF_MODULE_METADATA=$(python -c "import yaml; import json; file=open('images.yaml'); print(json.dumps(yaml.safe_load(file)))")
+        - aws s3 cp replication-result.json s3://${S3_BUCKET_NAME}/${S3_OBJECT_NAME}
+        - >
+          echo "s3_bucket: ${S3_BUCKET_NAME}" > s3_metadata.yaml
+        - >
+          echo "s3_object: ${S3_OBJECT_NAME}" >> s3_metadata.yaml
+        - >
+          echo "s3_full_path: ${S3_BUCKET_NAME}/${S3_OBJECT_NAME}" >> s3_metadata.yaml
+        - cat s3_metadata.yaml
+        - export ADDF_MODULE_METADATA=$(python -c "import yaml; import json; file=open('s3_metadata.yaml'); print(json.dumps(yaml.safe_load(file)))")
+
 destroy:
   phases:
     build:

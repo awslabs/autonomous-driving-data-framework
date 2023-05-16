@@ -1,6 +1,7 @@
 """Parsing utilities"""
 import os
 from functools import reduce
+
 import yaml
 
 _parsed_file = {}
@@ -56,13 +57,10 @@ def _get_dictionary_value_by_dot_separated_key(dct: dict, key: str) -> str:
     return reduce(lambda c, k: c[k], key.split("."), dct)
 
 
-def _parse_versions_file(
-    project_path: str, versions_dir: str, eks_version: str
-) -> dict:
+def _parse_versions_file(versions_dir: str, eks_version: str) -> dict:
     """Parses versions file
 
     Args:
-        project_path (str): Path where to unarchive the helm repository
         versions_dir (str): Directory with versions files
         eks_version (str): EKS version
 
@@ -71,7 +69,6 @@ def _parse_versions_file(
     """
     if eks_version not in _parsed_file:
         yaml_path = os.path.join(
-            project_path,
             versions_dir,
             f"{eks_version}.yaml",
         )
@@ -118,37 +115,35 @@ def add_branch_to_dict(dct: dict, data: dict, value: str) -> dict:
     return _add_branch(dct, branch, value)
 
 
-def get_ami_version(project_path: str, versions_dir: str, eks_version: str) -> str:
+def get_ami_version(versions_dir: str, eks_version: str) -> str:
     """Gets AMI version from parsed data
 
     Args:
-        project_path (str): Path where to unarchive the helm repository
         versions_dir (str): Directory with versions files
         eks_version (str): EKS version
 
     Returns:
         str: AMI version string
     """
-    workload_versions = _parse_versions_file(project_path, versions_dir, eks_version)
+    workload_versions = _parse_versions_file(versions_dir, eks_version)
     if "ami" in workload_versions and "version" in workload_versions["ami"]:
         return workload_versions["ami"]["version"]
 
     return ""
 
 
-def get_workloads(project_path: str, versions_dir: str, eks_version: str) -> dict:
+def get_workloads(versions_dir: str, eks_version: str) -> dict:
     """Parses versions files
 
     Args:
-        project_path (str): Path where to unarchive the helm repository
         versions_dir (str): Directory with versions files
         eks_version (str): EKS version
 
     Returns:
         dict: Parsed data
     """
-    workload_versions = _parse_versions_file(project_path, versions_dir, eks_version)
-    workload_data = _parse_versions_file(project_path, versions_dir, "default")
+    workload_versions = _parse_versions_file(versions_dir, eks_version)
+    workload_data = _parse_versions_file(versions_dir, "default")
     for name, value in workload_versions["charts"].items():
         if "skip" in value and value["skip"]:
             workload_data["charts"].pop(name)

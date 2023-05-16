@@ -19,15 +19,15 @@ charts:
   external_dns:
     version: 1.12.2
   external_secrets:
-    skip: true
+    # skip: true
     version: 0.8.1
   fluentbit:
     version: 0.25.0
   fsx_driver:
-    skip: true
+    # skip: true
     version: 1.5.1
   grafana:
-    skip: true
+    # skip: true
     version: 6.52.4
   kured:
     version: 4.4.2
@@ -38,7 +38,7 @@ charts:
   metrics_server:
     version: 3.9.0
   prometheus_stack:
-    skip: true
+    # skip: true
     version: 45.8.1
   secrets_manager_csi_driver:
     version: 1.3.2

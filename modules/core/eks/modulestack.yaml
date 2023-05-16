@@ -23,6 +23,21 @@ Resources:
               - "sts:AssumeRole"
             Resource:
               - !Sub 'arn:aws:iam::${AWS::AccountId}:role/addf-${DeploymentName}-${ModuleName}-${AWS::Region}-masterrole'
+          - Effect: Allow
+            Action:
+              - "ssm:GetParameter"
+            Resource:
+              - "*"
+          - Effect: Allow
+            Action:
+              - "s3:ListBucket"
+            Resource:
+              - "arn:aws:s3:::*-dockerimages-replications-*"
+          - Effect: Allow
+            Action:
+              - "s3:GetObject"
+            Resource:
+              - "arn:aws:s3:::*-dockerimages-replications-*/*"
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"
       Roles: [!Ref RoleName]
