@@ -1,12 +1,12 @@
 # EKS
 
-
 ## Description
 
 This module creates an EKS Cluster with the following features and addons available for use:
 
-- Can create EKS Control plane and data plane in private subnets (having NATG in the route tables)
-- Can create EKS Control plane and data plane in Isolated subnets (having Link local route in the route tables)
+- Can create EKS Control plane and data plane in Private Subnets (having NATG in the route tables)
+- Can create EKS Control plane in Private Subnets and data plane in Isolated Subnets (having Link local route in the route tables)
+- Can launch application pods in secondary CIDR to save IP exhaustion in the primary CIDR
 - Encrypts the root EBS volumes of managed node groups
 - Can encrypt the EKS Control plane using Envelope encryption
 
@@ -45,137 +45,49 @@ Security:
 
 - Kyverno policies (policy as enforcement in k8s)
 
-
-## Inputs/Outputs
+## Explaining the attributes
 
 ### Input Paramenters
 
 #### Required
 
+- `dataFiles`: Data files is a [seedfarmer feature](https://seed-farmer.readthedocs.io/en/latest/manifests.html#a-word-about-datafiles) which helps you to link a commonly available directory at the root of the repo. For EKS module, we declare the list of helm chart versions inside the supported `k8s-version.yaml` with the detailed metadata available inside the `default.yaml` for every supported plugin.
 - `vpc-id`: The VPC-ID that the cluster will be created in
-- `private-subnet-ids`: The Private-Subnets that the EKS Cluster should be deployed in
-- `eks_nodegroup_config`: List of EKS Managed NodeGroup Configurations to use with the preferred list of instance types
-- `eks_version`: The EKS Cluster version to lock the version to
+- `controlplane-subnet-ids`: The controlplane subnets that the EKS Cluster should be deployed in. These subnets should have internet connectivity enabled via NATG
+- `dataplane-subnet-ids`: The dataplane subnets can be either private subnets (NATG enabled) or in isolated subnets(link local route only) depending on the compliance required to achieve
+- `eks-compute` and `eks_nodegroup_config`: List of EKS Managed NodeGroup Configurations to use with the preferred EC2 instance types. The framework would automatically encrypt the root volume
+- `eks-version`: The EKS Cluster version to lock the version to
+- `eks-addons`: List of EKS addons to deploy on the EKS Cluster
 
 #### Optional
 
-- `custom-subnet-ids`: The custom subnets for assigning IP addresses to the pods. Usually used when there is a limited number of IP addresses available for EKS.
+- `custom-subnet-ids`: The custom subnets for assigning IP addresses to the pods. Usually used when there is a limited number of IP addresses available in the primary CIDR subnets. Refer to [custom networking](https://docs.aws.amazon.com/eks/latest/userguide/cni-custom-network.html) for feature details 
 - `eks_admin_role_name`: The Admin Role to be mapped to the `systems:masters` group of RBAC
 - `eks_poweruser_role_name`: The PowerUser Role to be mapped to the `poweruser-group` group of RBAC
 - `eks_readonly_role_name`: The ReadOnly Role to be mapped to the `readonly-group` group of RBAC
 - `eks_node_spot`: If `eks_node_spot` is set to True, we deploy SPOT instances of the above `nodegroup_config` for you else we deploy `ON_DEMAND` instances.
-- `eks_secrets_envelope_encryption`: If set to True, we enable KMS secret for envelope encryption for Kubernetes secrets.
-- `eks_api_endpoint_private`: If set to True, we deploy EKS cluster with API endpoint set to private mode.
-- `deploy_aws_lb_controller`: We deploy the ALB Ingress controller by default, unless you set it to False
-- `deploy_external_dns`: We deploy the External DNS to interact with AWS Route53 by default, unless you set it to False
-- `deploy_aws_ebs_csi`: We deploy the EBS CSI Driver AWS EBS by default, unless you set it to False
-- `deploy_aws_efs_csi`: We deploy the EFS CSI Driver AWS EFS by default, unless you set it to False
-- `deploy_aws_fsx_csi`: We deploy the FSX CSI Driver AWS FSX by default, unless you set it to False
-- `deploy_cluster_autoscaler`: We deploy the Cluster Autoscaler to scale EKS Workers by default, unless you set it to False
-- `deploy_metrics_server`: We deploy the Metrics Autoscaler to deploy HPA for scaling out/in pods, unless you set it to False
-- `deploy_secretsmanager_csi`: We deploy Secrets Manager CSI to interact with Secrets mounted as files, unless you set it to False
-- `deploy_cloudwatch_container_insights_metrics`: We deploy CloudWatch Container Insights plugin to ingest containers metrics into AWS Cloudwatch for you, unless you set it to False
-- `deploy_cloudwatch_container_insights_logs`: If set to True, we deploy CloudWatch Container Insights plugin to ingest containers logs into AWS Cloudwatch for you. Default behavior is set to False
-- `deploy_amp`: If set to True, we deploy AWS Managed Prometheus for you. Default behavior is set to False
-- `deploy_grafana_for_amp`: If set to True, we deploy grafana boards. Default behavior is set to False
-- `deploy_kured`: If set to True, we deploy kured reboot daemon. Default behavior is set to False
-- `deploy_calico`: If set to True, we deploy calico network engine and default-deny network policies. Default behavior is set to False
-- `deploy_nginx_controller`: If set to True, we deploy nginx ingress controller. Default behavior is set to False
-- `nginx_additional_annotations`: Optional list of nginx annotations.
-- `deploy_kyverno`: If set to True, we deploy Kyverno policy engine. Default behavior is set to False
-- `kyverno_policies`: Optional list of validate and mutate kyverno policies.
+- `eks_secrets_envelope_encryption`: If set to True, we enable KMS secret for [envelope encryption](https://aws.amazon.com/about-aws/whats-new/2020/03/amazon-eks-adds-envelope-encryption-for-secrets-with-aws-kms/) for Kubernetes secrets.
+- `eks_api_endpoint_private`: If set to True, we deploy EKS cluster with API endpoint set to [private mode](https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html).
+- `deploy_aws_lb_controller`: Deploys the [ALB Ingress controller](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html). Default behavior is set to False
+- `deploy_external_dns`: Deploys the External DNS to interact with [AWS Route53](https://github.com/kubernetes-sigs/external-dns/blob/master/docs/tutorials/aws.md). Default behavior is set to False
+- `deploy_aws_ebs_csi`: Deploys the [AWS EBS](https://docs.aws.amazon.com/eks/latest/userguide/ebs-csi.html) Driver. Default behavior is set to False
+- `deploy_aws_efs_csi`: Deploys the [AWS EFS](https://docs.aws.amazon.com/eks/latest/userguide/efs-csi.html). Default behavior is set to False
+- `deploy_aws_fsx_csi`: Deploys the [AWS FSX](https://docs.aws.amazon.com/eks/latest/userguide/fsx-csi.html). Default behavior is set to False
+- `deploy_cluster_autoscaler`: Deploys the [Cluster Autoscaler](https://docs.aws.amazon.com/eks/latest/userguide/autoscaling.html) to scale EKS Workers
+- `deploy_metrics_server`: Deploys the [Metrics server](https://docs.aws.amazon.com/eks/latest/userguide/metrics-server.html) and HPA for scaling out/in pods. Default behavior is set to False
+- `deploy_secretsmanager_csi`: Deploys [Secrets Manager CSI driver](https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html) to interact with Secrets mounted as files. Default behavior is set to False
+- `deploy_cloudwatch_container_insights_metrics`: Deploys the [CloudWatch Agent](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-EKS-agent.html) to ingest containers metrics into AWS Cloudwatch. Default behavior is set to False
+- `deploy_cloudwatch_container_insights_logs`: Deploys the [Fluent bit](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-setup-logs-FluentBit.html) plugin to ingest containers logs into AWS Cloudwatch. Default behavior is set to False
+- `deploy_amp`: Deploys AWS Managed Prometheus for centralized log monitoring - ELK Stack. Default behavior is set to False
+- `deploy_grafana_for_amp`: Deploys Grafana boards for visualization of logs/metrics from Elasticsearch/Opensearch cluster. Default behavior is set to False
+- `deploy_kured`: Deploys [kured reboot daemon](https://github.com/kubereboot/kured) that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS. Default behavior is set to False
+- `deploy_calico`: Deploys [Calico network engine](https://docs.aws.amazon.com/eks/latest/userguide/calico.html) and default-deny network policies. Default behavior is set to False.
+- `deploy_nginx_controller`: Deploys [nginx ingress controller](https://aws.amazon.com/blogs/opensource/network-load-balancer-nginx-ingress-controller-eks/). You can provide `nginx_additional_annotations` which populates Optional list of nginx annotations. Default behavior is set to False
+- `deploy_kyverno`: Deploys [Kyverno policy engine](https://aws.amazon.com/blogs/containers/managing-pod-security-on-amazon-eks-with-kyverno/) which is is a Policy-as-Code (PaC) solution that includes a policy engine designed for Kubernetes. You can provide the list of policies to be enabled using `kyverno_policies` attribute. Default behavior is set to False
 
-### Sample declaration of EKS Compute Configuration
+### How to launch EKS Cluster in [Private Subnets](./docs/eks-private.md)
 
-```yaml
-- name: eks-compute
-  value:
-    eks_version: 1.25
-    eks_admin_role_name: "Admin" 
-    eks_nodegroup_config:
-      - eks_ng_name: ng1
-        eks_node_quantity: 2
-        eks_node_max_quantity: 5
-        eks_node_min_quantity: 1
-        eks_node_disk_size: 20
-        eks_node_instance_type: "m5.large"
-      - eks_ng_name: ng2
-        eks_node_quantity: 2
-        eks_node_max_quantity: 5
-        eks_node_min_quantity: 1
-        eks_node_disk_size: 20
-        eks_node_instance_type: "m5.xlarge"
-        eks_node_labels:
-          usage: visualization
-    eks_node_spot: False
-    eks_api_endpoint_private: False
-    eks_secrets_envelope_encryption: True
-```
-
-> We have enabled [Security groups for pods](https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html) by default as the best security practise and the feature is supported by most Nitro-based Amazon EC2 instance families. For finding the right instance type which supports the feature, refer to [limits.go](https://github.com/aws/amazon-vpc-resource-controller-k8s/blob/master/pkg/aws/vpc/limits.go)
-
-### Sample declaration of EKS Addons Configuration
-
-```yaml
-- name: eks-addons
-  value:
-    deploy_aws_lb_controller: True # We deploy it unless set to False
-    deploy_external_dns: True # We deploy it unless set to False
-    deploy_aws_ebs_csi: True # We deploy it unless set to False
-    deploy_aws_efs_csi: True # We deploy it unless set to False
-    deploy_cluster_autoscaler: True # We deploy it unless set to False
-    deploy_metrics_server: True # We deploy it unless set to False
-    deploy_secretsmanager_csi: True # We deploy it unless set to False
-    deploy_external_secrets: False
-    deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
-    deploy_cloudwatch_container_insights_logs: False
-    cloudwatch_container_insights_logs_retention_days: 7
-    deploy_amp: False 
-    deploy_grafana_for_amp: False
-    deploy_kured: False
-    deploy_calico: False
-    deploy_nginx_controller:
-        value: False
-        nginx_additional_annotations:
-          nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
-    deploy_kyverno:
-        value: False
-        kyverno_policies:
-          validate:
-            - block-ephemeral-containers
-            - block-stale-images
-            - block-updates-deletes
-            - check-deprecated-apis
-            - disallow-cri-sock-mount
-            - disallow-custom-snippets
-            - disallow-empty-ingress-host
-            - disallow-helm-tiller
-            - disallow-latest-tag
-            - disallow-localhost-services
-            - disallow-secrets-from-env-vars
-            - ensure-probes-different
-            - ingress-host-match-tls
-            - limit-hostpath-vols
-            - prevent-naked-pods
-            - require-drop-cap-net-raw
-            - require-emptydir-requests-limits
-            - require-labels
-            - require-pod-requests-limits
-            - require-probes
-            - restrict-annotations
-            - restrict-automount-sa-token
-            - restrict-binding-clusteradmin
-            - restrict-clusterrole-nodesproxy
-            - restrict-escalation-verbs-roles
-            - restrict-ingress-classes
-            - restrict-ingress-defaultbackend
-            - restrict-node-selection
-            - restrict-path
-            - restrict-service-external-ips
-            - restrict-wildcard-resources
-            - restrict-wildcard-verbs
-            - unique-ingress-host-and-path
-```
+### How to launch EKS Cluster in [Isolated Subnets](./docs/eks-isolated.md)
 
 #### IAM integration
 

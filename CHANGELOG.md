@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - started sourcing k8s plugin/apps versions w/ eks versions from yaml files - dataDir
 - integration with calico for network level isolation
 - integration with kyverno for implementing gov policy as code for k8s
+- Added detailed guide on how to launch EKS cluster in private and isolated subnets
 
 ### **Changed**
 
