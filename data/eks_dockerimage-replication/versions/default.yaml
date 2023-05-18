@@ -101,6 +101,46 @@ charts:
         tag:
           location: chart
           path: appVersion
+  cert_manager:
+    name: cert-manager
+    repository: "https://charts.jetstack.io"
+    version: v1.11.1
+    images:
+      cert-manager-controller:
+        repository:
+          location: values
+          path: image.repository
+        tag:
+          location: chart
+          path: appVersion
+      cert-manager-webhook:
+        repository:
+          location: values
+          path: webhook.image.repository
+        tag:
+          location: chart
+          path: appVersion
+      cert-manager-acmesolver:
+        repository:
+          location: values
+          path: acmesolver.image.repository
+        tag:
+          location: chart
+          path: appVersion
+      cert-manager-startupapicheck:
+        repository:
+          location: values
+          path: startupapicheck.image.repository
+        tag:
+          location: chart
+          path: appVersion
+      cert-manager-cainjector:
+        repository:
+          location: values
+          path: cainjector.image.repository
+        tag:
+          location: chart
+          path: appVersion
   cluster_autoscaler:
     name: cluster-autoscaler
     repository: "https://kubernetes.github.io/autoscaler"

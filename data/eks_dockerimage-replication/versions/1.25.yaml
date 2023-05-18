@@ -7,6 +7,8 @@ charts:
     version: 1.2.8
   calico:
     version: 3.25.1
+  cert_manager:
+    version: v1.11.1
   cluster_autoscaler:
     version: 9.27.0
     replication:

@@ -125,6 +125,7 @@ parameters:
       deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
       deploy_cloudwatch_container_insights_logs: True
       cloudwatch_container_insights_logs_retention_days: 7
+      deploy_adot: False
       deploy_amp: False
       deploy_grafana_for_amp: False
       deploy_kured: False

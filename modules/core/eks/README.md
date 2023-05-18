@@ -78,6 +78,7 @@ Security:
 - `deploy_secretsmanager_csi`: Deploys [Secrets Manager CSI driver](https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html) to interact with Secrets mounted as files. Default behavior is set to False
 - `deploy_cloudwatch_container_insights_metrics`: Deploys the [CloudWatch Agent](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-EKS-agent.html) to ingest containers metrics into AWS Cloudwatch. Default behavior is set to False
 - `deploy_cloudwatch_container_insights_logs`: Deploys the [Fluent bit](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Container-Insights-setup-logs-FluentBit.html) plugin to ingest containers logs into AWS Cloudwatch. Default behavior is set to False
+- `deploy_adot`: Deploys AWS Distro for OpenTelemetry (ADOT) which is a secure, production-ready, AWS supported distribution of the OpenTelemetry project.
 - `deploy_amp`: Deploys AWS Managed Prometheus for centralized log monitoring - ELK Stack. Default behavior is set to False
 - `deploy_grafana_for_amp`: Deploys Grafana boards for visualization of logs/metrics from Elasticsearch/Opensearch cluster. Default behavior is set to False
 - `deploy_kured`: Deploys [kured reboot daemon](https://github.com/kubereboot/kured) that performs safe automatic node reboots when the need to do so is indicated by the package management system of the underlying OS. Default behavior is set to False

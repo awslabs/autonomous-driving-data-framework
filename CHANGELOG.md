@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - integration with calico for network level isolation
 - integration with kyverno for implementing gov policy as code for k8s
 - Added detailed guide on how to launch EKS cluster in private and isolated subnets
+- Added Amazon EKS add-ons ADOT which is a secure, production-ready, AWS supported distribution of the OpenTelemetry project.
 
 ### **Changed**
 

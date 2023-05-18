@@ -46,6 +46,7 @@ ALB_CONTROLLER = "alb_controller"
 NGINX_CONTROLLER = "nginx_controller"
 AWS_VPC_CNI = "aws_vpc_cni"
 CALICO = "calico"
+CERT_MANAGER = "cert_manager"
 CLUSTER_AUTOSCALER = "cluster_autoscaler"
 EBS_CSI_DRIVER = "ebs_csi_driver"
 EFS_CSI_DRIVER = "efs_csi_driver"
@@ -916,6 +917,90 @@ class Eks(Stack):  # type: ignore
             # It opens cwagentconfig.json file in read mode ("r") and reads its content using the read() method. The content is stored in the cwagentconfig_content variable.
             with open(os.path.join(project_dir, "monitoring-config/cwagentconfig.json"), "r") as f:
                 cwagentconfig_content = f.read()
+
+        # AWS Distro for Opentelemetry
+        if self.eks_addons_config.get("deploy_adot"):
+            adot_addon = eks.CfnAddon(
+                self,
+                "adot",
+                addon_name="adot",
+                resolve_conflicts="OVERWRITE",
+                cluster_name=eks_cluster.cluster_name,
+            )
+            adot_addon.node.add_dependency(eks_cluster)
+
+            # Create the namespace manifest
+            namespace_manifest = {"apiVersion": "v1", "kind": "Namespace", "metadata": {"name": "cert-manager"}}
+
+            # Add the namespace manifest to the EKS cluster
+            cert_manager_namespace = eks_cluster.add_manifest("cert-manager", namespace_manifest)
+
+            # Create service account for cert-manager
+            cert_manager_service_account = eks_cluster.add_service_account(
+                "cert-manager",
+                name="cert-manager",
+                namespace="cert-manager",
+            )
+
+            cert_manager_service_account.node.add_dependency(cert_manager_namespace)
+
+            # Adding policy statement
+            cert_manager_policy_statement = iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "acm:DescribeCertificate",
+                    "acm:ListCertificates",
+                    "acm:GetCertificate",
+                    "route53:ChangeResourceRecordSets",
+                    "route53:GetChange",
+                    "route53:GetHostedZone",
+                    "route53:ListHostedZones",
+                    "route53:ListResourceRecordSets",
+                ],
+                resources=["*"],
+            )
+
+            # Create IAM policy for cert-manager
+            cert_manager_policy = iam.Policy(
+                self,
+                "cert-manager-policy",
+                policy_name="cert-manager-policy",
+                statements=[cert_manager_policy_statement],
+            )
+
+            cert_manager_service_account.role.attach_inline_policy(cert_manager_policy)
+
+            # Deploy cert-manager
+            cert_manager_chart = eks_cluster.add_helm_chart(
+                "cert-manager",
+                chart=get_chart_release(str(self.eks_version), CERT_MANAGER),
+                version=get_chart_version(str(self.eks_version), CERT_MANAGER),
+                repository=get_chart_repo(str(self.eks_version), CERT_MANAGER),
+                release="cert-manager",
+                namespace="cert-manager",
+                create_namespace=False,
+                values=deep_merge(
+                    {
+                        "installCRDs": True,
+                        "extraArgs": [
+                            "--dns01-recursive-nameservers-only=false",
+                        ],
+                        "podSecurityPolicy": {
+                            "enabled": False,
+                        },
+                        "serviceAccount": {
+                            "create": False,
+                            "name": cert_manager_service_account.service_account_name,
+                            "annotations": {
+                                "eks.amazonaws.com/role-arn": cert_manager_service_account.role.role_arn,
+                            },
+                        },
+                    },
+                    get_chart_values(str(self.eks_version), CERT_MANAGER),
+                ),
+            )
+
+            cert_manager_chart.node.add_dependency(cert_manager_service_account)
 
             # Set up the settings ConfigMap
             eks_cluster.add_manifest(
