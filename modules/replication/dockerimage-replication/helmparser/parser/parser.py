@@ -132,6 +132,24 @@ def get_ami_version(versions_dir: str, eks_version: str) -> str:
     return ""
 
 
+def get_additional_images(versions_dir: str, eks_version: str) -> dict:
+    """Gets additional images from parsed data
+
+    Args:
+        versions_dir (str): Directory with versions files
+        eks_version (str): EKS version
+
+    Returns:
+        dict: Dictionary of additional images
+    """
+    workload_versions = _parse_versions_file(versions_dir, eks_version)
+    additional_images = {}
+    if "additional_images" in workload_versions:
+        return workload_versions["additional_images"]
+
+    return additional_images
+
+
 def get_workloads(versions_dir: str, eks_version: str) -> dict:
     """Parses versions files
 

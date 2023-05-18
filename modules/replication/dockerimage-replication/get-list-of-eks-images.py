@@ -5,13 +5,13 @@ from copy import deepcopy
 
 import helmparser.helm.commands as helm
 from helmparser.arguments import args
-from helmparser.aws import ssm
 from helmparser.logging import logger
 from helmparser.parser import parser
 
 from deepmerge import always_merger
 
 project_path = os.path.realpath(os.path.dirname(__file__))
+
 
 def deep_merge(*dicts: dict) -> dict:
     """Merges two dictionaries
@@ -26,17 +26,27 @@ def deep_merge(*dicts: dict) -> dict:
     return merged
 
 
-
 def main() -> None:
     """Main handler"""
-    workloads_data = parser.get_workloads(args.versions_dir, args.eks_version)
-
     logger.info("EKS version: %s", args.eks_version)
 
     logger.info(
         "EKS node AMI image version: %s",
         parser.get_ami_version(args.versions_dir, args.eks_version),
     )
+
+    images = []
+
+    additional_images = parser.get_additional_images(
+        args.versions_dir, args.eks_version
+    )
+
+    for _, image in additional_images.items():
+        images.append(image)
+
+    additional_images_json = {"additional_images": additional_images}
+
+    workloads_data = parser.get_workloads(args.versions_dir, args.eks_version)
 
     if args.update_helm:
         for workload, values in workloads_data.items():
@@ -46,7 +56,6 @@ def main() -> None:
         helm.update_repos()
 
     custom_chart_values = {}
-    images = []
 
     parsed_charts = {}
     for workload, values in workloads_data.items():
@@ -169,12 +178,14 @@ def main() -> None:
                 logger.debug("\t\t%s", image)
                 images.append(image)
 
-        logger.debug("\tSSM parameter variables:")
+        logger.debug("\tCustom chart values:")
         logger.debug("\t\t%s", json.dumps(custom_chart_values[workload]))
 
     sorted_images = sorted(set(images))
 
-    ami_json = {"ami": {"version": parser.get_ami_version(args.versions_dir, args.eks_version)}}
+    ami_json = {
+        "ami": {"version": parser.get_ami_version(args.versions_dir, args.eks_version)}
+    }
     charts_json = {"charts": custom_chart_values}
 
     with open(
@@ -182,7 +193,9 @@ def main() -> None:
         "w",
         encoding="utf-8",
     ) as file:
-        file.write(json.dumps(deep_merge(ami_json, charts_json)))
+        file.write(
+            json.dumps(deep_merge(ami_json, charts_json, additional_images_json))
+        )
 
     with open(
         os.path.join(project_path, "images.txt"),
