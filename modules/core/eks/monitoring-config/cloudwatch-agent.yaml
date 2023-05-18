@@ -53,14 +53,14 @@ spec:
     spec:
       containers:
         - name: cloudwatch-agent
-          image: public.ecr.aws/cloudwatch-agent/cloudwatch-agent:1.247358.0b252413
+          image: $image
           ports:
             - containerPort: 8125
               hostPort: 8125
               protocol: UDP
           resources:
             limits:
-              cpu:  200m
+              cpu: 200m
               memory: 200Mi
             requests:
               cpu: 200m

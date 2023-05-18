@@ -14,6 +14,7 @@
 
 import json
 import os
+from string import Template
 from typing import Any, Dict, cast
 
 import cdk_nag
@@ -36,6 +37,7 @@ from helpers import (
     get_chart_repo,
     get_chart_values,
     get_chart_version,
+    get_image,
 )
 
 project_dir = os.path.dirname(os.path.abspath(__file__))
@@ -43,10 +45,10 @@ project_dir = os.path.dirname(os.path.abspath(__file__))
 # We are loading the data from docker replication module and use the following constants
 # to get correct values from SSM
 ALB_CONTROLLER = "alb_controller"
-NGINX_CONTROLLER = "nginx_controller"
 AWS_VPC_CNI = "aws_vpc_cni"
 CALICO = "calico"
 CERT_MANAGER = "cert_manager"
+CLOUDWATCH_AGENT = "cloudwatch_agent"
 CLUSTER_AUTOSCALER = "cluster_autoscaler"
 EBS_CSI_DRIVER = "ebs_csi_driver"
 EFS_CSI_DRIVER = "efs_csi_driver"
@@ -59,8 +61,10 @@ KURED = "kured"
 KYVERNO = "kyverno"
 KYVERNO_POLICY_REPORTER = "kyverno_policy_reporter"
 METRICS_SERVER = "metrics_server"
+NGINX_CONTROLLER = "nginx_controller"
 PROMETHEUS_STACK = "prometheus_stack"
 SECRETS_MANAGER_CSI_DRIVER = "secrets_manager_csi_driver"
+SECRETS_STORE_CSI_DRIVER_PROVIDER_AWS = "secrets_store_csi_driver_provider_aws"
 
 
 class Eks(Stack):  # type: ignore
@@ -842,9 +846,13 @@ class Eks(Stack):  # type: ignore
             secrets_csi_sa.add_to_principal_policy(iam.PolicyStatement.from_json(secrets_csi_policy_statement_json_1))
 
             # Deploy the manifests from secrets-store-csi-driver-provider-aws.yaml
-            secrets_csi_provider_yaml_file = open("secrets-config/secrets-store-csi-driver-provider-aws.yaml", "r")
+            image = get_image(self.replicated_ecr_images_metadata, SECRETS_STORE_CSI_DRIVER_PROVIDER_AWS)
+            t = Template(
+                open(os.path.join(project_dir, "secrets-config/secrets-store-csi-driver-provider-aws.yaml"), "r")
+            )
+            # Substitute the image name in the secrets-store-csi-driver-provider-aws.yaml file
+            secrets_csi_provider_yaml_file = t.substitute(image=image)
             secrets_csi_provider_yaml = list(yaml.load_all(secrets_csi_provider_yaml_file, Loader=yaml.FullLoader))
-            secrets_csi_provider_yaml_file.close()
             loop_iteration = 0
             for value in secrets_csi_provider_yaml:
                 loop_iteration = loop_iteration + 1
@@ -915,8 +923,10 @@ class Eks(Stack):  # type: ignore
             )
 
             # It opens cwagentconfig.json file in read mode ("r") and reads its content using the read() method. The content is stored in the cwagentconfig_content variable.
-            with open(os.path.join(project_dir, "monitoring-config/cwagentconfig.json"), "r") as f:
-                cwagentconfig_content = f.read()
+            image = get_image(self.replicated_ecr_images_metadata, CLOUDWATCH_AGENT)
+            t = Template(open(os.path.join(project_dir, "monitoring-config/cwagentconfig.json"), "r"))
+            # Substitute the image name in the cwagentconfig.json file
+            cwagentconfig_content = t.substitute(image=image)
 
         # AWS Distro for Opentelemetry
         if self.eks_addons_config.get("deploy_adot"):

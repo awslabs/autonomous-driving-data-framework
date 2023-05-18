@@ -218,3 +218,20 @@ def get_chart_version(eks_version: str, workload_name: str) -> str:
     """
 
     return _get_chart_version_from_file(eks_version, workload_name)
+
+
+def get_image(data: dict, workload_name: str) -> Dict:
+    """Get chart additional values
+
+    Args:
+        eks_version (str): EKS version
+        workload_name (str): Workload name
+
+    Returns:
+        str: Image name
+    """
+
+    if "additional_images" in data and workload_name in data["additional_images"]:
+        return data["additional_images"][workload_name]
+
+    return {}
