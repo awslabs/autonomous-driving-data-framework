@@ -41,38 +41,39 @@ otherwise the tag values would be in the below format.
 8. Add the helm chart in the eks cluster, specify all the values of the helm chart which are required for deployment of the add-on. 
 
 
-There are two ways to populate the helm values:
 
+There are two ways to populate the helm values:
 
 `1. Browser`: Inspecting the public github repository for the add on. 
 
-    a. Browse for the open source add on repository over the internet. 
+a. Browse for the open source add on repository over the internet. 
 
-    b. Check for the latest stable version in the tags section, add that version in the files(default.yaml & 1.25.yaml, etc) in the versions directory as mentioned above. 
+b. Check for the latest stable version in the tags section, add that version in the files(default.yaml & 1.25.yaml, etc) in the versions directory as mentioned above. 
 
-
-    c. Go to charts folder, check for the values.yaml. Check for the image in the images specification and add those images in the (default.yaml & 1.25.yaml, etc) as mentioned above. 
+c. Go to charts folder, check for the values.yaml. Check for the image in the images specification and add those images in the (default.yaml & 1.25.yaml, etc) as mentioned above. 
 
 
 `2. Terminal`: Inspecting the images, values locally through the terminal 
 
-    a. Adding the repository locally: 
+a. Adding the repository locally: 
 
+```bash
     helm repo add [NAME] [URL] [flags]
+```
 
-    for example, adding the cert-manager repository locally, use the command:
+for example, adding the cert-manager repository locally, use the command:
 
 ```bash
     helm repo add jetstack https://charts.jetstack.io
 ```
 
-    The following result will be displayed when the repository is successfully added.
+The following result will be displayed when the repository is successfully added.
 
     ```bash
     "jetstack" has been added to your repositories
     ```
 
-    b. Listing the added the repositories, to verify the repository is added locally 
+b. Listing the added the repositories, to verify the repository is added locally 
 
     ```bash
     helm repo list [flags]
@@ -86,10 +87,10 @@ The following result be displayed to show list of repositories added locally:
 
 ```yaml
 - name: jetstack
- url: https://charts.jetstack.io
+  url: https://charts.jetstack.io
  ```
 
-    c. Identifying the images required for the helm chart:
+c. Identifying the images required for the helm chart:
 
     Checking the charts in repository:
 
@@ -117,7 +118,7 @@ helm show values jetstack/cert-manager | grep repository
 
 ### Useful Helm commands:
 
-## Searching for specific chart 
+#### Searching for specific chart 
 
 ```bash
 helm search hub jetstack
