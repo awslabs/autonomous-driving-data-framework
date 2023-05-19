@@ -45,7 +45,7 @@ otherwise the tag values would be in the below format.
 
 `1. Browser`: Inspecting the public github repository for the add on. 
 
-*a. *Browse for the open source add on repository over the internet. 
+* Browse for the open source add on repository over the internet. 
 
 * Check for the latest stable version in the tags section, add that version in the files(default.yaml & 1.25.yaml, etc) in the versions directory. 
 
@@ -54,7 +54,7 @@ otherwise the tag values would be in the below format.
 
 `2. Terminal`: Inspecting the images, values locally through the terminal 
 
-a. Adding the repository locally: 
+* Adding the repository locally: 
 
 ```bash
     helm repo add [NAME] [URL] [flags]
@@ -72,7 +72,7 @@ The following result will be displayed when the repository is successfully added
     "jetstack" has been added to your repositories
 ```
 
-b. Listing the added the repositories, to verify the repository is added locally 
+* Listing the added the repositories, to verify the repository is added locally 
 
 ```bash
     helm repo list [flags]
@@ -89,7 +89,7 @@ The following result be displayed to show list of repositories added locally:
   url: https://charts.jetstack.io
  ```
 
-c. Identifying the images required for the helm chart:
+* Identifying the images required for the helm chart:
 
     Checking the charts in repository:
 
@@ -97,19 +97,19 @@ c. Identifying the images required for the helm chart:
     helm search repo jetstack
 ```
 
-Commands to get the chart values:
+#### Commands to get the chart values:
 
 ```bash
 helm show values [CHART] [flags]
 ```
 
-Inspecting the images and their path required to fill in the default.yaml
+* Inspecting the images and their path required to fill in the default.yaml
 
 ```bash
 helm show values jetstack/cert-manager
 ```
 
-The images in the output will be added to the default.yaml and their location and path would be according to the path in chart. 
+* The images in the output will be added to the default.yaml and their location and path would be according to the path in chart. 
 
 ```bash
 helm show values jetstack/cert-manager | grep repository
