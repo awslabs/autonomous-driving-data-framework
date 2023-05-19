@@ -34,9 +34,9 @@ The script doesn't directly inspect the registries. Instead, it relies on the co
 
 replication.sh is used to replicate the images to ECR. The detailed description of the script:
 
-1. The script defines two main functions: create and destroy. The create function is responsible for pulling the container images, tagging them, and pushing them to ECR.
+1. The script defines two main functions: `create` and `destroy`. The create function is responsible for pulling the container images, tagging them, and pushing them to ECR.
 
-2. The create function reads a file named images.txt line by line, where each line represents a container image to be replicated to ECR. The read command is used to read each line into the image variable.
+2. The create function reads a file named `images.txt` line by line, where each line represents a container image to be replicated to ECR. The read command is used to read each line into the image variable.
 
 3. Within the loop, the script extracts the image name and tag using awk command. The `image_name` variable stores the image name, and the `image_tag` variable stores the image tag.
 
