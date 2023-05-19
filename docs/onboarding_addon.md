@@ -41,16 +41,15 @@ otherwise the tag values would be in the below format.
 8. Add the helm chart in the eks cluster, specify all the values of the helm chart which are required for deployment of the add-on. 
 
 
-
-There are two ways to populate the helm values:
+## There are two ways to populate the helm values:
 
 `1. Browser`: Inspecting the public github repository for the add on. 
 
 a. Browse for the open source add on repository over the internet. 
 
-b. Check for the latest stable version in the tags section, add that version in the files(default.yaml & 1.25.yaml, etc) in the versions directory as mentioned above. 
+b. Check for the latest stable version in the tags section, add that version in the files(default.yaml & 1.25.yaml, etc) in the versions directory. 
 
-c. Go to charts folder, check for the values.yaml. Check for the image in the images specification and add those images in the (default.yaml & 1.25.yaml, etc) as mentioned above. 
+c. Go to charts folder, check for the values.yaml. Check for the image in the images specification and add those images in the (default.yaml & 1.25.yaml, etc). 
 
 
 `2. Terminal`: Inspecting the images, values locally through the terminal 
@@ -69,19 +68,19 @@ for example, adding the cert-manager repository locally, use the command:
 
 The following result will be displayed when the repository is successfully added.
 
-    ```bash
+```bash
     "jetstack" has been added to your repositories
-    ```
+```
 
 b. Listing the added the repositories, to verify the repository is added locally 
 
-    ```bash
+```bash
     helm repo list [flags]
-    ```
+```
 
-    ```bash
+```bash
     helm repo list -o yaml
-    ```
+```
 
 The following result be displayed to show list of repositories added locally:
 
@@ -94,9 +93,9 @@ c. Identifying the images required for the helm chart:
 
     Checking the charts in repository:
 
-    ```bash
+```bash
     helm search repo jetstack
-    ```
+```
 
 Commands to get the chart values:
 
