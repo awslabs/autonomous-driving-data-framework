@@ -10,15 +10,15 @@
 
 ### Uses the data from the configuration files
 
-The script defines the container image details within the `stack.py` file itself. These details include the repository URLs and tags for different Addon components. The script uses these details to specify the container images when deploying Addon via the Helm chart.
+The Python script `stack.py` reads the `default.yaml` file to determine the default version of Addon to be deployed. This version is used later when adding the Helm chart for Addon to the EKS cluster. The script defines the container image details within the `stack.py` file itself. These details include the repository URLs and tags for different Addon components. The script uses these details to specify the container images when deploying Addon via the Helm chart.
 
 ### Inspects the registries
 
-The script doesn't directly inspect the registries. Instead, it relies on the container image details provided in the stack.py file to identify the repository URLs and tags. These details are pre-determined based on the desired versions and sources of Addon components.
+The script doesn't directly inspect the registries. Instead, it relies on the container image details provided in the `stack.py` file to identify the repository URLs and tags. These details are pre-determined based on the desired versions and sources of Addon components.
 
 ### Grabs the container image details
 
-1. The Python script utilizes a configuration file called stack.py to define and retrieve container image details for deploying Addons on an EKS cluster. Within the `stack.py` file, there is a section specifically dedicated to each addon.
+1. The Python script utilizes a configuration file called `stack.py` to define and retrieve container image details for deploying Addons on an EKS cluster. Within the `stack.py` file, there is a section specifically dedicated to each addon.
 
 2. Under that addon section, various addon components are listed, along with their corresponding container image details. Each component includes two key-value pairs: repository and tag.
 
