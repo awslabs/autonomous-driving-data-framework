@@ -8,7 +8,7 @@ deploy:
         - mv linux-amd64/helm /usr/local/bin/helm
     build:
       commands:
-        - S3_BUCKET_NAME="addf-dockerimages-replications-metadata-${AWS_DEFAULT_REGION}-${AWS_ACCOUNT_ID}"
+        - S3_BUCKET_NAME="${ADDF_DEPLOYMENT_NAME}-replications-${AWS_DEFAULT_REGION}-${AWS_ACCOUNT_ID}"
         - S3_OBJECT_NAME="${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-metadata.json"
         - |
           if ! aws s3api head-bucket --bucket "${S3_BUCKET_NAME}"; then

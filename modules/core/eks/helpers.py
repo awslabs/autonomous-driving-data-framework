@@ -193,7 +193,7 @@ def get_chart_values(data: dict, workload_name: str) -> Dict:
     """Get chart additional values
 
     Args:
-        eks_version (str): EKS version
+        data (dict): Data structure containing chart values
         workload_name (str): Workload name
 
     Returns:
@@ -220,11 +220,12 @@ def get_chart_version(eks_version: str, workload_name: str) -> str:
     return _get_chart_version_from_file(eks_version, workload_name)
 
 
-def get_image(data: dict, workload_name: str) -> Dict:
+def get_image(eks_version: str, data: dict, workload_name: str) -> str:
     """Get chart additional values
 
     Args:
         eks_version (str): EKS version
+        data (dict): Data structure containing image values
         workload_name (str): Workload name
 
     Returns:
@@ -234,4 +235,12 @@ def get_image(data: dict, workload_name: str) -> Dict:
     if "additional_images" in data and workload_name in data["additional_images"]:
         return data["additional_images"][workload_name]
 
-    return {}
+    _parse_versions_file(eks_version)
+    _parse_versions_file("default")
+    if (
+        "additional_images" in workload_versions[eks_version]
+        and workload_name in workload_versions[eks_version]["additional_images"]
+    ):
+        return workload_versions[eks_version]["additional_images"][workload_name]
+
+    return workload_versions["default"]["additional_images"][workload_name]

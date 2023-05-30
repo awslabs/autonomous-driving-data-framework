@@ -41,8 +41,8 @@ def main() -> None:
         args.versions_dir, args.eks_version
     )
 
-    for _, image in additional_images.items():
-        images.append(image)
+    for key, value in additional_images.items():
+        images.append({key: value})
 
     additional_images_json = {"additional_images": additional_images}
 
