@@ -44,7 +44,11 @@ def main() -> None:
     for _, image in additional_images.items():
         images.append(image)
 
-    additional_images_json = {"additional_images": additional_images}
+    updated_additional_images = {}
+    for name, image in additional_images.items():
+        updated_additional_images[name] = f"{args.registry_prefix}{image}"
+
+    additional_images_json = {"additional_images": updated_additional_images}
 
     workloads_data = parser.get_workloads(args.versions_dir, args.eks_version)
 
