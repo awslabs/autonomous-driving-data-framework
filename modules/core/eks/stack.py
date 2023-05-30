@@ -846,12 +846,15 @@ class Eks(Stack):  # type: ignore
             secrets_csi_sa.add_to_principal_policy(iam.PolicyStatement.from_json(secrets_csi_policy_statement_json_1))
 
             # Deploy the manifests from secrets-store-csi-driver-provider-aws.yaml
-            image = get_image(self.replicated_ecr_images_metadata, SECRETS_STORE_CSI_DRIVER_PROVIDER_AWS)
-            t = Template(
-                open(os.path.join(project_dir, "secrets-config/secrets-store-csi-driver-provider-aws.yaml"), "r")
+            secrets_store_csi_driver_image = get_image(
+                str(self.eks_version), self.replicated_ecr_images_metadata, SECRETS_STORE_CSI_DRIVER_PROVIDER_AWS
             )
+            t = Template(
+                open(os.path.join(project_dir, "secrets-config/secrets-store-csi-driver-provider-aws.yaml"), "r").read()
+            )
+
             # Substitute the image name in the secrets-store-csi-driver-provider-aws.yaml file
-            secrets_csi_provider_yaml_file = t.substitute(image=image)
+            secrets_csi_provider_yaml_file = t.substitute(image=str(secrets_store_csi_driver_image))
             secrets_csi_provider_yaml = list(yaml.load_all(secrets_csi_provider_yaml_file, Loader=yaml.FullLoader))
             loop_iteration = 0
             for value in secrets_csi_provider_yaml:
@@ -923,10 +926,8 @@ class Eks(Stack):  # type: ignore
             )
 
             # It opens cwagentconfig.json file in read mode ("r") and reads its content using the read() method. The content is stored in the cwagentconfig_content variable.
-            image = get_image(self.replicated_ecr_images_metadata, CLOUDWATCH_AGENT)
-            t = Template(open(os.path.join(project_dir, "monitoring-config/cwagentconfig.json"), "r"))
-            # Substitute the image name in the cwagentconfig.json file
-            cwagentconfig_content = t.substitute(image=image)
+            with open(os.path.join(project_dir, "monitoring-config/cwagentconfig.json"), "r", encoding="utf-8") as f:
+                cwagentconfig_content = f.read()
 
         # AWS Distro for Opentelemetry
         if self.eks_addons_config.get("deploy_adot"):
@@ -1027,7 +1028,12 @@ class Eks(Stack):  # type: ignore
 
             # Import cloudwatch-agent.yaml to a list of dictionaries and submit them as a manifest to EKS
             # Read the YAML file
-            cw_agent_yaml_file = open(os.path.join(project_dir, "monitoring-config/cloudwatch-agent.yaml"), "r")
+            cloudwatch_agent_image = get_image(
+                str(self.eks_version), self.replicated_ecr_images_metadata, CLOUDWATCH_AGENT
+            )
+            t = Template(open(os.path.join(project_dir, "monitoring-config/cloudwatch-agent.yaml"), "r").read())
+            # Substitute the image name in the cwagentconfig.json file
+            cw_agent_yaml_file = t.substitute(image=str(cloudwatch_agent_image))
             cw_agent_yaml = list(yaml.load_all(cw_agent_yaml_file, Loader=yaml.FullLoader))
             cw_agent_yaml_file.close()
             loop_iteration = 0
@@ -1509,7 +1515,6 @@ class Eks(Stack):  # type: ignore
             )
 
             if self.eks_addons_config.get("deploy_calico"):
-
                 with open(os.path.join(project_dir, "network-policies/default-allow-kyverno.json"), "r") as f:
                     default_allow_kyverno_policy_file = f.read()
 
