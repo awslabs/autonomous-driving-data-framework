@@ -31,11 +31,10 @@ class TestParser(unittest.TestCase):
         self.assertEqual(result, "1.0.0")
 
     def test__parse_versions_file(self):
-        project_dir = "./helmparser/tests"
-        versions_dir = "test_versions"
+        versions_dir = "helmparser/tests/test_versions"
         eks_version = "1.21"
 
-        result = parser._parse_versions_file(project_dir, versions_dir, eks_version)
+        result = parser._parse_versions_file(versions_dir, eks_version)
         self.assertEqual(
             result,
             {
@@ -46,6 +45,10 @@ class TestParser(unittest.TestCase):
                         "replication": {"cluster_autoscaler": {"tag": "v1.26.2"}}
                     },
                     "kyverno": {"skip": True},
+                },
+                "additional_images": {
+                    "cloudwatch_agent": "public.ecr.aws/cloudwatch-agent/cloudwatch-agent:1.247358.0b252413",
+                    "secrets_store_csi_driver_provider_aws": "public.ecr.aws/aws-secrets-manager/secrets-store-csi-driver-provider-aws:1.0.r2-2021.08.13.20.34-linux-amd64",
                 },
             },
         )
@@ -90,24 +93,40 @@ class TestParser(unittest.TestCase):
         self.assertEqual(result, {"image": {"repository": "test", "tag": "1.0.0"}})
 
     def test_get_ami_version(self):
-        project_dir = "./helmparser/tests"
-        versions_dir = "test_versions"
+        versions_dir = "helmparser/tests/test_versions"
         eks_version = "1.21"
 
-        result = parser.get_ami_version(project_dir, versions_dir, eks_version)
+        result = parser.get_ami_version(versions_dir, eks_version)
         self.assertEqual(result, "1.21.14-20230217")
 
         eks_version = "default"
 
-        result = parser.get_ami_version(project_dir, versions_dir, eks_version)
+        result = parser.get_ami_version(versions_dir, eks_version)
         self.assertEqual(result, "")
 
-    def test_get_workloads(self):
-        project_dir = "./helmparser/tests"
-        versions_dir = "test_versions"
+    def test_get_additional_images(self):
+        versions_dir = "helmparser/tests/test_versions"
         eks_version = "1.21"
 
-        result = parser.get_workloads(project_dir, versions_dir, eks_version)
+        result = parser.get_additional_images(versions_dir, eks_version)
+        self.assertEqual(
+            result,
+            {
+                "cloudwatch_agent": "public.ecr.aws/cloudwatch-agent/cloudwatch-agent:1.247358.0b252413",
+                "secrets_store_csi_driver_provider_aws": "public.ecr.aws/aws-secrets-manager/secrets-store-csi-driver-provider-aws:1.0.r2-2021.08.13.20.34-linux-amd64",
+            },
+        )
+
+        eks_version = "default"
+
+        result = parser.get_additional_images(versions_dir, eks_version)
+        self.assertEqual(result, {})
+
+    def test_get_workloads(self):
+        versions_dir = "helmparser/tests/test_versions"
+        eks_version = "1.21"
+
+        result = parser.get_workloads(versions_dir, eks_version)
 
         self.assertEqual(
             result,
