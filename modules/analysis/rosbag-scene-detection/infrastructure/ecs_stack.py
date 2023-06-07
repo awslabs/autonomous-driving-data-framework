@@ -77,7 +77,11 @@ class Fargate(aws_cdk.Stack):
         :param cpu: CPUs to allocate per task
         :param kwargs:
         """
-        super().__init__(scope, id, **kwargs)
+        super().__init__(
+            scope,
+            id,
+            **kwargs,
+        )
 
         # Importing from ADDF Networking and Core Modules
         self.vpc_id = vpc_id
