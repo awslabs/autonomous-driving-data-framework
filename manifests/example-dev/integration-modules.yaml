@@ -6,7 +6,7 @@ parameters:
       moduleMetadata:
         group: core
         name: eks
-        key: EksClusterAdminRoleArn
+        key: EksClusterMasterRoleArn
   - name: eks-cluster-name
     valueFrom:
       moduleMetadata:

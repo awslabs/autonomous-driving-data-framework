@@ -36,7 +36,7 @@ parameters:
       moduleMetadata:
         group: core
         name: eks
-        key: EksClusterAdminRoleArn
+        key: EksClusterMasterRoleArn
 ---
 name: batch-managed
 path: modules/simulations/batch-managed

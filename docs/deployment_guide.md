@@ -2,6 +2,17 @@
 
 Autonomous Driving Data Framework follows the Industry standard `GitOps` model. The project is entirely driven by `Descriptive` prinicples in the form of asking inputs from a module developer via manifest file(s). This guide walks us through the process of deploying `ADDF 1.0` version using the latest release of `SeedFarmer 2.0` which helps with `Multi Account and multi region` deployments.
 
+## Deprecated Branches
+The AWS Lambda service no longer supports older versions (aka. node 12.x).  We needed to update the CDK versions used by some of our modules (aws-cdk==2.20.0).  Any module that explicitly or implictly needed AWS Lambda to deploy could no longer use this CDK version.  This impacted the modules on older release branches.  The following release branches are deprecated and should not be used:
+
+| Branch|
+|:----------:|
+| release/0.1.0 |
+| release/1.0.0 |
+| release/1.1.0 |
+| release/1.2.0 |
+
+
 ## Steps to deploy ADDF
 
 ### Clone the project
@@ -9,7 +20,7 @@ Autonomous Driving Data Framework follows the Industry standard `GitOps` model. 
 You will need to clone the ADDF repository and checkout a release branch using the below command:
 
 ```bash
-git clone --origin upstream --branch release/1.0.0 https://github.com/awslabs/autonomous-driving-data-framework
+git clone --origin upstream --branch release/1.2.1 https://github.com/awslabs/autonomous-driving-data-framework
 ```
 
 > The release version can be replaced with the version of interest

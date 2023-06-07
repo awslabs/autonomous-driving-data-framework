@@ -27,6 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - the way node groups are built by accepting only single instancetypes per asg, encrypting the disks at rest
 - integration with custom CIDR of eks for grabbing IPs from extended VPC CIDR
 - the helm chart values, registries and repo info being loaded from versions files than being hardcoded locally for EKS module
+- updated cdk version used on modules that have a dependency on AWS Lambda and cannot use Node 12.x 
+  - analysis/rosbag-scene-detection
+  - core/opensearch
+  - demo-only/rosbag-webviz
+  - integration/eks-to-opensearch
+  - optionals/datalake-buckets
+  - simulations/k8s-managed
 
 ### **Removed**
 
