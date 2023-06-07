@@ -54,7 +54,8 @@ const stack = new WebvizStack(app, `addf-${deploymentName}-${moduleName}`, {
   sceneMetadataPartitionKey,
   sceneMetadataSortKey,
   stageName,
-  description: "This stack deploys Webviz resources for Visualization",
+  description:
+    "(SO9154) Autonomous Driving Data Framework (ADDF) - Visualization",
   env: { account, region },
 });
 

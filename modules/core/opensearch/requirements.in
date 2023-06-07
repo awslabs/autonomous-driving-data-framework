@@ -1,4 +1,4 @@
-aws-cdk-lib==2.20.0
+aws-cdk-lib==2.82.0
 constructs==10.0.91
 cdk-nag==2.12.29
 boto3~=1.24.0
