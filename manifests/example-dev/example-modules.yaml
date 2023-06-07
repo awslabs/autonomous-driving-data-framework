@@ -31,24 +31,24 @@ path: modules/examples/docker-build/
 parameters:
   - name: ecr-repo-name
     value: python-sample-app
----
-name: tf-pattern
-path: modules/examples/example-tf/
-parameters:
-  - name: tf-s3-bucket
-    value: "addf-tfstate"
-  - name: tf-ddb-table
-    value: "addf-tfstate-lock"
-  # Comment the above and Uncomment the below if you want to fetch the s3 and ddb tables created by the tf-prereqs module
-  # - name: tf-s3-bucket
-  #   valueFrom:
-  #     moduleMetadata:
-  #       group: prereqs
-  #       name: tf-prereqs
-  #       key: TfStateBucketName
-  # - name: tf-ddb-table
-  #   valueFrom:
-  #     moduleMetadata:
-  #       group: prereqs
-  #       name: tf-prereqs
-  #       key: TfLockTable
+# ---
+# name: tf-pattern
+# path: modules/examples/example-tf/
+# parameters:
+#   - name: tf-s3-bucket
+#     value: "addf-tfstate"
+#   - name: tf-ddb-table
+#     value: "addf-tfstate-lock"
+#   # Comment the above and Uncomment the below if you want to fetch the s3 and ddb tables created by the tf-prereqs module
+#   # - name: tf-s3-bucket
+#   #   valueFrom:
+#   #     moduleMetadata:
+#   #       group: prereqs
+#   #       name: tf-prereqs
+#   #       key: TfStateBucketName
+#   # - name: tf-ddb-table
+#   #   valueFrom:
+#   #     moduleMetadata:
+#   #       group: prereqs
+#   #       name: tf-prereqs
+#   #       key: TfLockTable
