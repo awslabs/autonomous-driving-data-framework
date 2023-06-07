@@ -94,7 +94,7 @@ parameters:
           eks_node_disk_size: 20
           eks_node_instance_types:
             - "m5.xlarge"
-      eks_version: 1.21
+      eks_version: 1.23
       eks_node_spot: False
   - name: eks-addons
     value:

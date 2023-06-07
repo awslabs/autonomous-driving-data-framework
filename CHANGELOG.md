@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 =======
+## [V1.2.1] - [6/7/2023]
+
+### **Added**
+
+
+### **Changed**
+Due to the removal of support for node 12.x in AWS Lambda, a number of modules using AWS-CDK were upgraded from 2.20.0 to 2.82.0.  This branch is a DIRECT copy of `release/1.2.0` with the changes to the CDK as indicated:
+- modules/optionals/datalake-buckets
+- modules/core/eks
+- modules/core/opensearch
+- modules/demo-only/rosbag-webviz
+- modules/analysis/rosbag-scene-detection
+- modules/integration/eks-to-opensearch
+- modules/simulations/k8s-managed
+
+
+### **Removed**
+
+
+=======
 ## [V1.2.0] - [3/20/2023]
 
 ### **Added**

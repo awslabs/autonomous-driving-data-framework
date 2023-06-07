@@ -57,7 +57,7 @@ This module creates an EKS Cluster with the commonly preferred addons for use in
           - "m5.xlarge"
         eks_node_labels:
           usage: visualization
-    eks_version: 1.21
+    eks_version: 1.23
     eks_node_spot: False
 
 ```
