@@ -5,8 +5,8 @@ groups:
     path: manifests/example-dev/optional-modules.yaml
   - name: core
     path: manifests/example-dev/core-modules.yaml
-  - name: prereqs
-    path: manifests/example-dev/prereq-modules.yaml
+  # - name: prereqs
+  #   path: manifests/example-dev/prereq-modules.yaml
   - name: examples
     path: manifests/example-dev/example-modules.yaml
   - name: rosbag

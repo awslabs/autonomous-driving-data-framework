@@ -25,6 +25,7 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_efs as efs
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
+from aws_cdk.lambda_layer_kubectl_v23 import KubectlV23Layer
 from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -130,6 +131,8 @@ class Eks(Stack):  # type: ignore
             masters_role=cluster_admin_role,
             endpoint_access=eks.EndpointAccess.PUBLIC,
             version=eks.KubernetesVersion.of(str(self.eks_compute_config["eks_version"])),
+            # Work around until CDK team makes kubectl upto date https://github.com/aws/aws-cdk/issues/23376
+            kubectl_layer=KubectlV23Layer(self, "Kubectlv23Layer"),
             default_capacity=0,
             cluster_logging=[
                 eks.ClusterLoggingTypes.API,

@@ -80,7 +80,6 @@ class Fargate(aws_cdk.Stack):
         super().__init__(
             scope,
             id,
-            description="(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-scene-detection",
             **kwargs,
         )
 
