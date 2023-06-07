@@ -6,7 +6,7 @@ ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualiz
 
 ## Deployment Instructions
 
-You can refer to the SeedFarmer [guide](https://seed-farmer.readthedocs.io/en/latest/usage.html) to understand how SeedFarmer CLI can be used to bootstrap and deploy ADDF.
+You can refer to the SeedFarmer [guide](https://seed-farmer.readthedocs.io/en/latest) to understand how SeedFarmer CLI can be used to bootstrap and deploy ADDF.
 
 You can follow instructions in the Deployment Guide [Readme](docs/deployment_guide.md). You can also follow the [blogpost](https://aws.amazon.com/blogs/industries/develop-and-deploy-a-customized-workflow-using-autonomous-driving-data-framework-addf-on-aws/) for understanding ADDF in detail.
 
