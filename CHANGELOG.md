@@ -15,6 +15,10 @@ Due to the removal of support for node 12.x in AWS Lambda, a number of modules u
 - modules/demo-only/rosbag-webviz
 - modules/analysis/rosbag-scene-detection
 
+The following modules had their Lambda Layers requirements.txt modified:
+- modules/integration/ddb-to-opensearch (layer/requirements.txt)
+- modules/integration/emr-to-opensearch (layer/requirements.txt)
+
 
 =======
 ## [V1.0.0] - [09/27/2022]
