@@ -30,7 +30,9 @@ stack = ObjectDetection(
     s3_access_policy=full_access_policy,
 )
 
-base_image = f"763104351884.dkr.ecr.{stack.region}.amazonaws.com/pytorch-inference:1.7.1-gpu-py36-cu110-ubuntu18.04"
+base_image = (
+    f"763104351884.dkr.ecr.{stack.region}.amazonaws.com/pytorch-inference:1.12.1-gpu-py38-cu113-ubuntu20.04-sagemaker"
+)
 
 CfnOutput(
     scope=stack,
