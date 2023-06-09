@@ -21,7 +21,10 @@ Due to the removal of support for node 12.x in AWS Lambda, a number of modules u
 - modules/integration/eks-to-opensearch
 - modules/simulations/k8s-managed
 
-
+The following modules had their Lambda Layers requirements.txt modified:
+- modules/integration/ddb-to-opensearch (layer/requirements.txt)
+- modules/integration/emr-to-opensearch (layer/requirements.txt)
+- 
 ### **Removed**
 
 
