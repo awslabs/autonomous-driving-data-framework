@@ -17,7 +17,7 @@ else
     aws secretsmanager create-secret \
         --name vscode-credentials \
         --description "Credentials for vscode" \
-        --secret-string "{\"password\":$VSCODEPWD}"
+        --secret-string "{\"password\":$VSCODEPWD}" || true
     echo "vscode-credentials created"
 fi
 
@@ -30,7 +30,7 @@ else
     aws secretsmanager create-secret \
         --name jh-credentials \
         --description "Credentials for jupyterhub" \
-        --secret-string "{\"username\":\"testadmin\",\"password\":$JHPWD}"
+        --secret-string "{\"username\":\"testadmin\",\"password\":$JHPWD}" || true
     echo "jh-credentials created"
 fi
 
@@ -43,7 +43,7 @@ else
     aws secretsmanager create-secret \
         --name opensearch-proxy-credentials \
         --description "Credentials for opensearch proxy" \
-        --secret-string "{\"username\":\"addf\",\"password\":$OSPWD}"
+        --secret-string "{\"username\":\"addf\",\"password\":$OSPWD}" || true
     echo "opensearch-proxy-credentials created"
 fi
 
