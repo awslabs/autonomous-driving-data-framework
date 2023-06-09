@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - optionals/datalake-buckets
   - simulations/k8s-managed
 
+The following modules had their Lambda Layers requirements.txt modified:
+- modules/integration/ddb-to-opensearch (layer/requirements.txt)
+- modules/integration/emr-to-opensearch (layer/requirements.txt)
+
 ### **Removed**
 
 - removing `requirements-dev.txt` for FSx-Lustre module
