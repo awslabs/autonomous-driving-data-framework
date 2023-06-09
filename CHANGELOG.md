@@ -24,7 +24,9 @@ Due to the removal of support for node 12.x in AWS Lambda, a number of modules u
 The following modules had their Lambda Layers requirements.txt modified:
 - modules/integration/ddb-to-opensearch (layer/requirements.txt)
 - modules/integration/emr-to-opensearch (layer/requirements.txt)
-- 
+  
+Updated the YoloV5 container for Object Detection (modules/post-processing/yolo-object-detection)
+
 ### **Removed**
 
 
