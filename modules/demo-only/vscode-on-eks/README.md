@@ -1,5 +1,7 @@
-# Deploying VSCode IDE on EKS
+# Deploying VSCode IDE on EKS --- DEPRECATED
 
+
+# AS OF 6/12/2023, this module no longer in use - DO NOT USE 
 ## Description
 
 This module deploys VSCode IDE onto the Amazon EKS Cluster. See here for:
