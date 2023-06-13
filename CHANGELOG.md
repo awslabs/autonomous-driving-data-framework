@@ -41,6 +41,7 @@ The following modules had their Lambda Layers requirements.txt modified:
 
 - Updated the YoloV5 container for Object Detection (modules/post-processing/yolo-object-detection)
 - updated cdk version and pyOpenSSL version on emrstudio-on-eks
+- updated vscode cdk version and leveraged alb controller already on eks cluster
 
 ### **Removed**
 
