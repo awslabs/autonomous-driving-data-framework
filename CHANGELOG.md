@@ -25,7 +25,9 @@ The following modules had their Lambda Layers requirements.txt modified:
 - modules/integration/ddb-to-opensearch (layer/requirements.txt)
 - modules/integration/emr-to-opensearch (layer/requirements.txt)
   
-Updated the YoloV5 container for Object Detection (modules/post-processing/yolo-object-detection)
+- updated the YoloV5 container for Object Detection (modules/post-processing/yolo-object-detection)
+- updated emrstudio module cdk
+- updated vscode cdk version and leveraged alb controller already on eks cluster
 
 ### **Removed**
 
