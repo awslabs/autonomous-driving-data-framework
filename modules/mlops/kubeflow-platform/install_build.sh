@@ -21,3 +21,5 @@ wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v3
 chmod +x kustomize_kustomize.v3.2.1_linux_amd64
 mv kustomize_kustomize.v3.2.1_linux_amd64 /usr/local/bin/kustomize
 kustomize version
+#### Install Helm
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
