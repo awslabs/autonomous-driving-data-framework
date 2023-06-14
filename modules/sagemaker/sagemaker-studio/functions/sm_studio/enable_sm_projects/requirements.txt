@@ -1,1 +1,2 @@
 cfnresponse
+urllib3<2
