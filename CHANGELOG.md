@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 =======
 
-## [V1.3.0] - [UNRELEASED]
+## [UNRELEASED]
 
 ### **Added**
 
@@ -23,31 +23,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
-- updating seed-farmer to `2.6.0`
+- updating seed-farmer version
 - the way node groups are built by accepting only single instancetypes per asg, encrypting the disks at rest
 - integration with custom CIDR of eks for grabbing IPs from extended VPC CIDR
 - the helm chart values, registries and repo info being loaded from versions files than being hardcoded locally for EKS module
-- updated cdk version used on modules that have a dependency on AWS Lambda and cannot use Node 12.x 
-  - analysis/rosbag-scene-detection
-  - core/opensearch
-  - demo-only/rosbag-webviz
-  - integration/eks-to-opensearch
-  - optionals/datalake-buckets
-  - simulations/k8s-managed
-
-The following modules had their Lambda Layers requirements.txt modified:
-- modules/integration/ddb-to-opensearch (layer/requirements.txt)
-- modules/integration/emr-to-opensearch (layer/requirements.txt)
-
-- Updated the YoloV5 container for Object Detection (modules/post-processing/yolo-object-detection)
-- updated cdk version and pyOpenSSL version on emrstudio-on-eks
-- updated vscode cdk version and leveraged alb controller already on eks cluster
-- added helm install to kf-platform
 
 ### **Removed**
 
 - removing `requirements-dev.txt` for FSx-Lustre module
 - removing MWAA dependencies to `requirements-dev.txt` in analysis, sensor-extraction, simulations modules
+
+
+=======
+## [V1.2.1] - [6/7/2023]
+
+### **Added**
+
+
+### **Changed**
+Due to the removal of support for node 12.x in AWS Lambda, a number of modules using AWS-CDK were upgraded from 2.20.0 to 2.82.0.  This branch is a DIRECT copy of `release/1.2.0` with the changes to the CDK as indicated:
+- modules/optionals/datalake-buckets
+- modules/core/eks
+- modules/core/opensearch
+- modules/demo-only/rosbag-webviz
+- modules/analysis/rosbag-scene-detection
+- modules/integration/eks-to-opensearch
+- modules/simulations/k8s-managed
+
+The following modules had their Lambda Layers requirements.txt modified:
+- modules/integration/ddb-to-opensearch (layer/requirements.txt)
+- modules/integration/emr-to-opensearch (layer/requirements.txt)
+  
+- updated the YoloV5 container for Object Detection (modules/post-processing/yolo-object-detection)
+- updated emrstudio module cdk
+- updated vscode cdk version and leveraged alb controller already on eks cluster
+- added helm install to kf-platform
+
+### **Removed**
+- the following branches have been deprecated:
+  - release/1.0.0
+  - release/0.1.0
+  - release/1.1.0
+  - release/1.2.0
+
+=======
 
 ## [V1.2.0] - [3/20/2023]
 
