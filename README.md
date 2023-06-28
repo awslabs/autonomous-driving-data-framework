@@ -25,18 +25,7 @@ Please see the [ADDF Security and Operations Guide](https://docs.aws.amazon.com/
 
 | Type | Description |
 | --- | --- |
-|  [Networking Module](modules/optionals/networking/README.md)  |  Deploys standard networking resources such as VPC, Public and Private subnets, endpoints for use in ADDF  |
 |  [DataLake Buckets Module](modules/optionals/datalake-buckets/README.md) |  Deploys shared datalake buckets such as input, intermediate, output, logging, artifact buckets for use in ADDF  |
-
-### Core Modules
-
-| Type | Description |
-| --- | --- |
-|  [EKS Compute Module](modules/core/eks/README.md)  |  Deploys shared EKS Cluster with commonly preferred addons for use in ADDF  |
-|  [Metadata Storage Module](modules/core/metadata-storage/README.md) |  Deploys shared Metadata storage module which deploys metadata resources like Glue, DDB etc for use in ADDF  |
-|  [Amazon Managed Workflows for Apache Airflow (MWAA) Module](modules/core/mwaa/README.md)  |  Deploys shared MWAA module for use in ADDF   |
-|  [Opensearch Module](modules/core/opensearch/README.md)  |  Deploys Amazon Opensearch Cluster for use in ADDF   |
-|  [Neptune Module](modules/core/neptune/README.md)  |  Deploys Amazon Managed Neptune Cluster for use in ADDF   |
 
 ### Integration Modules
 

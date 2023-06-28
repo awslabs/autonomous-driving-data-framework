@@ -383,5 +383,8 @@ manifests/local
 manifests/demo*
 archive/
 
+# seedfarmer
+seedfarmer.gitmodules*
+
 # terraform
 .terraform*

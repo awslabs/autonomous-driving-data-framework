@@ -1,8 +1,8 @@
 name: example-prod
 toolchainRegion: us-west-2
 groups:
-  - name: optionals
-    path: manifests/example-prod/optional-modules.yaml
+  # - name: optionals
+  #   path: manifests/example-prod/optional-modules.yaml
   - name: replication
     path: manifests/example-prod/replicator-modules.yaml
   - name: core

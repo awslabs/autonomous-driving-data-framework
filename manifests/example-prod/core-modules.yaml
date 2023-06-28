@@ -1,5 +1,5 @@
 name: mwaa
-path: modules/core/mwaa/
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.1.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -22,7 +22,7 @@ parameters:
   - name: dag-path
     value: dags
   - name: airflow-version
-    value: "2.2.2"
+    value: "2.5.1"
 ---
 name: metadata-storage
 path: modules/core/metadata-storage/
@@ -35,7 +35,7 @@ parameters:
     value: Rosbag-Scene-Metadata
 ---
 name: opensearch
-path: modules/core/opensearch/
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch?ref=release/1.1.0&depth=1
 parameters:
   - name: opensearch_data_nodes
     value: 1
@@ -46,7 +46,11 @@ parameters:
   - name: opensearch_master_nodes_instance_type
     value: r6g.large.search
   - name: opensearch_ebs_volume_size
-    value: 10
+    value: 50
+  - name: encryption-type
+    value: SSE
+  - name: retention-type
+    value: RETAIN
   - name: vpc-id
     valueFrom:
       moduleMetadata:
@@ -61,7 +65,7 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: eks
-path: modules/core/eks/
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.1.0&depth=1
 dataFiles:
   - filePath: data/eks_dockerimage-replication/versions/1.25.yaml
   - filePath: data/eks_dockerimage-replication/versions/default.yaml
@@ -78,7 +82,13 @@ parameters:
         group: optionals
         name: networking
         key: VpcId
-  - name: private-subnet-ids
+  - name: controlplane-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: dataplane-subnet-ids
     valueFrom:
       moduleMetadata:
         group: optionals
@@ -91,8 +101,9 @@ parameters:
   - name: eks-read-only-role-name
     value: ReadOnly
   - name: eks-version
-    valueFrom:
-      envVariable: GLOBAL_EKS_VERSION
+    value: "1.25"
+    # valueFrom:
+    #   envVariable: GLOBAL_EKS_VERSION
   - name: eks-compute
     value:
       eks_nodegroup_config:
@@ -125,6 +136,9 @@ parameters:
       deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
       deploy_cloudwatch_container_insights_logs: True
       cloudwatch_container_insights_logs_retention_days: 7
+      deploy_adot: False
+      deploy_amp: False
+      deploy_grafana_for_amp: False
       deploy_kured: False
       deploy_calico: False
       deploy_nginx_controller:
@@ -174,3 +188,91 @@ parameters:
           #   - add-ttl-jobs
           #   - always-pull-images
           #   - mitigate-log4shell
+---
+name: batch-compute
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch?ref=release/1.1.0&depth=1
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: batch-compute
+    value:
+      batch_compute_config:
+        - env_name: ng1
+          compute_type: ON_DEMAND
+          max_vcpus: 4800
+          desired_vcpus: 0
+          order: 1
+          instance_types:
+             - "m5.xlarge"
+        - env_name: ng2
+          max_vcpus: 4800
+          desired_vcpus: 0
+          compute_type: SPOT
+          order: 1
+          # instance_types: #if not set, the code defaults to "optimal"
+          #   - "m5.large"
+        - env_name: ng3
+          max_vcpus: 4800
+          desired_vcpus: 0
+          compute_type: FARGATE
+          order: 1
+---
+name: neptune
+path: git::https://github.com/awslabs/idf-modules.git//modules/database/neptune?ref=release/1.1.0&depth=1
+parameters:
+  - name: number-instances
+    value: 1
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+---
+name: fsx-lustre
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.1.0&depth=1
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: fs_deployment_type
+    value: PERSISTENT_1
+  - name: storage_throughput
+    value: 50
+---
+name: efs
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs?ref=release/1.1.0&depth=1
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: retention-type
+    value: RETAIN
