@@ -1,5 +1,5 @@
 name: mwaa
-path: modules/core/mwaa/
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.1.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -25,7 +25,7 @@ parameters:
     value: "2.2.2"
 ---
 name: batch-compute
-path: modules/core/aws-batch
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch?ref=release/1.1.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
