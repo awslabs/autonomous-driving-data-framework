@@ -139,27 +139,6 @@ jobs:
       - name: PyTest based Unit Tests
         run: cd modules/post-processing/yolop-lane-detection/ && pytest
 
-  modules-core-eks:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/core/eks/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/eks/ --skip-static-checks
-      - name: PyTest based Unit Tests
-        run: cd modules/core/eks/ && pytest
-
   modules-core-emr-on-eks:
     runs-on: ubuntu-latest
     strategy:
@@ -180,27 +159,6 @@ jobs:
         run: scripts/validate.sh --language python --path modules/core/emr-on-eks/ --skip-static-checks
       - name: PyTest based Unit Tests
         run: cd modules/core/emr-on-eks/ && pytest
-
-  modules-core-aws-batch:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/core/aws-batch/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/aws-batch/
-      - name: PyTest based Unit Tests
-        run: cd modules/core/aws-batch/ && pytest
       
   modules-example-eventbridge-stepfunc-awsbatch:
     runs-on: ubuntu-latest
@@ -286,69 +244,6 @@ jobs:
       - name: PyTest based Unit Tests
         run: cd modules/core/metadata-storage/ && pytest
 
-  modules-core-mwaa:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/core/mwaa/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/mwaa/
-      - name: PyTest based Unit Tests
-        run: cd modules/core/mwaa/ && pytest
-
-  modules-core-neptune:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/core/neptune/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/neptune/
-      - name: PyTest based Unit Tests
-        run: cd modules/core/neptune/ && pytest
-
-  modules-core-opensearch:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/core/opensearch/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/opensearch/
-      - name: PyTest based Unit Tests
-        run: cd modules/core/opensearch/ && pytest
-
   modules-integration-ddb-to-opensearch:
     runs-on: ubuntu-latest
     strategy:
@@ -432,27 +327,6 @@ jobs:
       - name: PyTest based Unit Tests
         run: cd modules/optionals/datalake-buckets/ && pytest
 
-  modules-optionals-networking:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/optionals/networking/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/optionals/networking/
-      - name: PyTest based Unit Tests
-        run: cd modules/optionals/networking/ && pytest
-
   modules-simulations-batch-managed:
     runs-on: ubuntu-latest
     strategy:
@@ -513,27 +387,6 @@ jobs:
         run: scripts/validate.sh --language python --path modules/visualization/dev-instance/ --skip-static-checks
       - name: PyTest based Unit Tests
         run: cd modules/visualization/dev-instance/ && pytest
-
-  modules-core-efs:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/core/efs/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/efs/ --skip-static-checks
-      - name: PyTest based Unit Tests
-        run: cd modules/core/efs/ && pytest
 
   modules-integration-efs-on-eks:
     runs-on: ubuntu-latest
@@ -639,27 +492,6 @@ jobs:
         run: scripts/validate.sh --language python --path modules/workbench/cloud9/
       - name: PyTest based Unit Tests
         run: cd  modules/workbench/cloud9/ && pytest
-
-  modules-core-fsx-lustre:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/core/fsx-lustre/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/core/fsx-lustre/
-      - name: PyTest based Unit Tests
-        run: cd modules/core/fsx-lustre/ && pytest
 
   modules-sagemaker-sagemaker-studio:
     runs-on: ubuntu-latest

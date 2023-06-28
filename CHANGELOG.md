@@ -27,12 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - the way node groups are built by accepting only single instancetypes per asg, encrypting the disks at rest
 - integration with custom CIDR of eks for grabbing IPs from extended VPC CIDR
 - the helm chart values, registries and repo info being loaded from versions files than being hardcoded locally for EKS module
+- updated the manifests files to use `gitpath` and source modules/files from IDF
 
 ### **Removed**
 
 - removing `requirements-dev.txt` for FSx-Lustre module
 - removing MWAA dependencies to `requirements-dev.txt` in analysis, sensor-extraction, simulations modules
-
+- removed modules: networking from `optionals` group, efs, fsx-lustre, aws-batch, eks, neptune, opensearch, mwaa from `core` group and `dockerimages-replication` from `replication` group as they have been replicated to IDF
 
 =======
 ## [V1.2.1] - [6/7/2023]

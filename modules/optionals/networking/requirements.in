@@ -1,3 +1,0 @@
-aws-cdk-lib==2.20.0
-cdk-nag==2.12.29
-constructs==10.0.91
