@@ -24,7 +24,6 @@ deploy:
        - terraform apply -auto-approve -var-file=vars/variables.tfvars
        - terraform output -json > ./tf-exports.json
        - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('tf-exports.json'); print(json.load(file))")
-
 destroy:
   phases:
     install:
