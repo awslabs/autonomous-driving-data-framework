@@ -22,5 +22,5 @@ resource "random_id" "RANDOM_ID" {
 
 module "s3_sample" {
   source        = "./modules/s3"
-  bucket_name = "example-tf-${var.aws_region}-${random_id.RANDOM_ID.hex}"
+  bucket_name = "example-tf-${var.bucket_name}-${var.aws_region}-${random_id.RANDOM_ID.hex}"
 }
