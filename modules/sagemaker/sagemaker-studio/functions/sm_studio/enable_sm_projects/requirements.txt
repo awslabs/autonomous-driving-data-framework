@@ -1,2 +1,0 @@
-cfnresponse
-urllib3<2 # Lock to version before braking change to urllib
