@@ -27,7 +27,7 @@ build==0.7.0
     # via
     #   check-manifest
     #   pyroma
-certifi==2022.12.7
+certifi==2023.7.22
     # via requests
 cfn-lint==0.59.0
     # via -r requirements-dev.in
