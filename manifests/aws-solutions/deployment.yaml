@@ -1,0 +1,23 @@
+name: aws-solutions-wip
+toolchainRegion: us-west-2
+forceDependencyRedeploy: True
+groups:
+  - name: optionals
+    path: manifests/aws-solutions/optional-modules.yaml
+  - name: core
+    path: manifests/aws-solutions/core-modules.yaml
+  - name: docker-images
+    path: manifests/aws-solutions/docker-image-modules.yaml
+  - name: analysis
+    path: manifests/aws-solutions/aws-analysis-modules.yaml
+  # - name: integration
+  #   path: manifests/aws-solutions/integration-modules.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 180024969694
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true

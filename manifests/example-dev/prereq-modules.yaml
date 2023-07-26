@@ -1,9 +1,0 @@
-name: tf-prereqs
-path: modules/examples/example-tf-prereqs/
-parameters:
-  - name: s3-encryption-type
-    value: SSE
-  - name: s3-retention-type
-    value: RETAIN
-  - name: ddb-retention-type
-    value: RETAIN

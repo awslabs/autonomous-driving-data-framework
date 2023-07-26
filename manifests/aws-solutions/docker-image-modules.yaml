@@ -1,12 +1,12 @@
 name: ros-to-parquet
-path: modules/sensor-extraction/ros-to-parquet/
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/sensor-extraction/ros-to-parquet
 parameters:
   - name: platform
     value: FARGATE
   - name: retries
     value: 1
   - name: timeout-seconds
-    value: 3600
+    value: 1800
   - name: vcpus
     value: 2
   - name: memory-mib
@@ -19,18 +19,18 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: ros-to-png
-path: modules/sensor-extraction/ros-to-png/
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/sensor-extraction/ros-to-png
 parameters:
   - name: platform
-    value: EC2
+    value: FARGATE
   - name: retries
     value: 1
   - name: timeout-seconds
-    value: 3600
+    value: 1800
   - name: vcpus
     value: 2
   - name: memory-mib
-    value: 7168
+    value: 8192
   - name: resized-width
     value: 1280
   - name: resized-height
@@ -43,7 +43,7 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: object-detection
-path: modules/post-processing/yolo-object-detection/
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/post-processing/yolo-object-detection
 parameters:
   - name: full-access-policy-arn
     valueFrom:
@@ -53,7 +53,7 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: lane-detection
-path: modules/post-processing/yolop-lane-detection/
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/post-processing/yolop-lane-detection
 parameters:
   - name: full-access-policy-arn
     valueFrom:

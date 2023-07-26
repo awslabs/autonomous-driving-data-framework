@@ -1,0 +1,11 @@
+name: networking
+path: git::codecommit::us-west-2://addf-infra-modules.git//modules/network/basic-cdk
+parameters:
+  - name: internet-accessible
+    value: true
+---
+name: datalake-buckets
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/optionals/datalake-buckets
+parameters:
+  - name: encryption-type
+    value: SSE
