@@ -89,6 +89,12 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: ArtifactsBucketName
+  - name: logs-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: LogsBucketName
   - name: dag-path
     valueFrom:
       moduleMetadata:
