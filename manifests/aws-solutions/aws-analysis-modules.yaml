@@ -1,5 +1,5 @@
-name: rosbag-image-pipeline
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/analysis/rosbag-image-pipeline
+name: rip
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/analysis/rosbag-image-pipeline/?ref=main
 parameters:
   - name: dag-id
     value: vsi_image_pipeline
@@ -125,3 +125,15 @@ parameters:
         group: core
         name: mwaa
         key: MwaaExecRoleArn
+  - name: emr-job-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: emr-serverless
+        key: EmrJobExecutionRoleArn
+  - name: emr-app-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: emr-serverless
+        key: EmrApplicationId
