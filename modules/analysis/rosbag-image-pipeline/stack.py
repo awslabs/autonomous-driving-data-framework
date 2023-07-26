@@ -130,6 +130,31 @@ class AwsBatchPipeline(Stack):
                 effect=iam.Effect.ALLOW,
                 resources=["arn:aws:s3:::addf-*", "arn:aws:s3:::addf-*/*"],
             ),
+            iam.PolicyStatement(
+                actions=[
+                    "emr-serverless:CreateApplication",
+                    "emr-serverless:GetApplication",
+                    "emr-serverless:StartApplication",
+                    "emr-serverless:StopApplication",
+                    "emr-serverless:DeleteApplication",
+                    "emr-serverless:StartJobRun",
+                    "emr-serverless:GetJobRun"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources = ["*"],
+            ),
+            iam.PolicyStatement(
+                actions=[
+                    "iam:PassRole",
+                ],
+                effect=iam.Effect.ALLOW,
+                resources = ["*"],
+                conditions={
+                    "StringLike": {
+                        "iam:PassedToService": "emr-serverless.amazonaws.com"
+                    }
+                },
+            )          
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 
