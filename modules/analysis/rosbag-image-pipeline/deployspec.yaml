@@ -18,7 +18,7 @@ deploy:
       - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> $DAG_DIR/dag_config.py
       - echo "REGION = '${AWS_DEFAULT_REGION}'" >> $DAG_DIR/dag_config.py
       - echo "EMR_JOB_EXECUTION_ROLE = '${ADDF_PARAMETER_EMR_JOB_EXEC_ROLE}'" >> $DAG_DIR/dag_config.py
-      - echo "EMR_APPLICATION_ID = '${AWS_PARAMETER_EMR_APP_ID}'" >> $DAG_DIR/dag_config.py
+      - echo "EMR_APPLICATION_ID = '${ADDF_PARAMETER_EMR_APP_ID}'" >> $DAG_DIR/dag_config.py
       - echo "S3_SCRIPT_DIR = 's3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/$DAG_DIR/'" >> $DAG_DIR/dag_config.py
       - aws s3 cp --recursive $DAG_DIR/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/$DAG_DIR/
 destroy:

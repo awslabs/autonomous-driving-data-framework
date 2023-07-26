@@ -84,10 +84,10 @@ LANEDET_CONCURRENCY = addf_module_metadata["LaneDetectionJobConcurrency"]
 LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
 
 # EMR Config
-spark_app_dir = f"s3://{addf_module_metadata['DagBucketName']}/spark_jobs/"
+# spark_app_dir = f"s3://{addf_module_metadata['DagBucketName']}/spark_jobs/"
 # EMR_VIRTUAL_CLUSTER_ID = addf_module_metadata['EmrVirtualClusterId']
 # EMR_JOB_ROLE_ARN = addf_module_metadata['EmrJobRoleArn']
-ARTIFACT_BUCKET = addf_module_metadata["DagBucketName"]
+# ARTIFACT_BUCKET = addf_module_metadata["DagBucketName"]
 LOGS_BUCKET = addf_module_metadata["LogsBucketName"]
 SCENE_TABLE = addf_module_metadata["DetectionsDynamoDBName"]
 
