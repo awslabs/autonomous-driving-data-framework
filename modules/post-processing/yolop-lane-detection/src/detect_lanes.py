@@ -1,13 +1,9 @@
 import argparse
-import csv
 import json
 import os
-import shutil
 import sys
 import time
 from pathlib import Path
-
-import imageio
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
@@ -15,21 +11,19 @@ sys.path.append(BASE_DIR)
 print(sys.path)
 import cv2
 import numpy as np
-import PIL.Image as image
-import scipy.special
 import torch
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from lib.config import cfg, update_config
 from lib.core.function import AverageMeter
 from lib.core.general import non_max_suppression, scale_coords
-from lib.core.postprocess import connect_lane, morphological_process
 from lib.dataset import LoadImages, LoadStreams
 from lib.models import get_net
 from lib.utils import plot_one_box, show_seg_result
 from lib.utils.utils import create_logger, select_device, time_synchronized
 from numpy import random
 from tqdm import tqdm
+import pandas as pd
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
@@ -39,6 +33,16 @@ transform = transforms.Compose(
         normalize,
     ]
 )
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
+name_lanes = []
 
 
 def detect(cfg, opt):
@@ -161,24 +165,12 @@ def detect(cfg, opt):
         # if dataset.mode == 'images':
         cv2.imwrite(save_path, img_det)
 
-        p = str(opt.save_dir + "/" + Path(path).name)
+        name_lane = [Path(path).name, json.dumps(ll_seg_mask, cls=NumpyEncoder)]
+        name_lanes.append(name_lane)
 
-        n = p.split("/")[-1]
-
-        json_n = f"{n[0:n.rindex('.')]}.json"
-        json_o = os.path.join(opt.json_path, json_n)
-        print(f"Writing json to {json_o}")
-        with open(json_o, "w", encoding="utf-8") as jsonf:
-            json.dump(ll_seg_out.cpu().detach().numpy().tolist(), jsonf)
-
-        fields = ["img_name", "lanes_clean"]
-        csv_n = f"{n[0:n.rindex('.')]}.csv"
-        csv_o = os.path.join(opt.csv_path, csv_n)
-        print(f"Writing csv to {csv_o}")
-        with open(csv_o, "w") as f:
-            write = csv.writer(f)
-            write.writerow(fields)
-            write.writerows([ll_seg_out])
+    df = pd.DataFrame(name_lanes, columns=['source_image',
+                                           'lanes'])
+    df.to_csv(path_or_buf=os.path.join(opt.csv_path, "lanes.csv"), index=False)
 
     print("Results saved to %s" % Path(opt.save_dir))
     print("Done. (%.3fs)" % (time.time() - t0))
