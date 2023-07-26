@@ -11,6 +11,8 @@ deploy:
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
       # - Here we write env values into the dag_config.py file for use by the DAGs
       - export DAG_DIR="image_dags"
+      # TODO move to proper location and update dag with path dynamically
+      - wget -O $DAG_DIR/spark-dynamodb_2.12-1.1.1.jar  https://repo1.maven.org/maven2/com/audienceproject/spark-dynamodb_2.12/1.1.1/spark-dynamodb_2.12-1.1.1.jar
       - echo "ADDF_MODULE_METADATA = '${ADDF_MODULE_METADATA}'" >> $DAG_DIR/dag_config.py
       - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> $DAG_DIR/dag_config.py
       - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> $DAG_DIR/dag_config.py
