@@ -71,6 +71,12 @@ parameters:
         group: optionals
         name: networking
         key: PrivateSubnetIds
+  - name: rosbag-scene-metadata-table
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: metadata-storage
+        key: RosbagSceneMetadataTable
   - name: source-bucket
     valueFrom:
       moduleMetadata:
