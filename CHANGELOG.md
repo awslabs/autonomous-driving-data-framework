@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Changed**
 
 - Improve the existing example-tf module to demonstrate how to use terraform.tfvars file and establish the wiring between root variables.tf, module level variables.tf and vars/terraform.tfvars per env
+- Refactored Rosbag Image pipeline module to include scene detection workflow in the DAG and standardized inputs consumption from external modules
 
 ### **Removed**
 

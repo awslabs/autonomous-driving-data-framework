@@ -17,7 +17,9 @@ mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
-
+dag_bucket_name = os.getenv(_param("DAG_BUCKET_NAME"))
+log_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
+detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
 fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
@@ -99,8 +101,11 @@ CfnOutput(
             "DagId": dag_id,
             "DagRoleArn": stack.dag_role.role_arn,
             "DynamoDbTableName": stack.tracking_table_name,
+            "DetectionsDynamoDBName": detection_ddb_name,
             "SourceBucketName": source_bucket_name,
             "TargetBucketName": target_bucket_name,
+            "DagBucketName": dag_bucket_name,
+            "LogsBucketName": log_bucket_name,
             "OnDemandJobQueueArn": on_demand_job_queue,
             "SpotJobQueueArn": spot_job_queue,
             "FargateJobQueueArn": fargate_job_queue,
