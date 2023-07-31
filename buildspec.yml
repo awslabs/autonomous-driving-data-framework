@@ -3,6 +3,7 @@ version: 0.2
 phases:
   build:
     commands:
+      # CDK Version is defaulted to 2.82.0 if not mentioned using `-c`
       # Rosbag Image Pipeline
       - bash gen-reports.sh -m analysis/rosbag-image-pipeline -c 2.20.0
       # Storage
@@ -13,8 +14,8 @@ phases:
       # Optionals
       - bash gen-reports.sh -m optionals/datalake-buckets
       # Post Processing
-      - bash gen-reports.sh -m post-processing/yolo-object-detection -c 2.20.0
-      - bash gen-reports.sh -m post-processing/yolop-lane-detection -c 2.20.0
+      - bash gen-reports.sh -m post-processing/yolo-object-detection
+      - bash gen-reports.sh -m post-processing/yolop-lane-detection
       # Sensor Extraction
       - bash gen-reports.sh -m sensor-extraction/ros-to-parquet -c 2.70.0 #Breaking changes from 2.82.0
       - bash gen-reports.sh -m sensor-extraction/ros-to-png -c 2.70.0 #Breaking changes from 2.82.0
