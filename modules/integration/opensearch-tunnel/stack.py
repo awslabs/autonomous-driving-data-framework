@@ -66,11 +66,6 @@ class ProxyStack(Stack):
 
         os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id)
 
-        os_security_group.connections.allow_to(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(443),
-            "allow HTTPS traffic to anywhere",
-        )
         os_security_group.connections.allow_from(
             ec2.Peer.any_ipv4(),
             ec2.Port.tcp(443),
@@ -171,10 +166,10 @@ class ProxyStack(Stack):
                 ),
                 NagPackSuppression(
                     **{
-                    "id": "AwsSolutions-EC23",
-                    "reason": "Access is uin a private subnet",
+                        "id": "AwsSolutions-EC23",
+                        "reason": "Access is uin a private subnet",
                     }
-                ),                
+                ),
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-EC28",
