@@ -171,6 +171,12 @@ class ProxyStack(Stack):
                 ),
                 NagPackSuppression(
                     **{
+                    "id": "AwsSolutions-EC23",
+                    "reason": "Access is uin a private subnet",
+                    }
+                ),                
+                NagPackSuppression(
+                    **{
                         "id": "AwsSolutions-EC28",
                         "reason": "Detailed Monitoring not enabled as this is a simple tunnel",
                     }
