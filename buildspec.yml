@@ -4,20 +4,20 @@ phases:
   build:
     commands:
       # Rosbag Image Pipeline
-      - bash gen-reports.sh -m analysis/rosbag-image-pipeline
+      - bash gen-reports.sh -m analysis/rosbag-image-pipeline -c 2.20.0
       # Storage
-      - bash gen-reports.sh -m core/metadata-storage
+      - bash gen-reports.sh -m core/metadata-storage -c 2.20.0
       # Integration
-      - bash gen-reports.sh -m integration/ddb-to-opensearch
+      - bash gen-reports.sh -m integration/ddb-to-opensearch -c 2.20.0
       - bash gen-reports.sh -m integration/opensearch-tunnel
       # Optionals
       - bash gen-reports.sh -m optionals/datalake-buckets
       # Post Processing
-      - bash gen-reports.sh -m post-processing/yolo-object-detection
-      - bash gen-reports.sh -m post-processing/yolop-lane-detection
+      - bash gen-reports.sh -m post-processing/yolo-object-detection -c 2.20.0
+      - bash gen-reports.sh -m post-processing/yolop-lane-detection -c 2.20.0
       # Sensor Extraction
-      - bash gen-reports.sh -m sensor-extraction/ros-to-parquet
-      - bash gen-reports.sh -m sensor-extraction/ros-to-png
+      - bash gen-reports.sh -m sensor-extraction/ros-to-parquet -c 2.20.0
+      - bash gen-reports.sh -m sensor-extraction/ros-to-png -c 2.20.0
   post_build:
     commands:
       - echo Build completed on `date`
