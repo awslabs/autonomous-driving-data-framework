@@ -5,11 +5,11 @@ phases:
     commands:
       # CDK Version is defaulted to 2.82.0 if not mentioned using `-c`
       # Rosbag Image Pipeline
-      - bash gen-reports.sh -m analysis/rosbag-image-pipeline -c 2.20.0
+      - bash gen-reports.sh -m analysis/rosbag-image-pipeline
       # Storage
-      - bash gen-reports.sh -m core/metadata-storage -c 2.20.0
+      - bash gen-reports.sh -m core/metadata-storage
       # Integration
-      - bash gen-reports.sh -m integration/ddb-to-opensearch -c 2.20.0
+      - bash gen-reports.sh -m integration/ddb-to-opensearch
       - bash gen-reports.sh -m integration/opensearch-tunnel
       # Optionals
       - bash gen-reports.sh -m optionals/datalake-buckets
