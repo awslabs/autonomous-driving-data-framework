@@ -3,7 +3,7 @@ import os
 import aws_cdk
 from aws_cdk import App, CfnOutput
 
-from stack import ProxyStack
+from stack import TunnelStack
 
 account = os.environ["CDK_DEFAULT_ACCOUNT"]
 region = os.environ["CDK_DEFAULT_REGION"]
@@ -31,7 +31,7 @@ install_script = os.path.join(project_dir, "install_nginx.sh")
 
 app = App()
 
-stack = ProxyStack(
+stack = TunnelStack(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
     env=aws_cdk.Environment(
@@ -52,9 +52,9 @@ CfnOutput(
     id="metadata",
     value=stack.to_json_string(
         {
-            "OpenSearchProxyInstanceId": stack.instance_id,
-            "OpenSearchProxyUrl": stack.dashboard_url,
-            "OpenSearchProxyPort": port,
+            "OpenSearchTunnelInstanceId": stack.instance_id,
+            "OpenSearchTunnelUrl": stack.dashboard_url,
+            "OpenSearchTunnelPort": port,
             "SampleSSMCommand": stack.command,
         }
     ),

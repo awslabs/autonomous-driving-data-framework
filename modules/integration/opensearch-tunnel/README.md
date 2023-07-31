@@ -29,9 +29,9 @@ The [AWS SSM Plugin for AWS CLI](https://docs.aws.amazon.com/systems-manager/lat
 
 
 ### Module Metadata Outputs
-- `OpenSearchProxyDNS`: the public DNS of the instance
-- `OpenSearchProxyIP`: the public IP of the instance
-- `OpenSearchProxyUrl`: the URL of the dashboard this server is proxying
+- `OpenSearchTunnelDNS`: the public DNS of the instance
+- `OpenSearchTunnelIP`: the public IP of the instance
+- `OpenSearchTunnelUrl`: the URL of the dashboard this server is proxying
 - `SampleSSMCommand` an example command to execute the tunnel to the EC2 instance 
   - NOTE: the `--parameters` command will have to be altered to properly implement quotes around the values (ie. remove the escaping backslashes `\`)
 
@@ -39,9 +39,9 @@ The [AWS SSM Plugin for AWS CLI](https://docs.aws.amazon.com/systems-manager/lat
 #### Output Example
 ```json
 {
-  "OpenSearchProxyInstanceId": "i-0347c41eb54ced515",
-  "OpenSearchProxyUrl": "http://localhost:3333/_dashboards/",
-  "OpenSearchProxyPort": 3333,
+  "OpenSearchTunnelInstanceId": "i-0347c41eb54ced515",
+  "OpenSearchTunnelUrl": "http://localhost:3333/_dashboards/",
+  "OpenSearchTunnelPort": 3333,
   "SampleSSMCommand": "aws ssm start-session --target i-0347c41eb54ced515 --document-name AWS-StartPortForwardingSession --parameters '{\"portNumber\": [\"3333\"], \"localPortNumber\": [\"3333\"]}'"
 }
 

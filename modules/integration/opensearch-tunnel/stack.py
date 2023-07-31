@@ -28,7 +28,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class ProxyStack(Stack):
+class TunnelStack(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -121,8 +121,14 @@ class ProxyStack(Stack):
             machine_image=amzn_linux,
             vpc=self.vpc,
             security_group=os_security_group,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             role=os_tunnel_role,
+            block_devices=[ec2.BlockDevice(
+                            device_name="EC2TunnelHost",
+                            volume=ec2.BlockDeviceVolume.ebs(10,
+                                encrypted=True
+                            )
+                        )]
         )
 
         asset = Asset(self, "Asset", path=install_script)
