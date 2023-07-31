@@ -6,7 +6,8 @@ export PORT=$2
 echo $OS_E
 echo $PORT 
 
-sudo amazon-linux-extras install nginx1
+#sudo amazon-linux-extras install nginx1
+sudo yum install -y nginx
 sudo systemctl enable nginx
 
 # Leaving this here in case someone wants to use a non-AL image

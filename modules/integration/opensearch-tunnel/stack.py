@@ -66,18 +66,9 @@ class ProxyStack(Stack):
 
         os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id)
 
-        os_security_group.connections.allow_from(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(443),
-            "allow HTTPS traffic from anywhere",
-        )
-
         # AMI
-        amzn_linux = ec2.MachineImage.latest_amazon_linux(
-            generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2,
+        amzn_linux = ec2.MachineImage.latest_amazon_linux2023(
             edition=ec2.AmazonLinuxEdition.STANDARD,
-            virtualization=ec2.AmazonLinuxVirt.HVM,
-            storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE,
         )
 
         os_tunnel_document = iam.PolicyDocument(
@@ -124,7 +115,7 @@ class ProxyStack(Stack):
             machine_image=amzn_linux,
             vpc=self.vpc,
             security_group=os_security_group,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             role=os_tunnel_role,
         )
 
