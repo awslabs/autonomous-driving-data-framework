@@ -16,7 +16,7 @@ aws-cdk-asset-node-proxy-agent-v5==2.0.166
     # via aws-cdk-lib
 aws-cdk-aws-batch-alpha==2.70.0-alpha.0
     # via -r requirements.in
-aws-cdk-lib==2.82.0
+aws-cdk-lib==2.70.0
     # via
     #   -r requirements.in
     #   aws-cdk-aws-batch-alpha
