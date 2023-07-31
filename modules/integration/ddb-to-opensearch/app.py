@@ -18,10 +18,10 @@ vpc_id = os.getenv(_param("VPC_ID"))  # required
 private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # type: ignore
 
 if not vpc_id:
-    raise Exception("missing input parameter vpc-id")
+    raise ValueError("missing input parameter vpc-id")
 
 if not private_subnet_ids:
-    raise Exception("missing input parameter private-subnet-ids")
+    raise ValueError("missing input parameter private-subnet-ids")
 
 opensearch_sg_id = os.getenv(_param("OPENSEARCH_SG_ID"), "")
 opensearch_domain_name = os.getenv(_param("OPENSEARCH_DOMAIN_NAME"), "")

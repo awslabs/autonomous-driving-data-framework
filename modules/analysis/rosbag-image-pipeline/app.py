@@ -43,25 +43,25 @@ sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
 
 
 if not png_batch_job_def_arn:
-    raise Exception("missing input parameter png-batch-job-def-arn")
+    raise ValueError("missing input parameter png-batch-job-def-arn")
 
 if not parquet_batch_job_def_arn:
-    raise Exception("missing input parameter parquet-batch-job-def-arn")
+    raise ValueError("missing input parameter parquet-batch-job-def-arn")
 
 if not object_detection_role:
-    raise Exception("missing input parameter object-detection-iam-role")
+    raise ValueError("missing input parameter object-detection-iam-role")
 
 if not object_detection_image_uri:
-    raise Exception("missing input parameter object-detection-image-uri")
+    raise ValueError("missing input parameter object-detection-image-uri")
 
 if not lane_detection_role:
-    raise Exception("missing input parameter lane-detection-iam-role")
+    raise ValueError("missing input parameter lane-detection-iam-role")
 
 if not lane_detection_image_uri:
-    raise Exception("missing input parameter lane-detection-image-uri")
+    raise ValueError("missing input parameter lane-detection-image-uri")
 
 if not vpc_id:
-    raise Exception("missing input parameter vpc-id")
+    raise ValueError("missing input parameter vpc-id")
 
 if not mwaa_exec_role:
     raise ValueError("MWAA Execution Role is missing.")

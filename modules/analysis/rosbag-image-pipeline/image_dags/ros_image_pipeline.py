@@ -33,11 +33,11 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.providers.amazon.aws.operators.emr_containers import EMRContainerOperator
 from airflow.providers.amazon.aws.sensors.emr_containers import EMRContainerSensor
-from emr_serverless.operators.emr import EmrServerlessStartJobOperator
-from emr_serverless.sensors.emr import EmrServerlessJobSensor
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
+from emr_serverless.operators.emr import EmrServerlessStartJobOperator
+from emr_serverless.sensors.emr import EmrServerlessJobSensor
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -46,11 +46,11 @@ from batch_creation_and_tracking import add_drives_to_batch
 from dag_config import (
     ADDF_MODULE_METADATA,
     DEPLOYMENT_NAME,
+    EMR_APPLICATION_ID,
+    EMR_JOB_EXECUTION_ROLE,
     MODULE_NAME,
     REGION,
-    EMR_JOB_EXECUTION_ROLE,
-    EMR_APPLICATION_ID,
-    S3_SCRIPT_DIR
+    S3_SCRIPT_DIR,
 )
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
@@ -93,11 +93,8 @@ SCENE_TABLE = addf_module_metadata["DetectionsDynamoDBName"]
 
 CONFIGURATION_OVERRIDES = {
     "monitoringConfiguration": {
-        "managedPersistenceMonitoringConfiguration": {
-            "enabled": True
-        },
-        "s3MonitoringConfiguration": {
-            "logUri": f"s3://{LOGS_BUCKET}/scene-detection"},
+        "managedPersistenceMonitoringConfiguration": {"enabled": True},
+        "s3MonitoringConfiguration": {"logUri": f"s3://{LOGS_BUCKET}/scene-detection"},
     }
 }
 
@@ -145,7 +142,7 @@ def validate_config(drives_to_process):
     for k, v in drives_to_process.items():
         assert isinstance(k, str), f"expecting config to be like {example_input}, received: {drives_to_process}"
         assert (
-                "bucket" in v.keys() and "prefix" in v.keys()
+            "bucket" in v.keys() and "prefix" in v.keys()
         ), f"expecting config to be like {example_input}, received: {drives_to_process}"
         assert v["prefix"][-1] == "/"
 
@@ -449,13 +446,18 @@ def emr_batch_operation(**kwargs):
         "sparkSubmit": {
             "entryPoint": f"{S3_SCRIPT_DIR}detect_scenes.py",
             "entryPointArguments": [
-                "--batch-metadata-table-name", DYNAMODB_TABLE,
-                "--batch-id", batch_id,
-                "--output-bucket", TARGET_BUCKET,
-                "--region", REGION,
-                "--output-dynamo-table", SCENE_TABLE
+                "--batch-metadata-table-name",
+                DYNAMODB_TABLE,
+                "--batch-id",
+                batch_id,
+                "--output-bucket",
+                TARGET_BUCKET,
+                "--region",
+                REGION,
+                "--output-dynamo-table",
+                SCENE_TABLE,
             ],
-            "sparkSubmitParameters": f"--jars {S3_SCRIPT_DIR}spark-dynamodb_2.12-1.1.1.jar"
+            "sparkSubmitParameters": f"--jars {S3_SCRIPT_DIR}spark-dynamodb_2.12-1.1.1.jar",
         }
     }
 
@@ -473,12 +475,12 @@ def emr_batch_operation(**kwargs):
 
 
 with DAG(
-        dag_id=DAG_ID,
-        default_args=DEFAULT_ARGS,
-        dagrun_timeout=timedelta(hours=2),
-        start_date=days_ago(1),  # type: ignore
-        schedule_interval="@once",
-        render_template_as_native_obj=True,
+    dag_id=DAG_ID,
+    default_args=DEFAULT_ARGS,
+    dagrun_timeout=timedelta(hours=2),
+    start_date=days_ago(1),  # type: ignore
+    schedule_interval="@once",
+    render_template_as_native_obj=True,
 ) as dag:
     create_aws_conn = PythonOperator(
         task_id="try-create-aws-conn",
