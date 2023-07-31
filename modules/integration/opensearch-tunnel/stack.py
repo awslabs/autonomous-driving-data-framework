@@ -71,6 +71,11 @@ class ProxyStack(Stack):
             ec2.Port.tcp(443),
             "allow HTTPS traffic to anywhere",
         )
+        os_security_group.connections.allow_from(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(443),
+            "allow HTTPS traffic from anywhere",
+        )
 
         # AMI
         amzn_linux = ec2.MachineImage.latest_amazon_linux2023(
