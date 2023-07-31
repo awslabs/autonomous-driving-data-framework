@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      # Rosbag Image Pipeline
+      - bash gen-reports.sh -m analysis/rosbag-image-pipeline
+      # Storage
+      - bash gen-reports.sh -m core/metadata-storage
+      # Integration
+      - bash gen-reports.sh -m integration/ddb-to-opensearch
+      - bash gen-reports.sh -m integration/opensearch-tunnel
+      # Optionals
+      - bash gen-reports.sh -m optionals/datalake-buckets
+      # Post Processing
+      - bash gen-reports.sh -m post-processing/yolo-object-detection
+      - bash gen-reports.sh -m post-processing/yolop-lane-detection
+      # Sensor Extraction
+      - bash gen-reports.sh -m sensor-extraction/ros-to-parquet
+      - bash gen-reports.sh -m sensor-extraction/ros-to-png
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  files:
+    - '**/*'
