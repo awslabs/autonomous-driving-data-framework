@@ -1,5 +1,5 @@
-name: opensearch-proxy
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/demo-only/opensearch-proxy/?ref=release/2.0.0
+name: opensearch-tunnel
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/integration/opensearch-tunnel?ref=main
 parameters:
   - name: opensearch-domain-endpoint
     valueFrom:
@@ -19,11 +19,11 @@ parameters:
         group: optionals
         name: networking
         key: VpcId
-  - name: secrets-manager-name
-    value: opensearch-proxy-credentials
+  - name: port
+    value: '3333'
 ---
 name: rosbag-ddb-to-os
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/ddb-to-opensearch/?ref=release/2.0.0
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/integration/ddb-to-opensearch?ref=main
 parameters:
   - name: opensearch-domain-name
     valueFrom:
