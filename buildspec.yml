@@ -16,8 +16,8 @@ phases:
       - bash gen-reports.sh -m post-processing/yolo-object-detection -c 2.20.0
       - bash gen-reports.sh -m post-processing/yolop-lane-detection -c 2.20.0
       # Sensor Extraction
-      - bash gen-reports.sh -m sensor-extraction/ros-to-parquet -c 2.20.0
-      - bash gen-reports.sh -m sensor-extraction/ros-to-png -c 2.20.0
+      - bash gen-reports.sh -m sensor-extraction/ros-to-parquet -c 2.70.0 #Breaking changes from 2.82.0
+      - bash gen-reports.sh -m sensor-extraction/ros-to-png -c 2.70.0 #Breaking changes from 2.82.0
   post_build:
     commands:
       - echo Build completed on `date`
