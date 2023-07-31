@@ -121,7 +121,7 @@ class ProxyStack(Stack):
             machine_image=amzn_linux,
             vpc=self.vpc,
             security_group=os_security_group,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
             role=os_tunnel_role,
         )
 
