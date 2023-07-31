@@ -66,6 +66,12 @@ class ProxyStack(Stack):
 
         os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id)
 
+        os_security_group.connections.allow_to(
+            ec2.Peer.any_ipv4(),
+            ec2.Port.tcp(443),
+            "allow HTTPS traffic to anywhere",
+        )
+
         # AMI
         amzn_linux = ec2.MachineImage.latest_amazon_linux2023(
             edition=ec2.AmazonLinuxEdition.STANDARD,
