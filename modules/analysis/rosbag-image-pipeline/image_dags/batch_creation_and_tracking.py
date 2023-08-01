@@ -45,7 +45,6 @@ def add_drives_to_batch(
     files_in_batch = 0
     for drive_id, s3_path in drives_to_process.items():
         files = get_drive_files(
-            drive_id=drive_id,
             src_bucket=s3_path["bucket"],
             src_prefix=s3_path["prefix"],
             file_suffix=file_suffix,

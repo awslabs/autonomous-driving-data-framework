@@ -6,7 +6,7 @@ import torch
 from pandas import concat
 
 
-def get_yolov5_prediction(model, image, input_data_path, input_size=1280, confidence=0.25, iou=0.45):
+def get_yolov5_prediction(model, image, input_data_path, _input_size=1280, confidence=0.25, iou=0.45):
 
     model.conf = confidence  # NMS confidence threshold
     model.iou = iou  # NMS IoU threshold

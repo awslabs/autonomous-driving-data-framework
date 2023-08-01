@@ -255,7 +255,6 @@ if __name__ == "__main__":
     arguments = parse_arguments(sys.argv[1:])
     batch_metadata_table_name = arguments.batch_metadata_table_name
     batch_id = arguments.batch_id
-    # input_bucket = arguments.input_bucket
     output_bucket = arguments.output_bucket
     output_dynamo_table = arguments.output_dynamo_table
     region = arguments.region
