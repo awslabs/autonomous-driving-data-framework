@@ -53,7 +53,7 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: lane-detection
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/post-processing/yolo-object-detection
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/post-processing/yolop-lane-detection
 parameters:
   - name: full-access-policy-arn
     valueFrom:
