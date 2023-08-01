@@ -1,3 +1,4 @@
+import json
 import os
 
 from aws_cdk import App, CfnOutput, Environment
@@ -91,7 +92,6 @@ stack = AwsBatchPipeline(
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
 )
-import json
 
 CfnOutput(
     scope=stack,

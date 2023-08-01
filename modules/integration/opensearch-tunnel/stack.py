@@ -137,7 +137,6 @@ class TunnelStack(Stack):
         asset.grant_read(instance.role)
 
         self.instance_id = instance.instance_id
-        # self.instance_dns = instance.instance_public_dns_name
         url = f"http://localhost:{port}/_dashboards/"
         self.dashboard_url = url
 

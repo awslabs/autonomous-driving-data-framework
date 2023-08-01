@@ -191,7 +191,6 @@ def extract_images(bag_path, topic, resized_width, resized_height, encoding, ima
             all_files += bag_obj.files
             logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
 
-        # video_file = VideoFromBag(topic, images_path)
     except rospy.ROSInterruptException:
         pass
     return all_files
@@ -222,7 +221,7 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
     logger.info("Item Pulled: %s", item)
 
     if not item:
-        raise Exception(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
+        raise ValueError(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
 
     drive_id = item["drive_id"]
     file_id = item["file_id"]

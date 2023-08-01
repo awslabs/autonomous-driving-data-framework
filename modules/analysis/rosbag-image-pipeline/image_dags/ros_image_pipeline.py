@@ -203,7 +203,7 @@ def create_batch_of_drives(ti, **kwargs):
 
 
 def get_job_name(suffix="") -> str:
-    v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
+    v = "".join(random.choice(string.ascii_lowercase) for _i in range(6))
     return f"ros-image-pipeline-{suffix}-{v}"
 
 
@@ -462,7 +462,7 @@ def emr_batch_operation(**kwargs):
     }
 
     start_job_run_op = EmrServerlessStartJobOperator(
-        task_id=f"scene_detection",
+        task_id="scene_detection",
         application_id=EMR_APPLICATION_ID,
         execution_role_arn=EMR_JOB_EXECUTION_ROLE,
         job_driver=JOB_DRIVER,

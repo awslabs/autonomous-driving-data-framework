@@ -22,18 +22,18 @@ def get_url():
     return f"https://{host}/{index}-{ts}/{type}/"
 
 
-def handler(event, context):
+def handler(event, _context):
     count = 0
     for record in event["Records"]:
-        id = record["dynamodb"]["Keys"]["scene_id"]["S"]
-        if not record["eventName"] == "REMOVE":
+        id_p = record["dynamodb"]["Keys"]["scene_id"]["S"]
+        if record["eventName"] != "REMOVE":
             doc = {}
-            doc["scene_id"] = id
+            doc["scene_id"] = id_p
             doc["bag_file"] = record["dynamodb"]["Keys"]["bag_file"]["S"]
             document = record["dynamodb"]["NewImage"]
             for key, value in document.items():
                 for param, val in value.items():
                     doc[key] = val
-            _ = requests.put(get_url() + id, auth=awsauth, json=doc, headers=headers)
+            _ = requests.put(get_url() + id_p, auth=awsauth, json=doc, headers=headers)
         count += 1
     return str(count) + " records processed."

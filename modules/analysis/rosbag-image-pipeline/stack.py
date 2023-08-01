@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, Sequence, cast
+from typing import Any, List, cast
 
 import aws_cdk.aws_iam as iam
 import cdk_nag
@@ -38,8 +38,8 @@ class AwsBatchPipeline(Stack):
         bucket_access_policy: str,
         object_detection_role: str,
         lane_detection_role: str,
-        job_queues: Sequence[str],
-        job_definitions: Sequence[str],
+        job_queues: List[str],
+        job_definitions: List[str],
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -102,11 +102,7 @@ class AwsBatchPipeline(Stack):
                     "batch:TagResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=job_queues
-                + job_definitions
-                + [
-                    f"arn:aws:batch:{self.region}:{self.account}:job/*",
-                ],
+                resources=[*job_queues, *job_definitions, f"arn:aws:batch:{self.region}:{self.account}:job/*"],
             ),
             iam.PolicyStatement(
                 actions=[

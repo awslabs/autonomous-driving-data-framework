@@ -60,7 +60,7 @@ def add_drives_to_batch(
     return files_in_batch
 
 
-def get_drive_files(drive_id, src_bucket, src_prefix, file_suffix, s3_client):
+def get_drive_files(src_bucket, src_prefix, file_suffix, s3_client):
     """For a given bucket, prefix, and suffix, lists all files found on S3 and returns a list of the files
 
     @param drive_id:

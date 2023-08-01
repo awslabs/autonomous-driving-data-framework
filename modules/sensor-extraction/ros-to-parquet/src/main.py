@@ -140,7 +140,7 @@ def main(table_name, index, batch_id, topics, target_bucket) -> int:
     logger.info("Item Pulled: %s", item)
 
     if not item:
-        raise Exception(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
+        raise ValueError(f"pk: {batch_id} sk: {index} not existing in table: {table_name}")
 
     drive_id = item["drive_id"]
     file_id = item["file_id"]
