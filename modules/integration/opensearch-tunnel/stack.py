@@ -64,7 +64,7 @@ class TunnelStack(Stack):
             vpc_id=vpc_id,
         )
 
-        os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id)
+        os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id, allow_all_outbound=True)
 
         os_security_group.connections.allow_from(
             ec2.Peer.any_ipv4(),
