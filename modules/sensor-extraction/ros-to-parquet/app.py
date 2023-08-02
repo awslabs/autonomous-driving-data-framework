@@ -22,6 +22,10 @@ if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
 
 
+if platform not in ["FARGATE", "EC2"]:
+    raise ValueError("Platform must be either FARGATE or EC2")
+
+
 app = App()
 
 stack = RosToParquetBatchJob(

@@ -20,9 +20,11 @@ import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
-from aws_cdk import Duration, Stack, Tags
+import cdk_nag
+from aws_cdk import Aspects, Duration, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -50,9 +52,6 @@ class RosToParquetBatchJob(Stack):
             description="(SO9154) Autonomous Driving Data Framework (ADDF) - ros-to-parquet",
             **kwargs,
         )
-
-        if platform not in ["FARGATE", "EC2"]:
-            raise ValueError
 
         Tags.of(scope=cast(IConstruct, self)).add(
             key="Deployment",
@@ -133,4 +132,25 @@ class RosToParquetBatchJob(Stack):
             ],
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),
+        )
+
+        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
+
+        NagSuppressions.add_stack_suppressions(
+            self,
+            apply_to_nested_stacks=True,
+            suppressions=[
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM4",
+                        "reason": "Managed Policies are for service account roles only",
+                    }
+                ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM5",
+                        "reason": "Resource access restriced to ADDF resources",
+                    }
+                ),
+            ],
         )
