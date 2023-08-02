@@ -64,12 +64,12 @@ class TunnelStack(Stack):
             vpc_id=vpc_id,
         )
 
-        os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id, allow_all_outbound=True)
+        os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id)
 
         os_security_group.connections.allow_from(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(443),
-            "allow HTTPS traffic from anywhere",
+            ec2.Peer.ipv4(cidr_ip=self.vpc.vpc_cidr_block),
+            ec2.Port.all_traffic(),
+            "allow all traffic from VPC CIDR",
         )
 
         # AMI

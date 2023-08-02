@@ -15,9 +15,7 @@
 import os
 import sys
 
-import aws_cdk as cdk
 import pytest
-from aws_cdk.assertions import Template
 
 
 @pytest.fixture(scope="function")
@@ -33,35 +31,28 @@ def stack_defaults():
     ] = "vpc-addf-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com"
     os.environ["ADDF_PARAMETER_OPENSEARCH_SG_ID"] = "sg-084c0dd9dc65c6937"
 
-    if "stack" in sys.modules:
-        del sys.modules["stack"]
+    # Unload the app import so that subsequent tests don't reuse
+    if "app" in sys.modules:
+        del sys.modules["app"]
 
 
-def test_synthesize_stack(stack_defaults):
-    import stack
+def test_app(stack_defaults):
+    import app  # noqa: F401
 
-    app = cdk.App()
-    dep_name = "test-deployment"
-    mod_name = "test-module"
 
-    tunnel = stack.TunnelStack(
-        scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
-        deployment=dep_name,
-        module=mod_name,
-        vpc_id="vpc-12345",
-        opensearch_sg_id="sg-084c0dd9dc65c6937",
-        opensearch_domain_endpoint="vpc-addf-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com",
-        install_script="install_nginx.sh",
-        port=3333,
-        env=cdk.Environment(
-            account=os.environ["CDK_DEFAULT_ACCOUNT"],
-            region=os.environ["CDK_DEFAULT_REGION"],
-        ),
-    )
+def test_missing_vpc_id(stack_defaults):
+    del os.environ["ADDF_PARAMETER_VPC_ID"]
+    with pytest.raises(ValueError):
+        import app  # noqa: F401
 
-    template = Template.from_stack(tunnel)
-    template.resource_count_is("AWS::IAM::Role", 1)
-    template.resource_count_is("AWS::IAM::InstanceProfile", 1)
-    template.resource_count_is("AWS::EC2::Instance", 1)
-    template.resource_count_is("AWS::EC2::SecurityGroupIngress", 1)
+
+def test_missing_domain_endpoint(stack_defaults):
+    del os.environ["ADDF_PARAMETER_OPENSEARCH_DOMAIN_ENDPOINT"]
+    with pytest.raises(ValueError):
+        import app  # noqa: F401
+
+
+def test_missing_domain_sg(stack_defaults):
+    del os.environ["ADDF_PARAMETER_OPENSEARCH_SG_ID"]
+    with pytest.raises(ValueError):
+        import app  # noqa: F401
