@@ -20,10 +20,10 @@ resized_width = os.getenv(_param("RESIZED_WIDTH"))
 resized_height = os.getenv(_param("RESIZED_HEIGHT"))
 
 if resized_width:
-    resized_width = int(resized_width)
+    resized_width = int(resized_width)  # type: ignore
 
 if resized_height:
-    resized_height = int(resized_height)
+    resized_height = int(resized_height)  # type: ignore
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
@@ -44,8 +44,8 @@ stack = RosToPngBatchJob(
     vcpus=vcpus,
     memory_limit_mib=memory_limit_mib,
     s3_access_policy=full_access_policy,
-    resized_width=resized_width,
-    resized_height=resized_height,
+    resized_width=resized_width,  # type: ignore
+    resized_height=resized_height,  # type: ignore
 )
 
 CfnOutput(
