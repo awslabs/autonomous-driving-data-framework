@@ -388,3 +388,6 @@ seedfarmer.gitmodules*
 
 # terraform
 .terraform*
+
+# integration testing
+*/*/integ/deployment.yaml
