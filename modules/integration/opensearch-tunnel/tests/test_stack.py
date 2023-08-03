@@ -44,6 +44,9 @@ def test_synthesize_stack(stack_defaults):
     dep_name = "test-deployment"
     mod_name = "test-module"
 
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    install_script = os.path.join(project_dir, "..","install_nginx.sh")
+
     tunnel = stack.TunnelStack(
         scope=app,
         id=f"addf-{dep_name}-{mod_name}",
@@ -52,7 +55,7 @@ def test_synthesize_stack(stack_defaults):
         vpc_id="vpc-12345",
         opensearch_sg_id="sg-084c0dd9dc65c6937",
         opensearch_domain_endpoint="vpc-addf-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com",
-        install_script="install_nginx.sh",
+        install_script=install_script,
         port=3333,
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
