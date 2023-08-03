@@ -1,16 +1,17 @@
 import sys
 import yaml
 
-if len(sys.argv) != 4:
+if len(sys.argv) != 5:
     print(
-        "Usage: python manifest-update.py [TOOLCHAIN REGION] [TARGET REGION] [TARGET ACCOUNT]"
+        "Usage: python manifest-update.py [MANIFEST PATH][TOOLCHAIN REGION] [TARGET REGION] [TARGET ACCOUNT]"
     )
     exit(1)
 
-toolchain_region = sys.argv[1]
-target_region = sys.argv[2]
-target_account = sys.argv[3]
-with open("idf-modules.yaml", "r") as file:
+manifest_path = sys.argv[1]
+toolchain_region = sys.argv[2]
+target_region = sys.argv[3]
+target_account = sys.argv[4]
+with open(manifest_path, "r") as file:
     data = yaml.safe_load(file)
 
 data["toolchainRegion"] = toolchain_region
