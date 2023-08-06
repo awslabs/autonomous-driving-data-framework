@@ -5,7 +5,7 @@ import boto3
 import pyspark.sql.functions as func
 from pyspark.sql import SparkSession, Window
 from pyspark.sql.functions import aggregate, col, collect_list, concat, count, first, from_json, lit, split, sum
-from pyspark.sql.types import *
+from pyspark.sql.types import StructType, StructField, IntegerType, DoubleType, StringType, ArrayType, 
 
 obj_schema = StructType(
     [
