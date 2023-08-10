@@ -49,7 +49,9 @@ class LaneDetection(Stack):
         dep_mod = f"addf-{deployment_name}-{module_name}"
 
         self.repository_name = dep_mod
-        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name, removal_policy=removal_policy)
+        repo = ecr.Repository(
+            self, id=self.repository_name, repository_name=self.repository_name, removal_policy=removal_policy
+        )
         self.image_uri = f"{repo.repository_uri}:smprocessor"
 
         policy_statements = [
