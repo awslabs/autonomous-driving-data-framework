@@ -30,7 +30,7 @@ stack = LaneDetection(
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
     s3_access_policy=full_access_policy,
-    removal_policy=removal_policy,
+    removal_policy=RemovalPolicy.DESTROY if removal_policy.upper() == "DESTROY" else None,
 )
 
 
