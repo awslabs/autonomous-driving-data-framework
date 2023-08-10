@@ -17,7 +17,7 @@ from typing import Any, cast
 
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_iam as iam
-from aws_cdk import Duration, Stack, Tags
+from aws_cdk import Duration, RemovalPolicy, Stack, Tags
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ class LaneDetection(Stack):
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
+        removal_policy: RemovalPolicy = RemovalPolicy.RETAIN,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -48,7 +49,7 @@ class LaneDetection(Stack):
         dep_mod = f"addf-{deployment_name}-{module_name}"
 
         self.repository_name = dep_mod
-        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
+        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name, removal_policy=removal_policy)
         self.image_uri = f"{repo.repository_uri}:smprocessor"
 
         policy_statements = [
