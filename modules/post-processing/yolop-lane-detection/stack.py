@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 import logging
-from typing import Any, cast
+from typing import Any, Optional, cast
 
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_iam as iam
@@ -32,7 +32,7 @@ class LaneDetection(Stack):
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
-        removal_policy: RemovalPolicy = RemovalPolicy.RETAIN,
+        removal_policy: Optional[RemovalPolicy] = RemovalPolicy.RETAIN,
         **kwargs: Any,
     ) -> None:
         super().__init__(
