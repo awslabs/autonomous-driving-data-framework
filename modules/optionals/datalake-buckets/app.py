@@ -10,6 +10,18 @@ deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
 module_name = os.getenv("ADDF_MODULE_NAME", "")
 hash = os.getenv("ADDF_HASH", "")
 
+# App Env vars
+buckets_encryption_type = os.getenv("ADDF_PARAMETER_ENCRYPTION_TYPE", "SSE")
+buckets_retention = os.getenv("ADDF_PARAMETER_RETENTION_TYPE", "DESTROY")
+
+if buckets_retention not in ["DESTROY", "RETAIN"]:
+    raise ValueError("The only RETENTION_TYPE values accepted are 'DESTROY' and 'RETAIN' ")
+
+
+if buckets_encryption_type not in ["SSE", "KMS"]:
+    raise ValueError("The only ENCRYPTION_TYPE values accepted are 'SSE' and 'KMS' ")
+
+
 app = App()
 
 
@@ -19,6 +31,8 @@ stack = DataLakeBucketsStack(
     deployment_name=deployment_name,
     module_name=module_name,
     hash=hash,
+    buckets_encryption_type=buckets_encryption_type,
+    buckets_retention=buckets_retention,
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

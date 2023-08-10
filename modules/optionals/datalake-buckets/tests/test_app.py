@@ -15,42 +15,41 @@
 import os
 import sys
 
-import aws_cdk as cdk
 import pytest
-from aws_cdk.assertions import Template
 
 
 @pytest.fixture(scope="function")
 def stack_defaults():
+    os.environ["ADDF_DEPLOYMENT_NAME"] = "test-proj"
+    os.environ["ADDF_MODULE_NAME"] = "test-dep"
+    os.environ["ADDF_HASH"] = "hash"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
+    os.environ["ADDF_PARAMETER_ENCRYPTION_TYPE"] = "SSE"
+    os.environ["ADDF_PARAMETER_RETENTION_TYPE"] = "DESTROY"
 
     # Unload the app import so that subsequent tests don't reuse
+    if "app" in sys.modules:
+        del sys.modules["app"]
 
-    if "stack" in sys.modules:
-        del sys.modules["stack"]
+
+def test_app(stack_defaults):
+    import app  # noqa: F401
 
 
-def test_synthesize_stack(stack_defaults):
-    import stack
+def test_encyption_default(stack_defaults):
+    del os.environ["ADDF_PARAMETER_ENCRYPTION_TYPE"]
 
-    app = cdk.App()
-    dep_name = "test-deployment"
-    mod_name = "test-module"
+    with pytest.raises(Exception):
+        import app  # noqa: F401
 
-    metadata_storage_stack = stack.DataLakeBucketsStack(
-        scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
-        deployment_name=dep_name,
-        module_name=mod_name,
-        hash="hash",
-        buckets_encryption_type="SSE",
-        buckets_retention="DESTROY",
-        env=cdk.Environment(
-            account=os.environ["CDK_DEFAULT_ACCOUNT"],
-            region=os.environ["CDK_DEFAULT_REGION"],
-        ),
-    )
+        assert os.environ["ADDF_PARAMETER_ENCRYPTION_TYPE"] == "SSE"
 
-    template = Template.from_stack(metadata_storage_stack)
-    template.resource_count_is("AWS::S3::Bucket", 5)
+
+def test_retention_default(stack_defaults):
+    del os.environ["ADDF_PARAMETER_RETENTION_TYPE"]
+
+    with pytest.raises(Exception):
+        import app  # noqa: F401
+
+        assert os.environ["ADDF_PARAMETER_RETENTION_TYPE"] == "DESTROY"

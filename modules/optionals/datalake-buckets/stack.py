@@ -29,12 +29,16 @@ _logger: logging.Logger = logging.getLogger(__name__)
 
 class DataLakeBucketsStack(Stack):  # type: ignore
     def __init__(
-        self, scope: Construct, id: str, deployment_name: str, module_name: str, hash: str, **kwargs: Any
+        self,
+        scope: Construct,
+        id: str,
+        deployment_name: str,
+        module_name: str,
+        hash: str,
+        buckets_encryption_type: str,
+        buckets_retention: str,
+        **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
-        self.addf_buckets_encryption_type = os.getenv("ADDF_PARAMETER_ENCRYPTION_TYPE", "SSE")
-        self.addf_buckets_retention = os.getenv("ADDF_PARAMETER_RETENTION_TYPE", "DESTROY")
-
         # CDK Env Vars
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
@@ -45,13 +49,13 @@ class DataLakeBucketsStack(Stack):  # type: ignore
         raw_bucket = aws_s3.Bucket(
             self,
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
-            if self.addf_buckets_retention.upper() == "RETAIN"
+            if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             bucket_name=f"addf-{deployment_name}-raw-bucket-{hash}",
-            auto_delete_objects=None if self.addf_buckets_retention.upper() == "RETAIN" else True,
+            auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             id="raw-bucket",
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
-            if self.addf_buckets_encryption_type.upper() == "KMS"
+            if buckets_encryption_type.upper() == "KMS"
             else aws_s3.BucketEncryption.S3_MANAGED,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             enforce_ssl=True,
@@ -61,12 +65,12 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             self,
             id="intermediate-bucket",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
-            if self.addf_buckets_retention.upper() == "RETAIN"
+            if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             bucket_name=f"addf-{deployment_name}-intermediate-bucket-{hash}",
-            auto_delete_objects=None if self.addf_buckets_retention.upper() == "RETAIN" else True,
+            auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
-            if self.addf_buckets_encryption_type.upper() == "KMS"
+            if buckets_encryption_type.upper() == "KMS"
             else aws_s3.BucketEncryption.S3_MANAGED,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             enforce_ssl=True,
@@ -76,12 +80,12 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             self,
             id="curated-bucket",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
-            if self.addf_buckets_retention.upper() == "RETAIN"
+            if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             bucket_name=f"addf-{deployment_name}-curated-bucket-{hash}",
-            auto_delete_objects=None if self.addf_buckets_retention.upper() == "RETAIN" else True,
+            auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
-            if self.addf_buckets_encryption_type.upper() == "KMS"
+            if buckets_encryption_type.upper() == "KMS"
             else aws_s3.BucketEncryption.S3_MANAGED,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             enforce_ssl=True,
@@ -92,11 +96,11 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             id="artifacts-bucket",
             bucket_name=f"addf-{deployment_name}-artifacts-bucket-{hash}",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
-            if self.addf_buckets_retention.upper() == "RETAIN"
+            if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
-            auto_delete_objects=None if self.addf_buckets_retention.upper() == "RETAIN" else True,
+            auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
-            if self.addf_buckets_encryption_type.upper() == "KMS"
+            if buckets_encryption_type.upper() == "KMS"
             else aws_s3.BucketEncryption.S3_MANAGED,
             versioned=True,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
@@ -108,11 +112,11 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             id="logs-bucket",
             bucket_name=f"addf-{deployment_name}-logs-bucket-{hash}",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
-            if self.addf_buckets_retention.upper() == "RETAIN"
+            if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
-            auto_delete_objects=None if self.addf_buckets_retention.upper() == "RETAIN" else True,
+            auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
-            if self.addf_buckets_encryption_type.upper() == "KMS"
+            if buckets_encryption_type.upper() == "KMS"
             else aws_s3.BucketEncryption.S3_MANAGED,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             enforce_ssl=True,
