@@ -118,6 +118,7 @@ class TunnelStack(Stack):
             self,
             "OSTunnel",
             instance_type=ec2.InstanceType("t2.micro"),
+            require_imdsv2=True,
             machine_image=amzn_linux,
             vpc=self.vpc,
             security_group=os_security_group,

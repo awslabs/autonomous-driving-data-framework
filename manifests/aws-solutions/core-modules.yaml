@@ -29,7 +29,7 @@ parameters:
     value: data/mwaa/requirements/requirements-emr-serverless.txt
 ---
 name: batch-compute
-path: git::codecommit::us-west-2://addf-infra-modules.git//modules/compute/aws-batch
+path: git::codecommit::us-west-2://addf-infra-modules.git//modules/compute/aws-batch/?ref=main
 parameters:
   - name: vpc-id
     valueFrom:
