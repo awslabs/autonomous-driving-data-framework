@@ -63,4 +63,4 @@ If you notice a defect, feel free to create an [Issue](https://github.com/awslab
 
 ### Deployment FAQ
 
-If you need to debug a deployment in ADDF, here are few things you can checkout [Readme](docs/faq.md)
+If you need to debug a deployment in ADDF, here are few things you can checkout [Readme](docs/faq.md)foobar
