@@ -46,12 +46,30 @@ class DataLakeBucketsStack(Stack):  # type: ignore
         super().__init__(scope, id, description="This stack deploys Storage resources for ADDF", **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
 
+        logs_bucket = aws_s3.Bucket(
+            self,
+            id="logs-bucket",
+            bucket_name=f"addf-{deployment_name}-logs-bucket-{hash}",
+            removal_policy=aws_cdk.RemovalPolicy.RETAIN
+            if buckets_retention.upper() == "RETAIN"
+            else aws_cdk.RemovalPolicy.DESTROY,
+            auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
+            encryption=aws_s3.BucketEncryption.KMS_MANAGED
+            if buckets_encryption_type.upper() == "KMS"
+            else aws_s3.BucketEncryption.S3_MANAGED,
+            block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
+            enforce_ssl=True,
+        )
+
         raw_bucket = aws_s3.Bucket(
             self,
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             bucket_name=f"addf-{deployment_name}-raw-bucket-{hash}",
+            versioned=True,
+            server_access_logs_bucket=logs_bucket,
+            server_access_logs_prefix="raw-bucket-logs/",
             auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             id="raw-bucket",
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
@@ -68,6 +86,9 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             bucket_name=f"addf-{deployment_name}-intermediate-bucket-{hash}",
+            versioned=True,
+            server_access_logs_bucket=logs_bucket,
+            server_access_logs_prefix="intermediate-bucket-logs/",
             auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
             if buckets_encryption_type.upper() == "KMS"
@@ -83,6 +104,9 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             bucket_name=f"addf-{deployment_name}-curated-bucket-{hash}",
+            versioned=True,
+            server_access_logs_bucket=logs_bucket,
+            server_access_logs_prefix="curated-bucket-logs/",
             auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
             if buckets_encryption_type.upper() == "KMS"
@@ -103,21 +127,8 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             if buckets_encryption_type.upper() == "KMS"
             else aws_s3.BucketEncryption.S3_MANAGED,
             versioned=True,
-            block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
-            enforce_ssl=True,
-        )
-
-        logs_bucket = aws_s3.Bucket(
-            self,
-            id="logs-bucket",
-            bucket_name=f"addf-{deployment_name}-logs-bucket-{hash}",
-            removal_policy=aws_cdk.RemovalPolicy.RETAIN
-            if buckets_retention.upper() == "RETAIN"
-            else aws_cdk.RemovalPolicy.DESTROY,
-            auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
-            encryption=aws_s3.BucketEncryption.KMS_MANAGED
-            if buckets_encryption_type.upper() == "KMS"
-            else aws_s3.BucketEncryption.S3_MANAGED,
+            server_access_logs_bucket=logs_bucket,
+            server_access_logs_prefix="artifacts-bucket-logs/",
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             enforce_ssl=True,
         )
