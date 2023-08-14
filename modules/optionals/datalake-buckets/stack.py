@@ -54,9 +54,8 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
             auto_delete_objects=None if buckets_retention.upper() == "RETAIN" else True,
-            encryption=aws_s3.BucketEncryption.KMS_MANAGED
-            if buckets_encryption_type.upper() == "KMS"
-            else aws_s3.BucketEncryption.S3_MANAGED,
+            # Encryption should be always set to AES256 for a bucket to receive access logging from target buckets
+            encryption=aws_s3.BucketEncryption.S3_MANAGED,
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             object_ownership=aws_s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
             enforce_ssl=True,
