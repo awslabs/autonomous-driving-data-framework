@@ -5,7 +5,7 @@ parameters:
     value: true
 ---
 name: datalake-buckets
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/optionals/datalake-buckets
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/optionals/datalake-buckets/?ref=main
 parameters:
   - name: encryption-type
     value: SSE
