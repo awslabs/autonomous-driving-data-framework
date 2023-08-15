@@ -37,7 +37,7 @@ def test_app(stack_defaults):
     import app  # noqa: F401
 
 
-def test_encyption_default(stack_defaults):
+def test_buckets_encryption_type(stack_defaults):
     del os.environ["ADDF_PARAMETER_ENCRYPTION_TYPE"]
 
     with pytest.raises(Exception):
@@ -46,7 +46,7 @@ def test_encyption_default(stack_defaults):
         assert os.environ["ADDF_PARAMETER_ENCRYPTION_TYPE"] == "SSE"
 
 
-def test_retention_default(stack_defaults):
+def test_buckets_retention(stack_defaults):
     del os.environ["ADDF_PARAMETER_RETENTION_TYPE"]
 
     with pytest.raises(Exception):
