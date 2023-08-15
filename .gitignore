@@ -388,3 +388,6 @@ seedfarmer.gitmodules*
 
 # terraform
 .terraform*
+
+# Project specific
+scripts/
