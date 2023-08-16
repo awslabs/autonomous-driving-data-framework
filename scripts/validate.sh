@@ -15,7 +15,7 @@
 #   limitations under the License.
 #
 
-set -e
+set -ex
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 LANGUAGE="python"
