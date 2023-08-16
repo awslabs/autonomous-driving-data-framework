@@ -15,7 +15,7 @@ def _param(name: str) -> str:
 
 dag_id = os.getenv(_param("DAG_ID"))  # required
 vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = os.getenv(_param("PRIVATE_SUBNET_IDS"))  # required
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
 mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
