@@ -391,3 +391,5 @@ seedfarmer.gitmodules*
 
 # Project specific
 scripts/
+buildparams
+scout**
