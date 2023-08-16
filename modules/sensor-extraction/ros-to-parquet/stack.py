@@ -64,7 +64,11 @@ class RosToParquetBatchJob(Stack):
 
         self.repository_name = dep_mod
         repo = ecr.Repository(
-            self, id=self.repository_name, repository_name=self.repository_name, removal_policy=removal_policy
+            self,
+            id=self.repository_name,
+            repository_name=self.repository_name,
+            removal_policy=removal_policy,
+            auto_delete_images=True,
         )
 
         local_image = DockerImageAsset(
