@@ -40,7 +40,7 @@ stack = RosToParquetBatchJob(
     vcpus=vcpus,
     memory_limit_mib=memory_limit_mib,
     s3_access_policy=full_access_policy,
-    removal_policy=RemovalPolicy.DESTROY if removal_policy.upper() == "DESTROY" else None,
+    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
 )
 
 CfnOutput(

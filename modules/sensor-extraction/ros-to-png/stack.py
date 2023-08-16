@@ -44,7 +44,7 @@ class RosToPngBatchJob(Stack):
         memory_limit_mib: int,
         resized_width: int,
         resized_height: int,
-        removal_policy: RemovalPolicy = RemovalPolicy.RETAIN,
+        removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -67,7 +67,7 @@ class RosToPngBatchJob(Stack):
             id=self.repository_name,
             repository_name=self.repository_name,
             removal_policy=removal_policy,
-            auto_delete_images=True,
+            auto_delete_images=True if removal_policy == RemovalPolicy.DESTROY else False,
         )
 
         local_image = DockerImageAsset(

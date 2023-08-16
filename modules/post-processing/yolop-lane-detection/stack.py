@@ -32,7 +32,7 @@ class LaneDetection(Stack):
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
-        removal_policy: Optional[RemovalPolicy] = RemovalPolicy.RETAIN,
+        removal_policy: Optional[RemovalPolicy] = RemovalPolicy.DESTROY,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -54,7 +54,7 @@ class LaneDetection(Stack):
             id=self.repository_name,
             repository_name=self.repository_name,
             removal_policy=removal_policy,
-            auto_delete_images=True,
+            auto_delete_images=True if removal_policy == RemovalPolicy.DESTROY else False,
         )
         self.image_uri = f"{repo.repository_uri}:smprocessor"
 

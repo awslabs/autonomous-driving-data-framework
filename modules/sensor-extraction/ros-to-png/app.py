@@ -48,7 +48,7 @@ stack = RosToPngBatchJob(
     s3_access_policy=full_access_policy,
     resized_width=resized_width,
     resized_height=resized_height,
-    removal_policy=RemovalPolicy.DESTROY if removal_policy.upper() == "DESTROY" else None,
+    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
 )
 
 CfnOutput(
