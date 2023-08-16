@@ -15,6 +15,7 @@ def _param(name: str) -> str:
 
 dag_id = os.getenv(_param("DAG_ID"))  # required
 vpc_id = os.getenv(_param("VPC_ID"))  # required
+private_subnet_ids = os.getenv(_param("PRIVATE_SUBNET_IDS"))  # required
 mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
@@ -65,6 +66,9 @@ if not lane_detection_image_uri:
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
 
+if not private_subnet_ids:
+    raise ValueError("missing input parameter private-subnet-ids")
+
 if not mwaa_exec_role:
     raise ValueError("MWAA Execution Role is missing.")
 
@@ -99,6 +103,7 @@ CfnOutput(
     id="metadata",
     value=stack.to_json_string(
         {
+            "PrivateSubnetIds": private_subnet_ids,
             "DagId": dag_id,
             "DagRoleArn": stack.dag_role.role_arn,
             "DynamoDbTableName": stack.tracking_table_name,

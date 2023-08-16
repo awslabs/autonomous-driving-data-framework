@@ -38,6 +38,7 @@ from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
 from emr_serverless.operators.emr import EmrServerlessStartJobOperator
 from emr_serverless.sensors.emr import EmrServerlessJobSensor
+from sagemaker.network import NetworkConfig
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -62,8 +63,9 @@ FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
 SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
 TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
-
 FILE_SUFFIX = addf_module_metadata["FileSuffix"]
+
+PRIVATE_SUBNETS_IDS = addf_module_metadata["PrivateSubnetIds"]
 
 PNG_JOB_DEFINITION_ARN = addf_module_metadata["PngBatchJobDefArn"]
 DESIRED_ENCODING = addf_module_metadata["DesiredEncoding"]
@@ -376,6 +378,7 @@ def sagemaker_lanedet_operation(**kwargs):
             instance_count=1,
             instance_type=LANEDET_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-LANE",
+            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS),
         )
         LOCAL_INPUT = "/opt/ml/processing/input/image"
         LOCAL_OUTPUT = "/opt/ml/processing/output/image"
