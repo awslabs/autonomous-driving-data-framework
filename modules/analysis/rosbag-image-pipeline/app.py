@@ -105,6 +105,7 @@ CfnOutput(
         {
             "PrivateSubnetIds": private_subnet_ids,
             "DagId": dag_id,
+            "SecurityGroupId": stack.sm_sg.security_group_id,
             "DagRoleArn": stack.dag_role.role_arn,
             "DynamoDbTableName": stack.tracking_table_name,
             "DetectionsDynamoDBName": detection_ddb_name,

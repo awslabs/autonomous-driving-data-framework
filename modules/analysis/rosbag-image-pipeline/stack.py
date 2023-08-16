@@ -15,6 +15,7 @@
 import logging
 from typing import Any, List, cast
 
+import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
@@ -148,6 +149,18 @@ class AwsBatchPipeline(Stack):
             max_session_duration=Duration.hours(12),
             path="/",
         )
+
+        # Sagemaker Security Group
+        self.vpc = ec2.Vpc.from_lookup(
+            self,
+            "VPC",
+            vpc_id=self.vpc_id,
+        )
+        self.sm_sg = ec2.SecurityGroup(
+            self, "SagemakerJobsSG", vpc=self.vpc, allow_all_outbound=True, description="Sagemaker Processing Jobs SG"
+        )
+
+        self.sm_sg.add_ingress_rule(peer=self.sm_sg, connection=ec2.Port.all_traffic())
 
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 

@@ -66,7 +66,7 @@ TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
 FILE_SUFFIX = addf_module_metadata["FileSuffix"]
 
 PRIVATE_SUBNETS_IDS = addf_module_metadata["PrivateSubnetIds"]
-
+SM_SECURITY_GROUP_ID = addf_module_metadata["SecurityGroupId"]
 PNG_JOB_DEFINITION_ARN = addf_module_metadata["PngBatchJobDefArn"]
 DESIRED_ENCODING = addf_module_metadata["DesiredEncoding"]
 IMAGE_TOPICS = addf_module_metadata["ImageTopics"]
@@ -301,6 +301,7 @@ def sagemaker_yolo_operation(**kwargs):
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-YOLO",
+            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS, security_group_ids=[SM_SECURITY_GROUP_ID]),
         )
 
         idx_start = i * YOLO_CONCURRENCY
@@ -378,7 +379,7 @@ def sagemaker_lanedet_operation(**kwargs):
             instance_count=1,
             instance_type=LANEDET_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-LANE",
-            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS),
+            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS, security_group_ids=[SM_SECURITY_GROUP_ID]),
         )
         LOCAL_INPUT = "/opt/ml/processing/input/image"
         LOCAL_OUTPUT = "/opt/ml/processing/output/image"
