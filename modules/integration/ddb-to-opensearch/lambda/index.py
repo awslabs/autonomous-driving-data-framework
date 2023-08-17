@@ -17,12 +17,12 @@ type = "_doc"
 headers = {"Content-Type": "application/json"}
 
 
-def get_url():
+def get_url() -> str:
     ts = date.today()
     return f"https://{host}/{index}-{ts}/{type}/"
 
 
-def handler(event, _context):
+def handler(event, _context) -> str:
     count = 0
     for record in event["Records"]:
         id_p = record["dynamodb"]["Keys"]["scene_id"]["S"]
@@ -34,6 +34,12 @@ def handler(event, _context):
             for key, value in document.items():
                 for param, val in value.items():
                     doc[key] = val
-            _ = requests.put(get_url() + id_p, auth=awsauth, json=doc, headers=headers)
+            try:
+                requests.put(get_url() + id_p, auth=awsauth, json=doc, headers=headers)
+            except requests.exceptions.InvalidURL:
+                print("Error invoking endpoint - InvalidURL")
+                raise requests.exceptions.InvalidURL
+            except KeyError:
+                print("Could not process the payload")
         count += 1
     return str(count) + " records processed."

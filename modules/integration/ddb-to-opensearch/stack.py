@@ -61,7 +61,9 @@ class DDBtoOpensearch(Stack):
         for idx, subnet_id in enumerate(private_subnet_ids):
             self.private_subnets.append(ec2.Subnet.from_subnet_id(scope=self, id=f"subnet{idx}", subnet_id=subnet_id))
 
-        os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id, allow_all_outbound=True)
+        os_security_group = ec2.SecurityGroup.from_security_group_id(
+            self, f"{dep_mod}-os-sg", opensearch_sg_id, allow_all_outbound=True
+        )
 
         ddb_os_lambda_policy = iam.PolicyDocument(
             statements=[
