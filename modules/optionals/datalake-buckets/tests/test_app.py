@@ -46,6 +46,12 @@ def test_buckets_encryption_type(stack_defaults):
         assert os.environ["ADDF_PARAMETER_ENCRYPTION_TYPE"] == "SSE"
 
 
+def test_invalid_buckets_encryption_type(stack_defaults):
+    os.environ["ADDF_PARAMETER_ENCRYPTION_TYPE"] = "notvalid"
+    with pytest.raises(Exception):
+        import app  # noqa: F401
+
+
 def test_buckets_retention(stack_defaults):
     del os.environ["ADDF_PARAMETER_RETENTION_TYPE"]
 
@@ -53,3 +59,9 @@ def test_buckets_retention(stack_defaults):
         import app  # noqa: F401
 
         assert os.environ["ADDF_PARAMETER_RETENTION_TYPE"] == "DESTROY"
+
+
+def test_invalid_retention_type(stack_defaults):
+    os.environ["ADDF_PARAMETER_RETENTION_TYPE"] = "notvalid"
+    with pytest.raises(Exception):
+        import app  # noqa: F401
