@@ -42,11 +42,15 @@ constructs==10.0.91
     #   aws-cdk-lib
     #   cdk-nag
 exceptiongroup==1.1.2
-    # via cattrs
+    # via
+    #   cattrs
+    #   pytest
 idna==3.4
     # via requests
 importlib-resources==6.0.0
     # via jsii
+iniconfig==2.0.0
+    # via pytest
 jmespath==1.0.1
     # via
     #   boto3
@@ -60,6 +64,10 @@ jsii==1.85.0
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
+packaging==23.1
+    # via pytest
+pluggy==1.2.0
+    # via pytest
 publication==0.0.3
     # via
     #   aws-cdk-asset-awscli-v1
@@ -70,6 +78,10 @@ publication==0.0.3
     #   cdk-nag
     #   constructs
     #   jsii
+pytest==7.4.0
+    # via pytest-mock
+pytest-mock==3.10.0
+    # via -r requirements.in
 python-dateutil==2.8.2
     # via
     #   botocore
@@ -86,6 +98,8 @@ six==1.16.0
     # via
     #   python-dateutil
     #   requests-aws4auth
+tomli==2.0.1
+    # via pytest
 typeguard==2.13.3
     # via
     #   aws-cdk-asset-awscli-v1
