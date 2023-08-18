@@ -354,7 +354,7 @@ def stack_defaults():
     os.environ["REGION"] = "us-east-1"
 
 
-def test_lambda(stack_defaults, requests_mock):
+def test_lambda(stack_defaults):
     try:
         lambda_module.handler(test_json, None)
     except requests.exceptions.InvalidURL:
