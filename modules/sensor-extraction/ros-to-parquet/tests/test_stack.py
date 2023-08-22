@@ -49,4 +49,4 @@ def test_synthesize_stack(stack_defaults):
     template.resource_count_is("AWS::ECR::Repository", 1)
     template.resource_count_is("AWS::Lambda::Function", 2)
     template.resource_count_is("AWS::Batch::JobDefinition", 1)
-    template.resource_count_is("AWS::IAM::Role", 2)
+    template.resource_count_is("AWS::IAM::Role", 3)
