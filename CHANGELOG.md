@@ -21,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored YOLOP Lane detection module
 - Refactored Rosbag Image pipeline module to include scene detection workflow in the DAG and standardized inputs consumption from external modules
 - Added manifest files supporting AV/ADAS as AWS-Solutions
-
 - updating `post-processing/yolop-lane-detection` with license and tests
 - updating `post-processing/yolo-object-detection` with license and tests
 - syncing `integration/opensearch-tunnel` module
@@ -29,7 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CDK Version change, sonar checks improvements and changed license-headers on metadata-storage module
 - upgraded CDK version, changed the license-headers, deployed sagemaker jobs inside VPC sonar code improvements on rosbag-image-pipeline module
 - updating `sensor-extraction/ros-to-png` with license and tests 
-- 
+- Deprecated rosbag-scene-detection module in favor of rosbag-image-pipeline module
+- changed license-headers on non-av/adas solution modules
+
 ### **Removed**
 
 =======
