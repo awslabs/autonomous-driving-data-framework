@@ -28,16 +28,28 @@ Resources:
             Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
           - Effect: Allow
             Action:
-              - "ecr:Describe*"
-              - "ecr:Get*"
-              - "ecr:List*"
-              - "ecr:BatchGetImage"
-            Resource: '*'
+              - "ecr:GetAuthorizationToken"
+            Resource: "*"
           - Effect: Allow
             Action:
-              - ecr:*
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:GetRepositoryPolicy"
+              - "ecr:Describe*"
+              - "ecr:ListImages"
+              - "ecr:BatchGetImage"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:UploadLayerPart"
+              - "ecr:CompleteLayerUpload"
+              - "ecr:PutImage"
             Resource:
               - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:ecr:*:*:repository/pytorch-inference*"
+          # - Effect: Allow
+          #   Action:
+          #     - ecr:*
+          #   Resource:
+          #     - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
           - Action:
               - "iam:CreateServiceLinkedRole"
             Effect: Allow
