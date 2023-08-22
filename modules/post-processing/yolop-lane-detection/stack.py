@@ -39,7 +39,7 @@ class LaneDetection(Stack):
 
         dep_mod = f"addf-{deployment_name}-{module_name}"
 
-        self.repository_name = dep_mod
+        self.repository_name = f"{dep_mod}-repository"
         repo = ecr.Repository(
             self,
             id=self.repository_name,
