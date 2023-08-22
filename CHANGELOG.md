@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 - adding new `integration/opensearch-tunnel` module
+- Added Unit tests to metadata-storage module
 
 ### **Changed**
 
@@ -18,7 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored YOLOP Lane detection module
 - Refactored Rosbag Image pipeline module to include scene detection workflow in the DAG and standardized inputs consumption from external modules
 - Added manifest files supporting AV/ADAS as AWS-Solutions
+- CDK Version change, sonar checks improvements and changed license-headers on metadata-storage module
 - upgraded CDK version, changed the license-headers, deployed sagemaker jobs inside VPC sonar code improvements on rosbag-image-pipeline module
+
 
 ### **Removed**
 
