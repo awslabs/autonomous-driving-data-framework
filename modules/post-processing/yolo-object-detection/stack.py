@@ -49,8 +49,6 @@ class ObjectDetection(Stack):
             auto_delete_images=True if removal_policy == RemovalPolicy.DESTROY else False,
         )
 
-        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
-
         self.image_uri = f"{repo.repository_uri}:latest"
 
         policy_statements = [
