@@ -29,7 +29,7 @@ def test_synthesize_stack(stack_defaults):
 
     object_det_stack = stack.ObjectDetection(
         scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
+        id=f"addf-{dep_name}-{mod_name}-synthesized",
         deployment_name=dep_name,
         module_name=mod_name,
         s3_access_policy="arn:aws:policy:12345:XXX",
