@@ -16,6 +16,7 @@ def _param(name: str) -> str:
 
 
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
+removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")

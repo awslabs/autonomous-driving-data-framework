@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from typing import Any, cast
+from typing import Any, Optional, cast
 
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import Aspects, Duration, Stack, Tags, RemovalPolicy
+from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 

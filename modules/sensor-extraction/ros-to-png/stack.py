@@ -14,7 +14,6 @@
 
 import logging
 import os
-import typing
 from typing import Any, cast
 
 import aws_cdk.aws_batch_alpha as batch
