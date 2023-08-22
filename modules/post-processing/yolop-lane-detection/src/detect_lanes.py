@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import argparse
 import json
 import os
@@ -11,7 +14,6 @@ sys.path.append(BASE_DIR)
 print(sys.path)
 import cv2
 import numpy as np
-import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
@@ -24,6 +26,7 @@ from lib.utils import plot_one_box, show_seg_result
 from lib.utils.utils import create_logger, select_device, time_synchronized
 from numpy import random
 from tqdm import tqdm
+import pandas as pd
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
@@ -50,9 +53,6 @@ def detect(cfg, opt):
     logger, _, _ = create_logger(cfg, cfg.LOG_DIR, "demo")
 
     device = select_device(logger, opt.device)
-    # if os.path.exists(opt.save_dir):  # output dir
-    #     shutil.rmtree(opt.save_dir)  # delete dir
-    # os.makedirs(opt.save_dir)  # make new dir
     half = device.type != "cpu"  # half precision only supported on CUDA
 
     # Load model
@@ -67,10 +67,10 @@ def detect(cfg, opt):
     if opt.source.isnumeric():
         cudnn.benchmark = True  # set True to speed up constant image size inference
         dataset = LoadStreams(opt.source, img_size=opt.img_size)
-        bs = len(dataset)  # batch_size
+        _bs = len(dataset)  # batch_size
     else:
         dataset = LoadImages(opt.source, img_size=opt.img_size)
-        bs = 1  # batch_size
+        _bs = 1  # batch_size
 
     # Get names and colors
     names = model.module.names if hasattr(model, "module") else model.names
@@ -79,7 +79,7 @@ def detect(cfg, opt):
     # Run inference
     t0 = time.time()
 
-    vid_path, vid_writer = None, None
+    _vid_path, _vid_writer = None, None
     img = torch.zeros((1, 3, opt.img_size, opt.img_size), device=device)  # init img
     _ = model(img.half() if half else img) if device.type != "cpu" else None  # run once
     model.eval()
@@ -102,8 +102,7 @@ def detect(cfg, opt):
         t1 = time_synchronized()
         det_out, da_seg_out, ll_seg_out = model(img)
         t2 = time_synchronized()
-        # if i == 0:
-        #     print(det_out)
+
         inf_out, _ = det_out
         inf_time.update(t2 - t1, img.size(0))
 
@@ -128,7 +127,7 @@ def detect(cfg, opt):
         )
 
         _, _, height, width = img.shape
-        h, w, _ = img_det.shape
+        _h, _w, _ = img_det.shape
         pad_w, pad_h = shapes[1][1]
         pad_w = int(pad_w)
         pad_h = int(pad_h)
@@ -138,14 +137,12 @@ def detect(cfg, opt):
         da_seg_mask = torch.nn.functional.interpolate(da_predict, scale_factor=int(1 / ratio), mode="bilinear")
         _, da_seg_mask = torch.max(da_seg_mask, 1)
         da_seg_mask = da_seg_mask.int().squeeze().cpu().numpy()
-        # da_seg_mask = morphological_process(da_seg_mask, kernel_size=7)
 
         ll_predict = ll_seg_out[:, :, pad_h : (height - pad_h), pad_w : (width - pad_w)]
         ll_seg_mask = torch.nn.functional.interpolate(ll_predict, scale_factor=int(1 / ratio), mode="bilinear")
         _, ll_seg_mask = torch.max(ll_seg_mask, 1)
         ll_seg_mask = ll_seg_mask.int().squeeze().cpu().numpy()
         # Lane line post-processing
-        # ll_seg_mask = morphological_process(ll_seg_mask, kernel_size=7, func_type=cv2.MORPH_OPEN)
         # ll_seg_mask = connect_lane(ll_seg_mask)
 
         img_det = show_seg_result(img_det, (da_seg_mask, ll_seg_mask), _, _, is_demo=True)
@@ -168,7 +165,8 @@ def detect(cfg, opt):
         name_lane = [Path(path).name, json.dumps(ll_seg_mask, cls=NumpyEncoder)]
         name_lanes.append(name_lane)
 
-    df = pd.DataFrame(name_lanes, columns=["source_image", "lanes"])
+    df = pd.DataFrame(name_lanes, columns=['source_image',
+                                           'lanes'])
     df.to_csv(path_or_buf=os.path.join(opt.csv_path, "lanes.csv"), index=False)
 
     print("Results saved to %s" % Path(opt.save_dir))
