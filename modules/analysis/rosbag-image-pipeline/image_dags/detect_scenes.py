@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import argparse
 import sys
 
@@ -5,7 +8,7 @@ import boto3
 import pyspark.sql.functions as func
 from pyspark.sql import SparkSession, Window
 from pyspark.sql.functions import aggregate, col, collect_list, concat, count, first, from_json, lit, split, sum
-from pyspark.sql.types import *
+from pyspark.sql.types import ArrayType, DoubleType, IntegerType, StringType, StructField, StructType
 
 obj_schema = StructType(
     [
@@ -255,7 +258,6 @@ if __name__ == "__main__":
     arguments = parse_arguments(sys.argv[1:])
     batch_metadata_table_name = arguments.batch_metadata_table_name
     batch_id = arguments.batch_id
-    # input_bucket = arguments.input_bucket
     output_bucket = arguments.output_bucket
     output_dynamo_table = arguments.output_dynamo_table
     region = arguments.region
