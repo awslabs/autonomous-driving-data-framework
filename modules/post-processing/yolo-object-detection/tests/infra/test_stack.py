@@ -24,24 +24,21 @@ def test_synthesize_stack(stack_defaults):
     import stack
 
     app = cdk.App()
-    project_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
-    metadata_storage_stack = stack.MetadataStorageStack(
+    object_det_stack = stack.ObjectDetection(
         scope=app,
-        id=f"{project_name}-{dep_name}-{mod_name}",
-        deployment=dep_name,
-        module=mod_name,
-        scene_table_suffix="scene-suffix",
-        bagfile_table_suffix="glue-db-suffix",
-        glue_db_suffix="ros-table-suffix",
+        id=f"addf-{dep_name}-{mod_name}",
+        deployment_name=dep_name,
+        module_name=mod_name,
+        s3_access_policy="arn:aws:policy:12345:XXX",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],
         ),
     )
 
-    template = Template.from_stack(metadata_storage_stack)
-    template.resource_count_is("AWS::DynamoDB::Table", 2)
-    template.resource_count_is("AWS::Glue::Database", 1)
+    template = Template.from_stack(object_det_stack)
+    template.resource_count_is("AWS::ECR::Repository", 1)
+    template.resource_count_is("AWS::IAM::Role", 1)
