@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import os
 
 import aws_cdk
@@ -16,12 +19,19 @@ def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
 
-vpc_id = os.getenv(_param("VPC_ID"), "")
-opensearch_sg_id = os.getenv(_param("OPENSEARCH_SG_ID"), "")
-opensearch_domain_endpoint = os.getenv(
-    _param("OPENSEARCH_DOMAIN_ENDPOINT"),
-    "",
-)
+vpc_id = os.getenv(_param("VPC_ID"))
+opensearch_sg_id = os.getenv(_param("OPENSEARCH_SG_ID"))
+opensearch_domain_endpoint = os.getenv(_param("OPENSEARCH_DOMAIN_ENDPOINT"))
+
+if not vpc_id:
+    raise ValueError("missing input parameter vpc-id")
+
+if not opensearch_sg_id:
+    raise ValueError("missing input parameter opensearch_sg_id")
+
+if not opensearch_domain_endpoint:
+    raise ValueError("missing input parameter opensearch_domain_endpoint")
+
 
 port = int(os.getenv(_param("PORT"), "3000"))
 

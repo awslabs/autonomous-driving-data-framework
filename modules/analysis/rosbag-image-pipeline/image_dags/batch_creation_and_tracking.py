@@ -1,16 +1,5 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 import logging
 import typing
@@ -45,7 +34,6 @@ def add_drives_to_batch(
     files_in_batch = 0
     for drive_id, s3_path in drives_to_process.items():
         files = get_drive_files(
-            drive_id=drive_id,
             src_bucket=s3_path["bucket"],
             src_prefix=s3_path["prefix"],
             file_suffix=file_suffix,
@@ -60,7 +48,7 @@ def add_drives_to_batch(
     return files_in_batch
 
 
-def get_drive_files(drive_id, src_bucket, src_prefix, file_suffix, s3_client):
+def get_drive_files(src_bucket, src_prefix, file_suffix, s3_client):
     """For a given bucket, prefix, and suffix, lists all files found on S3 and returns a list of the files
 
     @param drive_id:
