@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 from argparse import ArgumentParser
 from glob import glob as get_files
 from json import dump as dump_json
@@ -6,7 +9,7 @@ import torch
 from pandas import concat
 
 
-def get_yolov5_prediction(model, image, input_size=1280, confidence=0.25, iou=0.45):
+def get_yolov5_prediction(model, image, input_data_path, _input_size=1280, confidence=0.25, iou=0.45):
 
     model.conf = confidence  # NMS confidence threshold
     model.iou = iou  # NMS IoU threshold
@@ -19,7 +22,7 @@ def get_yolov5_prediction(model, image, input_size=1280, confidence=0.25, iou=0.
 
     output = {}
 
-    output["image_filename"] = image.replace("/opt/ml/processing/input/", "")
+    output["image_filename"] = image.replace(input_data_path, "")
     output["boxe"] = results.pred[0][:, :4].tolist()  # x1, y1, x2, y2
     output["score"] = results.pred[0][:, 4].tolist()
     output["category_index"] = results.pred[0][:, 5].tolist()
@@ -135,8 +138,8 @@ if __name__ == "__main__":
     dfs = []
     for image in images_list:
 
-        output_json, output_pandas = get_yolov5_prediction(model, image)
-        image_file_name = image.replace("/opt/ml/processing/input/", "")
+        output_json, output_pandas = get_yolov5_prediction(model, image, input_data_path)
+        image_file_name = image.replace(input_data_path, "")
         image_json_name = image_file_name.replace(".png", ".json")
         image_csv_name = image_file_name.replace(".png", ".csv")
         output[image_file_name] = output_json
