@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import json
 import os
 
@@ -19,10 +22,10 @@ vpc_id = os.getenv(_param("VPC_ID"))  # required
 private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
 
 if not vpc_id:
-    raise Exception("missing input parameter vpc-id")
+    raise ValueError("missing input parameter vpc-id")
 
 if not private_subnet_ids:
-    raise Exception("missing input parameter private-subnet-ids")
+    raise ValueError("missing input parameter private-subnet-ids")
 
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"), "")  # required
 eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"), "")  # required

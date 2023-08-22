@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 #!/bin/bash
 
 export DEP_MOD=${AWS_CODESEEDER_NAME}-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${AWS_DEFAULT_REGION}
