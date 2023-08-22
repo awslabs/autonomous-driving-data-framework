@@ -34,7 +34,7 @@ def test_synthesize_stack(stack_defaults):
     mod_name = "test-module"
 
     project_dir = os.path.dirname(os.path.abspath(__file__))
-    install_script = os.path.join(project_dir, "..","install_nginx.sh")
+    install_script = os.path.join(project_dir, "..", "install_nginx.sh")
 
     tunnel = stack.TunnelStack(
         scope=app,
