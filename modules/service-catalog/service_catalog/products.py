@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import aws_cdk.aws_codecommit as codecommit
 import aws_cdk.aws_s3_assets as assets
 import aws_cdk.aws_servicecatalog as servicecatalog

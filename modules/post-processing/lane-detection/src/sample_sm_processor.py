@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 # The following is example code that walks thru the invocation of the model image
 # in this module...it is an EXAMPLE that should be executed outside of this module
 

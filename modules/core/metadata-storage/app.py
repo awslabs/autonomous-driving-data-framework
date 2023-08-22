@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import os
 
 import aws_cdk
@@ -12,15 +15,15 @@ module_name = os.getenv("ADDF_MODULE_NAME", "")
 
 scene_suffix = os.getenv("ADDF_PARAMETER_ROSBAG_SCENE_TABLE_SUFFIX")
 if not scene_suffix:
-    raise Exception("ADDF_PARAMETER_ROSBAG_SCENE_TABLE_SUFFIX not populated ")
+    raise ValueError("ADDF_PARAMETER_ROSBAG_SCENE_TABLE_SUFFIX not populated ")
 
 glue_db_suffix = os.getenv("ADDF_PARAMETER_GLUE_DB_SUFFIX")
 if not glue_db_suffix:
-    raise Exception("ADDF_PARAMETER_GLUE_DB_SUFFIX not populated")
+    raise ValueError("ADDF_PARAMETER_GLUE_DB_SUFFIX not populated")
 
 bagfile_suffix = os.getenv("ADDF_PARAMETER_ROSBAG_BAGFILE_TABLE_SUFFIX")
 if not bagfile_suffix:
-    raise Exception("ADDF_PARAMETER_ROSBAG_BAGFILE_TABLE_SUFFIX not populated")
+    raise ValueError("ADDF_PARAMETER_ROSBAG_BAGFILE_TABLE_SUFFIX not populated")
 
 
 app = App()
