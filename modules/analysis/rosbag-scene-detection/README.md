@@ -1,4 +1,8 @@
+> **Warning**
+> This module is deprecated and it is recommended to checkout `modules/analysis/rosbag-image-pipeline` as it includes the business logic to identify the scenes from the extracted objects
+
 ## Introduction
+
 # Building an automated scene detection pipeline for Autonomous Driving – ADAS Workflow
 Many organizations face the challenge of ingesting, transforming, labeling, and cataloging massive amounts of data to develop automated driving systems. In this module, we explored an architecture to solve this problem using Amazon EMR, Amazon S3, Amazon SageMaker Ground Truth, and more. 
 
