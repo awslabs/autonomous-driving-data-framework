@@ -1,16 +1,5 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 import logging
 from typing import Any, List, cast
@@ -61,7 +50,9 @@ class DDBtoOpensearch(Stack):
         for idx, subnet_id in enumerate(private_subnet_ids):
             self.private_subnets.append(ec2.Subnet.from_subnet_id(scope=self, id=f"subnet{idx}", subnet_id=subnet_id))
 
-        os_security_group = ec2.SecurityGroup.from_security_group_id(self, f"{dep_mod}-os-sg", opensearch_sg_id)
+        os_security_group = ec2.SecurityGroup.from_security_group_id(
+            self, f"{dep_mod}-os-sg", opensearch_sg_id, allow_all_outbound=True
+        )
 
         ddb_os_lambda_policy = iam.PolicyDocument(
             statements=[

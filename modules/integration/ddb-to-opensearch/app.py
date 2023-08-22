@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import json
 import os
 
@@ -14,14 +17,16 @@ def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
 
-vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # type: ignore
+vpc_id = os.getenv(_param("VPC_ID"))
+private_subnet_ids_param = os.getenv(_param("PRIVATE_SUBNET_IDS"))
 
 if not vpc_id:
-    raise Exception("missing input parameter vpc-id")
+    raise ValueError("missing input parameter vpc-id")
 
-if not private_subnet_ids:
-    raise Exception("missing input parameter private-subnet-ids")
+if not private_subnet_ids_param:
+    raise ValueError("missing input parameter private-subnet-ids")
+else:
+    private_subnet_ids = json.loads(private_subnet_ids_param)
 
 opensearch_sg_id = os.getenv(_param("OPENSEARCH_SG_ID"), "")
 opensearch_domain_name = os.getenv(_param("OPENSEARCH_DOMAIN_NAME"), "")

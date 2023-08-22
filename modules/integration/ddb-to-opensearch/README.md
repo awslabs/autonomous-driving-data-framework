@@ -17,6 +17,7 @@ an existing OpenSearch Domain
 - `opensearch-domain-name`: The OpenSearch Domain name
 - `vpc-id`: The VPC-ID that the cluster will be created in
 - `rosbag-stream-arn`: the ARN of the ddb stream connected to the rosbag metadata table (to be indexed)
+- `private-subnet-ids`: the private subnets the lambda should run in, as a stringifed array list
 
 #### Optional
 
