@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CDK version change, changed license-headers on datalake-buckets module
 - CDK Version change, sonar checks improvements and changed license-headers on metadata-storage module
 - upgraded CDK version, changed the license-headers, deployed sagemaker jobs inside VPC sonar code improvements on rosbag-image-pipeline module
+- updating `sensor-extraction/ros-to-png` with license and tests 
+- Deprecated rosbag-scene-detection module in favor of rosbag-image-pipeline module
+- changed license-headers on non-av/adas solution modules
 
 ### **Removed**
 
