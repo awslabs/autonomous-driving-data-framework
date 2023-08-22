@@ -33,7 +33,7 @@ def test_synthesize_stack(stack_defaults):
         id=f"addf-{dep_name}-{mod_name}",
         deployment_name=dep_name,
         module_name=mod_name,
-        s3_access_policy="'arn:aws:iam::123456789012:policy/addf-buckets-us-west-2-123-full-access",
+        s3_access_policy="arn:aws:iam::123456789012:policy/addf-buckets-us-west-2-123-full-access",
         retries=1,
         timeout_seconds=1800,
         vcpus=2,
