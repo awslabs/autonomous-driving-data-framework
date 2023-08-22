@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 #!/bin/bash
 # This script installs the idle notebook auto-checker server extension to SageMaker Studio
 # The original extension has a lab extension part where users can set the idle timeout via a Jupyter Lab widget.
