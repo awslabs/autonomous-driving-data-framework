@@ -8,7 +8,8 @@ import sys
 import pytest
 import requests.exceptions
 
-sys.path.append("./lambda")
+
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)),"../lambda"))
 lambda_module = importlib.import_module("lambda.index")
 
 
