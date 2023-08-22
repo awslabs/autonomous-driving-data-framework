@@ -1,20 +1,10 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 import logging
-from typing import Any, Sequence, cast
+from typing import Any, List, cast
 
+import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
@@ -38,8 +28,8 @@ class AwsBatchPipeline(Stack):
         bucket_access_policy: str,
         object_detection_role: str,
         lane_detection_role: str,
-        job_queues: Sequence[str],
-        job_definitions: Sequence[str],
+        job_queues: List[str],
+        job_definitions: List[str],
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -102,11 +92,7 @@ class AwsBatchPipeline(Stack):
                     "batch:TagResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=job_queues
-                + job_definitions
-                + [
-                    f"arn:aws:batch:{self.region}:{self.account}:job/*",
-                ],
+                resources=[*job_queues, *job_definitions, f"arn:aws:batch:{self.region}:{self.account}:job/*"],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -152,6 +138,18 @@ class AwsBatchPipeline(Stack):
             max_session_duration=Duration.hours(12),
             path="/",
         )
+
+        # Sagemaker Security Group
+        self.vpc = ec2.Vpc.from_lookup(
+            self,
+            "VPC",
+            vpc_id=self.vpc_id,
+        )
+        self.sm_sg = ec2.SecurityGroup(
+            self, "SagemakerJobsSG", vpc=self.vpc, allow_all_outbound=True, description="Sagemaker Processing Jobs SG"
+        )
+
+        self.sm_sg.add_ingress_rule(peer=self.sm_sg, connection=ec2.Port.all_traffic())
 
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
