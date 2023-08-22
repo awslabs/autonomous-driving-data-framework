@@ -306,6 +306,27 @@ jobs:
       - name: PyTest based Unit Tests
         run: cd modules/integration/emr-to-opensearch/ && pytest
 
+  modules-integration-opensearch-tunnel:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r modules/integration/opensearch-tunnel/requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/integration/opensearch-tunnel/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/integration/opensearch-tunnel/ && pytest
+
   modules-optionals-datalake-buckets:
     runs-on: ubuntu-latest
     strategy:

@@ -1,16 +1,5 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 
 import json
@@ -38,6 +27,7 @@ from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
 from emr_serverless.operators.emr import EmrServerlessStartJobOperator
 from emr_serverless.sensors.emr import EmrServerlessJobSensor
+from sagemaker.network import NetworkConfig
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -62,9 +52,10 @@ FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
 SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
 TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
-
 FILE_SUFFIX = addf_module_metadata["FileSuffix"]
 
+PRIVATE_SUBNETS_IDS = addf_module_metadata["PrivateSubnetIds"]
+SM_SECURITY_GROUP_ID = addf_module_metadata["SecurityGroupId"]
 PNG_JOB_DEFINITION_ARN = addf_module_metadata["PngBatchJobDefArn"]
 DESIRED_ENCODING = addf_module_metadata["DesiredEncoding"]
 IMAGE_TOPICS = addf_module_metadata["ImageTopics"]
@@ -203,7 +194,7 @@ def create_batch_of_drives(ti, **kwargs):
 
 
 def get_job_name(suffix="") -> str:
-    v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
+    v = "".join(random.choice(string.ascii_lowercase) for _i in range(6))
     return f"ros-image-pipeline-{suffix}-{v}"
 
 
@@ -299,6 +290,7 @@ def sagemaker_yolo_operation(**kwargs):
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-YOLO",
+            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS, security_group_ids=[SM_SECURITY_GROUP_ID]),
         )
 
         idx_start = i * YOLO_CONCURRENCY
@@ -376,6 +368,7 @@ def sagemaker_lanedet_operation(**kwargs):
             instance_count=1,
             instance_type=LANEDET_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-LANE",
+            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS, security_group_ids=[SM_SECURITY_GROUP_ID]),
         )
         LOCAL_INPUT = "/opt/ml/processing/input/image"
         LOCAL_OUTPUT = "/opt/ml/processing/output/image"
@@ -462,7 +455,7 @@ def emr_batch_operation(**kwargs):
     }
 
     start_job_run_op = EmrServerlessStartJobOperator(
-        task_id=f"scene_detection",
+        task_id="scene_detection",
         application_id=EMR_APPLICATION_ID,
         execution_role_arn=EMR_JOB_EXECUTION_ROLE,
         job_driver=JOB_DRIVER,

@@ -1,16 +1,5 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 import os
 import sys
@@ -29,6 +18,7 @@ def stack_defaults():
 
     os.environ["ADDF_PARAMETER_DAG_ID"] = "dag-id"
     os.environ["ADDF_PARAMETER_VPC_ID"] = "vpc-id"
+    os.environ["ADDF_PARAMETER_PRIVATE_SUBNET_IDS"] = '["subnet-12345", "subnet-54321"]'
     os.environ["ADDF_PARAMETER_MWAA_EXEC_ROLE"] = "mwaa-exec-role"
     os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"] = "full-access-policy-arn"
     os.environ["ADDF_PARAMETER_SOURCE_BUCKET"] = "source-bucket"
@@ -117,6 +107,15 @@ def test_vpc_id(stack_defaults):
         import app  # noqa: F401
 
         assert "missing input parameter vpc-id" in str(e)
+
+
+def test_private_subnet_ids(stack_defaults):
+    del os.environ["ADDF_PARAMETER_PRIVATE_SUBNET_IDS"]
+
+    with pytest.raises(Exception) as e:
+        import app  # noqa: F401
+
+        assert "missing input parameter private-subnet-ids" in str(e)
 
 
 def test_mwaa_exec_role(stack_defaults):
