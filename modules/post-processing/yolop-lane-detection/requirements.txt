@@ -8,7 +8,7 @@ attrs==23.1.0
     # via
     #   cattrs
     #   jsii
-aws-cdk-lib==2.20.0
+aws-cdk-lib==2.82.0
     # via
     #   -r requirements.in
     #   cdk-ecr-deployment
