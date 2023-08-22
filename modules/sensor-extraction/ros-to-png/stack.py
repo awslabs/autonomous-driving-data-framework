@@ -1,16 +1,5 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 import logging
 import os
@@ -20,9 +9,11 @@ import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
-from aws_cdk import Duration, RemovalPolicy, Stack, Tags
+import cdk_nag
+from aws_cdk import Aspects, Duration, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -153,4 +144,25 @@ class RosToPngBatchJob(Stack):
             platform_capabilities=[batch.PlatformCapabilities.EC2],
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),
+        )
+
+        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
+
+        NagSuppressions.add_stack_suppressions(
+            self,
+            apply_to_nested_stacks=True,
+            suppressions=[
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM4",
+                        "reason": "Managed Policies are for service account roles only",
+                    }
+                ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-IAM5",
+                        "reason": "Resource access restriced to ADDF resources",
+                    }
+                ),
+            ],
         )
