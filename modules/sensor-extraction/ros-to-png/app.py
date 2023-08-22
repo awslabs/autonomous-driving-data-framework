@@ -3,7 +3,7 @@
 
 import os
 
-from aws_cdk import App, CfnOutput, Environment
+from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
 from stack import RosToPngBatchJob
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
@@ -21,6 +21,7 @@ vcpus = int(os.getenv(_param("VCPUS"), 4))
 memory_limit_mib = int(os.getenv(_param("MEMORY_MIB"), 16384))
 resized_width = os.getenv(_param("RESIZED_WIDTH"))
 resized_height = os.getenv(_param("RESIZED_HEIGHT"))
+removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
 
 if resized_width:
     resized_width = int(resized_width)  # type: ignore
