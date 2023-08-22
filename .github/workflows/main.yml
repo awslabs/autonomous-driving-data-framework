@@ -71,7 +71,7 @@ jobs:
           pip install -r modules/sensor-extraction/ros-to-png/requirements.txt
           pip install -r modules/sensor-extraction/ros-to-png/requirements-dev.txt
       - name: ros-to-png static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-png/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-png/
       - name: PyTest based Unit Tests
         run: cd modules/sensor-extraction/ros-to-png/ && pytest
 
