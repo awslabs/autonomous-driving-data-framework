@@ -1,3 +1,6 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 import os
 
 from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
@@ -23,6 +26,10 @@ if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
 
 
+if platform not in ["FARGATE", "EC2"]:
+    raise ValueError("Platform must be either FARGATE or EC2")
+
+
 app = App()
 
 stack = RosToParquetBatchJob(
@@ -40,7 +47,7 @@ stack = RosToParquetBatchJob(
     vcpus=vcpus,
     memory_limit_mib=memory_limit_mib,
     s3_access_policy=full_access_policy,
-    removal_policy=RemovalPolicy.DESTROY if removal_policy.upper() == "DESTROY" else None,
+    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
 )
 
 CfnOutput(

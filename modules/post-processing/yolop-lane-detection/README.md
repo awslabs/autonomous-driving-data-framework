@@ -24,6 +24,9 @@ A sample piece of code that leverages this image as a Sagemaker Processing job i
 #### Required
 
 - `full-access-policy-arn`: Access policy from Datalake Bucket Core Module
+
+#### Optional
+- `removal-policy`: Elect to retain ECR repositories when deleting stacks
     
 ### Sample declaration 
 

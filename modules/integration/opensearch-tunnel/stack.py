@@ -1,16 +1,5 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 import json
 import logging
@@ -73,7 +62,7 @@ class TunnelStack(Stack):
         )
 
         # AMI
-        amzn_linux = ec2.MachineImage.latest_amazon_linux2023(  # type:ignore
+        amzn_linux = ec2.MachineImage.latest_amazon_linux2023(
             edition=ec2.AmazonLinuxEdition.STANDARD,
         )
 
@@ -118,6 +107,7 @@ class TunnelStack(Stack):
             self,
             "OSTunnel",
             instance_type=ec2.InstanceType("t2.micro"),
+            require_imdsv2=True,
             machine_image=amzn_linux,
             vpc=self.vpc,
             security_group=os_security_group,
