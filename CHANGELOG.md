@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updating `sensor-extraction/ros-to-png` with license and tests 
 - Deprecated rosbag-scene-detection module in favor of rosbag-image-pipeline module
 - changed license-headers on non-av/adas solution modules
+- updating `integration/ddb-to-opensearch` with license and tests
 
 ### **Removed**
 
