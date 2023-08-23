@@ -47,6 +47,7 @@ stack = RosToPngBatchJob(
     timeout_seconds=timeout_seconds,
     vcpus=vcpus,
     memory_limit_mib=memory_limit_mib,
+    s3_access_policy=full_access_policy,
     removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
     resized_width=resized_width,  # type: ignore
     resized_height=resized_height,  # type: ignore
