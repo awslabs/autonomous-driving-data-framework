@@ -39,6 +39,9 @@ where files exist in:
 - `timeout-seconds`: after how many seconds should a single container job timeout
 - `vcpus`: how many vcpus does a container need
 - `memory-mib`: how much ram does a container need
+
+#### Optional
+- `removal-policy`: Elect to retain ECR repositories when deleting stacks
     
 ### Sample declaration of AWS Batch Compute Configuration
 

@@ -10,7 +10,7 @@ import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import Aspects, Duration, Stack, Tags
+from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
 from cdk_nag import NagPackSuppression, NagSuppressions
@@ -34,6 +34,7 @@ class RosToPngBatchJob(Stack):
         memory_limit_mib: int,
         resized_width: int,
         resized_height: int,
+        removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -51,7 +52,13 @@ class RosToPngBatchJob(Stack):
         dep_mod = f"addf-{deployment_name}-{module_name}"
 
         self.repository_name = dep_mod
-        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
+        repo = ecr.Repository(
+            self,
+            id=self.repository_name,
+            repository_name=self.repository_name,
+            removal_policy=removal_policy,
+            auto_delete_images=True if removal_policy == RemovalPolicy.DESTROY else False,
+        )
 
         local_image = DockerImageAsset(
             self,
