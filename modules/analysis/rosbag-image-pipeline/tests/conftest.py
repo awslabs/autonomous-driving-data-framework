@@ -57,7 +57,9 @@ def moto_dynamodb():
 def moto_s3():
     with moto.mock_s3():
         s3 = boto3.client("s3")
-        s3.create_bucket(Bucket="mybucket")
+        s3.create_bucket(Bucket="mybucket", CreateBucketConfiguration={
+        'LocationConstraint': 'us-west-2'
+    })
         yield s3
 
 

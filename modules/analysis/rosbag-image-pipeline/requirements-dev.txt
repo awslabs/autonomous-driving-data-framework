@@ -3,8 +3,8 @@
 # Check the version of MWAA you are using and compare
 # to these versions
 
-apache-airflow~=2.5.2
-apache-airflow-providers-amazon
+apache-airflow==2.3.3
+apache-airflow-providers-amazon~=4.0.0
 Flask-Cors
 moto
 mypy-boto3-sqs
