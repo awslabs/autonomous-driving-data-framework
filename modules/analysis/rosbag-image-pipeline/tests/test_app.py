@@ -108,6 +108,7 @@ def test_vpc_id(stack_defaults):
 
         assert "missing input parameter vpc-id" in str(e)
 
+
 def test_private_subnet_ids(stack_defaults):
     del os.environ["ADDF_PARAMETER_PRIVATE_SUBNET_IDS"]
 
@@ -115,6 +116,7 @@ def test_private_subnet_ids(stack_defaults):
         import app  # noqa: F401
 
         assert "missing input parameter private-subnet-ids" in str(e)
+
 
 def test_mwaa_exec_role(stack_defaults):
     del os.environ["ADDF_PARAMETER_MWAA_EXEC_ROLE"]

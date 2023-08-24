@@ -19,14 +19,12 @@ from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
 from airflow.operators.python import PythonOperator
-from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
-from airflow.providers.amazon.aws.operators.emr_containers import EMRContainerOperator
-from airflow.providers.amazon.aws.sensors.emr_containers import EMRContainerSensor
+from airflow.providers.amazon.aws.operators.batch import BatchOperator
+from airflow.providers.amazon.aws.operators.emr import EmrContainerOperator, EmrServerlessStartJobOperator
+from airflow.providers.amazon.aws.sensors.emr import EmrContainerSensor, EmrServerlessJobSensor
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
-from emr_serverless.operators.emr import EmrServerlessStartJobOperator
-from emr_serverless.sensors.emr import EmrServerlessJobSensor
 from sagemaker.network import NetworkConfig
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 
@@ -204,7 +202,7 @@ def png_batch_operation(**kwargs):
     array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
     batch_id = kwargs["dag_run"].run_id
 
-    op = AwsBatchOperator(
+    op = BatchOperator(
         task_id="submit_batch_job_op",
         job_name=get_job_name("png"),
         job_queue=ON_DEMAND_JOB_QUEUE_ARN,
@@ -232,7 +230,7 @@ def parquet_operation(**kwargs):
     array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
     batch_id = kwargs["dag_run"].run_id
 
-    op = AwsBatchOperator(
+    op = BatchOperator(
         task_id="submit_parquet_job_op",
         job_name=get_job_name("parq"),
         job_queue=FARGATE_JOB_QUEUE_ARN,
