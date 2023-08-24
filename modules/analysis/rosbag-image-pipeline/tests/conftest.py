@@ -25,7 +25,13 @@ def moto_dynamodb():
 def moto_s3():
     with moto.mock_s3():
         s3 = boto3.client("s3")
-        s3.create_bucket(Bucket="mybucket")
+        try:
+            s3.create_bucket(
+                Bucket="mybucket",
+                CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+            )
+        except Exception as e:
+            print(f"bucket creation failed: {e}")
         yield s3
 
 
