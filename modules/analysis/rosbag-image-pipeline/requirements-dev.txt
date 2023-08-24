@@ -5,5 +5,10 @@
 
 apache-airflow~=2.5.2
 apache-airflow-providers-amazon~=7.2.1
+Flask-Cors
+moto
 mypy-boto3-sqs
 mypy-boto3-batch
+pytest-cov
+pytest-spark
+pyspark
