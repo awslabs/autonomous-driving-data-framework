@@ -22,6 +22,14 @@ def moto_dynamodb():
 
 
 @pytest.fixture(scope="function")
+def moto_s3():
+    with moto.mock_s3():
+        s3 = boto3.client("s3")
+        s3.create_bucket(Bucket="mybucket")
+        yield s3
+
+
+@pytest.fixture(scope="function")
 def moto_server():
     port = random.randint(5001, 8999)
     server = ThreadedMotoServer(port=port)
