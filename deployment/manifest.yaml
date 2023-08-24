@@ -1,0 +1,6 @@
+id: SO0062 # Solution Id
+name: av-adas-solution # hyphenated trademarked name
+version: 1.0.1 # current version of the solution. Used to verify template headers
+cloudformation_templates: # This list should match with AWS CloudFormation templates section of IG
+  - template: av-adas-solution.template
+    main_template: true # true/false

@@ -1,66 +1,147 @@
-# Autonomous Driving Data Framework(ADDF)
+# AV/ADAS Solution WIP
 
-<img src="https://github.com/awslabs/autonomous-driving-data-framework/blob/main/docs/images/logo.png?raw=true" width="300" alt="ADDF logo">
+AV/ADAS Solution
 
-ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualization, Compute, Storage, Centralized logging etc, deployed using [SeedFarmer](https://github.com/awslabs/seed-farmer) orchestration tool. ADDF allows you to build distinct, stand alone Infrastructure as code (IAAC) modules and exchange information about dependencies using metadata which can be exported from one module and imported into another. Each module can be found under the `modules` directory of this repository.
+## Table of Contents
 
-## Deployment Instructions
+## Architecture
 
-You can refer to the SeedFarmer [guide](https://seed-farmer.readthedocs.io/en/latest) to understand how SeedFarmer CLI can be used to bootstrap and deploy ADDF.
+The following image shows the architecture of ROSbag image pipeline solution
 
-You can follow instructions in the Deployment Guide [Readme](docs/deployment_guide.md). You can also follow the [blogpost](https://aws.amazon.com/blogs/industries/develop-and-deploy-a-customized-workflow-using-autonomous-driving-data-framework-addf-on-aws/) for understanding ADDF in detail.
+![ROSbag image pipeline](docs/architecture-1.jpg)
 
-Please see the [ADDF Security and Operations Guide](https://docs.aws.amazon.com/prescriptive-guidance/latest/addf-security-and-operations/welcome.html) for in-depth recommendations on assessing, deploying, customizing, and operating ADDF.
+### AWS CDK Constructs
 
-## Different types of modules supported by ADDF
+[AWS CDK Solutions Constructs](https://aws.amazon.com/solutions/constructs/) make it easier to consistently create
+well-architected applications. All AWS Solutions Constructs are reviewed by AWS and use best practices established by 
+the AWS Well-Architected Framework.
 
-### Use-case specific Modules
+## Deployment
 
-| Type | Description |
-| --- | --- |
-|  [Rosbag Scene Detection Module](modules/analysis/rosbag-scene-detection/README.md)  |  Deploys a Rosbag Scene Detection pipeline for use in ADDF  |  
-|  [Rosbag WebViz Module](modules/demo-only/rosbag-webviz/README.md) |  Deploys and Visualizes Rosbag Data on AWS using Webviz for use in ADDF  |
+You can launch this solution with one click from the AWS Solutions [landing page](REPLACE-ME).
 
-### Optional Modules
+To customize the solution, or to contribute to the solution, see [Creating a custom build](#creating-a-custom-build)
 
-| Type | Description |
-| --- | --- |
-|  [DataLake Buckets Module](modules/optionals/datalake-buckets/README.md) |  Deploys shared datalake buckets such as input, intermediate, output, logging, artifact buckets for use in ADDF  |
+## Configuration
 
-### Integration Modules
+## Creating a custom build
 
-| Type | Description |
-| --- | --- |
-|  [DDB to Opensearch Module](modules/integration/ddb-to-opensearch/README.md)  |  This module integrates DynamoDB table with Opensearch cluster  |
-|  [EKS to Opensearch Module](modules/integration/eks-to-opensearch/README.md) |  This module integrates EKS Cluster with Opensearch cluster  |
-|  [EMR to Opensearch Module](modules/integration/emr-to-opensearch/README.md)  |  This module integrates EMR Cluster with Opensearch cluster  |
-|  [Opensearch Proxy Module](modules/demo-only/opensearch-proxy/README.md)  |  This module deploys a Proxy server to access Opensearch cluster   |
+To customize the solution, follow the steps below:
 
-### Simulation Modules
+### Prerequisites
 
-| Type | Description |
-| --- | --- |
-|  [K8s-Managed Module](modules/simulations/k8s-managed/README.md)  |  This module helps running simulations on AWS EKS, when triggered by KubernetesJob Operator from airflow environment   |
-|  [AWS Batch Module](modules/simulations/batch-managed/README.md) |  This module helps running simulations on AWS Batch, when triggered by Batch Operator from airflow environment  |
+The following procedures assumes that all the OS-level configuration has been completed. They are:
 
-### IDE Modules
+* [AWS Command Line Interface](https://aws.amazon.com/cli/)
+* [Python](https://www.python.org/) 3.9 or newer
+* [AWS CDK](https://aws.amazon.com/cdk/) 2.70.0 or newer
 
-| Type | Description |
-| --- | --- |
-|  [Self Managed JupyterHub Module](modules/demo-only/jupyter-hub/README.md)  |  This module deploys self managed JupyterHub environment on AWS EKS  |
-|  [Self Managed VSCode Module](modules/demo-only/vscode-on-eks/README.md) |  This module deploys self managed VSCode environment on AWS EKS  |
-|  [AWS Managed EMR Studio Module](modules/beta/emrstudio-on-eks/README.md)  |  This module deploys AWS managed EMR Studio with EMR on EKS  |
+> **Please ensure you test the templates before updating any production deployments.**
 
-### Example Modules
+### 1. Download or clone this repo
 
-| Type | Description |
-| --- | --- |
-|  [Example DAG Module](modules/examples/example-dags/README.md)  |  This module deploys a pattern to integrate a target DAG module to work with shared MWAA Cluster  |
+```bash
+git clone REPLACE-ME
+```
 
-## Reporting Issues
+### 2. Create a Python virtual environment for development
 
-If you notice a defect, feel free to create an [Issue](https://github.com/awslabs/autonomous-driving-data-framework/issues)
+```bash
+python -m venv .venv 
+source ./.venv/bin/activate 
+cd ./source 
+pip install -r requirements-dev.txt 
+```
 
-### Deployment FAQ
+### 2. After introducing changes, run the unit tests to make sure the customizations don't break existing functionality
 
-If you need to debug a deployment in ADDF, here are few things you can checkout [Readme](docs/faq.md)
+```bash
+pytest --cov 
+```
+
+### 3. Build the solution for deployment
+
+#### Using SeedFarmer Python CLI (recommended)
+
+Packaging and deploying the solution with the AWS CDK allows for the most flexibility in development
+
+```bash
+cd ./source/infrastructure 
+
+# set environment variables required by the solution
+export BUCKET_NAME="my-bucket-name"
+
+# bootstrap CDK (required once - deploys a CDK bootstrap CloudFormation stack for assets)  
+cdk bootstrap --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess
+
+# build the solution 
+cdk synth
+
+# build and deploy the solution 
+cdk deploy
+```
+
+#### Using the solution build tools
+
+It is highly recommended to use the AWS CDK to deploy this solution (using the instructions above). While CDK is used to
+develop the solution, to package the solution for release as a CloudFormation template, use the `build-s3-cdk-dist`
+build tool: 
+
+```bash
+cd ./deployment
+
+export DIST_BUCKET_PREFIX=my-bucket-name  
+export SOLUTION_NAME=my-solution-name  
+export VERSION=my-version  
+export REGION_NAME=my-region
+
+build-s3-cdk-dist deploy \
+  --source-bucket-name DIST_BUCKET_PREFIX \
+  --solution-name SOLUTION_NAME \
+  --version_code VERSION \
+  --cdk-app-path ../source/infrastructure/deploy.py \
+  --cdk-app-entrypoint deploy:build_app \
+  --region REGION_NAME \
+  --sync
+```
+
+**Parameter Details**
+- `$DIST_BUCKET_PREFIX` - The S3 bucket name prefix. A randomized value is recommended. You will need to create an 
+  S3 bucket where the name is `<DIST_BUCKET_PREFIX>-<REGION_NAME>`. The solution's CloudFormation template will expect the
+  source code to be located in the bucket matching that name.
+- `$SOLUTION_NAME` - The name of This solution (example: solution-customization)
+- `$VERSION` - The version number to use (example: v0.0.1)
+- `$REGION_NAME` - The region name to use (example: us-east-1)
+
+This will result in all global assets being pushed to the `DIST_BUCKET_PREFIX`, and all regional assets being pushed to 
+`DIST_BUCKET_PREFIX-<REGION_NAME>`. If your `REGION_NAME` is us-east-1, and the `DIST_BUCKET_PREFIX` is
+`my-bucket-name`, ensure that both `my-bucket-name` and `my-bucket-name-us-east-1` exist and are owned by you. 
+
+After running the command, you can deploy the template:
+
+* Get the link of the `SOLUTION_NAME.template` uploaded to your Amazon S3 bucket
+* Deploy the solution to your account by launching a new AWS CloudFormation stack using the link of the template above.
+
+> **Note:** `build-s3-cdk-dist` will use your current configured `AWS_REGION` and `AWS_PROFILE`. To set your defaults, install the [AWS Command Line Interface](https://aws.amazon.com/cli/) and run `aws configure`.
+
+> **Note:** You can drop `--sync` from the command to only perform the build and synthesis of the template without uploading to a remote location. This is helpful when testing new changes to the code.
+
+## Collection of operational metrics
+This solution collects anonymous operational metrics to help AWS improve the quality of features of the solution.
+For more information, including how to disable this capability, please see the [implementation guide](https://docs.aws.amazon.com/prescriptive-guidance/latest/addf-security-and-operations/welcome.html).
+
+***
+
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License

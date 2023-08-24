@@ -1,0 +1,63 @@
+name: opensearch-tunnel
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/integration/opensearch-tunnel?ref=main
+parameters:
+  - name: opensearch-domain-endpoint
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchDomainEndpoint
+  - name: opensearch-sg-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchSecurityGroupId
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: port
+    value: '3333'
+---
+name: rosbag-ddb-to-os
+path: git::codecommit::us-west-2://addf-business-modules.git//modules/integration/ddb-to-opensearch?ref=main
+parameters:
+  - name: opensearch-domain-name
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchDomainName
+  - name: opensearch-domain-endpoint
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchDomainEndpoint
+  - name: opensearch-sg-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: opensearch
+        key: OpenSearchSecurityGroupId
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: rosbag_stream_arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: metadata-storage
+        key: RosbagSceneMetadataStreamArn
