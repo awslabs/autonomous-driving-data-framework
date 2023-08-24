@@ -24,7 +24,7 @@ def test_get_batch_file_metadata(moto_dynamodb):
     for item in items:
         table.put_item(Item=item)
     for item in items:
-        result = get_batch_file_metadata(table_name, item["pk"], "us-east-1")
+        result = get_batch_file_metadata(table_name, item["pk"], "us-west-2")
         assert len(result) > 0
 
 
