@@ -5,6 +5,7 @@ phases:
     commands:
       # CDK Version is defaulted to 2.82.0 if not mentioned using `-c`
       # Rosbag Image Pipeline
+      - apt-get install -y net-tools
       - bash gen-reports.sh -m analysis/rosbag-image-pipeline -r requirements-dev.txt
       # Storage
       - bash gen-reports.sh -m core/metadata-storage
