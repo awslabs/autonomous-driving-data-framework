@@ -1,0 +1,9 @@
+# ignore the following
+
+.venv
+cdk.out
+coverage
+Config
+^dist/
+.*/plugins/
+.*/html_dir/
