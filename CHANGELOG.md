@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated rosbag-scene-detection module in favor of rosbag-image-pipeline module
 - changed license-headers on non-av/adas solution modules
 - updating `integration/ddb-to-opensearch` with license and tests
-
+- reducing nested layer complexity of the `ddb-to-openasrch` lambda as per code-smell checks
 ### **Removed**
 
 =======
