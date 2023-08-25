@@ -7,9 +7,12 @@ import moto
 import pytest
 from moto.server import ThreadedMotoServer
 
-PWD = os.getcwd()
-DAG_CONFIG_PATH = f"{PWD}/image_dags/dag_config.py"
-DAG_CONFIG_BACKUP_PATH = f"{PWD}/image_dags/dag_config.bak"
+WD = os.getcwd()
+MODULE_PATH = "modules/analysis/rosbag-image-pipeline"
+if MODULE_PATH not in WD:
+    WD = f"{WD}/{MODULE_PATH}"
+DAG_CONFIG_PATH = f"{WD}/image_dags/dag_config.py"
+DAG_CONFIG_BACKUP_PATH = f"{WD}/image_dags/dag_config.bak"
 
 
 def pytest_configure(config):
