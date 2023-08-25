@@ -5,3 +5,4 @@
 
 apache-airflow~=2.5.2
 airflow-kubernetes-job-operator~=2.0.4
+certifi>=2023.7.22
