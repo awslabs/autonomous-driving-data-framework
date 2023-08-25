@@ -7,3 +7,4 @@ apache-airflow~=2.5.2
 apache-airflow-providers-amazon~=7.2.1
 mypy-boto3-sqs
 mypy-boto3-batch
+certifi>=2023.7.22

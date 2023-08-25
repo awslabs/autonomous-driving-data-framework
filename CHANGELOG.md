@@ -36,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updating `integration/ddb-to-opensearch` with license and tests
 - reducing nested layer complexity of the `ddb-to-opensearch` lambda as per code-smell checks
 - updating `certifi>=2023.7.22` for requirements-dev.* on the following modules
+  - analysis/aws-batch-demo
+  - analysis/rosbag-image-pipeline
   - integration/efs-on-eks
   - mlops/kuebflow-platform
   - mlops/kubeflow-users
@@ -43,6 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - post-processing/yolo-object-detection
   - post-processing/yolop-lane-detetion
   - sensor-extraction/ros-to-png
+  - sensor-extraction/ros-to-parquet
+  - simulations/batch-managed
+  - simulations/k8s-managed
 ### **Removed**
 
 =======
