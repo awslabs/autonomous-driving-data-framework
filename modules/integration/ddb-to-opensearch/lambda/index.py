@@ -3,6 +3,7 @@
 
 import os
 from datetime import date
+from typing import Any, Dict
 
 import boto3
 import requests
@@ -25,6 +26,12 @@ def get_url() -> str:
     return f"https://{host}/{index}-{ts}/{type}/"
 
 
+def process_doc(records: Dict[Any, Any], doc: Dict[Any, Any]) -> None:
+    for key, value in records.items():
+        for param, val in value.items():
+            doc[key] = val
+
+
 def handler(event, _context) -> str:
     count = 0
     for record in event["Records"]:
@@ -34,9 +41,7 @@ def handler(event, _context) -> str:
             doc["scene_id"] = id_p
             doc["bag_file"] = record["dynamodb"]["Keys"]["bag_file"]["S"]
             document = record["dynamodb"]["NewImage"]
-            for key, value in document.items():
-                for param, val in value.items():
-                    doc[key] = val
+            process_doc(records=document, doc=doc)
             try:
                 requests.put(get_url() + id_p, auth=awsauth, json=doc, headers=headers)
             except requests.exceptions.InvalidURL:
