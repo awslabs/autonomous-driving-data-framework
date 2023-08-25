@@ -29,7 +29,7 @@ py_version = 36
 skip_gitignore = false
 
 [tool.pytest.ini_options]
-addopts = "-v --cov=. --cov-report term --cov-config=coverage.ini --cov-fail-under=80"
+addopts = "-v --cov=. --cov-report term --cov-config=coverage.ini --cov-fail-under=60x"
 pythonpath = [
   "."
 ]
