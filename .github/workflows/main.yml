@@ -53,7 +53,7 @@ jobs:
       - name: PyTest based Unit Tests
         run: cd modules/analysis/rosbag-image-pipeline/ && pytest
 
-  modules-ros-sensor-extraction:
+  modules-sensor-ros-png:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -68,12 +68,35 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
-      - name: ros-to-parquet static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-parquet/ --skip-static-checks
+          pip install -r modules/sensor-extraction/ros-to-png/requirements.txt
+          pip install -r modules/sensor-extraction/ros-to-png/requirements-dev.txt
       - name: ros-to-png static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-png/ --skip-static-checks
+        run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-png/
       - name: PyTest based Unit Tests
         run: cd modules/sensor-extraction/ros-to-png/ && pytest
+
+  modules-sensor-ros-parquet:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -r modules/sensor-extraction/ros-to-parquet/requirements.txt
+          pip install -r modules/sensor-extraction/ros-to-parquet/requirements-dev.txt
+      - name: ros-to-parquet static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/sensor-extraction/ros-to-parquet/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/sensor-extraction/ros-to-parquet/ && pytest
+
 
   modules-object-detection-yolo:
     runs-on: ubuntu-latest
@@ -305,6 +328,27 @@ jobs:
         run: scripts/validate.sh --language python --path modules/integration/emr-to-opensearch/ --skip-static-checks
       - name: PyTest based Unit Tests
         run: cd modules/integration/emr-to-opensearch/ && pytest
+
+  modules-integration-opensearch-tunnel:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r modules/integration/opensearch-tunnel/requirements.txt
+          pip install -r requirements-dev.txt
+      - name: Static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path modules/integration/opensearch-tunnel/ --skip-static-checks
+      - name: PyTest based Unit Tests
+        run: cd modules/integration/opensearch-tunnel/ && pytest
 
   modules-optionals-datalake-buckets:
     runs-on: ubuntu-latest

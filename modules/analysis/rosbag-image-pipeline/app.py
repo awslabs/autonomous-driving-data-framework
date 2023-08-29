@@ -1,6 +1,11 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+
+import json
 import os
 
 from aws_cdk import App, CfnOutput, Environment
+
 from stack import AwsBatchPipeline
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
@@ -13,11 +18,14 @@ def _param(name: str) -> str:
 
 dag_id = os.getenv(_param("DAG_ID"))  # required
 vpc_id = os.getenv(_param("VPC_ID"))  # required
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
 mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
-
+dag_bucket_name = os.getenv(_param("DAG_BUCKET_NAME"))
+log_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
+detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
 fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
@@ -41,25 +49,28 @@ sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
 
 
 if not png_batch_job_def_arn:
-    raise Exception("missing input parameter png-batch-job-def-arn")
+    raise ValueError("missing input parameter png-batch-job-def-arn")
 
 if not parquet_batch_job_def_arn:
-    raise Exception("missing input parameter parquet-batch-job-def-arn")
+    raise ValueError("missing input parameter parquet-batch-job-def-arn")
 
 if not object_detection_role:
-    raise Exception("missing input parameter object-detection-iam-role")
+    raise ValueError("missing input parameter object-detection-iam-role")
 
 if not object_detection_image_uri:
-    raise Exception("missing input parameter object-detection-image-uri")
+    raise ValueError("missing input parameter object-detection-image-uri")
 
 if not lane_detection_role:
-    raise Exception("missing input parameter lane-detection-iam-role")
+    raise ValueError("missing input parameter lane-detection-iam-role")
 
 if not lane_detection_image_uri:
-    raise Exception("missing input parameter lane-detection-image-uri")
+    raise ValueError("missing input parameter lane-detection-image-uri")
 
 if not vpc_id:
-    raise Exception("missing input parameter vpc-id")
+    raise ValueError("missing input parameter vpc-id")
+
+if not private_subnet_ids:
+    raise ValueError("missing input parameter private-subnet-ids")
 
 if not mwaa_exec_role:
     raise ValueError("MWAA Execution Role is missing.")
@@ -89,18 +100,22 @@ stack = AwsBatchPipeline(
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
 )
-import json
 
 CfnOutput(
     scope=stack,
     id="metadata",
     value=stack.to_json_string(
         {
+            "PrivateSubnetIds": private_subnet_ids,
             "DagId": dag_id,
+            "SecurityGroupId": stack.sm_sg.security_group_id,
             "DagRoleArn": stack.dag_role.role_arn,
             "DynamoDbTableName": stack.tracking_table_name,
+            "DetectionsDynamoDBName": detection_ddb_name,
             "SourceBucketName": source_bucket_name,
             "TargetBucketName": target_bucket_name,
+            "DagBucketName": dag_bucket_name,
+            "LogsBucketName": log_bucket_name,
             "OnDemandJobQueueArn": on_demand_job_queue,
             "SpotJobQueueArn": spot_job_queue,
             "FargateJobQueueArn": fargate_job_queue,

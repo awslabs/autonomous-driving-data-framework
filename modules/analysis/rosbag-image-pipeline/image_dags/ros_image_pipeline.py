@@ -1,16 +1,5 @@
-#  Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License").
-#    You may not use this file except in compliance with the License.
-#    You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS,
-#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#    See the License for the specific language governing permissions and
-#    limitations under the License.
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
 
 
 import json
@@ -31,15 +20,28 @@ from airflow.exceptions import AirflowException
 from airflow.models import Connection
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
+from airflow.providers.amazon.aws.operators.emr_containers import EMRContainerOperator
+from airflow.providers.amazon.aws.sensors.emr_containers import EMRContainerSensor
 from airflow.utils.dates import days_ago
 from airflow.utils.task_group import TaskGroup
 from boto3.dynamodb.conditions import Key
+from emr_serverless.operators.emr import EmrServerlessStartJobOperator
+from emr_serverless.sensors.emr import EmrServerlessJobSensor
+from sagemaker.network import NetworkConfig
 from sagemaker.processing import ProcessingInput, ProcessingOutput, Processor
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from batch_creation_and_tracking import add_drives_to_batch
-from dag_config import ADDF_MODULE_METADATA, DEPLOYMENT_NAME, MODULE_NAME, REGION
+from dag_config import (
+    ADDF_MODULE_METADATA,
+    DEPLOYMENT_NAME,
+    EMR_APPLICATION_ID,
+    EMR_JOB_EXECUTION_ROLE,
+    MODULE_NAME,
+    REGION,
+    S3_SCRIPT_DIR,
+)
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
 addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
@@ -50,9 +52,10 @@ FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
 ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
 SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
 TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
-
 FILE_SUFFIX = addf_module_metadata["FileSuffix"]
 
+PRIVATE_SUBNETS_IDS = addf_module_metadata["PrivateSubnetIds"]
+SM_SECURITY_GROUP_ID = addf_module_metadata["SecurityGroupId"]
 PNG_JOB_DEFINITION_ARN = addf_module_metadata["PngBatchJobDefArn"]
 DESIRED_ENCODING = addf_module_metadata["DesiredEncoding"]
 IMAGE_TOPICS = addf_module_metadata["ImageTopics"]
@@ -71,6 +74,20 @@ LANEDET_ROLE = addf_module_metadata["LaneDetectionRole"]
 LANEDET_CONCURRENCY = addf_module_metadata["LaneDetectionJobConcurrency"]
 LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
 
+# EMR Config
+# spark_app_dir = f"s3://{addf_module_metadata['DagBucketName']}/spark_jobs/"
+# EMR_VIRTUAL_CLUSTER_ID = addf_module_metadata['EmrVirtualClusterId']
+# EMR_JOB_ROLE_ARN = addf_module_metadata['EmrJobRoleArn']
+# ARTIFACT_BUCKET = addf_module_metadata["DagBucketName"]
+LOGS_BUCKET = addf_module_metadata["LogsBucketName"]
+SCENE_TABLE = addf_module_metadata["DetectionsDynamoDBName"]
+
+CONFIGURATION_OVERRIDES = {
+    "monitoringConfiguration": {
+        "managedPersistenceMonitoringConfiguration": {"enabled": True},
+        "s3MonitoringConfiguration": {"logUri": f"s3://{LOGS_BUCKET}/scene-detection"},
+    }
+}
 
 account = boto3.client("sts").get_caller_identity().get("Account")
 
@@ -177,7 +194,7 @@ def create_batch_of_drives(ti, **kwargs):
 
 
 def get_job_name(suffix="") -> str:
-    v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
+    v = "".join(random.choice(string.ascii_lowercase) for _i in range(6))
     return f"ros-image-pipeline-{suffix}-{v}"
 
 
@@ -236,7 +253,6 @@ def parquet_operation(**kwargs):
 
 
 def sagemaker_yolo_operation(**kwargs):
-
     # Establish AWS API Connections
     sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
@@ -274,6 +290,7 @@ def sagemaker_yolo_operation(**kwargs):
             instance_count=1,
             instance_type=YOLO_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-YOLO",
+            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS, security_group_ids=[SM_SECURITY_GROUP_ID]),
         )
 
         idx_start = i * YOLO_CONCURRENCY
@@ -314,7 +331,6 @@ def sagemaker_yolo_operation(**kwargs):
 
 
 def sagemaker_lanedet_operation(**kwargs):
-
     # Establish AWS API Connections
     sts_client = boto3.client("sts")
     assumed_role_object = sts_client.assume_role(RoleArn=DAG_ROLE, RoleSessionName="AssumeRoleSession1")
@@ -352,6 +368,7 @@ def sagemaker_lanedet_operation(**kwargs):
             instance_count=1,
             instance_type=LANEDET_INSTANCE_TYPE,
             base_job_name=f"{batch_id.replace(':', '').replace('_', '')[0:23]}-LANE",
+            network_config=NetworkConfig(subnets=PRIVATE_SUBNETS_IDS, security_group_ids=[SM_SECURITY_GROUP_ID]),
         )
         LOCAL_INPUT = "/opt/ml/processing/input/image"
         LOCAL_OUTPUT = "/opt/ml/processing/output/image"
@@ -414,6 +431,42 @@ def sagemaker_lanedet_operation(**kwargs):
         logger.info("All object detection jobs complete")
 
 
+def emr_batch_operation(**kwargs):
+    ds = kwargs["ds"]
+    batch_id = kwargs["dag_run"].run_id
+
+    JOB_DRIVER = {
+        "sparkSubmit": {
+            "entryPoint": f"{S3_SCRIPT_DIR}detect_scenes.py",
+            "entryPointArguments": [
+                "--batch-metadata-table-name",
+                DYNAMODB_TABLE,
+                "--batch-id",
+                batch_id,
+                "--output-bucket",
+                TARGET_BUCKET,
+                "--region",
+                REGION,
+                "--output-dynamo-table",
+                SCENE_TABLE,
+            ],
+            "sparkSubmitParameters": f"--jars {S3_SCRIPT_DIR}spark-dynamodb_2.12-1.1.1.jar",
+        }
+    }
+
+    start_job_run_op = EmrServerlessStartJobOperator(
+        task_id="scene_detection",
+        application_id=EMR_APPLICATION_ID,
+        execution_role_arn=EMR_JOB_EXECUTION_ROLE,
+        job_driver=JOB_DRIVER,
+        configuration_overrides=CONFIGURATION_OVERRIDES,
+        aws_conn_id="aws_default",
+    )
+
+    job_run_id = start_job_run_op.execute(ds)
+    return job_run_id
+
+
 with DAG(
     dag_id=DAG_ID,
     default_args=DEFAULT_ARGS,
@@ -422,7 +475,6 @@ with DAG(
     schedule_interval="@once",
     render_template_as_native_obj=True,
 ) as dag:
-
     create_aws_conn = PythonOperator(
         task_id="try-create-aws-conn",
         python_callable=try_create_aws_conn,
@@ -438,7 +490,6 @@ with DAG(
 
     # Start Task Group definition
     with TaskGroup(group_id="sensor-extraction") as extract_task_group:
-
         submit_png_job = PythonOperator(task_id="image-extraction-batch-job", python_callable=png_batch_operation)
         submit_parquet_job = PythonOperator(task_id="parquet-extraction-batch-job", python_callable=parquet_operation)
         create_batch_of_drives_task >> [submit_parquet_job, submit_png_job]
@@ -453,5 +504,16 @@ with DAG(
             python_callable=sagemaker_lanedet_operation,
         )
 
+    with TaskGroup(group_id="scene-detection") as scene_detection_task_group:
+        start_job_run = PythonOperator(task_id="scene-detection", python_callable=emr_batch_operation)
+
+        job_sensor = EmrServerlessJobSensor(
+            task_id=f"check-emr-job-status",
+            application_id=EMR_APPLICATION_ID,
+            job_run_id="{{ task_instance.xcom_pull(task_ids='scene-detection.scene-detection', key='return_value') }}",
+            aws_conn_id="aws_default",
+        )
+        start_job_run >> job_sensor
+
     create_aws_conn >> create_batch_of_drives_task >> extract_task_group
-    submit_png_job >> image_labelling_task_group
+    submit_png_job >> image_labelling_task_group >> scene_detection_task_group

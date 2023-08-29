@@ -10,10 +10,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+- adding new `integration/opensearch-tunnel` module
+- Added unit-tests, enabled logging and versioning on buckets for datalake-buckets module
+- Added Unit tests to metadata-storage module
+
+
 ### **Changed**
 
 - Improve the existing example-tf module to demonstrate how to use terraform.tfvars file and establish the wiring between root variables.tf, module level variables.tf and vars/terraform.tfvars per env
-
+- Refactored YOLOP Lane detection module
+- Refactored Rosbag Image pipeline module to include scene detection workflow in the DAG and standardized inputs consumption from external modules
+- Added manifest files supporting AV/ADAS as AWS-Solutions
+- updating `sensor-extraction/ros-to-parquet` with license and tests 
+- Deprecated rosbag-scene-detection module in favor of rosbag-image-pipeline module
+- changed license-headers on non-av/adas solution modules
+- updating `post-processing/yolop-lane-detection` with license and tests
+- updating `post-processing/yolo-object-detection` with license and tests
+- syncing `integration/opensearch-tunnel` module
+- CDK version change, changed license-headers on datalake-buckets module
+- CDK Version change, sonar checks improvements and changed license-headers on metadata-storage module
+- upgraded CDK version, changed the license-headers, deployed sagemaker jobs inside VPC sonar code improvements on rosbag-image-pipeline module
+- updating `sensor-extraction/ros-to-png` with license and tests 
+- Deprecated rosbag-scene-detection module in favor of rosbag-image-pipeline module
+- changed license-headers on non-av/adas solution modules
+- updating `integration/ddb-to-opensearch` with license and tests
+- reducing nested layer complexity of the `ddb-to-opensearch` lambda as per code-smell checks
+- updating `certifi>=2023.7.22` for requirements-dev.* on the following modules
+  - analysis/aws-batch-demo
+  - analysis/rosbag-image-pipeline
+  - integration/efs-on-eks
+  - mlops/kuebflow-platform
+  - mlops/kubeflow-users
+  - post-processing/lane-detection
+  - post-processing/yolo-object-detection
+  - post-processing/yolop-lane-detetion
+  - sensor-extraction/ros-to-png
+  - sensor-extraction/ros-to-parquet
+  - simulations/batch-managed
+  - simulations/k8s-managed
 ### **Removed**
 
 =======

@@ -11,3 +11,4 @@ pyroma
 pytest
 types-PyYAML
 types-setuptools
+certifi>=2023.7.22

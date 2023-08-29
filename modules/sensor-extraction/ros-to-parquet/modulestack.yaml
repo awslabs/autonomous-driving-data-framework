@@ -32,7 +32,8 @@ Resources:
               - "ecr:Get*"
               - "ecr:List*"
               - "ecr:BatchGetImage"
-            Resource: '*'
+            Resource:
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - ecr:*
