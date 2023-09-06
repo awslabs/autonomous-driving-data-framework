@@ -223,27 +223,6 @@ jobs:
       - name: PyTest based Unit Tests
         run: cd modules/examples/example-spark-dags/ && pytest
 
-  modules-analysis-aws-batch-demo:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.9]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
-          pip install -r modules/analysis/aws-batch-demo/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
-        run: scripts/validate.sh --language python --path modules/analysis/aws-batch-demo/
-      - name: PyTest based Unit Tests
-        run: cd modules/analysis/aws-batch-demo/ && pytest
-
   modules-core-metadata-storage:
     runs-on: ubuntu-latest
     strategy:
