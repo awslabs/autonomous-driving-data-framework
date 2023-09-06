@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - sensor-extraction/ros-to-parquet
   - simulations/batch-managed
   - simulations/k8s-managed
+- Refactored Rosbag Image pipeline module to work with mwaa 2.6.3
+
 ### **Removed**
 
 =======
