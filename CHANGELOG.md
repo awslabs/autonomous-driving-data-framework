@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Removed**
 
 - removed `aws-batch-demo` module since its no longer used for demos
+- removed `setup.py`files for sensor extraction and labelling modules
 
 =======
 
