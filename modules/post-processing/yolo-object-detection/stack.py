@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from typing import Any, cast
+from typing import Any, Optional, cast
 
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import Aspects, Duration, Stack, Tags
+from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -23,6 +23,7 @@ class ObjectDetection(Stack):
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
+        removal_policy: Optional[RemovalPolicy] = RemovalPolicy.DESTROY,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -39,7 +40,15 @@ class ObjectDetection(Stack):
         dep_mod = f"addf-{deployment_name}-{module_name}"
 
         self.repository_name = dep_mod
-        repo = ecr.Repository(self, id=self.repository_name, repository_name=self.repository_name)
+
+        repo = ecr.Repository(
+            self,
+            id=self.repository_name,
+            repository_name=self.repository_name,
+            removal_policy=removal_policy,
+            auto_delete_images=True if removal_policy == RemovalPolicy.DESTROY else False,
+        )
+
         self.image_uri = f"{repo.repository_uri}:latest"
 
         policy_statements = [

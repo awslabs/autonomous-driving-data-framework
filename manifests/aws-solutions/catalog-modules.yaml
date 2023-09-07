@@ -1,0 +1,9 @@
+name: app-reg
+path: git::codecommit::us-west-2://addf-infra-modules.git//modules/service-catalog/app-registry
+parameters:
+  - name: solution-id
+    value: id
+  - name: solution-name
+    value: name
+  - name: solution-version
+    value: version

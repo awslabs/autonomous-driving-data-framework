@@ -34,7 +34,7 @@ Resources:
               - "ecr:BatchGetImage"
             Resource:
               - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
-              - !Sub "arn:aws:ecr:*:*:repository/pytorch-inference*"
+              - "arn:aws:ecr:*:*:repository/pytorch-inference*"
           - Effect: Allow
             Action:
               - ecr:*

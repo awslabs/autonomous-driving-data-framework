@@ -44,12 +44,7 @@ Resources:
               - "ecr:PutImage"
             Resource:
               - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
-              - !Sub "arn:aws:ecr:*:*:repository/pytorch-inference*"
-          # - Effect: Allow
-          #   Action:
-          #     - ecr:*
-          #   Resource:
-          #     - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
+              - "arn:aws:ecr:*:*:repository/pytorch-inference*"
           - Action:
               - "iam:CreateServiceLinkedRole"
             Effect: Allow

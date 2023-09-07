@@ -14,6 +14,7 @@ sys.path.append(BASE_DIR)
 print(sys.path)
 import cv2
 import numpy as np
+import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
@@ -26,7 +27,6 @@ from lib.utils import plot_one_box, show_seg_result
 from lib.utils.utils import create_logger, select_device, time_synchronized
 from numpy import random
 from tqdm import tqdm
-import pandas as pd
 
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 
@@ -165,8 +165,7 @@ def detect(cfg, opt):
         name_lane = [Path(path).name, json.dumps(ll_seg_mask, cls=NumpyEncoder)]
         name_lanes.append(name_lane)
 
-    df = pd.DataFrame(name_lanes, columns=['source_image',
-                                           'lanes'])
+    df = pd.DataFrame(name_lanes, columns=["source_image", "lanes"])
     df.to_csv(path_or_buf=os.path.join(opt.csv_path, "lanes.csv"), index=False)
 
     print("Results saved to %s" % Path(opt.save_dir))

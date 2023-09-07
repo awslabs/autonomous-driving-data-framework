@@ -3,7 +3,7 @@
 
 import os
 
-from aws_cdk import App, CfnOutput, Environment
+from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
 
 from stack import ObjectDetection
 
@@ -16,6 +16,7 @@ def _param(name: str) -> str:
 
 
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
+removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
@@ -32,6 +33,7 @@ stack = ObjectDetection(
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
     s3_access_policy=full_access_policy,
+    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
 )
 
 base_image = (
