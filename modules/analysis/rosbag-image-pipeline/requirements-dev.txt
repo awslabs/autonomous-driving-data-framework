@@ -12,8 +12,7 @@ mypy-boto3-batch
 pytest-cov
 pytest-spark
 pyspark
-Pillow~=9.0.1
-boto3-stubs[essential]~=1.21.37
-mypy-boto3-batch~=1.22.8
+Pillow~=9.3.0
 sagemaker==2.180.0
+certifi>=2023.7.22
 emr_serverless @ https://github.com/aws-samples/emr-serverless-samples/releases/download/v1.0.1/mwaa_plugin.zip

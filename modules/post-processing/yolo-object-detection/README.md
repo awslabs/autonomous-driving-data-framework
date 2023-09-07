@@ -33,6 +33,9 @@ where files exist in:
 #### Required
 
 - `full-access-policy-arn`: Access policy from Datalake Bucket Core Module
+
+#### Optional
+- `removal-policy`: Elect to retain ECR repositories when deleting stacks
     
 ### Sample declaration of AWS Batch Compute Configuration
 
