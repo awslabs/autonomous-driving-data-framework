@@ -80,7 +80,6 @@ def get_drive_files(src_bucket, src_prefix, file_suffix, s3_client):
 
 
 def batch_write_files_to_dynamo(table, drives_and_files, batch_id):
-
     with table.batch_writer() as batch:
         idx = 0
         for drive_id, files in drives_and_files.items():

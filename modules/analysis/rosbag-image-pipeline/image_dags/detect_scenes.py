@@ -250,7 +250,6 @@ def main(
 
 
 if __name__ == "__main__":
-
     spark = SparkSession.builder.appName("scene-detection").getOrCreate()
 
     sc = spark.sparkContext
