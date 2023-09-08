@@ -1,0 +1,53 @@
+name: Sync GitHub with AWS CodeCommit for AV/ADAS Solutions
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "av-adas-solution" branch
+  push:
+    branches: ["av-adas-solution"]
+  pull_request:
+    branches: ["av-adas-solution"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Permission can be added at job level or workflow level    
+permissions:
+      id-token: write   # This is required for requesting the JWT
+      contents: read    # This is required for actions/checkout
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # if: github.ref == 'refs/heads/addf-sonarscan-branch'
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v3
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: arn:aws:iam::180024969694:role/GitHubAction-AssumeRoleWithAction #change to reflect your IAM role’s ARN
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: us-west-2
+      - name: Install utilities
+        run: |
+          pip install git-remote-codecommit
+          git clone codecommit::us-west-2://av-adas-solution
+          ls -al
+          ls -al av-adas-solution
+
+          echo "Copying modules one after the other"
+          cp -R modules/analysis/rosbag-image-pipeline av-adas-solution/source/modules/analysis/
+          cp -R modules/core/metadata-storage av-adas-solution/source/modules/core
+          ls -al av-adas-solution/source/modules/
+          echo "Copyied modules"
+          cd av-adas-solution/
+          git config --global user.email "ssriche@amazon.com"
+          git config --global user.name "Srinivas"
+          git config --global init.defaultBranch main
+          git branch -a
+          git add -A
+          git status
+          git commit -m "sync gh with cc"
+          git remote -v
+          git status
+          git push origin main
