@@ -12,6 +12,8 @@ groups:
     path: manifests/aws-solutions/aws-analysis-modules.yaml
   - name: integration
     path: manifests/aws-solutions/integration-modules.yaml
+  - name: catalog
+    path: manifests/aws-solutions/catalog-modules.yaml
 targetAccountMappings:
   - alias: primary
     accountId: 180024969694
