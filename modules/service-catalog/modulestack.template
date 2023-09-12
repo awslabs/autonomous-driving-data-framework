@@ -18,9 +18,6 @@ Resources:
     Properties:
       PolicyDocument:
         Statement:
-          - Effect: Allow
-            Action: '*'
-            Resource: '*'
         Version: 2012-10-17
-      PolicyName: "app-template-modulespecific-policy"
+      PolicyName: "service-catalog-modulespecific-policy"
       Roles: [!Ref RoleName]

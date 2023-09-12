@@ -18,9 +18,6 @@ Resources:
     Properties:
       PolicyDocument:
         Statement:
-          - Effect: Allow
-            Action: '*'
-            Resource: '*'
         Version: 2012-10-17
-      PolicyName: "filestorage-modulespecific-policy"
+      PolicyName: "efs-on-eks-modulespecific-policy"
       Roles: [!Ref RoleName]
