@@ -19,5 +19,5 @@ Resources:
       PolicyDocument:
         Statement:
         Version: 2012-10-17
-      PolicyName: addf-modulespecific-policy
+      PolicyName: os-tunnel-modulespecific-policy
       Roles: [!Ref RoleName]
