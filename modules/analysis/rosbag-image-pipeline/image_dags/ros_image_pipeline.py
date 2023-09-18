@@ -453,6 +453,8 @@ def emr_batch_operation(**kwargs):
                 REGION,
                 "--output-dynamo-table",
                 SCENE_TABLE,
+                "--image-topics",
+                json.dumps(IMAGE_TOPICS),
             ],
             "sparkSubmitParameters": f"--jars {S3_SCRIPT_DIR}spark-dynamodb_2.12-1.1.1.jar",
         }
