@@ -50,7 +50,7 @@ parameters:
   - name: encryption-type
     value: SSE
   - name: retention-type
-    value: RETAIN
+    value: DESTROY
   - name: vpc-id
     valueFrom:
       moduleMetadata:

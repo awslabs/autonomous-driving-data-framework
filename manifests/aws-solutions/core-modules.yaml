@@ -79,6 +79,8 @@ parameters:
 name: opensearch
 path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch
 parameters:
+  - name: retention-type
+    value: DESTROY
   - name: opensearch_data_nodes
     value: 1
   - name: opensearch_data_nodes_instance_type
