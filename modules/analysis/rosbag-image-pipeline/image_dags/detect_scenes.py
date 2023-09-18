@@ -7,7 +7,19 @@ import sys
 import boto3
 import pyspark.sql.functions as func
 from pyspark.sql import SparkSession, Window
-from pyspark.sql.functions import aggregate, col, collect_list, concat, count, first, from_json, lit, split, sum, concat_ws
+from pyspark.sql.functions import (
+    aggregate,
+    col,
+    collect_list,
+    concat,
+    concat_ws,
+    count,
+    first,
+    from_json,
+    lit,
+    split,
+    sum,
+)
 from pyspark.sql.types import ArrayType, DoubleType, IntegerType, StringType, StructField, StructType
 
 obj_schema = StructType(
@@ -78,15 +90,19 @@ def get_batch_file_metadata(table_name, batch_id, region):
 def load_obj_detection(spark, batch_metadata, image_topics):
     path_list = []
     for item in batch_metadata:
-        for resizied_image_dir in item['resized_image_dirs']:
-            if image_topics and len(image_topics)>0:
+        for resizied_image_dir in item["resized_image_dirs"]:
+            if image_topics and len(image_topics) > 0:
                 for t in image_topics:
                     if t in resizied_image_dir:
                         print(f"Found topic in resized image dirs, adding")
-                        path_list.append(f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv")
+                        path_list.append(
+                            f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
+                        )
             else:
                 print(f"No specified topics...adding ")
-                path_list.append(f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv")
+                path_list.append(
+                    f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
+                )
 
     df = spark.read.schema(obj_schema).option("header", True).csv(path_list)
     print(f"Number of rows in Object Detection dataframe")
@@ -96,10 +112,8 @@ def load_obj_detection(spark, batch_metadata, image_topics):
 
 def load_lane_detection(spark, batch_metadata):
     first_item = batch_metadata[0]
-    first_path_prefix = first_item['resized_image_dirs'][0]
-    first_path = (
-        f"s3://{first_item['raw_image_bucket']}/{first_path_prefix}_post_lane_dets/lanes.csv"
-    )
+    first_path_prefix = first_item["resized_image_dirs"][0]
+    first_path = f"s3://{first_item['raw_image_bucket']}/{first_path_prefix}_post_lane_dets/lanes.csv"
 
     first_item_split = first_item["s3_key"].rpartition("/")
     bag_file_prefix = first_item_split[0]
@@ -115,7 +129,7 @@ def load_lane_detection(spark, batch_metadata):
 
     for i in range(1, len(batch_metadata)):
         item = batch_metadata[i]
-        for resizied_image_dir in item['resized_image_dirs']:
+        for resizied_image_dir in item["resized_image_dirs"]:
             path = f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_lane_dets/lanes.csv"
             item_split = item["s3_key"].rpartition("/")
             bag_file_prefix = item_split[0]
@@ -154,7 +168,6 @@ def write_results_dynamo(df, output_dynamo_table, region):
 #     df=(df.dropDuplicates())
 #     df=(df.select(concat_ws('-',df.source_image,df._c0).alias("source_image_index"),"*"))
 #     df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format("dynamodb").save()
-
 
 
 def summarize_truck_in_lane_scenes(obj_lane_df, image_topics):
@@ -205,7 +218,7 @@ def summarize_truck_in_lane_scenes(obj_lane_df, image_topics):
             func.concat(func.col("bag_file"), func.lit("_TruckInLane_"), func.col("start_time")),
         )
         .withColumn("scene_length", func.col("end_time") - func.col("start_time"))
-        .withColumn("topics_analyzed",func.lit(",".join(image_topics)))
+        .withColumn("topics_analyzed", func.lit(",".join(image_topics)))
     )
 
     return truck_in_lane_scenes_df
@@ -259,7 +272,7 @@ def summarize_car_in_lane_scenes(obj_lane_df, image_topics):
             func.concat(func.col("bag_file"), func.lit("_CarInLane_"), func.col("start_time")),
         )
         .withColumn("scene_length", func.col("end_time") - func.col("start_time"))
-        .withColumn("topics_analyzed",func.lit(",".join(image_topics)))
+        .withColumn("topics_analyzed", func.lit(",".join(image_topics)))
     )
 
     return cars_in_lane_scenes_df
@@ -280,15 +293,12 @@ def main(
 
     if image_topics:
         import json
+
         image_topics = json.loads(image_topics)
-        image_topics = [topic.replace("/","_")for topic in image_topics if image_topics]
+        image_topics = [topic.replace("/", "_") for topic in image_topics if image_topics]
 
     # Load topic data from s3 and union
-    obj_df= load_obj_detection(
-        spark,
-        batch_metadata=batch_metadata,
-        image_topics=image_topics
-    )
+    obj_df = load_obj_detection(spark, batch_metadata=batch_metadata, image_topics=image_topics)
 
     lane_df = load_lane_detection(
         spark,
@@ -296,27 +306,25 @@ def main(
     )
 
     obj_lane_df = form_object_in_lane_df(obj_df, lane_df)
-    
+
     # print(f"obj_df  {obj_df.count()} Rows")
     # obj_df.show()
-    
+
     # print(f"lane_df   {obj_df.count()} Rows")
     # lane_df.show()
-    
+
     # print(f"obj_lane_df   {obj_df.count()} Rows")
     # obj_lane_df.show()
-    
 
-    #write_dataframe_to_inspect_s3(df=obj_lane_df,output_bucket=output_bucket,table_name="obj_lane_df")
-    #write_dataframe_to_inspect_dynamodb(df=obj_lane_df, output_dynamo_table="addf-aws-solutions-inspect",region=region)
-    
+    # write_dataframe_to_inspect_s3(df=obj_lane_df,output_bucket=output_bucket,table_name="obj_lane_df")
+    # write_dataframe_to_inspect_dynamodb(df=obj_lane_df, output_dynamo_table="addf-aws-solutions-inspect",region=region)
 
     truck_in_lane_scenes_df = summarize_truck_in_lane_scenes(obj_lane_df, image_topics)
-    
+
     # print("truck_in_lane_scenes_df")
     # truck_in_lane_scenes_df.show()
-    
-    car_in_lane_scenes_df= summarize_car_in_lane_scenes(obj_lane_df, image_topics)
+
+    car_in_lane_scenes_df = summarize_car_in_lane_scenes(obj_lane_df, image_topics)
 
     # print("summarize_car_in_lane_scenes")
     # car_in_lane_scenes_df.show()
@@ -328,7 +336,7 @@ def main(
         output_bucket=output_bucket,
         partition_cols=["bag_file"],
     )
-    
+
     write_results_s3(
         car_in_lane_scenes_df,
         table_name="scene_detections",
@@ -338,7 +346,6 @@ def main(
 
     write_results_dynamo(truck_in_lane_scenes_df, output_dynamo_table, region)
     write_results_dynamo(car_in_lane_scenes_df, output_dynamo_table, region)
-
 
 
 if __name__ == "__main__":
@@ -352,7 +359,7 @@ if __name__ == "__main__":
     output_bucket = arguments.output_bucket
     output_dynamo_table = arguments.output_dynamo_table
     region = arguments.region
-    image_topics=arguments.image_topics if arguments.image_topics else None
+    image_topics = arguments.image_topics if arguments.image_topics else None
 
     main(
         batch_metadata_table_name,
