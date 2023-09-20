@@ -43,6 +43,8 @@ def test_detect_scenes_parse_arguments():
             "mytable",
             "--region",
             "us-east-1",
+            "--image-topics",
+            '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]'
         ]
     )
     assert args.batch_metadata_table_name == "dummy"
@@ -51,6 +53,8 @@ def test_detect_scenes_parse_arguments():
     assert args.output_bucket == "mybucket"
     assert args.output_dynamo_table == "mytable"
     assert args.region == "us-east-1"
+    assert args.image_topics == '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]'
+
 
 
 def test_load_lane_detection(moto_server):
