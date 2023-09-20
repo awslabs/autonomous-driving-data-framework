@@ -16,6 +16,7 @@ hash = os.getenv("ADDF_HASH", "")
 # App Env vars
 buckets_encryption_type = os.getenv("ADDF_PARAMETER_ENCRYPTION_TYPE", "SSE")
 buckets_retention = os.getenv("ADDF_PARAMETER_RETENTION_TYPE", "DESTROY")
+artifact_logs_retention = os.getenv("ADDF_PARAMETER_ARTIFACTS_LOG_RETENTION", "2")
 
 if buckets_retention not in ["DESTROY", "RETAIN"]:
     raise ValueError("The only RETENTION_TYPE values accepted are 'DESTROY' and 'RETAIN' ")
@@ -36,6 +37,7 @@ stack = DataLakeBucketsStack(
     hash=hash,
     buckets_encryption_type=buckets_encryption_type,
     buckets_retention=buckets_retention,
+    artifacts_log_retention=int(artifact_logs_retention),
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

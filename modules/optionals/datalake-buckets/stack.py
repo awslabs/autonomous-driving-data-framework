@@ -25,6 +25,7 @@ class DataLakeBucketsStack(Stack):  # type: ignore
         hash: str,
         buckets_encryption_type: str,
         buckets_retention: str,
+        artifacts_log_retention: int,
         **kwargs: Any,
     ) -> None:
         # CDK Env Vars
@@ -50,7 +51,7 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             # MWAA is very chatty, logs need to be cleaned via LifecycleRule
             lifecycle_rules=[
                 aws_s3.LifecycleRule(
-                    expiration=Duration.days(2),
+                    expiration=Duration.days(artifacts_log_retention),
                     enabled=True,
                     prefix="artifacts-bucket-logs/",
                 )
