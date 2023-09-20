@@ -16,16 +16,16 @@ def create_spark_session(port: int):
     return spark
 
 
-# def test_get_batch_file_metadata(moto_dynamodb):
-#     dynamodb = boto3.resource("dynamodb")
-#     table_name = "mytable"
-#     table = dynamodb.Table(table_name)
-#     items = [{"pk": 1}, {"pk": 2}]
-#     for item in items:
-#         table.put_item(Item=item)
-#     for item in items:
-#         result = get_batch_file_metadata(table_name, item["pk"], "us-west-2")
-#         assert len(result) > 0
+def test_get_batch_file_metadata(moto_dynamodb):
+    dynamodb = boto3.resource("dynamodb")
+    table_name = "mytable"
+    table = dynamodb.Table(table_name)
+    items = [{"pk": 1}, {"pk": 2}]
+    for item in items:
+        table.put_item(Item=item)
+    for item in items:
+        result = get_batch_file_metadata(table_name, item["pk"], os.getenv("AWS_DEFAULT_REGION"))
+        assert len(result) > 0
 
 
 def test_detect_scenes_parse_arguments():
@@ -60,7 +60,7 @@ def test_load_lane_detection(moto_server):
     bucket_name = "lane-detection-bucket"
     s3.create_bucket(
         Bucket=bucket_name,
-        CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+        CreateBucketConfiguration={"LocationConstraint": os.getenv("AWS_DEFAULT_REGION")},
     )
     object = s3.Object(
         bucket_name,
@@ -91,7 +91,7 @@ def test_load_obj_detection(moto_server):
     s3 = boto3.resource("s3", endpoint_url=f"http://127.0.0.1:{port}")
     s3.create_bucket(
         Bucket="mybucket2",
-        CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+        CreateBucketConfiguration={"LocationConstraint": os.getenv("AWS_DEFAULT_REGION")},
     )
     object = s3.Object(
         "mybucket2",
@@ -119,7 +119,7 @@ def test_write_results_to_s3(moto_server):
     s3 = boto3.resource("s3", endpoint_url=f"http://127.0.0.1:{port}")
     s3.create_bucket(
         Bucket="outputbucket",
-        CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+        CreateBucketConfiguration={"LocationConstraint": os.getenv("AWS_DEFAULT_REGION")},
     )
     spark = create_spark_session(port=port)
     df = spark.createDataFrame(
