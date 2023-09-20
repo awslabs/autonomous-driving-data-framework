@@ -1,2 +1,3 @@
 aws-cdk-lib==2.20.0
 cdk-nag==2.12.29
+typing-extensions==4.7.1
