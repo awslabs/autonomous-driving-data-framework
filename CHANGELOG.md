@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored Rosbag Image pipeline module to work with mwaa 2.6.3
 - fixed the dependabot alerts (apache-airflow)
 - refactored pyspark script of scene-detect in rosbag-image-processing module
+- `datalake-buckets` has LifecycleRule on `artifacts-bucket-logs` added due to number of MWAA access logs
 
 ### **Removed**
 
