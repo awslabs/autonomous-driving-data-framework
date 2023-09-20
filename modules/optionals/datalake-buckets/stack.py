@@ -8,7 +8,7 @@ import aws_cdk
 import aws_cdk.aws_iam as aws_iam
 import aws_cdk.aws_s3 as aws_s3
 import cdk_nag
-from aws_cdk import Aspects, Stack, Tags
+from aws_cdk import Aspects, Duration, Stack, Tags
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -25,6 +25,7 @@ class DataLakeBucketsStack(Stack):  # type: ignore
         hash: str,
         buckets_encryption_type: str,
         buckets_retention: str,
+        artifacts_log_retention: int,
         **kwargs: Any,
     ) -> None:
         # CDK Env Vars
@@ -47,6 +48,14 @@ class DataLakeBucketsStack(Stack):  # type: ignore
             block_public_access=aws_s3.BlockPublicAccess.BLOCK_ALL,
             object_ownership=aws_s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
             enforce_ssl=True,
+            # MWAA is very chatty, logs need to be cleaned via LifecycleRule
+            lifecycle_rules=[
+                aws_s3.LifecycleRule(
+                    expiration=Duration.days(artifacts_log_retention),
+                    enabled=True,
+                    prefix="artifacts-bucket-logs/",
+                )
+            ],
         )
 
         raw_bucket = aws_s3.Bucket(

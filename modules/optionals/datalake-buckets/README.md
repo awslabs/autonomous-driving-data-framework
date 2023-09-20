@@ -34,6 +34,9 @@ None
 - `retention-type`: type of data retention policy when deleteing the buckets
   - `DESTROY` or `RETAIN`
   - Assumed to be `DESTROY`
+- `artifacts-log-retention`: the number of days back to keep the logs in `artifacts-bucket-logs`
+  - this is to prevent large number of logs filling from MWAA
+  - shoud be an integer - "2"
 
 
 ### Module Metadata Outputs
