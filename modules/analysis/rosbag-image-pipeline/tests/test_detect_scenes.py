@@ -44,7 +44,7 @@ def test_detect_scenes_parse_arguments():
             "--region",
             "us-east-1",
             "--image-topics",
-            '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]'
+            '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]',
         ]
     )
     assert args.batch_metadata_table_name == "dummy"
@@ -54,7 +54,6 @@ def test_detect_scenes_parse_arguments():
     assert args.output_dynamo_table == "mytable"
     assert args.region == "us-east-1"
     assert args.image_topics == '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]'
-
 
 
 def test_load_lane_detection(moto_server):
@@ -82,7 +81,7 @@ def test_load_lane_detection(moto_server):
             "s3_key": "test-vehichle-01/this/_flir_adk_rgb_front_right_image_raw_resized_/1280_720_post_lane_dets/lanes.csv",
             "resized_image_dirs": [
                 "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_left_image_raw_resized_1280_720",
-                "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_right_image_raw_resized_1280_720"
+                "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_right_image_raw_resized_1280_720",
             ],
         }
     ]
@@ -133,4 +132,5 @@ def test_write_results_to_s3(moto_server):
         ],
         ["id", "bag_file"],
     )
-    write_results_s3(df, table_name="scene_detections", output_bucket="outputbucket", partition_cols=["bag_file"])
+    dfs = {"test": df}
+    write_results_s3(dfs, table_name="scene_detections", output_bucket="outputbucket", partition_cols=["bag_file"])

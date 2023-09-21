@@ -43,6 +43,7 @@ def pytest_unconfigure(config):
     os.remove(DAG_CONFIG_PATH)
     os.rename(DAG_CONFIG_BACKUP_PATH, DAG_CONFIG_PATH)
 
+
 @pytest.fixture(scope="function")
 def aws_credentials():
     """Mocked AWS Credentials for moto."""
@@ -52,6 +53,7 @@ def aws_credentials():
     os.environ["AWS_SESSION_TOKEN"] = "testing"
     os.environ["AWS_DEFAULT_REGION"] = "us-west-2"
     os.environ["MOTO_ACCOUNT_ID"] = "123456789012"
+
 
 @pytest.fixture(scope="function")
 def moto_dynamodb(aws_credentials):
