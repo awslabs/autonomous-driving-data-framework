@@ -214,7 +214,7 @@ def summarize_truck_in_lane_scenes(obj_lane_df, image_topics):
     return truck_in_lane_scenes_df
 
 
-def summarize_car_in_lane_scenes(obj_lane_df, image_topics, object_name=None):
+def summarize_car_in_lane_scenes(obj_lane_df, image_topics):
     obj_lane_df = obj_lane_df.filter(obj_lane_df.name == "car")
     obj_lane_df = obj_lane_df.groupby("source_image").agg(
         count("name").alias("num_cars_in_lane"),
