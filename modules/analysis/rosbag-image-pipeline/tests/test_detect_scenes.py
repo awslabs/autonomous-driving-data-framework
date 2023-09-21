@@ -24,7 +24,7 @@ def test_get_batch_file_metadata(moto_dynamodb):
     for item in items:
         table.put_item(Item=item)
     for item in items:
-        result = get_batch_file_metadata(table_name, item["pk"], "us-west-2")
+        result = get_batch_file_metadata(table_name, item["pk"], os.getenv("AWS_DEFAULT_REGION"))
         assert len(result) > 0
 
 
@@ -43,6 +43,8 @@ def test_detect_scenes_parse_arguments():
             "mytable",
             "--region",
             "us-east-1",
+            "--image-topics",
+            '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]'
         ]
     )
     assert args.batch_metadata_table_name == "dummy"
@@ -51,6 +53,8 @@ def test_detect_scenes_parse_arguments():
     assert args.output_bucket == "mybucket"
     assert args.output_dynamo_table == "mytable"
     assert args.region == "us-east-1"
+    assert args.image_topics == '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]'
+
 
 
 def test_load_lane_detection(moto_server):
@@ -60,11 +64,11 @@ def test_load_lane_detection(moto_server):
     bucket_name = "lane-detection-bucket"
     s3.create_bucket(
         Bucket=bucket_name,
-        CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+        CreateBucketConfiguration={"LocationConstraint": os.getenv("AWS_DEFAULT_REGION")},
     )
     object = s3.Object(
         bucket_name,
-        "test-vehichle-01/this/_flir_adk_rgb_front_right_image_raw_resized_1280_720_post_lane_dets/lanes.csv",
+        "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_left_image_raw_resized_1280_720_post_lane_dets/lanes.csv",
     )
     data = b"lanes"
     object.put(Body=data)
@@ -76,6 +80,10 @@ def test_load_lane_detection(moto_server):
             "file_id": "this.jpg",
             "s3_bucket": bucket_name,
             "s3_key": "test-vehichle-01/this/_flir_adk_rgb_front_right_image_raw_resized_/1280_720_post_lane_dets/lanes.csv",
+            "resized_image_dirs": [
+                "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_left_image_raw_resized_1280_720",
+                "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_right_image_raw_resized_1280_720"
+            ],
         }
     ]
     load_lane_detection(spark, sample_metadata)
@@ -87,11 +95,11 @@ def test_load_obj_detection(moto_server):
     s3 = boto3.resource("s3", endpoint_url=f"http://127.0.0.1:{port}")
     s3.create_bucket(
         Bucket="mybucket2",
-        CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+        CreateBucketConfiguration={"LocationConstraint": os.getenv("AWS_DEFAULT_REGION")},
     )
     object = s3.Object(
         "mybucket2",
-        "test-vehichle-01/this/_flir_adk_rgb_front_right_image_raw_resized_1280_720_post_obj_dets/all_predictions.csv",
+        "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_left_image_raw_resized_1280_720_post_obj_dets/all_predictions.csv",
     )
     data = b"all_predictions"
     object.put(Body=data)
@@ -101,9 +109,12 @@ def test_load_obj_detection(moto_server):
             "raw_image_bucket": "mybucket2",
             "drive_id": "test-vehichle-01",
             "file_id": "this.jpg",
+            "resized_image_dirs": [
+                "test-vehicle-02/small2__2020-11-19-16-21-22_4/_flir_adk_rgb_front_left_image_raw_resized_1280_720",
+            ],
         }
     ]
-    load_obj_detection(spark, sample_metadata)
+    load_obj_detection(spark, sample_metadata, None)
     spark.stop()
 
 
@@ -112,7 +123,7 @@ def test_write_results_to_s3(moto_server):
     s3 = boto3.resource("s3", endpoint_url=f"http://127.0.0.1:{port}")
     s3.create_bucket(
         Bucket="outputbucket",
-        CreateBucketConfiguration={"LocationConstraint": "us-west-2"},
+        CreateBucketConfiguration={"LocationConstraint": os.getenv("AWS_DEFAULT_REGION")},
     )
     spark = create_spark_session(port=port)
     df = spark.createDataFrame(

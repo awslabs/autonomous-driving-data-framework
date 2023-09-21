@@ -3,6 +3,7 @@
 
 import argparse
 import sys
+from typing import Any, Dict, List
 
 import boto3
 import pyspark.sql.functions as func
@@ -89,17 +90,18 @@ def get_batch_file_metadata(table_name, batch_id, region):
 
 def load_obj_detection(spark, batch_metadata, image_topics):
     path_list = []
+
+    def _process(image_topics: List[str], path_list: List[str], item: Dict[str, Any], resizied_image_dir: str) -> None:
+        for t in image_topics:
+            path_list.append(
+                f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
+            ) if t in resizied_image_dir else None
+
     for item in batch_metadata:
         for resizied_image_dir in item["resized_image_dirs"]:
             if image_topics and len(image_topics) > 0:
-                for t in image_topics:
-                    if t in resizied_image_dir:
-                        print(f"Found topic in resized image dirs, adding")
-                        path_list.append(
-                            f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
-                        )
+                _process(image_topics, path_list, item, resizied_image_dir)
             else:
-                print(f"No specified topics...adding ")
                 path_list.append(
                     f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
                 )
@@ -156,18 +158,6 @@ def write_results_s3(df, table_name, output_bucket, partition_cols=[]):
 
 def write_results_dynamo(df, output_dynamo_table, region):
     df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format("dynamodb").save()
-
-
-# def write_dataframe_to_inspect_s3(df, table_name, output_bucket):
-#     s3_path = f"s3://{output_bucket}/inspect/{table_name}"
-#     df=(df.withColumn("source_image_split", col("source_image_split").cast("string"))).dropDuplicates()
-#     df=(df.select(concat_ws('-',df.source_image,df._c0).alias("source_image_index"),"*"))
-#     df.write.mode("overwrite").csv(s3_path)
-
-# def write_dataframe_to_inspect_dynamodb(df, output_dynamo_table, region):
-#     df=(df.dropDuplicates())
-#     df=(df.select(concat_ws('-',df.source_image,df._c0).alias("source_image_index"),"*"))
-#     df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format("dynamodb").save()
 
 
 def summarize_truck_in_lane_scenes(obj_lane_df, image_topics):
@@ -281,7 +271,6 @@ def summarize_car_in_lane_scenes(obj_lane_df, image_topics):
 def main(
     batch_metadata_table_name,
     batch_id,
-    # input_bucket,
     output_bucket,
     output_dynamo_table,
     spark,
@@ -306,30 +295,9 @@ def main(
     )
 
     obj_lane_df = form_object_in_lane_df(obj_df, lane_df)
-
-    # print(f"obj_df  {obj_df.count()} Rows")
-    # obj_df.show()
-
-    # print(f"lane_df   {obj_df.count()} Rows")
-    # lane_df.show()
-
-    # print(f"obj_lane_df   {obj_df.count()} Rows")
-    # obj_lane_df.show()
-
-    # write_dataframe_to_inspect_s3(df=obj_lane_df,output_bucket=output_bucket,table_name="obj_lane_df")
-    # write_dataframe_to_inspect_dynamodb(df=obj_lane_df, output_dynamo_table="addf-aws-solutions-inspect",region=region)
-
     truck_in_lane_scenes_df = summarize_truck_in_lane_scenes(obj_lane_df, image_topics)
-
-    # print("truck_in_lane_scenes_df")
-    # truck_in_lane_scenes_df.show()
-
     car_in_lane_scenes_df = summarize_car_in_lane_scenes(obj_lane_df, image_topics)
 
-    # print("summarize_car_in_lane_scenes")
-    # car_in_lane_scenes_df.show()
-
-    # #Save Synchronized Signals to S3
     write_results_s3(
         truck_in_lane_scenes_df,
         table_name="scene_detections",
@@ -364,7 +332,6 @@ if __name__ == "__main__":
     main(
         batch_metadata_table_name,
         batch_id,
-        # input_bucket,
         output_bucket,
         output_dynamo_table,
         spark,
