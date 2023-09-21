@@ -1,5 +1,6 @@
 from image_dags.ros_image_pipeline import *
 
+
 def test_validate_config():
     input = {
         "drive2": {
