@@ -48,6 +48,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           pip install -r modules/analysis/rosbag-image-pipeline/requirements.txt
+          pip install -r modules/analysis/rosbag-image-pipeline/requirements-dev.txt
       - name: Static checks and linting (mypy, flake8, black, isort)
         run: scripts/validate.sh --language python --path modules/analysis/rosbag-image-pipeline/ --skip-static-checks
       - name: PyTest based Unit Tests
