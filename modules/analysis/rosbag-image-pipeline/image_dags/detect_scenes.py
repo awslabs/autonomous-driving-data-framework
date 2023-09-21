@@ -110,8 +110,6 @@ def load_obj_detection(spark, batch_metadata, image_topics):
     df = spark.read.schema(obj_schema).option("header", True).csv(path_list)
     print(f"Number of rows in Object Detection dataframe")
     print(df.count())
-    # df.createOrReplaceTempView("objs")
-    # spark.sql("SELECT DISTINCT NAME FROM objs").show()
     return df
 
 
