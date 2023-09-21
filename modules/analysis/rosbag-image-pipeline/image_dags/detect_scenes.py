@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import json
 import sys
+from typing import Any, Dict, List
 
 import boto3
 import pyspark.sql.functions as func
@@ -89,17 +91,18 @@ def get_batch_file_metadata(table_name, batch_id, region):
 
 def load_obj_detection(spark, batch_metadata, image_topics):
     path_list = []
+
+    def _process(image_topics: List[str], path_list: List[str], item: Dict[str, Any], resizied_image_dir: str) -> None:
+        for t in image_topics:
+            path_list.append(
+                f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
+            ) if t in resizied_image_dir else None
+
     for item in batch_metadata:
         for resizied_image_dir in item["resized_image_dirs"]:
             if image_topics and len(image_topics) > 0:
-                for t in image_topics:
-                    if t in resizied_image_dir:
-                        print(f"Found topic in resized image dirs, adding")
-                        path_list.append(
-                            f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
-                        )
+                _process(image_topics, path_list, item, resizied_image_dir)
             else:
-                print(f"No specified topics...adding ")
                 path_list.append(
                     f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
                 )
@@ -107,6 +110,8 @@ def load_obj_detection(spark, batch_metadata, image_topics):
     df = spark.read.schema(obj_schema).option("header", True).csv(path_list)
     print(f"Number of rows in Object Detection dataframe")
     print(df.count())
+    # df.createOrReplaceTempView("objs")
+    # spark.sql("SELECT DISTINCT NAME FROM objs").show()
     return df
 
 
@@ -149,31 +154,24 @@ def load_lane_detection(spark, batch_metadata):
     return df
 
 
-def write_results_s3(df, table_name, output_bucket, partition_cols=[]):
-    s3_path = f"s3://{output_bucket}/{table_name}"
-    df.write.mode("append").partitionBy(*partition_cols).parquet(s3_path)
+def write_results_s3(dfs: Dict[str, Any], table_name: str, output_bucket: str, partition_cols=[]):
+    for key, df in dfs.items():
+        s3_path = f"s3://{output_bucket}/{table_name}/{key}"
+        df.write.mode("append").partitionBy(*partition_cols).parquet(s3_path)
 
 
-def write_results_dynamo(df, output_dynamo_table, region):
-    df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format("dynamodb").save()
+def write_results_dynamo(dfs, output_dynamo_table, region):
+    for key, df in dfs.items():
+        print(f"Writing {key} to DDB")
+        df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format(
+            "dynamodb"
+        ).save()
 
 
-# def write_dataframe_to_inspect_s3(df, table_name, output_bucket):
-#     s3_path = f"s3://{output_bucket}/inspect/{table_name}"
-#     df=(df.withColumn("source_image_split", col("source_image_split").cast("string"))).dropDuplicates()
-#     df=(df.select(concat_ws('-',df.source_image,df._c0).alias("source_image_index"),"*"))
-#     df.write.mode("overwrite").csv(s3_path)
-
-# def write_dataframe_to_inspect_dynamodb(df, output_dynamo_table, region):
-#     df=(df.dropDuplicates())
-#     df=(df.select(concat_ws('-',df.source_image,df._c0).alias("source_image_index"),"*"))
-#     df.write.mode("append").option("tableName", output_dynamo_table).option("region", region).format("dynamodb").save()
-
-
-def summarize_truck_in_lane_scenes(obj_lane_df, image_topics):
-    obj_lane_df = obj_lane_df.filter(obj_lane_df.name == "truck")
+def summarize_obj_in_lane_scenes(obj_lane_df, image_topics, obj_type):
+    obj_lane_df = obj_lane_df.filter(obj_lane_df.name == obj_type)
     obj_lane_df = obj_lane_df.groupby("source_image").agg(
-        count("name").alias("num_trucks_in_lane"),
+        count("name").alias(f"num_{obj_type}_in_lane"),
         first("Time").alias("Time"),
         first("bag_file_bucket").alias("bag_file_bucket"),
         first("bag_file").alias("bag_file"),
@@ -183,9 +181,11 @@ def summarize_truck_in_lane_scenes(obj_lane_df, image_topics):
     win = Window.orderBy("Time").partitionBy("bag_file_bucket", "bag_file", "bag_file_prefix")
 
     obj_lane_df = (
-        obj_lane_df.withColumn("num_trucks_in_lane_lag1", func.lag(func.col("num_trucks_in_lane"), 1, 0).over(win))
-        .withColumn("num_trucks_in_lane_lead1", func.lead(func.col("num_trucks_in_lane"), 1, 0).over(win))
-        .filter("num_trucks_in_lane_lag1 == 0 or num_trucks_in_lane_lead1 ==0")
+        obj_lane_df.withColumn(
+            f"num_{obj_type}_in_lane_lag1", func.lag(func.col(f"num_{obj_type}_in_lane"), 1, 0).over(win)
+        )
+        .withColumn(f"num_{obj_type}_in_lane_lead1", func.lead(func.col(f"num_{obj_type}_in_lane"), 1, 0).over(win))
+        .filter(f"num_{obj_type}_in_lane_lag1 == 0 or num_{obj_type}_in_lane_lead1 ==0")
     )
 
     scene_state_udf = func.udf(
@@ -193,95 +193,40 @@ def summarize_truck_in_lane_scenes(obj_lane_df, image_topics):
         StringType(),
     )
 
-    truck_in_lane_scenes_df = (
+    obj_in_lane_scenes_df = (
         obj_lane_df.withColumn(
             "scene_state",
             scene_state_udf(
-                obj_lane_df.num_trucks_in_lane,
-                obj_lane_df.num_trucks_in_lane_lag1,
+                obj_lane_df[f"num_{obj_type}_in_lane"],
+                obj_lane_df[f"num_{obj_type}_in_lane_lag1"],
             ),
         )
         .withColumn("end_time", func.lead(func.col("Time"), 1).over(win))
-        .filter("num_trucks_in_lane_lag1 ==0")
+        .filter(f"num_{obj_type}_in_lane_lag1 ==0")
         .withColumnRenamed("Time", "start_time")
-        .withColumnRenamed("num_trucks_in_lane", "num_trucks_in_lane_start")
+        .withColumnRenamed(f"num_{obj_type}_in_lane", f"num_{obj_type}_in_lane_start")
         .select(
             "bag_file",
             "bag_file_bucket",
             "bag_file_prefix",
             "start_time",
             "end_time",
-            "num_trucks_in_lane_start",
+            f"num_{obj_type}_in_lane_start",
         )
         .withColumn(
             "scene_id",
-            func.concat(func.col("bag_file"), func.lit("_TruckInLane_"), func.col("start_time")),
+            func.concat(func.col("bag_file"), func.lit(f"_{obj_type}InLane_"), func.col("start_time")),
         )
         .withColumn("scene_length", func.col("end_time") - func.col("start_time"))
         .withColumn("topics_analyzed", func.lit(",".join(image_topics)))
     )
 
-    return truck_in_lane_scenes_df
-
-
-def summarize_car_in_lane_scenes(obj_lane_df, image_topics):
-    obj_lane_df = obj_lane_df.filter(obj_lane_df.name == "car")
-    obj_lane_df = obj_lane_df.groupby("source_image").agg(
-        count("name").alias("num_cars_in_lane"),
-        first("Time").alias("Time"),
-        first("bag_file_bucket").alias("bag_file_bucket"),
-        first("bag_file").alias("bag_file"),
-        first("bag_file_prefix").alias("bag_file_prefix"),
-    )
-
-    win = Window.orderBy("Time").partitionBy("bag_file_bucket", "bag_file", "bag_file_prefix")
-
-    obj_lane_df = (
-        obj_lane_df.withColumn("num_cars_in_lane_lag1", func.lag(func.col("num_cars_in_lane"), 1, 0).over(win))
-        .withColumn("num_cars_in_lane_lead1", func.lead(func.col("num_cars_in_lane"), 1, 0).over(win))
-        .filter("num_cars_in_lane_lag1 == 0 or num_cars_in_lane_lead1 ==0")
-    )
-
-    scene_state_udf = func.udf(
-        lambda num, lag: "start" if num > 0 and lag is None else ("end" if num == 0 and lag > 0 else None),
-        StringType(),
-    )
-
-    cars_in_lane_scenes_df = (
-        obj_lane_df.withColumn(
-            "scene_state",
-            scene_state_udf(
-                obj_lane_df.num_cars_in_lane,
-                obj_lane_df.num_cars_in_lane_lag1,
-            ),
-        )
-        .withColumn("end_time", func.lead(func.col("Time"), 1).over(win))
-        .filter("num_cars_in_lane_lag1 ==0")
-        .withColumnRenamed("Time", "start_time")
-        .withColumnRenamed("num_cars_in_lane", "num_cars_in_lane_start")
-        .select(
-            "bag_file",
-            "bag_file_bucket",
-            "bag_file_prefix",
-            "start_time",
-            "end_time",
-            "num_cars_in_lane_start",
-        )
-        .withColumn(
-            "scene_id",
-            func.concat(func.col("bag_file"), func.lit("_CarInLane_"), func.col("start_time")),
-        )
-        .withColumn("scene_length", func.col("end_time") - func.col("start_time"))
-        .withColumn("topics_analyzed", func.lit(",".join(image_topics)))
-    )
-
-    return cars_in_lane_scenes_df
+    return obj_in_lane_scenes_df
 
 
 def main(
     batch_metadata_table_name,
     batch_id,
-    # input_bucket,
     output_bucket,
     output_dynamo_table,
     spark,
@@ -292,8 +237,6 @@ def main(
     batch_metadata = get_batch_file_metadata(table_name=batch_metadata_table_name, batch_id=batch_id, region=region)
 
     if image_topics:
-        import json
-
         image_topics = json.loads(image_topics)
         image_topics = [topic.replace("/", "_") for topic in image_topics if image_topics]
 
@@ -307,45 +250,21 @@ def main(
 
     obj_lane_df = form_object_in_lane_df(obj_df, lane_df)
 
-    # print(f"obj_df  {obj_df.count()} Rows")
-    # obj_df.show()
+    dfs = {}
 
-    # print(f"lane_df   {obj_df.count()} Rows")
-    # lane_df.show()
-
-    # print(f"obj_lane_df   {obj_df.count()} Rows")
-    # obj_lane_df.show()
-
-    # write_dataframe_to_inspect_s3(df=obj_lane_df,output_bucket=output_bucket,table_name="obj_lane_df")
-    # write_dataframe_to_inspect_dynamodb(df=obj_lane_df, output_dynamo_table="addf-aws-solutions-inspect",region=region)
-
-    truck_in_lane_scenes_df = summarize_truck_in_lane_scenes(obj_lane_df, image_topics)
-
-    # print("truck_in_lane_scenes_df")
-    # truck_in_lane_scenes_df.show()
-
-    car_in_lane_scenes_df = summarize_car_in_lane_scenes(obj_lane_df, image_topics)
-
-    # print("summarize_car_in_lane_scenes")
-    # car_in_lane_scenes_df.show()
-
-    # #Save Synchronized Signals to S3
+    dfs["car"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "car")
+    dfs["truck"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "truck")
+    dfs["trafficlight"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "trafficlight")
+    dfs["train"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "train")
+    dfs["bus"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "bus")
+    dfs["motorcycle"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "motorcycle")
     write_results_s3(
-        truck_in_lane_scenes_df,
+        dfs,
         table_name="scene_detections",
         output_bucket=output_bucket,
         partition_cols=["bag_file"],
     )
-
-    write_results_s3(
-        car_in_lane_scenes_df,
-        table_name="scene_detections",
-        output_bucket=output_bucket,
-        partition_cols=["bag_file"],
-    )
-
-    write_results_dynamo(truck_in_lane_scenes_df, output_dynamo_table, region)
-    write_results_dynamo(car_in_lane_scenes_df, output_dynamo_table, region)
+    write_results_dynamo(dfs, output_dynamo_table, region)
 
 
 if __name__ == "__main__":
@@ -364,7 +283,6 @@ if __name__ == "__main__":
     main(
         batch_metadata_table_name,
         batch_id,
-        # input_bucket,
         output_bucket,
         output_dynamo_table,
         spark,
