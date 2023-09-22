@@ -87,8 +87,6 @@ CONFIGURATION_OVERRIDES = {
     }
 }
 
-account = boto3.client("sts").get_caller_identity().get("Account")
-
 ValueType = TypeVar("ValueType")
 
 TASK_DEF_XCOM_KEY = "job_definition_arn"
@@ -197,11 +195,10 @@ def get_job_name(suffix="") -> str:
 
 
 def png_batch_operation(**kwargs):
-
     logger.info(f"kwargs at png_batch_operations is {kwargs}")
 
     ti = kwargs["ti"]
-    ds = kwargs["ds"]
+
     array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
     batch_id = kwargs["dag_run"].run_id
     context = get_current_context()
@@ -225,13 +222,11 @@ def png_batch_operation(**kwargs):
         },
     )
 
-    # op.execute(ds)
     op.execute(context)
 
 
 def parquet_operation(**kwargs):
     ti = kwargs["ti"]
-    ds = kwargs["ds"]
     array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
     batch_id = kwargs["dag_run"].run_id
     context = get_current_context()

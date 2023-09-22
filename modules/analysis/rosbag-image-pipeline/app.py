@@ -16,9 +16,9 @@ def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
 
-dag_id = os.getenv(_param("DAG_ID"))  # required
-vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
+dag_id = os.getenv(_param("DAG_ID"))
+vpc_id = os.getenv(_param("VPC_ID"))
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # type: ignore
 mwaa_exec_role = os.getenv(_param("MWAA_EXEC_ROLE"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
@@ -132,8 +132,8 @@ CfnOutput(
             "FileSuffix": file_suffix,
             "DesiredEncoding": desired_encoding,
             "YoloModel": yolo_model,
-            "ImageTopics": json.loads(image_topics),
-            "SensorTopics": json.loads(sensor_topics),
+            "ImageTopics": json.loads(image_topics),  # type: ignore
+            "SensorTopics": json.loads(sensor_topics),  # type: ignore
         }
     ),
 )
