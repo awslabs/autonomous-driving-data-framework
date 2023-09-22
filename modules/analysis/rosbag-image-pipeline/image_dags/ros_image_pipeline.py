@@ -87,8 +87,6 @@ CONFIGURATION_OVERRIDES = {
     }
 }
 
-account = boto3.client("sts").get_caller_identity().get("Account")
-
 ValueType = TypeVar("ValueType")
 
 TASK_DEF_XCOM_KEY = "job_definition_arn"
