@@ -108,8 +108,8 @@ def load_obj_detection(spark, batch_metadata, image_topics):
                 )
 
     def remove_space(name):
-        return name.replace(" ","_")
-    
+        return name.replace(" ", "_")
+
     remove_space_udf = func.udf(remove_space, StringType())
 
     df = spark.read.schema(obj_schema).option("header", True).csv(path_list)
@@ -264,7 +264,7 @@ def main(
     dfs["motorcycle"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "motorcycle")
     dfs["stop_sign"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "stop_sign")
     dfs["fire_hydrant"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "fire_hydrant")
-    
+
     write_results_s3(
         dfs,
         table_name="scene_detections",
