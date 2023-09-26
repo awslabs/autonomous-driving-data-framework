@@ -1,7 +1,7 @@
 name: mwaa
-path: git::codecommit::us-west-2://addf-infra-modules.git//modules/orchestration/mwaa
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/orchestration/mwaa/?ref=main
 dataFiles:
-  - filePath: git::codecommit::us-west-2://addf-infra-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt
+  - filePath: git::codecommit::us-west-2://av-adas-solution.git//data/mwaa/requirements/requirements-emr-serverless.txt/?ref=main
 parameters:
   - name: vpc-id
     valueFrom:
@@ -29,7 +29,7 @@ parameters:
     value: data/mwaa/requirements/requirements-emr-serverless.txt
 ---
 name: batch-compute
-path: git::codecommit::us-west-2://addf-infra-modules.git//modules/compute/aws-batch/?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/compute/aws-batch/?ref=main
 parameters:
   - name: vpc-id
     valueFrom:
@@ -67,7 +67,7 @@ parameters:
           order: 1
 ---
 name: metadata-storage
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/core/metadata-storage
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/core/metadata-storage/?ref=main
 parameters:
   - name: glue-db-suffix
     value: vsidata
@@ -77,7 +77,7 @@ parameters:
     value: Rosbag-Scene-Metadata
 ---
 name: opensearch
-path: git::codecommit::us-west-2://addf-infra-modules.git//modules/storage/opensearch
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/storage/opensearch/?ref=main
 parameters:
   - name: opensearch_data_nodes
     value: 1
@@ -103,7 +103,7 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: emr-serverless
-path: git::codecommit::us-west-2://addf-infra-modules.git//modules/compute/emr-serverless
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/compute/emr-serverless/?ref=main
 parameters:
   - name: private-subnet-ids
     valueFrom:

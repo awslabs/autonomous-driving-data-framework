@@ -1,5 +1,5 @@
 name: opensearch-tunnel
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/integration/opensearch-tunnel?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/integration/opensearch-tunnel?ref=main
 parameters:
   - name: opensearch-domain-endpoint
     valueFrom:
@@ -23,7 +23,7 @@ parameters:
     value: '3333'
 ---
 name: rosbag-ddb-to-os
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/integration/ddb-to-opensearch?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/integration/ddb-to-opensearch?ref=main
 parameters:
   - name: opensearch-domain-name
     valueFrom:

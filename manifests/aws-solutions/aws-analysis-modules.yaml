@@ -1,5 +1,5 @@
 name: rip
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/analysis/rosbag-image-pipeline/?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/analysis/rosbag-image-pipeline/?ref=main
 parameters:
   - name: dag-id
     value: vsi_image_pipeline

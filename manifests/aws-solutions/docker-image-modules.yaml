@@ -1,5 +1,5 @@
 name: ros-to-parquet
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/sensor-extraction/ros-to-parquet/?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/sensor-extraction/ros-to-parquet/?ref=main
 parameters:
   - name: platform
     value: FARGATE
@@ -19,7 +19,7 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: ros-to-png
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/sensor-extraction/ros-to-png/?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/sensor-extraction/ros-to-png/?ref=main
 parameters:
   - name: platform
     value: FARGATE
@@ -43,7 +43,7 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: object-detection
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/post-processing/yolo-object-detection/?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/post-processing/yolo-object-detection/?ref=main
 parameters:
   - name: full-access-policy-arn
     valueFrom:
@@ -53,7 +53,7 @@ parameters:
         key: FullAccessPolicyArn
 ---
 name: lane-detection
-path: git::codecommit::us-west-2://addf-business-modules.git//modules/post-processing/yolop-lane-detection/?ref=main
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/post-processing/yolop-lane-detection/?ref=main
 parameters:
   - name: full-access-policy-arn
     valueFrom:

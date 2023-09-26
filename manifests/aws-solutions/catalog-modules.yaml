@@ -1,5 +1,5 @@
 name: app-reg
-path: git::codecommit::us-west-2://addf-infra-modules.git//modules/service-catalog/app-registry
+path: git::codecommit::us-west-2://av-adas-solution.git//modules/service-catalog/app-registry/?ref=main
 parameters:
   - name: solution-id
     value: id
