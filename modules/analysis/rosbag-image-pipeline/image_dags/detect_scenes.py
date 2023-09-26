@@ -107,10 +107,16 @@ def load_obj_detection(spark, batch_metadata, image_topics):
                     f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
                 )
 
+    def remove_space(name):
+        return name.replace(" ", "_")
+
+    remove_space_udf = func.udf(remove_space, StringType())
+
     df = spark.read.schema(obj_schema).option("header", True).csv(path_list)
+    df2 = df.withColumn("name", remove_space_udf(df.name))
     print(f"Number of rows in Object Detection dataframe")
-    print(df.count())
-    return df
+    print(df2.count())
+    return df2
 
 
 def load_lane_detection(spark, batch_metadata):
@@ -252,10 +258,13 @@ def main(
 
     dfs["car"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "car")
     dfs["truck"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "truck")
-    dfs["trafficlight"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "trafficlight")
+    dfs["traffic_light"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "traffic_light")
     dfs["train"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "train")
     dfs["bus"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "bus")
     dfs["motorcycle"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "motorcycle")
+    dfs["stop_sign"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "stop_sign")
+    dfs["fire_hydrant"] = summarize_obj_in_lane_scenes(obj_lane_df, image_topics, "fire_hydrant")
+
     write_results_s3(
         dfs,
         table_name="scene_detections",
