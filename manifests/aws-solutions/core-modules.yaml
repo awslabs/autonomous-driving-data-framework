@@ -1,7 +1,7 @@
 name: mwaa
 path: git::codecommit::us-west-2://av-adas-solution.git//modules/orchestration/mwaa/?ref=main
 dataFiles:
-  - filePath: git::codecommit::us-west-2://av-adas-solution.git//data/mwaa/requirements/requirements-emr-serverless.txt/?ref=main
+  - filePath: git::codecommit::us-west-2://av-adas-solution.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=main
 parameters:
   - name: vpc-id
     valueFrom:
