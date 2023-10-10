@@ -14,7 +14,7 @@ aws-cdk-asset-kubectl-v20==2.1.2
     # via aws-cdk-lib
 aws-cdk-asset-node-proxy-agent-v5==2.0.166
     # via aws-cdk-lib
-aws-cdk-aws-glue-alpha==2.82.0-alpha.0
+aws-cdk-aws-glue-alpha==2.82.0a0
     # via -r requirements.in
 aws-cdk-lib==2.82.0
     # via
@@ -37,8 +37,6 @@ constructs==10.0.91
     #   aws-cdk-aws-glue-alpha
     #   aws-cdk-lib
     #   cdk-nag
-exceptiongroup==1.1.2
-    # via cattrs
 importlib-resources==6.0.0
     # via jsii
 jmespath==1.0.1
@@ -81,10 +79,6 @@ typeguard==2.13.3
     #   aws-cdk-lib
     #   jsii
 typing-extensions==4.7.1
-    # via
-    #   cattrs
-    #   jsii
-urllib3==1.26.16
+    # via jsii
+urllib3==1.26.17
     # via botocore
-zipp==3.16.2
-    # via importlib-resources
