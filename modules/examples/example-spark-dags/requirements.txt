@@ -26,8 +26,6 @@ constructs==10.1.37
     # via
     #   aws-cdk-lib
     #   cdk-nag
-exceptiongroup==1.0.0rc8
-    # via cattrs
 jmespath==1.0.0
     # via
     #   boto3
@@ -54,5 +52,5 @@ typing-extensions==4.7.1
     # via
     #   -r requirements.in
     #   jsii
-urllib3==1.26.9
+urllib3==1.26.17
     # via botocore
