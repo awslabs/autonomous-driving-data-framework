@@ -83,5 +83,5 @@ typeguard==2.13.3
     #   jsii
 typing-extensions==4.2.0
     # via jsii
-urllib3==1.26.9
+urllib3==1.26.17
     # via botocore
