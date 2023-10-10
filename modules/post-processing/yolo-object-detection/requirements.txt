@@ -37,8 +37,6 @@ constructs==10.0.91
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   cdk-nag
-exceptiongroup==1.1.2
-    # via cattrs
 importlib-resources==6.0.0
     # via jsii
 jmespath==1.0.1
@@ -80,10 +78,6 @@ typeguard==2.13.3
     #   aws-cdk-lib
     #   jsii
 typing-extensions==4.7.1
-    # via
-    #   cattrs
-    #   jsii
-urllib3==1.26.16
+    # via jsii
+urllib3==1.26.17
     # via botocore
-zipp==3.16.2
-    # via importlib-resources
