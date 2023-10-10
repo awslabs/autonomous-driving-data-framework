@@ -33,8 +33,6 @@ constructs==10.0.91
     #   -r requirements.in
     #   aws-cdk-lib
     #   cdk-nag
-exceptiongroup==1.0.0rc8
-    # via cattrs
 importlib-resources==5.12.0
     # via jsii
 jmespath==1.0.0
@@ -79,7 +77,5 @@ typing-extensions==4.7.1
     # via
     #   -r requirements.in
     #   jsii
-urllib3==1.26.9
+urllib3==1.26.17
     # via botocore
-zipp==3.15.0
-    # via importlib-resources
