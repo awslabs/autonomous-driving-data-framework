@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fixed the dependabot alerts (apache-airflow)
 - refactored pyspark script of scene-detect in rosbag-image-processing module
 - `datalake-buckets` has LifecycleRule on `artifacts-bucket-logs` added due to number of MWAA access logs
+- updated `Pillow~=10.0.1` in modules/analysis/rosbag-image-pipeline/requirements-dev.txt
 
 ### **Removed**
 
