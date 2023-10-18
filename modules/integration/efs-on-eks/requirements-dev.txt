@@ -148,7 +148,6 @@ six==1.16.0
     #   python-dateutil
 tomli==2.0.1
     # via
-    #   black
     #   build
     #   check-manifest
     #   mypy
@@ -159,10 +158,8 @@ types-pyyaml==6.0.5
 types-setuptools==57.4.12
     # via -r requirements-dev.in
 typing-extensions==4.1.1
-    # via
-    #   black
-    #   mypy
-urllib3==1.26.17
+    # via mypy
+urllib3==1.26.18
     # via
     #   botocore
     #   requests
