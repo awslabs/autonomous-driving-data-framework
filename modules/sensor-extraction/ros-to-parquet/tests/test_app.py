@@ -42,3 +42,25 @@ def test_wrong_platform(stack_defaults):
     os.environ["ADDF_PARAMETER_PLATFORM"] = "GIBBERISH"
     with pytest.raises(ValueError):
         import app  # noqa: F401
+
+
+def test_solution_description(stack_defaults):
+    os.environ["ADDF_PARAMETER_SOLUTION_ID"] = "SO123456"
+    os.environ["ADDF_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
+    os.environ["ADDF_PARAMETER_SOLUTION_VERSION"] = "v1.0.0"
+
+    import app
+
+    ver = app.generate_description()
+    assert ver == "(SO123456) MY GREAT TEST. Version v1.0.0"
+
+
+def test_solution_description_no_version(stack_defaults):
+    os.environ["ADDF_PARAMETER_SOLUTION_ID"] = "SO123456"
+    os.environ["ADDF_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
+    del os.environ["ADDF_PARAMETER_SOLUTION_VERSION"]
+
+    import app
+
+    ver = app.generate_description()
+    assert ver == "(SO123456) MY GREAT TEST"

@@ -39,6 +39,19 @@ project_dir = os.path.dirname(os.path.abspath(__file__))
 install_script = os.path.join(project_dir, "install_nginx.sh")
 
 
+def generate_description() -> str:
+    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+
+    desc = "ADDF - Opensearch Tunnel"
+    if soln_id and soln_name and soln_version:
+        desc = f"({soln_id}) {soln_name}. Version {soln_version}"
+    elif soln_id and soln_name:
+        desc = f"({soln_id}) {soln_name}"
+    return desc
+
+
 app = App()
 
 stack = TunnelStack(
@@ -55,6 +68,7 @@ stack = TunnelStack(
     opensearch_domain_endpoint=opensearch_domain_endpoint,
     install_script=install_script,
     port=port,
+    stack_description=generate_description(),
 )
 
 CfnOutput(

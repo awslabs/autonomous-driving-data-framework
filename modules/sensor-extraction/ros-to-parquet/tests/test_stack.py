@@ -39,6 +39,7 @@ def test_synthesize_stack(stack_defaults):
         timeout_seconds=1800,
         vcpus=2,
         memory_limit_mib=8192,
+        stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],

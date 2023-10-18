@@ -30,6 +30,19 @@ if platform not in ["FARGATE", "EC2"]:
     raise ValueError("Platform must be either FARGATE or EC2")
 
 
+def generate_description() -> str:
+    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+
+    desc = "(SO9154) Autonomous Driving Data Framework (ADDF) - ros-to-parquet"
+    if soln_id and soln_name and soln_version:
+        desc = f"({soln_id}) {soln_name}. Version {soln_version}"
+    elif soln_id and soln_name:
+        desc = f"({soln_id}) {soln_name}"
+    return desc
+
+
 app = App()
 
 stack = RosToParquetBatchJob(
@@ -47,6 +60,7 @@ stack = RosToParquetBatchJob(
     vcpus=vcpus,
     memory_limit_mib=memory_limit_mib,
     s3_access_policy=full_access_policy,
+    stack_description=generate_description(),
     removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
 )
 

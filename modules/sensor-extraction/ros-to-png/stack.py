@@ -35,12 +35,13 @@ class RosToPngBatchJob(Stack):
         resized_width: int,
         resized_height: int,
         removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
+        stack_description: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
             scope,
             id,
-            description="(SO9154) Autonomous Driving Data Framework (ADDF) - ros-to-png",
+            description=stack_description,
             **kwargs,
         )
 

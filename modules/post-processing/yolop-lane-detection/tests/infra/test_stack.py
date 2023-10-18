@@ -33,6 +33,7 @@ def test_synthesize_stack(stack_defaults):
         deployment_name=dep_name,
         module_name=mod_name,
         s3_access_policy="arn:aws:policy:12345:XXX",
+        stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],

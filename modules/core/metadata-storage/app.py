@@ -26,6 +26,19 @@ if not bagfile_suffix:
     raise ValueError("ADDF_PARAMETER_ROSBAG_BAGFILE_TABLE_SUFFIX not populated")
 
 
+def generate_description() -> str:
+    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+
+    desc = "ADDF - Metadata Storage Module"
+    if soln_id and soln_name and soln_version:
+        desc = f"({soln_id}) {soln_name}. Version {soln_version}"
+    elif soln_id and soln_name:
+        desc = f"({soln_id}) {soln_name}"
+    return desc
+
+
 app = App()
 
 stack = MetadataStorageStack(
@@ -40,6 +53,7 @@ stack = MetadataStorageStack(
     scene_table_suffix=scene_suffix,
     bagfile_table_suffix=bagfile_suffix,
     glue_db_suffix=glue_db_suffix,
+    stack_description=generate_description(),
 )
 
 CfnOutput(

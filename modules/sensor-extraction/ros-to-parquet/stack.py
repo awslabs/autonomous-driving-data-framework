@@ -34,12 +34,13 @@ class RosToParquetBatchJob(Stack):
         vcpus: int,
         memory_limit_mib: int,
         removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
+        stack_description: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
             scope,
             id,
-            description="(SO9154) Autonomous Driving Data Framework (ADDF) - ros-to-parquet",
+            description=stack_description,
             **kwargs,
         )
 
