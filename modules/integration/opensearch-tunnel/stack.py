@@ -30,13 +30,14 @@ class TunnelStack(Stack):
         opensearch_domain_endpoint: str,
         install_script: str,
         port: int,
+        stack_description: str,
         **kwargs: Any,
     ) -> None:
 
         super().__init__(
             scope,
             id,
-            description="This stack deploys Proxy Tunnel environment to access Opensearch Dashboard",
+            description=stack_description,
             **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")

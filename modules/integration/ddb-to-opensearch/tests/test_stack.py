@@ -42,6 +42,7 @@ def test_synthesize_stack(stack_defaults, mocker):
                 "arn:aws:dynamodb:us-west-2:123456789012:table/addf-aws-solutions-metadata-storage-"
                 "Rosbag-Scene-Metadata/stream/2023-08-15T03:16:51.909"
             ),
+            stack_description="Testing",
             env=cdk.Environment(
                 account=os.environ["CDK_DEFAULT_ACCOUNT"],
                 region=os.environ["CDK_DEFAULT_REGION"],

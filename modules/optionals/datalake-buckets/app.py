@@ -16,7 +16,7 @@ hash = os.getenv("ADDF_HASH", "")
 # App Env vars
 buckets_encryption_type = os.getenv("ADDF_PARAMETER_ENCRYPTION_TYPE", "SSE")
 buckets_retention = os.getenv("ADDF_PARAMETER_RETENTION_TYPE", "DESTROY")
-artifact_logs_retention = os.getenv("ADDF_PARAMETER_ARTIFACTS_LOG_RETENTION", "2")
+artifact_logs_retention = os.getenv("ADDF_PARAMETER_ARTIFACTS_LOG_RETENTION", "1")
 
 if buckets_retention not in ["DESTROY", "RETAIN"]:
     raise ValueError("The only RETENTION_TYPE values accepted are 'DESTROY' and 'RETAIN' ")
@@ -24,6 +24,19 @@ if buckets_retention not in ["DESTROY", "RETAIN"]:
 
 if buckets_encryption_type not in ["SSE", "KMS"]:
     raise ValueError("The only ENCRYPTION_TYPE values accepted are 'SSE' and 'KMS' ")
+
+
+def generate_description() -> str:
+    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+
+    desc = "ADDF - Datalake Buckets Module"
+    if soln_id and soln_name and soln_version:
+        desc = f"({soln_id}) {soln_name}. Version {soln_version}"
+    elif soln_id and soln_name:
+        desc = f"({soln_id}) {soln_name}"
+    return desc
 
 
 app = App()
@@ -38,6 +51,7 @@ stack = DataLakeBucketsStack(
     buckets_encryption_type=buckets_encryption_type,
     buckets_retention=buckets_retention,
     artifacts_log_retention=int(artifact_logs_retention),
+    stack_description=generate_description(),
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

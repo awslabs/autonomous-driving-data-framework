@@ -26,13 +26,14 @@ class DataLakeBucketsStack(Stack):  # type: ignore
         buckets_encryption_type: str,
         buckets_retention: str,
         artifacts_log_retention: int,
+        stack_description: str,
         **kwargs: Any,
     ) -> None:
         # CDK Env Vars
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
 
-        super().__init__(scope, id, description="This stack deploys Storage resources for ADDF", **kwargs)
+        super().__init__(scope, id, description=stack_description, **kwargs)
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
 
         logs_bucket = aws_s3.Bucket(

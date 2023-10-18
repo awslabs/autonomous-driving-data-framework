@@ -34,6 +34,19 @@ opensearch_domain_endpoint = os.getenv(_param("OPENSEARCH_DOMAIN_ENDPOINT"), "")
 ddb_stream_arn = os.getenv(_param("ROSBAG_STREAM_ARN"), "")
 
 
+def generate_description() -> str:
+    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+
+    desc = "ADDF - DDB to OpenSearch Module"
+    if soln_id and soln_name and soln_version:
+        desc = f"({soln_id}) {soln_name}. Version {soln_version}"
+    elif soln_id and soln_name:
+        desc = f"({soln_id}) {soln_name}"
+    return desc
+
+
 app = App()
 
 stack = DDBtoOpensearch(
@@ -51,7 +64,9 @@ stack = DDBtoOpensearch(
     opensearch_domain_endpoint=opensearch_domain_endpoint,
     opensearch_domain_name=opensearch_domain_name,
     ddb_stream_arn=ddb_stream_arn,
+    stack_description=generate_description(),
 )
+
 
 CfnOutput(
     scope=stack,

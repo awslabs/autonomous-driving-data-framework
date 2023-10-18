@@ -36,6 +36,7 @@ def test_synthesize_stack(stack_defaults):
         buckets_encryption_type="SSE",
         buckets_retention="DESTROY",
         artifacts_log_retention=2,
+        stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],

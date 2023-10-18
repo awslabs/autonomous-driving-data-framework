@@ -40,6 +40,7 @@ def test_synthesize_stack(stack_defaults):
         memory_limit_mib=8192,
         resized_width=1280,
         resized_height=720,
+        stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],

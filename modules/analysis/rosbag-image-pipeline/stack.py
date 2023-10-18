@@ -30,12 +30,13 @@ class AwsBatchPipeline(Stack):  # type: ignore
         lane_detection_role: str,
         job_queues: List[str],
         job_definitions: List[str],
+        stack_description: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
             scope,
             id,
-            description="(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-image-pipeline",
+            description=stack_description,
             **kwargs,
         )
 

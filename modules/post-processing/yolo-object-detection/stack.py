@@ -24,11 +24,13 @@ class ObjectDetection(Stack):
         module_name: str,
         s3_access_policy: str,
         removal_policy: Optional[RemovalPolicy] = RemovalPolicy.DESTROY,
+        stack_description: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
             scope,
             id,
+            description=stack_description,
             **kwargs,
         )
 

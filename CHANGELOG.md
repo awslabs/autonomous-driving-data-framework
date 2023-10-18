@@ -53,6 +53,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - refactored pyspark script of scene-detect in rosbag-image-processing module
 - `datalake-buckets` has LifecycleRule on `artifacts-bucket-logs` added due to number of MWAA access logs
 - updated `Pillow~=10.0.1` in modules/analysis/rosbag-image-pipeline/requirements-dev.txt
+- added dynamic stack naming based on Solution Info:
+  -  modules/optionals/datalake-buckets
+  -  modules/analysis/rosbag-image-pipeline
+  -  modules/core/metadata-storage
+  -  modules/sensor-extraction/ros-to-parquet
+  -  modules/sensor-extraction/ros-to-png
+  -  modules/post-processing/yolo-object-detection
+  -  modules/post-processing/yolop-lane-detection
+  -  modules/integration/opensearch-tunnel
+  -  modules/integration/ddb-to-opensearch
 
 ### **Removed**
 

@@ -37,6 +37,11 @@ None
 - `artifacts-log-retention`: the number of days back to keep the logs in `artifacts-bucket-logs`
   - this is to prevent large number of logs filling from MWAA
   - shoud be an integer - "2"
+- `solution-id`: a unique identifier for this deployment (must be used with `solution-description`)
+- `solution-name`: a unique name for this deployment (must be used with `solution-id`)
+- `solution-version`: a unique version for this deployment
+
+The parameters `(solution-*)` will resolve a custom text that is used as a description of the stack if populated.
 
 
 ### Module Metadata Outputs

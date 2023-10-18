@@ -36,6 +36,7 @@ def test_synthesize_stack(stack_defaults):
         scene_table_suffix="scene-suffix",
         bagfile_table_suffix="glue-db-suffix",
         glue_db_suffix="ros-table-suffix",
+        stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],
