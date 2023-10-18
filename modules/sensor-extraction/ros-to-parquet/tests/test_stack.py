@@ -39,6 +39,7 @@ def test_synthesize_stack(stack_defaults):
         timeout_seconds=1800,
         vcpus=2,
         memory_limit_mib=8192,
+        stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],
@@ -47,6 +48,6 @@ def test_synthesize_stack(stack_defaults):
 
     template = Template.from_stack(ros_to_parquet)
     template.resource_count_is("AWS::ECR::Repository", 1)
-    template.resource_count_is("AWS::Lambda::Function", 1)
+    template.resource_count_is("AWS::Lambda::Function", 2)
     template.resource_count_is("AWS::Batch::JobDefinition", 1)
-    template.resource_count_is("AWS::IAM::Role", 2)
+    template.resource_count_is("AWS::IAM::Role", 3)

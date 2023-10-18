@@ -33,13 +33,14 @@ def test_synthesize_stack(stack_defaults):
         id=f"addf-{dep_name}-{mod_name}",
         deployment_name=dep_name,
         module_name=mod_name,
-        s3_access_policy="'arn:aws:iam::123456789012:policy/addf-buckets-us-west-2-123-full-access",
+        s3_access_policy="arn:aws:iam::123456789012:policy/addf-buckets-us-west-2-123-full-access",
         retries=1,
         timeout_seconds=1800,
         vcpus=2,
         memory_limit_mib=8192,
         resized_width=1280,
         resized_height=720,
+        stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],
@@ -48,6 +49,6 @@ def test_synthesize_stack(stack_defaults):
 
     template = Template.from_stack(ros_to_png)
     template.resource_count_is("AWS::ECR::Repository", 1)
-    template.resource_count_is("AWS::Lambda::Function", 1)
+    template.resource_count_is("AWS::Lambda::Function", 2)
     template.resource_count_is("AWS::Batch::JobDefinition", 1)
-    template.resource_count_is("AWS::IAM::Role", 2)
+    template.resource_count_is("AWS::IAM::Role", 3)

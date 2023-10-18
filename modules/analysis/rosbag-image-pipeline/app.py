@@ -81,6 +81,20 @@ if not full_access_policy:
 if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
     raise ValueError("Requires at least one job queue.")
 
+
+def generate_description() -> str:
+    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+
+    desc = "(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-image-pipeline"
+    if soln_id and soln_name and soln_version:
+        desc = f"({soln_id}) {soln_name}. Version {soln_version}"
+    elif soln_id and soln_name:
+        desc = f"({soln_id}) {soln_name}"
+    return desc
+
+
 app = App()
 
 stack = AwsBatchPipeline(
@@ -95,6 +109,7 @@ stack = AwsBatchPipeline(
     lane_detection_role=lane_detection_role,
     job_queues=[x for x in [fargate_job_queue, spot_job_queue, on_demand_job_queue] if x is not None],
     job_definitions=[x for x in [png_batch_job_def_arn, parquet_batch_job_def_arn] if x is not None],
+    stack_description=generate_description(),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

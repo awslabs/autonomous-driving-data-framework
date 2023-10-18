@@ -27,6 +27,11 @@ A sample piece of code that leverages this image as a Sagemaker Processing job i
 
 #### Optional
 - `removal-policy`: Elect to retain ECR repositories when deleting stacks
+- `solution-id`: a unique identifier for this deployment (must be used with `solution-description`)
+- `solution-name`: a unique name for this deployment (must be used with `solution-id`)
+- `solution-version`: a unique version for this deployment
+
+The parameters `(solution-*)` will resolve a custom text that is used as a description of the stack if populated.
     
 ### Sample declaration 
 

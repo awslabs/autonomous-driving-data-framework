@@ -30,12 +30,12 @@ class DDBtoOpensearch(Stack):
         opensearch_domain_endpoint: str,
         opensearch_domain_name: str,
         ddb_stream_arn: str,
+        stack_description: str,
         **kwargs: Any,
     ) -> None:
 
-        super().__init__(
-            scope, id, description="This stack integrates DynamoDB with Opensearch cluster for ADDF", **kwargs
-        )
+        super().__init__(scope, id, description=stack_description, **kwargs)
+
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         dep_mod = f"addf-{deployment}-{module}"

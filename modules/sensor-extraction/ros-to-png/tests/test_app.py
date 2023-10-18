@@ -16,7 +16,7 @@ def stack_defaults():
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
     os.environ[
         "ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"
-    ] = "arn:aws:iam::1234567890:policy/addf-aws-solutions-wip-policy-full-access"
+    ] = "arn:aws:iam::123456789012:policy/addf-aws-solutions-wip-policy-full-access"
     os.environ["ADDF_PARAMETER_MEMORY_MIB"] = "8192"
     os.environ["ADDF_PARAMETER_PLATFORM"] = "FARGATE"
     os.environ["ADDF_PARAMETER_RESIZED_HEIGHT"] = "720"
@@ -37,3 +37,25 @@ def test_missing_app_policy(stack_defaults):
     del os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"]
     with pytest.raises(ValueError):
         import app  # noqa: F401
+
+
+def test_solution_description(stack_defaults):
+    os.environ["ADDF_PARAMETER_SOLUTION_ID"] = "SO123456"
+    os.environ["ADDF_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
+    os.environ["ADDF_PARAMETER_SOLUTION_VERSION"] = "v1.0.0"
+
+    import app
+
+    ver = app.generate_description()
+    assert ver == "(SO123456) MY GREAT TEST. Version v1.0.0"
+
+
+def test_solution_description_no_version(stack_defaults):
+    os.environ["ADDF_PARAMETER_SOLUTION_ID"] = "SO123456"
+    os.environ["ADDF_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
+    del os.environ["ADDF_PARAMETER_SOLUTION_VERSION"]
+
+    import app
+
+    ver = app.generate_description()
+    assert ver == "(SO123456) MY GREAT TEST"

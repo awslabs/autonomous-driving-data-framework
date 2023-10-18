@@ -26,7 +26,11 @@ The [AWS SSM Plugin for AWS CLI](https://docs.aws.amazon.com/systems-manager/lat
 #### Optional
 - `port` - the port the NGINX server listens on 
   - defaults to `3000`
+- `solution-id`: a unique identifier for this deployment (must be used with `solution-description`)
+- `solution-name`: a unique name for this deployment (must be used with `solution-id`)
+- `solution-version`: a unique version for this deployment
 
+The parameters `(solution-*)` will resolve a custom text that is used as a description of the stack if populated.
 
 ### Module Metadata Outputs
 - `OpenSearchTunnelDNS`: the public DNS of the instance

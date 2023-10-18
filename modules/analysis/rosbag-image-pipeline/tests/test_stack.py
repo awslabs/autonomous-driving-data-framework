@@ -100,6 +100,7 @@ def test_stack(stack_defaults):
         lane_detection_role="lane-detection-role",
         job_queues=["job-queue-1", "job-queue-2"],
         job_definitions=["job-def-1", "job-def-2"],
+        stack_description="Testing",
         env=cdk.Environment(account=(os.environ["CDK_DEFAULT_ACCOUNT"]), region=(os.environ["CDK_DEFAULT_REGION"])),
     )
     template = Template.from_stack(rosbag_stack)
