@@ -6,7 +6,6 @@ deploy:
       - pip install -r requirements.txt
     build:
       commands:
-      - echo "test"
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # Here we export some env vars
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
@@ -20,6 +19,9 @@ deploy:
       - echo "REGION = '${AWS_DEFAULT_REGION}'" >> $DAG_DIR/dag_config.py
       - echo "EMR_JOB_EXECUTION_ROLE = '${ADDF_PARAMETER_EMR_JOB_EXEC_ROLE}'" >> $DAG_DIR/dag_config.py
       - echo "EMR_APPLICATION_ID = '${ADDF_PARAMETER_EMR_APP_ID}'" >> $DAG_DIR/dag_config.py
+      - echo "SOLUTION_ID = '${ADDF_PARAMETER_SOLUTION_ID}'" >> $DAG_DIR/dag_config.py
+      - echo "SOLUTION_NAME = '${ADDF_PARAMETER_SOLUTION_NAME}'" >> $DAG_DIR/dag_config.py
+      - echo "SOLUTION_VERSION = '${ADDF_PARAMETER_SOLUTION_VERSION}'" >> $DAG_DIR/dag_config.py     
       - echo "S3_SCRIPT_DIR = 's3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/$DAG_DIR/'" >> $DAG_DIR/dag_config.py
       - aws s3 cp --recursive $DAG_DIR/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/$DAG_DIR/
 destroy:
