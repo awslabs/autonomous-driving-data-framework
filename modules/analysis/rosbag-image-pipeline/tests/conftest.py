@@ -28,6 +28,9 @@ MODULE_NAME = 'analysis-rip'
 REGION = 'us-east-1'
 EMR_JOB_EXECUTION_ROLE = 'arn:aws:iam::1234567890:role/addf-aws-solutions-core-e-addfawssolutionscoreemrs-KNO49U56R3MO'
 EMR_APPLICATION_ID = '00fcldsv5ol5dv09'
+SOLUTION_ID = ''
+SOLUTION_NAME = ''
+SOLUTION_VERSION = ''
 S3_SCRIPT_DIR = 's3://addf-aws-solutions-artifacts-bucket-074ff5b4/dags/aws-solutions/analysis-rip/image_dags/'
     """
 
