@@ -54,6 +54,9 @@ jobs:
           ls -al av-adas-solution/modules/
           echo "Copied modules"
 
+          echo "Copying Manifest file contents..."
+          cp -R manifests/aws-solutions/ av-adas-solution/manifests/aws-solutions/
+
           cd av-adas-solution/
           git config --global user.email "ssriche@amazon.com"
           git config --global user.name "Srinivas"
