@@ -1,7 +1,7 @@
 name: mwaa
 path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa/?ref=av-adas-solution
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=av-adas-solution
 parameters:
   - name: vpc-id
     valueFrom:
