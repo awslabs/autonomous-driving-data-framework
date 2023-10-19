@@ -1,5 +1,5 @@
 name: mwaa
-path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa/?ref=av-adas-solution
 dataFiles:
   - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt
 parameters:
@@ -27,9 +27,15 @@ parameters:
     value: "2.6.3"
   - name: custom-requirements-path
     value: data/mwaa/requirements/requirements-emr-serverless.txt
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: batch-compute
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=av-adas-solution
 parameters:
   - name: vpc-id
     valueFrom:
@@ -65,9 +71,15 @@ parameters:
           desired_vcpus: 0
           compute_type: FARGATE
           order: 1
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: metadata-storage
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=av-adas-solution
 parameters:
   - name: glue-db-suffix
     value: vsidata
@@ -75,9 +87,15 @@ parameters:
     value: Rosbag-BagFile-Metadata
   - name: rosbag-scene-table-suffix
     value: Rosbag-Scene-Metadata
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: opensearch
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=av-adas-solution
 parameters:
   - name: retention-type
     value: DESTROY
@@ -103,9 +121,15 @@ parameters:
         group: optionals
         name: networking
         key: PrivateSubnetIds
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: emr-serverless
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=av-adas-solution
 parameters:
   - name: private-subnet-ids
     valueFrom:
@@ -119,3 +143,9 @@ parameters:
         group: optionals
         name: networking
         key: VpcId
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
