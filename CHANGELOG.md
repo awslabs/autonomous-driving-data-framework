@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -  modules/post-processing/yolop-lane-detection
   -  modules/integration/opensearch-tunnel
   -  modules/integration/ddb-to-opensearch
+- updated `rosbag-webviz` cdk version to 2.99.1
 
 ### **Removed**
 
