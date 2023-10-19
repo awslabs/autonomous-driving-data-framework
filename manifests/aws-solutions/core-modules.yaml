@@ -1,7 +1,7 @@
 name: mwaa
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/orchestration/mwaa/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa/?ref=av-adas-solution
 dataFiles:
-  - filePath: git::codecommit::us-west-2://av-adas-solution.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=main
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=av-adas-solution
 parameters:
   - name: vpc-id
     valueFrom:
@@ -27,9 +27,15 @@ parameters:
     value: "2.6.3"
   - name: custom-requirements-path
     value: data/mwaa/requirements/requirements-emr-serverless.txt
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: batch-compute
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/compute/aws-batch/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=av-adas-solution
 parameters:
   - name: vpc-id
     valueFrom:
@@ -65,9 +71,15 @@ parameters:
           desired_vcpus: 0
           compute_type: FARGATE
           order: 1
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: metadata-storage
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/core/metadata-storage/?ref=main
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=av-adas-solution
 parameters:
   - name: glue-db-suffix
     value: vsidata
@@ -75,10 +87,18 @@ parameters:
     value: Rosbag-BagFile-Metadata
   - name: rosbag-scene-table-suffix
     value: Rosbag-Scene-Metadata
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: opensearch
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/storage/opensearch/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=av-adas-solution
 parameters:
+  - name: retention-type
+    value: DESTROY
   - name: opensearch_data_nodes
     value: 1
   - name: opensearch_data_nodes_instance_type
@@ -101,9 +121,15 @@ parameters:
         group: optionals
         name: networking
         key: PrivateSubnetIds
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: emr-serverless
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/compute/emr-serverless/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=av-adas-solution
 parameters:
   - name: private-subnet-ids
     valueFrom:
@@ -117,3 +143,9 @@ parameters:
         group: optionals
         name: networking
         key: VpcId
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0

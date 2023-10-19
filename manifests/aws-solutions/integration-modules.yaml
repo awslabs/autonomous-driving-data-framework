@@ -1,5 +1,5 @@
 name: opensearch-tunnel
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/integration/opensearch-tunnel?ref=main
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/opensearch-tunnel/?ref=av-adas-solution
 parameters:
   - name: opensearch-domain-endpoint
     valueFrom:
@@ -21,9 +21,15 @@ parameters:
         key: VpcId
   - name: port
     value: '3333'
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: rosbag-ddb-to-os
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/integration/ddb-to-opensearch?ref=main
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/ddb-to-opensearch/?ref=av-adas-solution
 parameters:
   - name: opensearch-domain-name
     valueFrom:
@@ -61,3 +67,9 @@ parameters:
         group: core
         name: metadata-storage
         key: RosbagSceneMetadataStreamArn
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0

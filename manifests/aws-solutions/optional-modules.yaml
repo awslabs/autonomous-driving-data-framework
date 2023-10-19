@@ -1,11 +1,23 @@
 name: networking
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/network/basic-cdk/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk/?ref=av-adas-solution
 parameters:
   - name: internet-accessible
     value: true
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
 ---
 name: datalake-buckets
-path: git::codecommit::us-west-2://av-adas-solution.git//modules/optionals/datalake-buckets/?ref=main
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/optionals/datalake-buckets/?ref=av-adas-solution
 parameters:
   - name: encryption-type
     value: SSE
+  - name: solution-id
+    value: 'SO0279'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
