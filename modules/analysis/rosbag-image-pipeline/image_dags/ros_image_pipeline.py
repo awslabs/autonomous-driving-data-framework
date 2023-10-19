@@ -14,6 +14,7 @@ from math import ceil
 from typing import TypeVar
 
 import boto3
+import botocore
 from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
@@ -39,6 +40,9 @@ from dag_config import (
     MODULE_NAME,
     REGION,
     S3_SCRIPT_DIR,
+    SOLUTION_ID,
+    SOLUTION_NAME,
+    SOLUTION_VERSION,
 )
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
@@ -101,6 +105,14 @@ logger = logging.getLogger("airflow")
 logger.setLevel("DEBUG")
 
 
+def get_config() -> botocore.config.Config:
+    if SOLUTION_ID and SOLUTION_VERSION:
+        user_agent_extra_param = {"user_agent_extra": f"AWSSOLUTION/{SOLUTION_ID}/{SOLUTION_VERSION}"}
+        return botocore.config.Config(**user_agent_extra_param)
+    else:
+        return botocore.config.Config()
+
+
 def try_create_aws_conn():
     conn_id = "aws_default"
     try:
@@ -154,12 +166,15 @@ def create_batch_of_drives(ti, **kwargs):
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
+        config=get_config(),
     )
+
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
+        config=get_config(),
     )
 
     # Validate Config
@@ -261,6 +276,7 @@ def sagemaker_yolo_operation(**kwargs):
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
+        config=get_config(),
     )
     table = dynamodb.Table(DYNAMODB_TABLE)
     batch_id = kwargs["dag_run"].run_id
@@ -339,6 +355,7 @@ def sagemaker_lanedet_operation(**kwargs):
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
+        config=get_config(),
     )
     table = dynamodb.Table(DYNAMODB_TABLE)
     batch_id = kwargs["dag_run"].run_id
