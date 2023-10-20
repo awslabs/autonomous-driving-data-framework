@@ -20,7 +20,7 @@ aws-cdk-lib==2.82.0
     # via
     #   -r requirements.in
     #   aws-cdk-aws-lambda-python-alpha
-aws-emr-launch==2.0.0
+aws-emr-launch==2.0.1
     # via -r requirements.in
 boto3==1.24.7
     # via -r requirements.in
@@ -34,6 +34,8 @@ constructs==10.1.37
     # via
     #   aws-cdk-aws-lambda-python-alpha
     #   aws-cdk-lib
+exceptiongroup==1.1.3
+    # via cattrs
 importlib-resources==5.12.0
     # via jsii
 jmespath==1.0.0
@@ -80,3 +82,5 @@ typing-extensions==4.7.1
     #   jsii
 urllib3==1.26.18
     # via botocore
+zipp==3.17.0
+    # via importlib-resources

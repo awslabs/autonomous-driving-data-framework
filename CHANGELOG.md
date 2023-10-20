@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   -  modules/integration/ddb-to-opensearch
 - updated `rosbag-webviz` cdk version to 2.99.1
 - added solution info to boto calls on dag of `rosbag-image-pipeline`
+- updating emr-launch version to 2.0.1 in `rosbag-scene-detection`
 
 ### **Removed**
 
