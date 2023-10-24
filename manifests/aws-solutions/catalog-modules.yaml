@@ -1,5 +1,5 @@
 name: app-reg
-path: git::https://github.com/awslabs/idf-modules.git//modules/service-catalog/app-registry/?ref=av-adas-solution
+path: git::https://github.com/awslabs/idf-modules.git//modules/service-catalog/app-registry/?ref=scene-intelligence-with-rosbag-on-aws
 parameters:
   - name: solution-id
     value: 'SO0279'

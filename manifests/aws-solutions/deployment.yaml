@@ -1,5 +1,5 @@
-name: aws-solutions-wip
-toolchainRegion: us-west-2
+name: aws-solutions
+toolchainRegion: us-west-2 # AWS Region will be replaced on fly
 forceDependencyRedeploy: True
 groups:
   - name: optionals
@@ -16,10 +16,10 @@ groups:
     path: manifests/aws-solutions/catalog-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 180024969694
+    accountId: 1234567890 # AWS Account ID will be replaced on fly
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
     regionMappings:
-      - region: us-west-2
+      - region: us-west-2 # AWS Region will be replaced on fly
         default: true
