@@ -55,7 +55,7 @@ jobs:
           echo "Copied modules"
 
           echo "Copying Manifest file contents..."
-          cp -R manifests/aws-solutions/ scene-intelligence-with-rosbag-on-aws/manifests/aws-solutions/
+          cp -R manifests/aws-solutions/ scene-intelligence-with-rosbag-on-aws/manifests/
 
           echo "Copying Readme changes..."
           cp README.md scene-intelligence-with-rosbag-on-aws/
@@ -64,10 +64,13 @@ jobs:
           git config --global user.email "ssriche@amazon.com"
           git config --global user.name "Srinivas"
           git config --global init.defaultBranch main
+          git remote -v
           git branch -a
           git add -A
           git status
-          git commit -m "sync gh with cc"
-          git remote -v
-          git status
-          git push origin main
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "sync gh with cc"
+            git push origin main
+          else
+            echo "No change detected... nothing to commit..."
+          fi
