@@ -1,9 +1,0 @@
-name: app-reg
-path: git::https://github.com/awslabs/idf-modules.git//modules/service-catalog/app-registry/?ref=av-adas-solution
-parameters:
-  - name: solution-id
-    value: 'SO0279'
-  - name: solution-name
-    value: 'Scene Intelligence with Rosbag on AWS'
-  - name: solution-version
-    value: v1.0.0
