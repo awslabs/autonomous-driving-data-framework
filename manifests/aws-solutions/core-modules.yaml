@@ -1,7 +1,7 @@
 name: mwaa
-path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa/?ref=av-adas-solution
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa/?ref=scene-intelligence-with-rosbag-on-aws
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=av-adas-solution
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=scene-intelligence-with-rosbag-on-aws
 parameters:
   - name: vpc-id
     valueFrom:
@@ -35,7 +35,7 @@ parameters:
     value: v1.0.0
 ---
 name: batch-compute
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=av-adas-solution
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=scene-intelligence-with-rosbag-on-aws
 parameters:
   - name: vpc-id
     valueFrom:
@@ -79,7 +79,7 @@ parameters:
     value: v1.0.0
 ---
 name: metadata-storage
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=av-adas-solution
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=scene-intelligence-with-rosbag-on-aws
 parameters:
   - name: glue-db-suffix
     value: vsidata
@@ -95,7 +95,7 @@ parameters:
     value: v1.0.0
 ---
 name: opensearch
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=av-adas-solution
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=scene-intelligence-with-rosbag-on-aws
 parameters:
   - name: retention-type
     value: DESTROY
@@ -129,7 +129,7 @@ parameters:
     value: v1.0.0
 ---
 name: emr-serverless
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=av-adas-solution
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=scene-intelligence-with-rosbag-on-aws
 parameters:
   - name: private-subnet-ids
     valueFrom:
