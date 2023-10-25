@@ -53,15 +53,16 @@ if lifecycle_max_image_count:
         "LifecycleMaxImages",
         value=lifecycle_max_image_count,
     )
+
 CfnOutput(
     stack,
-    "RepositoryName",
-    value=stack.repository.repository_name,
-)
-CfnOutput(
-    stack,
-    "RepositoryARN",
-    value=stack.repository.repository_arn,
+    "metadata",
+    value=stack.to_json_string(
+        {
+            "EcrRepositoryName": stack.repository.repository_name,
+            "EcrRepositoryArn": stack.repository.repository_arn,
+        }
+    ),
 )
 
 app.synth()
