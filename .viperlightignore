@@ -14,4 +14,6 @@ manifests/aws-solutions/deployment.yaml:17 # 180024969694 is not an account id
 source/manifests/aws-solutions/deployment.yaml:17 # 180024969694 is not an account id
 modules/analysis/rosbag-image-pipeline/tests/conftest.py:21 # 1234567890 is not an account id
 modules/analysis/rosbag-image-pipeline/tests/conftest.py:25 # 1234567890 is not an account id
-.*/retrieve_docker_creds.py
+modules/integration/opensearch-tunnel/codeseeder.out/aws-solutions-wip-integration-opensearch-tunnel/bundle/retrieve_docker_creds.py:39
+modules/sensor-extraction/ros-to-parquet/codeseeder.out/aws-solutions-wip-docker-images-ros-to-parquet/bundle/retrieve_docker_creds.py:39
+modules/sensor-extraction/ros-to-parquet/codeseeder.out/aws-solutions-wip-docker-images-ros-to-png/bundle/retrieve_docker_creds.py:39
