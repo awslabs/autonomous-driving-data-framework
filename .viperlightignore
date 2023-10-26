@@ -7,7 +7,7 @@ Config
 ^dist/
 .*/plugins/
 .*/html_dir/
-**/codeseeder.out/*
+.*/codeseeder.out/
 modules/sensor-extraction/ros-to-parquet/tests/test_app.py:19   # 1234567890 is not an account id
 modules/sensor-extraction/ros-to-png/tests/test_app.py:19  # 1234567890 is not an account id
 manifests/aws-solutions/deployment.yaml:17 # 180024969694 is not an account id
