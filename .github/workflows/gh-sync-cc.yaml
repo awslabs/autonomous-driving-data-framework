@@ -4,8 +4,6 @@ on:
   # Triggers the workflow on push or pull request events but only for the "scene-intelligence-with-rosbag-on-aws" branch
   push:
     branches: ["scene-intelligence-with-rosbag-on-aws"]
-  pull_request:
-    branches: ["scene-intelligence-with-rosbag-on-aws"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
