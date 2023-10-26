@@ -61,7 +61,7 @@ SM_SECURITY_GROUP_ID = addf_module_metadata["SecurityGroupId"]
 PNG_JOB_DEFINITION_ARN = addf_module_metadata["PngBatchJobDefArn"]
 DESIRED_ENCODING = addf_module_metadata["DesiredEncoding"]
 IMAGE_TOPICS = addf_module_metadata["ImageTopics"]
-
+EXTRACT_TOPICS_BATCH_JOB_ARN = addf_module_metadata["ExtractTopicsJobDefArn"]
 PARQUET_JOB_DEFINITION_ARN = addf_module_metadata["ParquetBatchJobDefArn"]
 SENSOR_TOPICS = addf_module_metadata["SensorTopics"]
 
@@ -207,6 +207,38 @@ def create_batch_of_drives(ti, **kwargs):
 def get_job_name(suffix="") -> str:
     v = "".join(random.choice(string.ascii_lowercase) for _i in range(6))
     return f"ros-image-pipeline-{suffix}-{v}"
+
+
+### WIP
+def topics_extraction_batch_operation(**kwargs):
+    logger.info(f"kwargs at png_batch_operations is {kwargs}")
+
+    ti = kwargs["ti"]
+
+    array_size = ti.xcom_pull(task_ids="create-batch-of-drives", key="return_value")
+    batch_id = kwargs["dag_run"].run_id
+    context = get_current_context()
+
+    op = BatchOperator(
+        task_id="submit_batch_job_op",
+        job_name=get_job_name("extract_topics"),
+        job_queue=ON_DEMAND_JOB_QUEUE_ARN,
+        aws_conn_id="aws_default",
+        job_definition=EXTRACT_TOPICS_BATCH_JOB_ARN,
+        array_properties={"size": int(array_size)},
+        overrides={
+            "environment": [
+                {"name": "TABLE_NAME", "value": DYNAMODB_TABLE},
+                {"name": "BATCH_ID", "value": batch_id},
+                {"name": "DEBUG", "value": "true"},
+                {"name": "IMAGE_TOPICS", "value": json.dumps(IMAGE_TOPICS)},
+                {"name": "DESIRED_ENCODING", "value": DESIRED_ENCODING},
+                {"name": "TARGET_BUCKET", "value": TARGET_BUCKET},
+            ],
+        },
+    )
+
+    op.execute(context)
 
 
 def png_batch_operation(**kwargs):
@@ -504,6 +536,11 @@ with DAG(
         python_callable=create_batch_of_drives,
         dag=dag,
         provide_context=True,
+    )
+
+    # Extract Topics using AWS Batch
+    extract_topics = PythonOperator(
+        task_id="topics-extraction-batch-job", python_callable=topics_extraction_batch_operation
     )
 
     # Start Task Group definition

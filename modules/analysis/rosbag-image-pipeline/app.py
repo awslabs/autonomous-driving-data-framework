@@ -135,6 +135,7 @@ CfnOutput(
             "SpotJobQueueArn": spot_job_queue,
             "FargateJobQueueArn": fargate_job_queue,
             "ParquetBatchJobDefArn": parquet_batch_job_def_arn,
+            "ExtractTopicsJobDefArn": stack.extract_topics_batch_job.job_definition_arn,
             "PngBatchJobDefArn": png_batch_job_def_arn,
             "ObjectDetectionImageUri": object_detection_image_uri,
             "ObjectDetectionRole": object_detection_role,

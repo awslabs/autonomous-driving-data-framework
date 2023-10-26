@@ -4,11 +4,14 @@
 import logging
 from typing import Any, List, cast
 
+import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_dynamodb as dynamo
+from aws_cdk import aws_ecs as ecs
+from aws_cdk import aws_efs as efs
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -151,6 +154,74 @@ class AwsBatchPipeline(Stack):  # type: ignore
         )
 
         self.sm_sg.add_ingress_rule(peer=self.sm_sg, connection=ec2.Port.all_traffic())
+
+        # Topics extraction
+
+        fs = efs.FileSystem.from_file_system_attributes(
+            self,
+            "existingFS",
+            file_system_id="fs-12345678",  # You can also use fileSystemArn instead of fileSystemId.
+            security_group=ec2.SecurityGroup.from_security_group_id(
+                self, "SG", "sg-123456789", allow_all_outbound=False
+            ),
+        )
+
+        access_point = fs.add_access_point(
+            "AccessPoint",
+            path="/ecs",
+            create_acl=efs.Acl(owner_uid="1001", owner_gid="1001", permissions="750"),
+            posix_user=efs.PosixUser(uid="1001", gid="1001"),
+        )
+
+        role = iam.Role(
+            self,
+            f"{self.repository_name}-batch-role",
+            assumed_by=iam.CompositePrincipal(
+                iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
+            ),
+            inline_policies={"DagPolicyDocument": dag_document},
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonECSTaskExecutionRolePolicy"),
+                iam.ManagedPolicy.from_managed_policy_arn(self, id="fullaccess", managed_policy_arn=s3_access_policy),
+            ],
+            max_session_duration=Duration.hours(12),
+        )
+
+        self.batch_job = batch.JobDefinition(
+            self,
+            "batch-job-def-from-ecr",
+            container=batch.JobDefinitionContainer(
+                image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
+                command=["bash", "entrypoint.sh"],
+                environment={
+                    "AWS_DEFAULT_REGION": self.region,
+                    "AWS_ACCOUNT_ID": self.account,
+                    "DEBUG": "true",
+                    "RESIZE_WIDTH": str(resized_width),
+                    "RESIZE_HEIGHT": str(resized_height),
+                },
+                job_role=role,
+                execution_role=role,
+                memory_limit_mib=memory_limit_mib,
+                vcpus=vcpus,
+                volumes=[
+                    ecs.Volume(
+                        name="efs-volume",
+                        efs_volume_configuration=ecs.EfsVolumeConfiguration(
+                            file_system_id=fs.file_system_id,
+                            transit_encryption="ENABLED",
+                            authorization_config=ecs.AuthorizationConfig(
+                                access_point_id=access_point.access_point_id, iam="ENABLED"
+                            ),
+                        ),
+                    )
+                ],
+            ),
+            job_definition_name=self.repository_name,
+            platform_capabilities=[batch.PlatformCapabilities.EC2],
+            retry_attempts=retries,
+            timeout=Duration.seconds(timeout_seconds),
+        )
 
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
