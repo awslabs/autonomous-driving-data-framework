@@ -16,7 +16,7 @@ groups:
     path: manifests/aws-solutions/catalog-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 1234567890 # AWS Account ID will be replaced on fly
+    accountId: 123456789012 # AWS Account ID will be replaced on fly
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
