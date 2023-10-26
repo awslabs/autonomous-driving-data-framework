@@ -61,7 +61,7 @@ jobs:
           
           cd scene-intelligence-with-rosbag-on-aws/
           git config --global user.email "ssriche@amazon.com"
-          git config --global user.name "Srinivas"
+          git config --global user.name "Github-CodeCommit-Sync"
           git config --global init.defaultBranch main
           git remote -v
           git branch -a
