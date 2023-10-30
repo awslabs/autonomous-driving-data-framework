@@ -58,6 +58,7 @@ jobs:
           echo "Copying Root Directory  changes..."
           cp README.md scene-intelligence-with-rosbag-on-aws/
           cp .viperlightignore scene-intelligence-with-rosbag-on-aws/
+          cp .bandit scene-intelligence-with-rosbag-on-aws/
           
           cd scene-intelligence-with-rosbag-on-aws/
           git config --global user.email "${{github.actor}}@users.noreply.github.com"
