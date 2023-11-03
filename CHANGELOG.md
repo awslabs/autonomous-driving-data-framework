@@ -67,7 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added solution info to boto calls on dag of `rosbag-image-pipeline`
 - updating emr-launch version to 2.0.1 in `rosbag-scene-detection`
 - standardized ecr module outputs
-
+- updated `kubeflow-users` module to match support for kf1.7
+- updated `kubeflow-platform` manifest to use matching kf to eks 1.25 as example
 ### **Removed**
 
 - removed `aws-batch-demo` module since its no longer used for demos

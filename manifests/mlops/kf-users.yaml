@@ -1,7 +1,5 @@
 name: kubeflow-users
-path: modules/mlops/kubeflow-users
-#targetAccount: primary
-#targetRegion: us-east-1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/mlops/kubeflow-users
 parameters:
   - name: EksClusterAdminRoleArn
     valueFrom:
