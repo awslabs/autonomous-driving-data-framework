@@ -3,8 +3,8 @@ toolchainRegion: us-east-1
 groups:
   - name: optionals
     path: manifests/mlops/optional-modules.yaml
-  - name: replication
-    path: manifests/mlops/replicator-modules.yaml
+  # - name: replication
+  #   path: manifests/mlops/replicator-modules.yaml
   - name: core
     path: manifests/mlops/core-modules.yaml
   - name: platform

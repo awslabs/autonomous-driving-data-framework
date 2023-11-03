@@ -18,6 +18,6 @@ staticPasswords:
   userID: "15841185641784"
 staticClients:
 - idEnv: OIDC_CLIENT_ID
-  redirectURIs: ["/login/oidc"]
+  redirectURIs: ["/authservice/oidc/callback"]
   name: 'Dex Login Application'
   secretEnv: OIDC_CLIENT_SECRET

@@ -1,15 +1,15 @@
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.25.yaml?ref=v1.1.0&depth=1
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=v1.1.0&depth=1
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.25.yaml 
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml
 parameters:
-  - name: replicated-ecr-images-metadata-s3-path
-    valueFrom:
-      moduleMetadata:
-        group: replication
-        name: replication
-        key: s3_full_path
+  # - name: replicated-ecr-images-metadata-s3-path
+  #   valueFrom:
+  #     moduleMetadata:
+  #       group: replication
+  #       name: replication
+  #       key: s3_full_path
   - name: vpc-id
     valueFrom:
       moduleMetadata:
@@ -78,17 +78,69 @@ parameters:
       deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
       deploy_cloudwatch_container_insights_logs: True
       cloudwatch_container_insights_logs_retention_days: 7
----
-name: efs
-path: modules/core/efs
-targetAccount: primary
-targetRegion: us-east-1
-parameters:
-  - name: vpc-id
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: VpcId
-  - name: removal-policy
-    value: DESTROY
+      deploy_adot: False
+      deploy_amp: False
+      deploy_grafana_for_amp: False
+      deploy_kured: False
+      deploy_calico: False
+      deploy_nginx_controller:
+        value: False
+        nginx_additional_annotations:
+          nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
+      deploy_kyverno:
+        value: False
+        kyverno_policies:
+          validate:
+            - block-ephemeral-containers
+            - block-stale-images
+            - block-updates-deletes
+            - check-deprecated-apis
+            - disallow-cri-sock-mount
+            - disallow-custom-snippets
+            - disallow-empty-ingress-host
+            - disallow-helm-tiller
+            - disallow-latest-tag
+            - disallow-localhost-services
+            - disallow-secrets-from-env-vars
+            - ensure-probes-different
+            - ingress-host-match-tls
+            - limit-hostpath-vols
+            - prevent-naked-pods
+            - require-drop-cap-net-raw
+            - require-emptydir-requests-limits
+            - require-labels
+            - require-pod-requests-limits
+            - require-probes
+            - restrict-annotations
+            - restrict-automount-sa-token
+            - restrict-binding-clusteradmin
+            - restrict-clusterrole-nodesproxy
+            - restrict-escalation-verbs-roles
+            - restrict-ingress-classes
+            - restrict-ingress-defaultbackend
+            - restrict-node-selection
+            - restrict-path
+            - restrict-service-external-ips
+            - restrict-wildcard-resources
+            - restrict-wildcard-verbs
+            - unique-ingress-host-and-path
+          # mutate:
+          #   - add-networkpolicy-dns
+          #   - add-pod-priorityclassname
+          #   - add-ttl-jobs
+          #   - always-pull-images
+          #   - mitigate-log4shell
+# ---
+# name: efs
+# path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs
+# targetAccount: primary
+# targetRegion: us-east-1
+# parameters:
+#   - name: vpc-id
+#     valueFrom:
+#       moduleMetadata:
+#         group: optionals
+#         name: networking
+#         key: VpcId
+#   - name: removal-policy
+#     value: DESTROY
