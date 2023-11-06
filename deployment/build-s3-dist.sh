@@ -27,6 +27,8 @@ echo "Staring to build distribution"
 # export deployment_dir=`pwd`
 # export dist_dir="$deployment_dir"
 export dist_dir="deployment"
+export create_template="deployment/scene-intelligence-with-rosbag-on-aws-create.template"
+export delete_template="deployment/scene-intelligence-with-rosbag-on-aws-delete.template"
 template_dist_dir="$dist_dir/global-s3-assets"
 opensrc_dist_dir="$dist_dir/open-source"
 build_dist_dir="$dist_dir/regional-s3-assets"
@@ -55,13 +57,13 @@ echo "In deployment folder"
 pwd
 
 echo "Replacing solution bucket in the template"
-cp -f "deployment/scene-intelligence-with-rosbag-on-aws-create.template" $template_dist_dir
-cp -f "deployment/scene-intelligence-with-rosbag-on-aws-delete.template" $template_dist_dir
+cp -f $create_template $template_dist_dir
+cp -f $delete_template $template_dist_dir
 
 echo "Placeholder: Pushing single click CFN stack into build_dist_dir to make it non-empty. Empty dirs are being ignored in Codepipeline and failing to execute the deployAssets stage"
-cp -f "deployment/scene-intelligence-with-rosbag-on-aws-create.template" $build_dist_dir 
-cp -f "deployment/scene-intelligence-with-rosbag-on-aws-delete.template" $build_dist_dir 
+cp -f $create_template $build_dist_dir 
+cp -f $delete_template $build_dist_dir 
 
 echo "Placeholder: Pushing single click CFN stack into opensrc_dist_dir to make it non-empty. Empty dirs are being ignored in Codepipeline and failing to execute the deployAssets stage"
-cp -f "deployment/scene-intelligence-with-rosbag-on-aws-create.template" $opensrc_dist_dir 
-cp -f "deployment/scene-intelligence-with-rosbag-on-aws-delete.template" $opensrc_dist_dir 
+cp -f $create_template $opensrc_dist_dir 
+cp -f $delete_template $opensrc_dist_dir 

@@ -60,6 +60,7 @@ jobs:
           cp CHANGELOG.md scene-intelligence-with-rosbag-on-aws/
           cp .viperlightignore scene-intelligence-with-rosbag-on-aws/
           cp .bandit scene-intelligence-with-rosbag-on-aws/
+          cp -r .github scene-intelligence-with-rosbag-on-aws/
 
           cp scene-intelligence-with-rosbag-on-aws-create.template deployment/
           cp scene-intelligence-with-rosbag-on-aws-delete.template deployment/

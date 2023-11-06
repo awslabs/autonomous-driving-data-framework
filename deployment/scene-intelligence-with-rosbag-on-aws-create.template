@@ -1,5 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: (SO0279) Creates Scene Intelligence with Rosbag on AWS. Version v1.0.0
+Parameters:
+  SolutionVersion:
+    Type: String
+    Default: v1.0.0
+    Description: Solution Version. Should reference version tag e.g v1.0.0
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -253,6 +258,8 @@ Resources:
             Value: !Sub '${AWS::Region}'
           - Name: ROLE_ARN
             Value: !Sub '${CodeBuildRole.Arn}'
+          - NAME: SOLUTION_VERSION
+            Value: !Ref SolutionVersion
           - Name: url_path
             Value: 'placeholder'
           - Name: url_query
@@ -285,7 +292,7 @@ Resources:
               commands:
                 - echo Build started on `date`
                 - echo 'Cloning ADDF repo...'
-                - git clone -b scene-intelligence-with-rosbag-on-aws https://github.com/awslabs/autonomous-driving-data-framework.git
+                - git clone -b ${SOLUTION_VERSION} https://github.com/awslabs/autonomous-driving-data-framework.git
                 - echo 'Cloning complete'
                 - cd autonomous-driving-data-framework/
                 - echo 'Installing dependencies...'
