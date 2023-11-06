@@ -3,7 +3,7 @@
 
 import logging
 import os
-from typing import Any, cast
+from typing import Any, Dict, cast
 
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ecr as ecr
@@ -24,15 +24,11 @@ class RosToPngBatchJob(Stack):
         self,
         scope: Construct,
         id: str,
+        *,
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
-        retries: int,
-        timeout_seconds: int,
-        vcpus: int,
-        memory_limit_mib: int,
-        resized_width: int,
-        resized_height: int,
+        batch_config: Dict[str, Any],
         stack_description: str,
         removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
         **kwargs: Any,
@@ -107,23 +103,28 @@ class RosToPngBatchJob(Stack):
             max_session_duration=Duration.hours(12),
         )
 
+        batch_env = {
+            "AWS_DEFAULT_REGION": self.region,
+            "AWS_ACCOUNT_ID": self.account,
+            "DEBUG": "true",
+        }
+        if batch_config.get("resized_width"):
+            batch_env["RESIZE_WIDTH"] = str(batch_config["resized_width"])
+
+        if batch_config.get("resized_height"):
+            batch_env["RESIZE_HEIGHT"] = str(batch_config["resized_height"])
+
         self.batch_job = batch.JobDefinition(
             self,
             "batch-job-def-from-ecr",
             container=batch.JobDefinitionContainer(
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
                 command=["bash", "entrypoint.sh"],
-                environment={
-                    "AWS_DEFAULT_REGION": self.region,
-                    "AWS_ACCOUNT_ID": self.account,
-                    "DEBUG": "true",
-                    "RESIZE_WIDTH": str(resized_width),
-                    "RESIZE_HEIGHT": str(resized_height),
-                },
+                environment=batch_env,
                 job_role=role,
                 execution_role=role,
-                memory_limit_mib=memory_limit_mib,
-                vcpus=vcpus,
+                memory_limit_mib=batch_config["memory_limit_mib"],
+                vcpus=batch_config["vcpus"],
                 volumes=[
                     ecs.Volume(
                         name="scratch",
@@ -142,8 +143,8 @@ class RosToPngBatchJob(Stack):
             ),
             job_definition_name=self.repository_name,
             platform_capabilities=[batch.PlatformCapabilities.EC2],
-            retry_attempts=retries,
-            timeout=Duration.seconds(timeout_seconds),
+            retry_attempts=batch_config["retries"],
+            timeout=Duration.seconds(batch_config["timeout_seconds"]),
         )
 
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
