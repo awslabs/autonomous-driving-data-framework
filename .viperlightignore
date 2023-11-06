@@ -5,6 +5,7 @@ cdk.out
 coverage
 Config
 ^dist/
+.github/
 .*/plugins/
 .*/html_dir/
 ^codeseeder\.out/
