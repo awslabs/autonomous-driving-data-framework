@@ -150,7 +150,7 @@ parameters:
         name: emr-serverless
         key: EmrApplicationId
   - name: solution-id
-    value: 'SO0279'
+    value: 'SO0279-M'
   - name: solution-name
     value: 'Scene Intelligence with Rosbag on AWS'
   - name: solution-version

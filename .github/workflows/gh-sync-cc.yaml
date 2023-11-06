@@ -61,6 +61,8 @@ jobs:
           cp .viperlightignore scene-intelligence-with-rosbag-on-aws/
           cp .bandit scene-intelligence-with-rosbag-on-aws/
 
+          cp scene-intelligence-with-rosbag-on-aws-create.template deployment/
+          cp scene-intelligence-with-rosbag-on-aws-delete.template deployment/
           
           cd scene-intelligence-with-rosbag-on-aws/
           git config --global user.email "${{github.actor}}@users.noreply.github.com"
