@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: (SO0279-C) Creates Scene Intelligence with Rosbag on AWS. Version v1.0.0
+Description: (SO0279) Creates Scene Intelligence with Rosbag on AWS. Version v1.0.0
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role

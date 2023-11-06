@@ -4,7 +4,7 @@ parameters:
   - name: internet-accessible
     value: true
   - name: solution-id
-    value: 'SO0279'
+    value: 'SO0279-M'
   - name: solution-name
     value: 'Scene Intelligence with Rosbag on AWS'
   - name: solution-version
@@ -16,7 +16,7 @@ parameters:
   - name: encryption-type
     value: SSE
   - name: solution-id
-    value: 'SO0279'
+    value: 'SO0279-M'
   - name: solution-name
     value: 'Scene Intelligence with Rosbag on AWS'
   - name: solution-version
