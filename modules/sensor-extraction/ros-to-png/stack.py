@@ -24,7 +24,6 @@ class RosToPngBatchJob(Stack):
         self,
         scope: Construct,
         id: str,
-        *,
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
@@ -34,8 +33,8 @@ class RosToPngBatchJob(Stack):
         memory_limit_mib: int,
         resized_width: int,
         resized_height: int,
-        removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
         stack_description: str,
+        removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
         **kwargs: Any,
     ) -> None:
         super().__init__(
