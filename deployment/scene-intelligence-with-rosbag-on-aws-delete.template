@@ -1,0 +1,490 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: (SO0279-D) Deletes Scene Intelligence with Rosbag on AWS. Version v1.0.0
+Resources:
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess
+      Policies:
+        - PolicyName: create
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Sid: Logs
+              Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              Resource:
+              - "*"
+            - Sid: CFN
+              Effect: Allow
+              Action:
+              - cloudformation:DescribeStacks
+              - cloudformation:CreateChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:GetTemplate
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DeleteStack
+              - cloudformation:DeleteChangeSet
+              Resource:
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CDKToolkit/*
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/seedfarmer-*
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/aws-codeseeder-*
+            - Sid: IAM
+              Effect: Allow
+              Action:
+              - iam:GetRole
+              - iam:CreateRole
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+              - iam:DeleteRole
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:getRolePolicy
+              Resource:
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/cdk-*
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/seedfarmer-*
+            - Sid: ECR
+              Effect: Allow
+              Action:
+              - ecr:CreateRepository
+              - ecr:SetRepositoryPolicy
+              - ecr:Describe*
+              - ecr:DeleteRepository
+              - ecr:PutLifecyclePolicy
+              - ecr:PutImageTagMutability
+              - ecr:List*
+              Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/cdk-*
+            - Sid: S3
+              Effect: Allow
+              Action:
+              - s3:CreateBucket
+              - s3:GetBucketPolicy
+              - s3:PutBucketPolicy
+              - s3:PutBucketVersioning
+              - s3:PutBucketPublicAccessBlock
+              - s3:PutBucketAcl
+              - s3:GetEncryptionConfiguration
+              - s3:PutEncryptionConfiguration
+              - s3:PutLifecycleConfiguration
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+              - s3:DeleteObjectTagging
+              - s3:DeleteObjectVersionTagging
+              Resource: "*"
+            - Sid: SSM
+              Effect: Allow
+              Action:
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+              - ssm:GetParameters
+              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cdk-*
+            - Sid: SecretsManager
+              Effect: Allow
+              Action:
+              - secretsmanager:CreateSecret
+              - secretsmanager:DeleteSecret
+              Resource:
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
+            - Sid: Password
+              Effect: Allow
+              Action:
+              - secretsmanager:GetRandomPassword
+              Resource: "*"
+            - Sid: ES
+              Effect: Allow
+              Action:
+              - es:Get*
+              - es:Describe*
+              - es:List*
+              - es:ESHttpGet
+              Resource: 
+              - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain:*"
+        - PolicyName: delete
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+            - Sid: CFN
+              Effect: Allow
+              Action:
+              - cloudformation:DescribeStacks
+              - cloudformation:CreateChangeSet
+              - cloudformation:DescribeChangeSet
+              - cloudformation:ExecuteChangeSet
+              - cloudformation:GetTemplate
+              - cloudformation:DescribeStackEvents
+              - cloudformation:DeleteStack
+              - cloudformation:DeleteChangeSet
+              Resource:
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/CDKToolkit/*
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/seedfarmer-*
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/aws-codeseeder-*
+              - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/addf*              
+            - Sid: IAM
+              Effect: Allow
+              Action:
+              - iam:GetRole
+              - iam:CreateRole
+              - iam:AttachRolePolicy
+              - iam:DetachRolePolicy
+              - iam:DeleteRole
+              - iam:PutRolePolicy
+              - iam:DeleteRolePolicy
+              - iam:getRolePolicy
+              - iam:UpdateAssumeRolePolicy
+              - iam:GetPolicy
+              - iam:List*
+              - iam:DeletePolicy
+              Resource:
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/cdk-*
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/seedfarmer-*
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/codeseeder-*
+              - !Sub arn:aws:iam::${AWS::AccountId}:policy/codeseeder-*
+            - Sid: ECR
+              Effect: Allow
+              Action:
+              - ecr:CreateRepository
+              - ecr:SetRepositoryPolicy
+              - ecr:Describe*
+              - ecr:DeleteRepository
+              - ecr:PutLifecyclePolicy
+              - ecr:PutImageTagMutability
+              - ecr:List*
+              Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/cdk-*
+            - Sid: S3KMS
+              Effect: Allow
+              Action:
+              - s3:CreateBucket
+              - s3:GetBucketPolicy
+              - s3:PutBucketPolicy
+              - s3:PutBucketVersioning
+              - s3:PutBucketPublicAccessBlock
+              - s3:PutBucketAcl
+              - s3:GetEncryptionConfiguration
+              - s3:PutEncryptionConfiguration
+              - s3:PutLifecycleConfiguration
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+              - s3:DeleteObjectTagging
+              - s3:DeleteObjectVersionTagging
+              - s3:List*
+              - kms:Delete*
+              - kms:ScheduleKeyDeletion
+              - kms:CancelKeyDeletion
+              - kms:List*
+              - kms:Describe*
+              Resource: "*"
+            - Sid: SSM
+              Effect: Allow
+              Action:
+              - ssm:PutParameter
+              - ssm:DeleteParameter
+              - ssm:GetParameters
+              Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cdk-*
+            - Sid: SecretsManager
+              Effect: Allow
+              Action:
+              - secretsmanager:CreateSecret
+              - secretsmanager:DeleteSecret
+              Resource:
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*"
+            - Sid: Password
+              Effect: Allow
+              Action:
+              - secretsmanager:GetRandomPassword
+              Resource: "*"
+            - Sid: ES
+              Effect: Allow
+              Action:
+              - es:Get*
+              - es:Describe*
+              - es:List*
+              - es:ESHttpGet
+              Resource: 
+              - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:*"
+              - !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain:*"
+            - Sid: S3DeleteCodeseeder
+              Effect: Allow
+              Action:
+              - s3:Delete*
+              - s3:PutObject
+              - s3:PutObjectAcl
+              Resource: 
+              - !Sub "arn:aws:s3:::codeseeder-addf-${AWS::AccountId}-*"
+              - !Sub "arn:aws:s3:::codeseeder-addf-${AWS::AccountId}-*/*"
+              - !Sub "arn:aws:s3:::addf*"
+              - !Sub "arn:aws:s3:::addf*/*"
+            - Sid: CodebuildCleanup
+              Effect: Allow
+              Action:
+              - codebuild:DeleteProject
+              Resource: 
+              - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:project/codeseeder-addf"
+  DeleteCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Description: Tears down AV/ADAS Solution Using Seedfarmer
+      ServiceRole: !GetAtt 'CodeBuildRole.Arn'
+      Artifacts:
+        Type: no_artifacts
+      TimeoutInMinutes: 480
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_LARGE
+        Image: "aws/codebuild/standard:6.0"
+        EnvironmentVariables:
+          - Name: AWS_ACCOUNT_ID
+            Value: !Sub '${AWS::AccountId}'
+          - Name: AWS_REGION
+            Value: !Sub '${AWS::Region}'
+          - Name: AWS_DEFAULT_REGION
+            Value: !Sub '${AWS::Region}'
+          - Name: ROLE_ARN
+            Value: !Sub '${CodeBuildRole.Arn}'
+          - Name: url_path
+            Value: 'placeholder'
+          - Name: url_query
+            Value: 'placeholder'
+          - Name: cfn_signal_url
+            Value: 'placeholder'
+          - Name: cfn_stack_id
+            Value: 'placeholder'
+          - Name: cfn_logical_resource_id
+            Value: 'placeholder'
+          - Name: cfn_request_id
+            Value: 'placeholder'
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: |
+          version: 0.2
+          env:
+            shell: bash
+          phases:
+            install:
+              runtime-versions:
+                python: 3.10
+                nodejs: 16
+            pre_build:
+              commands:
+                - pip install seed-farmer
+                - apt-get install jq git
+            build:
+              commands:
+                - echo Build started on `date`
+                - echo 'Cloning ADDF repo...'
+                - git clone -b scene-intelligence-with-rosbag-on-aws https://github.com/awslabs/autonomous-driving-data-framework.git
+                - echo 'Cloning complete'
+                - cd autonomous-driving-data-framework/
+                - echo 'Installing dependencies...'
+                - pip install -r requirements.txt
+                - export LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name addf-aws-solutions-optionals-datalake-buckets --query 'Stacks[0].Outputs[?OutputKey==`metadata`].OutputValue' --output text | jq -r '.LogsBucketName') || true
+                - aws s3 rm s3://${LOGS_BUCKET_NAME} --recursive --quiet || true
+                - python -c "import boto3; import os; s3 = boto3.resource('s3'); bucket = s3.Bucket(os.getenv('LOGS_BUCKET_NAME')); bucket.object_versions.all().delete()" || true
+                - seedfarmer bootstrap toolchain --project addf --trusted-principal ${ROLE_ARN} --as-target
+                - TRUSTED_ROLES=$(aws iam get-role --role-name seedfarmer-addf-toolchain-role | jq -r '.Role.AssumeRolePolicyDocument.Statement[0].Principal.AWS')
+                - |
+                  if grep -q "$ROLE_ARN" <<< "$TRUSTED_ROLES"; then
+                    echo "Role in Toolchain Role's Trust Policy"
+                  else
+                    ASSUME_ROLE_POLICY_DOCUMENT=$(aws iam get-role --role-name seedfarmer-addf-toolchain-role | jq -r '.Role.AssumeRolePolicyDocument')
+                    if grep -q "[" <<< "$TRUSTED_ROLES"; then
+                      UPDATED_POLICY=$(echo $ASSUME_ROLE_POLICY_DOCUMENT | jq --arg arn $ROLE_ARN -r '.Statement[0].Principal.AWS += [$arn]')
+                    else
+                      echo "Principal is single string and will be converted to an array"
+                      CONVERTED_POLICY=$(echo $ASSUME_ROLE_POLICY_DOCUMENT | jq --arg arn $TRUSTED_ROLES -r '.Statement[0].Principal.AWS = [$arn]')
+                      UPDATED_POLICY=$(echo $CONVERTED_POLICY | jq --arg arn $ROLE_ARN -r '.Statement[0].Principal.AWS += [$arn]')
+                    fi
+                    echo $UPDATED_POLICY > trust_policy.json
+                    aws iam update-assume-role-policy --role-name seedfarmer-addf-toolchain-role --policy-document file://trust_policy.json
+                  fi
+                - echo 'Preparing Manifest files' 
+                - python manifests/aws-solutions/integ/manifest-update.py manifests/aws-solutions/deployment.yaml ${AWS_REGION} ${AWS_REGION} ${AWS_ACCOUNT_ID}
+                - echo 'Destroying av/adas-solutions manifest'
+                - seedfarmer destroy aws-solutions --enable-session-timeout
+                - aws cloudformation delete-stack --stack-name seedfarmer-addf-deployment-role 
+                - aws cloudformation wait stack-delete-complete  --stack-name seedfarmer-addf-deployment-role
+                - aws cloudformation delete-stack --stack-name seedfarmer-addf-toolchain-role
+                - aws cloudformation wait stack-delete-complete --stack-name seedfarmer-addf-toolchain-role
+                - export BUCKET=$(aws cloudformation describe-stacks --stack-name aws-codeseeder-addf --query 'Stacks[0].Outputs[?OutputKey==`Bucket`].OutputValue' --output text)
+                - aws s3 rm s3://${BUCKET} --recursive --quiet
+                - python -c "import boto3; import os; BUCKET=os.getenv('BUCKET'); s3 = boto3.resource('s3'); bucket = s3.Bucket(BUCKET); bucket.object_versions.all().delete()"
+                - aws s3 rb s3://${BUCKET} --force
+                - aws cloudformation delete-stack --stack-name aws-codeseeder-addf
+                - aws cloudformation wait stack-delete-complete --stack-name aws-codeseeder-addf
+            post_build:
+              commands:
+                - echo Build completed on `date`
+                - echo Signal back if we have gotten this far
+                - echo url_path - $url_path
+                - echo url_query - $url_query
+                - export UUID=1233244324
+                - |
+                  STATUS='SUCCESS'
+                  if [ $CODEBUILD_BUILD_SUCCEEDING -ne 1 ] # Test if the build is failing
+                  then
+                    STATUS='FAILED'
+                  fi
+                  cat <<EOF > /tmp/payload.json
+                  {
+                    "UniqueId": "$UUID",
+                    "Status": "$STATUS",
+                    "Reason": "$STATUS",
+                    "Data": "Deployment of solution has finished or stopped. See status." 
+                  }
+                  EOF
+                  cat /tmp/payload.json
+                  echo "Calling Callback URL: ${cfn_signal_url}"
+                  curl -T /tmp/payload.json "$cfn_signal_url"
+  CodeBuildRun:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt CodeBuildLambda.Arn
+      BuildProjectName: !Ref DeleteCodeBuildProject
+      CallbackUrl: !Ref CodeBuildRunWaitConditionHandler01
+  CodeBuildRunWaitConditionHandler01:
+    Type: AWS::CloudFormation::WaitConditionHandle
+  CodeBuildRunWaitCondition:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn : CodeBuildRun
+    Properties: 
+      Count: 1
+      Handle: !Ref CodeBuildRunWaitConditionHandler01
+      Timeout: "18000"
+  CodeBuildLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: | 
+          import http.client
+          import urllib.parse
+          import json
+          import boto3
+          import traceback
+
+          def lambda_handler(event, context):
+              account_id = context.invoked_function_arn.split(":")[4]
+
+              try:
+                  print(("Received event: " + json.dumps(event, indent=2)))
+                  response = get_response_dict(event)
+
+                  if event['RequestType'] in ("Create", "Update"):
+                      try:
+                          print("Kicking off Build")
+                          execute_build(event, event["ResourceProperties"]["BuildProjectName"])
+                          send_response(event, get_response_dict(event), "SUCCESS")
+                      except Exception as build_exce:
+                          print("ERROR: Build threw exception")
+                          print((repr(build_exce)))
+                          return send_response(event, get_response_dict(event),
+                                              "FAILED", repr(build_exce))
+                      else:
+                          print("Build Kicked off ok CodeBuild should signal back")
+                          return
+                  elif event['RequestType'] == "Delete":
+                      try:
+                          send_response(event, get_response_dict(event), "SUCCESS")
+                      except Exception as response_exce:
+                          print("ERROR: Send Response threw exception")
+                          print((repr(response_exce)))
+                          return send_response(event, get_response_dict(event),
+                                              "FAILED", repr(response_exce))
+                      else:
+                          return
+                  else:
+                      print("ERROR: Invalid request type send error signal to cfn")
+                      print("ERROR: Expected - Create, Update, Delete")
+              except Exception as unhandled:
+                  response = get_response_dict(event)
+                  return send_response(event, response, "FAILED",
+                                      "Unhandled exception, failing gracefully: " + str(unhandled))
+
+          def execute_build(event, project_name):
+              """Kickoff CodeBuild Project."""
+              build = boto3.client('codebuild')
+              signal_url = event["ResourceProperties"]["CallbackUrl"]
+              stack_id = event["StackId"]
+              request_id = event["RequestId"]
+              logical_resource_id = event["LogicalResourceId"]
+              url = urllib.parse.urlparse(event['ResponseURL'])
+              response = build.start_build(
+                  projectName=project_name, environmentVariablesOverride=[
+                      {'name': 'url_path', 'value': url.path},
+                      {'name': 'url_query', 'value': url.query},
+                      {'name': 'cfn_signal_url', 'value': signal_url},
+                      {'name': 'cfn_stack_id', 'value': stack_id},
+                      {'name': 'cfn_request_id', 'value': request_id},
+                      {'name': 'cfn_logical_resource_id', 'value': logical_resource_id}
+                  ])
+              return response
+
+          def get_response_dict(event):
+              response = {
+                  'StackId': event['StackId'],
+                  'RequestId': event['RequestId'],
+                  'LogicalResourceId': event['LogicalResourceId'],
+                  'Status': 'SUCCESS',
+                  'PhysicalResourceId': 'SeedFarmerDestruction'
+              }
+              return response
+
+          def send_response(event, response, status=None, reason=None):
+              if status is not None:
+                  response['Status'] = status
+
+              if reason is not None:
+                  response['Reason'] = reason
+
+              if 'ResponseURL' in event and event['ResponseURL']:
+                  url = urllib.parse.urlparse(event['ResponseURL'])
+                  body = json.dumps(response)
+                  https = http.client.HTTPSConnection(url.hostname)
+                  https.request('PUT', url.path+'?'+url.query, body)
+                  print("Sent CFN Response")
+
+              return response
+      Handler: index.lambda_handler
+      Runtime: python3.7
+      Timeout: 300
+      Role: !GetAtt CodeBuildLambdaExecutionRole.Arn
+  CodeBuildLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+              - codebuild:StartBuild
+            Resource: 
+              - !GetAtt DeleteCodeBuildProject.Arn
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*

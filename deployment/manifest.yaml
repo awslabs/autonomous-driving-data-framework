@@ -1,0 +1,7 @@
+id: SO0279 # Solution Id
+name: scene-intelligence-with-rosbag-on-aws # hyphenated trademarked name
+version: 1.0.0 # current version of the solution.
+cloudformation_templates:
+  - template: deployment/scene-intelligence-with-rosbag-on-aws-create.template
+    main_template: true
+  - template: deployment/scene-intelligence-with-rosbag-on-aws-delete.template
