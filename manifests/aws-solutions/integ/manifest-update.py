@@ -1,4 +1,5 @@
 import sys
+
 import yaml
 
 if len(sys.argv) != 5:
