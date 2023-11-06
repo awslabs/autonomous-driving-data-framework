@@ -292,7 +292,7 @@ Resources:
               commands:
                 - echo Build started on `date`
                 - echo 'Cloning ADDF repo...'
-                - git clone -b ${SOLUTION_VERSION} https://github.com/awslabs/autonomous-driving-data-framework.git
+                - git clone -b SO0279-${SOLUTION_VERSION} https://github.com/awslabs/autonomous-driving-data-framework.git
                 - echo 'Cloning complete'
                 - cd autonomous-driving-data-framework/
                 - echo 'Installing dependencies...'
