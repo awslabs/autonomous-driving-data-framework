@@ -258,7 +258,7 @@ Resources:
             Value: !Sub '${AWS::Region}'
           - Name: ROLE_ARN
             Value: !Sub '${CodeBuildRole.Arn}'
-          - NAME: SOLUTION_VERSION
+          - Name: SOLUTION_VERSION
             Value: !Ref SolutionVersion
           - Name: url_path
             Value: 'placeholder'
