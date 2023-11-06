@@ -23,11 +23,18 @@ resized_width = os.getenv(_param("RESIZED_WIDTH"))
 resized_height = os.getenv(_param("RESIZED_HEIGHT"))
 removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
 
+batch_config = {
+    "retries": retries,
+    "timeout_seconds": timeout_seconds,
+    "vcpus": vcpus,
+    "memory_limit_mib": memory_limit_mib,
+}
+
 if resized_width:
-    resized_width = int(resized_width)  # type: ignore
+    batch_config["resized_width"] = int(resized_width)
 
 if resized_height:
-    resized_height = int(resized_height)  # type: ignore
+    batch_config["resized_height"] = int(resized_height)
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
@@ -57,14 +64,9 @@ stack = RosToPngBatchJob(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
-    retries=retries,
-    timeout_seconds=timeout_seconds,
-    vcpus=vcpus,
-    memory_limit_mib=memory_limit_mib,
     s3_access_policy=full_access_policy,
+    batch_config=batch_config,
     removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
-    resized_width=resized_width,  # type: ignore
-    resized_height=resized_height,  # type: ignore
     stack_description=generate_description(),
 )
 
