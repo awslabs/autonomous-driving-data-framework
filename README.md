@@ -2,43 +2,41 @@
 
 Scene Intelligence with Rosbag on AWS - Solution
 
-## Table of Contents
+## Table of contents
 
 ## Architecture
 
-The following image shows the architecture of ROSbag image pipeline solution
+The following image shows the architecture of the Scene Intelligence with Rosbag on AWS solution.
 
-![ROSbag image pipeline](docs/architecture-1.jpg)
+![ROSbag image pipeline](images/scene-intelligence-with-rosbag-on-aws.png)
 
-### AWS CDK Constructs
+### AWS CDK constructs
 
-[AWS CDK Solutions Constructs](https://aws.amazon.com/solutions/constructs/) make it easier to consistently create
-well-architected applications. All AWS Solutions Constructs are reviewed by AWS and use best practices established by 
-the AWS Well-Architected Framework.
+[AWS Solutions Constructs](https://aws.amazon.com/solutions/constructs/) make it easier to consistently create well-architected applications with [AWS Cloud Development Kit](https://aws.amazon.com/cdk/) (AWS CDK). AWS reviews all AWS Solutions Constructs and uses best practices established by the [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected).
 
 ## Deployment
 
-You can launch this solution with one click from the AWS Solutions [landing page](REPLACE-ME).
+You can launch this solution with one click from the AWS Solutions [landing page](https://aws.amazon.com/solutions/implementations/scene-intelligence-with-rosbag-on-aws).
 
 To customize the solution, or to contribute to the solution, see [Creating a custom build](#creating-a-custom-build)
 
 ## Configuration
 
-## Creating a custom build
+### Creating a custom build
 
-To customize the solution, follow the steps below:
+To customize the solution, complete the steps in the following sections.
 
-### Prerequisites
+#### Prerequisites
 
-The following procedures assumes that all the OS-level configuration has been completed. They are:
+The following procedures assume that all the OS-level configuration has been completed. They are:
 
 * [AWS Command Line Interface](https://aws.amazon.com/cli/)
 * [Python](https://www.python.org/) 3.9 or newer
 * [AWS CDK](https://aws.amazon.com/cdk/) 2.70.0 or newer
 
-> **Please ensure you test the templates before updating any production deployments.**
+***Note: Test the templates before updating production deployments.***
 
-### 1. Download/clone this repo and checkout the branch of interest
+#### 1. Download/clone this repo and checkout the branch of interest
 
 ```bash
 git clone https://github.com/awslabs/autonomous-driving-data-framework.git
@@ -46,7 +44,7 @@ cd autonomous-driving-data-framework/
 git checkout scene-intelligence-with-rosbag-on-aws
 ```
 
-### 2. Create a Python virtual environment for development
+#### 2. Create a Python virtual environment for development
 
 ```bash
 python -m venv .venv 
@@ -55,14 +53,13 @@ cd ./source
 pip install -r requirements-dev.txt 
 ```
 
-### 3. Customize the solution
+#### 3. Customize the solution
 
-Please refer to the [customization guide](https://docs.aws.amazon.com/solutions/latest/scene-intelligence-with-rosbag-on-aws/customization-guide.html) available in the implementation guide
+See the [customization guide](https://docs.aws.amazon.com/solutions/latest/scene-intelligence-with-rosbag-on-aws/customization-guide.html) available in the implementation guide.
 
 ## Collection of operational metrics
 
 This solution collects anonymous operational metrics to help AWS improve the quality of features of the solution.
-For more information, including how to disable this capability, please see the [implementation guide](https://docs.aws.amazon.com/solutions/latest/scene-intelligence-with-rosbag-on-aws/).
 
 ***
 
