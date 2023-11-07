@@ -17,9 +17,16 @@ if type(trusted_principals) is not list:
         f"Current principals in assume role policy for {ROLE_NAME}: {trusted_principals}"
     )
 
-if ROLE_ARN not in trusted_principals:
+principals = []
+for principal in trusted_principals:
+    if "arn:" not in principal:
+        print(f"Removing non-existent principal: {principal}")
+    else:
+        principals.append(principal)
+
+if ROLE_ARN not in principals:
     print(f"{ROLE_ARN} not in trusted principals list and will be added.")
-    trusted_principals.append(ROLE_ARN)
+    principals.append(ROLE_ARN)
 
 policy_document = json.dumps(
     {
@@ -27,13 +34,12 @@ policy_document = json.dumps(
         "Statement": [
             {
                 "Effect": "Allow",
-                "Principal": {"AWS": trusted_principals},
+                "Principal": {"AWS": principals},
                 "Action": ["sts:AssumeRole"],
             }
         ],
     }
 )
-
 try:
     response = iam.update_assume_role_policy(
         RoleName=ROLE_NAME,
