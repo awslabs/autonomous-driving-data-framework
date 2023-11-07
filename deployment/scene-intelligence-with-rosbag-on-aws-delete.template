@@ -301,24 +301,13 @@ Resources:
                 - python -c "import boto3; import os; s3 = boto3.resource('s3'); bucket = s3.Bucket(os.getenv('LOGS_BUCKET_NAME')); bucket.object_versions.all().delete()" || true
                 - seedfarmer bootstrap toolchain --project addf --trusted-principal ${ROLE_ARN} --as-target
                 - TRUSTED_ROLES=$(aws iam get-role --role-name seedfarmer-addf-toolchain-role | jq -r '.Role.AssumeRolePolicyDocument.Statement[0].Principal.AWS')
-                - |
-                  if grep -q "$ROLE_ARN" <<< "$TRUSTED_ROLES"; then
-                    echo "Role in Toolchain Role's Trust Policy"
-                  else
-                    ASSUME_ROLE_POLICY_DOCUMENT=$(aws iam get-role --role-name seedfarmer-addf-toolchain-role | jq -r '.Role.AssumeRolePolicyDocument')
-                    if grep -q "[" <<< "$TRUSTED_ROLES"; then
-                      UPDATED_POLICY=$(echo $ASSUME_ROLE_POLICY_DOCUMENT | jq --arg arn $ROLE_ARN -r '.Statement[0].Principal.AWS += [$arn]')
-                    else
-                      echo "Principal is single string and will be converted to an array"
-                      CONVERTED_POLICY=$(echo $ASSUME_ROLE_POLICY_DOCUMENT | jq --arg arn $TRUSTED_ROLES -r '.Statement[0].Principal.AWS = [$arn]')
-                      UPDATED_POLICY=$(echo $CONVERTED_POLICY | jq --arg arn $ROLE_ARN -r '.Statement[0].Principal.AWS += [$arn]')
-                    fi
-                    echo $UPDATED_POLICY > trust_policy.json
-                    aws iam update-assume-role-policy --role-name seedfarmer-addf-toolchain-role --policy-document file://trust_policy.json
-                  fi
+                - python manifests/aws-solutions/integ/role_assume_update.py ${ROLE_ARN}
+                - echo 'Sleeping 120 seconds after role update'
+                - sleep 120
+                - export TOOLCHAIN_REGION=$(python -c 'import os; print("us-east-2") if "tcat" in os.getenv("ROLE_ARN").lower() else print(os.getenv("AWS_REGION"))')
                 - echo 'Preparing Manifest files' 
-                - python manifests/aws-solutions/integ/manifest-update.py manifests/aws-solutions/deployment.yaml ${AWS_REGION} ${AWS_REGION} ${AWS_ACCOUNT_ID}
-                - echo 'Destroying av/adas-solutions manifest'
+                - python manifests/aws-solutions/integ/manifest-update.py manifests/aws-solutions/deployment.yaml ${TOOLCHAIN_REGION} ${AWS_REGION} ${AWS_ACCOUNT_ID}
+                - echo 'Destroying manifest'
                 - seedfarmer destroy aws-solutions --enable-session-timeout
                 - aws cloudformation delete-stack --stack-name seedfarmer-addf-deployment-role 
                 - aws cloudformation wait stack-delete-complete  --stack-name seedfarmer-addf-deployment-role
