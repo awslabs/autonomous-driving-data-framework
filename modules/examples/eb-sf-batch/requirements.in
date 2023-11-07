@@ -1,4 +1,0 @@
-aws-cdk-lib==2.44.0
-constructs>=10.0.0,<11.0.0
-aws-cdk.aws-batch-alpha==2.20.0a0
-aws_solutions_constructs.aws_eventbridge_stepfunctions==2.25.0

@@ -1,4 +1,0 @@
-apache-airflow~=2.2.4
-apache-airflow-providers-amazon~=3.3.0
-mypy-boto3-sqs
-mypy-boto3-batch

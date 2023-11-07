@@ -1,1 +1,0 @@
-seed-farmer~=2.3.0
