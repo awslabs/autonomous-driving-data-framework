@@ -1,0 +1,34 @@
+Scene Intelligence with Rosbag on AWS
+
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0
+
+**********************
+THIRD PARTY COMPONENTS
+**********************
+This software includes third party software subject to the following copyrights:
+
+AWS SDK under the Apache License Version 2.0
+boto3 under the Apache License Version 2.0
+botocore under the Apache License Version 2.0
+black under the Massachusetts Institute of Technology (MIT) license
+click under the BSD 3-Clause license
+coverage under the Apache License Version 2.0
+moto under the Apache License Version 2.0
+pytest under the Massachusetts Institute of Technology (MIT) license
+pytest-cov under the Massachusetts Institute of Technology (MIT) license
+pytest-mock under the Massachusetts Institute of Technology (MIT) license
+pytest-env under the Massachusetts Institute of Technology (MIT) license
+PyYAML under the Massachusetts Institute of Technology (MIT) license
+requests under the Apache License Version 2.0
+requests-mock under the Apache License Version 2.0
+responses under the Apache License Version 2.0
+seed-farmer under the Apache License Version 2.0
+cdk-nag under the Apache License Version 2.0
+aws-cdk-lib under the Apache License Version 2.0
+constructs under the Apache License Version 2.0
+jsii under Apache Software License
+aws-lambda under Apache Software License
+
+
+The Apache License Version Version 2.0 is included in LICENSE.txt.
