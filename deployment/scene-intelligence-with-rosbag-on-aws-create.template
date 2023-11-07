@@ -304,6 +304,8 @@ Resources:
                 - echo 'Bootstrapping seedfarmer...'
                 - seedfarmer bootstrap toolchain --project addf --trusted-principal ${ROLE_ARN} --as-target
                 - python manifests/aws-solutions/integ/role_assume_update.py ${ROLE_ARN}
+                - echo "Sleeping after role update: 120 seconds"
+                - sleep 120
                 - echo 'Preparing Manifest files'
                 - export TOOLCHAIN_REGION=$(python -c 'import os; print("us-east-2") if "tcat" in os.getenv("ROLE_ARN").lower() else print(os.getenv("AWS_REGION"))') 
                 - python manifests/aws-solutions/integ/manifest-update.py manifests/aws-solutions/deployment.yaml ${TOOLCHAIN_REGION} ${AWS_REGION} ${AWS_ACCOUNT_ID}
