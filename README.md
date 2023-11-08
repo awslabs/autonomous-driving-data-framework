@@ -57,10 +57,6 @@ pip install -r requirements-dev.txt
 
 See the [customization guide](https://docs.aws.amazon.com/solutions/latest/scene-intelligence-with-rosbag-on-aws/customization-guide.html) available in the implementation guide.
 
-## Collection of operational metrics
-
-This solution collects anonymous operational metrics to help AWS improve the quality of features of the solution.
-
 ***
 
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
