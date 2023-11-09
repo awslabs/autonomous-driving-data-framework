@@ -6,14 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 =======
+
 ## UNRELEASED
+
+### **Added**
+
+### **Changed**
+
+### **Removed**
+
+=======
+
+## [V3.0.0] - [11/09/2023]
 
 ### **Added**
 
 - adding new `integration/opensearch-tunnel` module
 - Added unit-tests, enabled logging and versioning on buckets for datalake-buckets module
 - Added Unit tests to metadata-storage module
-
 
 ### **Changed**
 
@@ -69,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - standardized ecr module outputs
 - updated `kubeflow-users` module to match support for kf1.7
 - updated `kubeflow-platform` manifest to use matching kf to eks 1.25 as example
+
 ### **Removed**
 
 - removed `aws-batch-demo` module since its no longer used for demos
