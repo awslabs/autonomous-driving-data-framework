@@ -18,7 +18,7 @@ Please see the [ADDF Security and Operations Guide](https://docs.aws.amazon.com/
 
 | Type | Description |
 | --- | --- |
-|  [Rosbag Scene Detection Module](modules/analysis/rosbag-scene-detection/README.md)  |  Deploys a Rosbag Scene Detection pipeline for use in ADDF  |  
+|  [Rosbag Image Pipeline Module](modules/analysis/rosbag-image-pipeline/README.md)  |  Deploys a Rosbag Image pipeline for use in ADDF  |  
 |  [Rosbag WebViz Module](modules/demo-only/rosbag-webviz/README.md) |  Deploys and Visualizes Rosbag Data on AWS using Webviz for use in ADDF  |
 
 ### Optional Modules
