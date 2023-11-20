@@ -1,0 +1,14 @@
+[Unit]
+Description=NICE DCV server daemon
+
+[Service]
+PermissionsStartOnly=true
+ExecStartPre=-/sbin/modprobe eveusb
+ExecStart=/usr/bin/dcvserver -d --service
+Restart=always
+BusName=com.nicesoftware.DcvServer
+User=dcv
+Group=dcv
+
+[Install]
+WantedBy=multi-user.target
