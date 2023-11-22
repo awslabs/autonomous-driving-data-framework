@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dcv-agent
+  namespace: $NAMESPACE
+spec:
+  selector:
+    matchLabels:
+      env: dcv
+  template:
+    metadata:
+      labels:
+        env: dcv
+    spec:
+      serviceAccountName: dcv-agent-service-account
+      containers:
+        - name: nice-dcv-container
+          image: $IMAGE
+          command: [ "/usr/local/bin/run_script.sh" ]
+          imagePullPolicy: "Always"
+          env:
+            - name: ADDF_CONFIG_MAP_NAME
+              value: "dcv-agent-config-map"
+            - name: AWS_REGION
+              value: $REGION
+          ports:
+            - name: dcv
+              protocol: TCP
+              containerPort: 8443
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: addf-dcv-socket-volume
+              mountPath: /tmp/.X11-unix
+              readOnly: false
+          readinessProbe:
+            exec:
+              command:
+                - /usr/local/bin/check_healthy.sh
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 120
+      volumes:
+        - name: addf-dcv-socket-volume
+          hostPath:
+            path: "/var/addf/dcv-eks"

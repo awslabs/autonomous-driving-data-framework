@@ -1,0 +1,49 @@
+name: dcv-eks
+path: modules/visualization/dcv-eks
+parameters:
+  - name: DcvNamespace
+    value: dcv
+  - name: DcvNodePort
+    value: 31980
+  - name: DCVImageRepoUri
+    valueFrom:
+      moduleMetadata:
+        group: dcv-image
+        name: dcv-image
+        key: DCVImageRepoUri
+  - name: EksClusterAdminRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterAdminRoleArn
+  - name: EksClusterName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: EksOidcArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: EksClusterOpenIdConnectIssuer
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterOpenIdConnectIssuer
+  - name: EksClusterSecurityGroupId
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterSecurityGroupId
+  - name: EksNodeRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksNodeRoleArn
