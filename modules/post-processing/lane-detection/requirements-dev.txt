@@ -112,7 +112,7 @@ pydot==1.4.2
     # via -r requirements-dev.in
 pyflakes==2.5.0
     # via flake8
-pygments==2.12.0
+pygments==2.15.0
     # via pyroma
 pyparsing==3.0.9
     # via
@@ -147,14 +147,20 @@ six==1.16.0
     #   python-dateutil
 tomli==2.0.1
     # via
+    #   black
+    #   build
     #   check-manifest
+    #   mypy
+    #   pep517
     #   pytest
 types-pyyaml==6.0.11
     # via -r requirements-dev.in
 types-setuptools==63.2.2
     # via -r requirements-dev.in
 typing-extensions==4.3.0
-    # via mypy
+    # via
+    #   black
+    #   mypy
 urllib3==1.26.18
     # via
     #   botocore
