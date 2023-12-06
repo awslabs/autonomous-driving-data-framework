@@ -1,0 +1,67 @@
+name: Module Checks
+
+on:
+  push:
+    branches: ["main"]
+    paths: ['modules/**']
+
+  pull_request:
+    branches: ["main", "release/*", "stable"]
+    paths: ['modules/**']
+
+  workflow_dispatch:
+
+jobs:
+  get-modules:
+    name: Get Modules
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-modules.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get modules
+        id: get-modules
+        run: |
+          set -x
+          # Get all the modules that have the directory "tests"
+          MODULES=$(find modules/ -type d -name "tests" | cut -d/ -f 2-3 | uniq)
+          # Create our json structure [{"module_name": "..."}]
+          MODULES_JSON=$(echo "$MODULES" | jq -R -s 'split("\n")' | jq '[ .[] | select(length > 0) ]' | jq 'map({"module_name": .})')
+          # Export the modules as json to the outputs
+          echo 'matrix<<EOF' >> $GITHUB_OUTPUT
+          echo $MODULES_JSON >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+  test:
+    name: Run unit tests for module ${{ matrix.modules.module_name }}
+    needs: get-modules
+    strategy:
+      fail-fast: false
+      matrix:
+        modules: ${{ fromJson(needs.get-modules.outputs.matrix) }}
+        python-version: [3.9]
+    runs-on: ubuntu-latest
+    env:
+      MODULE_PATH: 'modules/${{ matrix.modules.module_name }}'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Requirements
+        run: |
+          set -x
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -r $MODULE_PATH/requirements.txt
+      - name: Static checks and linting (mypy, flake8, black, isort)
+        run: scripts/validate.sh --language python --path $MODULE_PATH/
+      - name: Pytest
+        run: cd $MODULE_PATH/ && pytest
