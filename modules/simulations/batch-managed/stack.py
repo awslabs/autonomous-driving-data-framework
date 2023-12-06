@@ -4,7 +4,6 @@
 import logging
 from typing import Any, Dict, List, cast
 
-import aws_cdk
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
@@ -27,7 +26,7 @@ class BatchDags(Stack):
         mwaa_exec_role: str,
         vpc_id: str,
         private_subnet_ids: List[str],
-        batch_compute: Dict[str, any],
+        batch_compute: Dict[str, Any],
         **kwargs: Any,
     ) -> None:
         # ADDF Env vars
