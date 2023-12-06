@@ -1,5 +1,4 @@
 import json
-from re import A
 from typing import Any, List, cast
 
 import aws_cdk

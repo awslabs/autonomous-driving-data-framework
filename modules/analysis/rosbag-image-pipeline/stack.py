@@ -15,7 +15,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AwsBatchPipeline(Stack):  # type: ignore
+class AwsBatchPipeline(Stack):
     def __init__(
         self,
         scope: Construct,

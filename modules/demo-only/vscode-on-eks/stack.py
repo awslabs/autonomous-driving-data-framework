@@ -37,9 +37,7 @@ class VSCodeOnEKS(Stack):
             description="This stack deploys VSCode environment for ADDF",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{deployment}"
-        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         dep_mod = f"addf-{deployment}-{module}"
         # CDK Env Vars
@@ -169,9 +167,7 @@ class VSCodeOnEKS(Stack):
             },
         )
 
-        vscode_service_account = eks_cluster.add_service_account(
-            "vscode", name="vscode", namespace=NAMESPACE
-        )
+        vscode_service_account = eks_cluster.add_service_account("vscode", name="vscode", namespace=NAMESPACE)
 
         vscode_service_account.role.attach_inline_policy(vscode_policy)
 
