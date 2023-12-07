@@ -133,4 +133,9 @@ def test_write_results_to_s3(moto_server):
         ["id", "bag_file"],
     )
     dfs = {"test": df}
-    write_results_s3(dfs, table_name="scene_detections", output_bucket="outputbucket", partition_cols=["bag_file"])
+    write_results_s3(
+        dfs,
+        table_name="scene_detections",
+        output_bucket="outputbucket",
+        partition_cols=["bag_file"],
+    )

@@ -50,8 +50,8 @@ stack = JupyterHubStack(
     eks_oidc_arn=eks_oidc_arn,
     jh_username=jh_username,
     jh_password=jh_password,
-    jh_image_name=jh_image_name,
-    jh_image_tag=jh_image_tag,
+    jh_image_name=jh_image_name,  # type: ignore
+    jh_image_tag=jh_image_tag,  # type: ignore
 )
 
 

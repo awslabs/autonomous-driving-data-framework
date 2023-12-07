@@ -93,7 +93,11 @@ class AwsBatchPipeline(Stack):
                     "batch:TagResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[*job_queues, *job_definitions, f"arn:aws:batch:{self.region}:{self.account}:job/*"],
+                resources=[
+                    *job_queues,
+                    *job_definitions,
+                    f"arn:aws:batch:{self.region}:{self.account}:job/*",
+                ],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -147,7 +151,11 @@ class AwsBatchPipeline(Stack):
             vpc_id=self.vpc_id,
         )
         self.sm_sg = ec2.SecurityGroup(
-            self, "SagemakerJobsSG", vpc=self.vpc, allow_all_outbound=True, description="Sagemaker Processing Jobs SG"
+            self,
+            "SagemakerJobsSG",
+            vpc=self.vpc,
+            allow_all_outbound=True,
+            description="Sagemaker Processing Jobs SG",
         )
 
         self.sm_sg.add_ingress_rule(peer=self.sm_sg, connection=ec2.Port.all_traffic())

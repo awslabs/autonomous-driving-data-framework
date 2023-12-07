@@ -115,7 +115,7 @@ class JupyterHubStack(Stack):
             },
         }
         if jh_image_name and jh_image_tag:
-            k8s_values["singleuser"]["image"] = {
+            k8s_values["singleuser"]["image"] = {  # type: ignore
                 "name": jh_image_name,
                 "tag": jh_image_tag,
                 "pullPolicy": "Always",
@@ -140,11 +140,11 @@ class JupyterHubStack(Stack):
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
                 },

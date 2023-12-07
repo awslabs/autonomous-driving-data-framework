@@ -55,7 +55,8 @@ def form_object_in_lane_df(obj_df, lane_df):
     obj_lane_df = obj_df.join(lane_df, on="source_image", how="inner")
     obj_lane_df = (
         obj_lane_df.withColumn(
-            "pixel_rows_at_bottom_corner", obj_lane_df["lanes"].getItem(obj_lane_df.ymax.cast(IntegerType()))
+            "pixel_rows_at_bottom_corner",
+            obj_lane_df["lanes"].getItem(obj_lane_df.ymax.cast(IntegerType())),
         )
         .drop("lanes")
         .drop("ymax")
@@ -92,7 +93,12 @@ def get_batch_file_metadata(table_name, batch_id, region):
 def load_obj_detection(spark, batch_metadata, image_topics):
     path_list = []
 
-    def _process(image_topics: List[str], path_list: List[str], item: Dict[str, Any], resizied_image_dir: str) -> None:
+    def _process(
+        image_topics: List[str],
+        path_list: List[str],
+        item: Dict[str, Any],
+        resizied_image_dir: str,
+    ) -> None:
         for t in image_topics:
             path_list.append(
                 f"s3://{item['raw_image_bucket']}/{resizied_image_dir}_post_obj_dets/all_predictions.csv"
@@ -186,9 +192,13 @@ def summarize_obj_in_lane_scenes(obj_lane_df, image_topics, obj_type):
 
     obj_lane_df = (
         obj_lane_df.withColumn(
-            f"num_{obj_type}_in_lane_lag1", func.lag(func.col(f"num_{obj_type}_in_lane"), 1, 0).over(win)
+            f"num_{obj_type}_in_lane_lag1",
+            func.lag(func.col(f"num_{obj_type}_in_lane"), 1, 0).over(win),
         )
-        .withColumn(f"num_{obj_type}_in_lane_lead1", func.lead(func.col(f"num_{obj_type}_in_lane"), 1, 0).over(win))
+        .withColumn(
+            f"num_{obj_type}_in_lane_lead1",
+            func.lead(func.col(f"num_{obj_type}_in_lane"), 1, 0).over(win),
+        )
         .filter(f"num_{obj_type}_in_lane_lag1 == 0 or num_{obj_type}_in_lane_lead1 ==0")
     )
 
@@ -219,7 +229,11 @@ def summarize_obj_in_lane_scenes(obj_lane_df, image_topics, obj_type):
         )
         .withColumn(
             "scene_id",
-            func.concat(func.col("bag_file"), func.lit(f"_{obj_type}InLane_"), func.col("start_time")),
+            func.concat(
+                func.col("bag_file"),
+                func.lit(f"_{obj_type}InLane_"),
+                func.col("start_time"),
+            ),
         )
         .withColumn("scene_length", func.col("end_time") - func.col("start_time"))
         .withColumn("topics_analyzed", func.lit(",".join(image_topics)))

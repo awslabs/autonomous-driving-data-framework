@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from typing import Any, Dict, List, cast
+from typing import Any, cast
 
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_iam as iam
-from aws_cdk import Aspects, Duration, NestedStack, RemovalPolicy, Stack, Tags
+from aws_cdk import Duration, NestedStack, Stack, Tags
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_events as events
@@ -44,7 +44,7 @@ class EventDrivenBatch(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack deploys Cron Based Eventbridge which triggers Stepfunctions further triggering AWS Batch",
+            description="This stack deploys Cron Based Eventbridge which triggers Stepfunctions further triggering AWS Batch",  # noqa: E501
             **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
@@ -117,7 +117,7 @@ class EventDrivenBatch(Stack):
             self, "Wait 30 Seconds", time=stepfunctions.WaitTime.duration(Duration.seconds(30))
         )
 
-        fail_job = stepfunctions.Fail(self, "Fail", cause="AWS Batch Job Failed", error="DescribeJob returned FAILED")
+        # fail_job = stepfunctions.Fail(self, "Fail", cause="AWS Batch Job Failed", error="DescribeJob returned FAILED")
 
         succeed_job = stepfunctions.Succeed(self, "Succeeded", comment="AWS Batch Job succeeded")
 

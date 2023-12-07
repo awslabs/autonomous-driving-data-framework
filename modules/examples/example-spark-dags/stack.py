@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import aws_cdk.aws_iam as iam
 import cdk_nag
@@ -82,7 +82,7 @@ class DagIamRole(Stack):
         NagSuppressions.add_stack_suppressions(
             self,
             [
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced describe only",
                 },
