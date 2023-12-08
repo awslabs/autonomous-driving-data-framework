@@ -13,7 +13,7 @@ groups:
     path: manifests/ml-training-on-eks/training-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 1234567890
+    accountId: 123456789
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
