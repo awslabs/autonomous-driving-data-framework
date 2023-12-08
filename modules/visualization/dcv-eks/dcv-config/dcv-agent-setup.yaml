@@ -40,7 +40,7 @@ metadata:
   name: dcv-agent-config-map
 data:
   display: ""
-  socket_path: "/var/addf/dcv-eks"
+  socket_path: "/var/addf/dcv-eks/sockets"
 ---
 apiVersion: v1
 kind: Service
@@ -53,9 +53,15 @@ spec:
   type: NodePort
   selector:
     env: dcv
+  externalTrafficPolicy: Local
   ports:
-  - name: dcv
+  - name: dcv-tcp
     protocol: TCP
+    port: 8443
+    targetPort: 8443
+    nodePort: $NODEPORT
+  - name: dcv-udp
+    protocol: UDP
     port: 8443
     targetPort: 8443
     nodePort: $NODEPORT

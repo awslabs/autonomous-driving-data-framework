@@ -12,6 +12,7 @@ spec:
       labels:
         env: dcv
     spec:
+      restartPolicy: Always
       serviceAccountName: dcv-agent-service-account
       containers:
         - name: nice-dcv-container
@@ -24,8 +25,11 @@ spec:
             - name: AWS_REGION
               value: $REGION
           ports:
-            - name: dcv
+            - name: dcv-tcp
               protocol: TCP
+              containerPort: 8443
+            - name: dcv-udp
+              protocol: UDP
               containerPort: 8443
           securityContext:
             privileged: true
@@ -39,8 +43,14 @@ spec:
                 - /usr/local/bin/check_healthy.sh
             initialDelaySeconds: 30
             periodSeconds: 10
-            timeoutSeconds: 120
+            timeoutSeconds: 90
+          livenessProbe:
+            exec:
+              command:
+                - /usr/local/bin/check_healthy.sh
+            initialDelaySeconds: 120
+            periodSeconds: 10
       volumes:
         - name: addf-dcv-socket-volume
           hostPath:
-            path: "/var/addf/dcv-eks"
+            path: "/var/addf/dcv-eks/sockets"
