@@ -123,11 +123,11 @@ class EventDrivenBatch(Stack):
 
         # Create Chain
 
-        definition = submit_metrics_job.next(wait_job).next(succeed_job)
+        definition = submit_metrics_job.next(wait_job).next(succeed_job)  # type: ignore
 
         self.eventbridge_sfn = EventbridgeToStepfunctions(
             self,
             f"addf-{deployment_name}-eb-sf-batch",
-            state_machine_props=stepfunctions.StateMachineProps(definition=definition),
+            state_machine_props=stepfunctions.StateMachineProps(definition=definition),  # type: ignore
             event_rule_props=events.RuleProps(schedule=events.Schedule.rate(Duration.minutes(1))),
         )
