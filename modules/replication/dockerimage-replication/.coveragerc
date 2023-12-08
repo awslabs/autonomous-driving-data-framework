@@ -1,0 +1,10 @@
+# .coveragerc to control coverage.py
+[run]
+omit =
+    */site-packages/*
+    */distutils/*
+    */tests/*
+    ./get-list-of-eks-images.py
+
+[report]
+show_missing=true

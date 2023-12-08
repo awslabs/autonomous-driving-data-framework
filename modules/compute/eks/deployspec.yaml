@@ -1,0 +1,51 @@
+publishGenericEnvVariables: true
+deploy:
+  phases:
+    install:
+      commands:
+        - npm install -g aws-cdk@2.51.0
+        - pip install -r requirements.txt
+    build:
+      commands:
+        - |
+          if [ -n $SEEDFARMER_PARAMETER_REPLICATED_ECR_IMAGES_METADATA_S3_PATH ]; then
+            aws s3 cp s3://$SEEDFARMER_PARAMETER_REPLICATED_ECR_IMAGES_METADATA_S3_PATH replication-metadata.json
+            export SEEDFARMER_PARAMETER_REPLICATED_ECR_IMAGES_METADATA=$(cat replication-metadata.json)
+          fi
+        - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+        - export SEEDFARMER_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}']['metadata'])")
+        - export CNI_METRICS_ROLE_NAME=$(echo ${SEEDFARMER_MODULE_METADATA} | jq -r ".CNIMetricsHelperRoleName")
+        # Assuming EKS Master Role
+        - eval $(aws sts assume-role --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-${AWS_REGION}-masterrole --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+        # Configuring `aws-auth` ConfigMap
+        - |
+          if [ -n "$SEEDFARMER_PARAMETER_EKS_ADMIN_ROLE_NAME" ] ; then
+            eksctl get iamidentitymapping --cluster ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-cluster --arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PARAMETER_EKS_ADMIN_ROLE_NAME} \
+            && echo "IAM Identity Mapping already found" \
+            || eksctl create iamidentitymapping --cluster ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-cluster --arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PARAMETER_EKS_ADMIN_ROLE_NAME} --username ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_PARAMETER_EKS_ADMIN_ROLE_NAME} --group system:masters
+          fi
+          if [ -n "$SEEDFARMER_PARAMETER_EKS_POWERUSER_ROLE_NAME" ] ; then
+            eksctl get iamidentitymapping --cluster ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-cluster --arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PARAMETER_EKS_POWERUSER_ROLE_NAME} \
+            && echo "IAM Identity Mapping already found" \
+            || eksctl create iamidentitymapping --cluster ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-cluster --arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PARAMETER_EKS_POWERUSER_ROLE_NAME} --username ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_PARAMETER_EKS_POWERUSER_ROLE_NAME} --group poweruser-group
+          fi
+          if [ -n "$SEEDFARMER_PARAMETER_EKS_READ_ONLY_ROLE_NAME" ] ; then
+            eksctl get iamidentitymapping --cluster ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-cluster --arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PARAMETER_EKS_READ_ONLY_ROLE_NAME} \
+            && echo "IAM Identity Mapping already found" \
+            || eksctl create iamidentitymapping --cluster ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-cluster --arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PARAMETER_EKS_READ_ONLY_ROLE_NAME} --username ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_PARAMETER_EKS_READ_ONLY_ROLE_NAME} --group readonly-group
+          fi
+        # Unsetting the EKS role assumption for future use
+        - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+destroy:
+  phases:
+    install:
+      commands:
+        - npm install -g aws-cdk@2.51.0
+        - pip install -r requirements.txt
+    build:
+      commands:
+        # Assuming EKS Master Role
+        - eval $(aws sts assume-role --role-arn arn:aws:iam::${AWS_ACCOUNT_ID}:role/${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-${AWS_REGION}-masterrole --role-session-name aws-auth-ops | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+        - eksctl delete iamserviceaccount --name cni-metrics-helper --cluster ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-cluster --namespace kube-system
+        - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+        - cdk destroy --force --app "python app.py"

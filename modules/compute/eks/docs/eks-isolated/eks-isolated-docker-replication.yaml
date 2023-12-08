@@ -1,0 +1,10 @@
+name: replication
+path: modules/replication/dockerimage-replication/
+dataFiles:
+  - filePath: data/eks_dockerimage-replication/versions/<<EKS_VERSION>>.yaml #replace the EKS_VERSION with the right EKS Cluster version
+  - filePath: data/eks_dockerimage-replication/versions/default.yaml
+parameters:
+  - name: eks-version
+    value: 1.25
+    # valueFrom:
+    #   envVariable: GLOBAL_EKS_VERSION

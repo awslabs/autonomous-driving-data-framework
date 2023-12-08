@@ -1,0 +1,203 @@
+name: mwaa
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.1.0&depth=1
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: dag-path
+    value: dags
+  - name: airflow-version
+    value: "2.2.2"
+---
+name: eks
+path: modules/compute/eks
+dataFiles:
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.25.yaml?ref=v1.1.0&depth=1
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=v1.1.0&depth=1
+parameters:
+  - name: replicated-ecr-images-metadata-s3-path
+    valueFrom:
+      moduleMetadata:
+        group: replication
+        name: replication
+        key: s3_full_path
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: controlplane-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: dataplane-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: eks-admin-role-name
+    value: Admin
+  - name: eks-poweruser-role-name
+    value: PowerUser
+  - name: eks-read-only-role-name
+    value: ReadOnly
+  - name: eks-version
+    value: "1.25"
+    # valueFrom:
+    #   envVariable: GLOBAL_EKS_VERSION
+  - name: eks-compute
+    value:
+      eks_nodegroup_config:
+        - eks_ng_name: ng1
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_type: "m5.large"
+        - eks_ng_name: ng2
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 20
+          eks_node_instance_type: "m5.xlarge"
+        - eks_ng_name: gpu
+          eks_node_quantity: 1
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 60
+          eks_node_instance_type: "g4dn.xlarge"
+          eks_node_labels:
+            usage: gpu
+      eks_node_spot: False
+      eks_secrets_envelope_encryption: False
+      eks_api_endpoint_private: False
+  - name: eks-addons
+    value:
+      deploy_aws_lb_controller: True # We deploy it unless set to False
+      deploy_external_dns: True # We deploy it unless set to False
+      deploy_aws_ebs_csi: True # We deploy it unless set to False
+      deploy_aws_efs_csi: True # We deploy it unless set to False
+      deploy_aws_fsx_csi: True # We deploy it unless set to False
+      deploy_cluster_autoscaler: True # We deploy it unless set to False
+      deploy_metrics_server: True # We deploy it unless set to False
+      deploy_secretsmanager_csi: True # We deploy it unless set to False
+      deploy_external_secrets: False
+      deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
+      deploy_cloudwatch_container_insights_logs: True
+      cloudwatch_container_insights_logs_retention_days: 7
+      deploy_adot: False
+      deploy_amp: False
+      deploy_grafana_for_amp: False
+      deploy_kured: False
+      deploy_calico: False
+      deploy_nginx_controller:
+        value: False
+        nginx_additional_annotations:
+          nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
+      deploy_kyverno:
+        value: False
+        kyverno_policies:
+          validate:
+            - block-ephemeral-containers
+            - block-stale-images
+            - block-updates-deletes
+            - check-deprecated-apis
+            - disallow-cri-sock-mount
+            - disallow-custom-snippets
+            - disallow-empty-ingress-host
+            - disallow-helm-tiller
+            - disallow-latest-tag
+            - disallow-localhost-services
+            - disallow-secrets-from-env-vars
+            - ensure-probes-different
+            - ingress-host-match-tls
+            - limit-hostpath-vols
+            - prevent-naked-pods
+            - require-drop-cap-net-raw
+            - require-emptydir-requests-limits
+            - require-labels
+            - require-pod-requests-limits
+            - require-probes
+            - restrict-annotations
+            - restrict-automount-sa-token
+            - restrict-binding-clusteradmin
+            - restrict-clusterrole-nodesproxy
+            - restrict-escalation-verbs-roles
+            - restrict-ingress-classes
+            - restrict-ingress-defaultbackend
+            - restrict-node-selection
+            - restrict-path
+            - restrict-service-external-ips
+            - restrict-wildcard-resources
+            - restrict-wildcard-verbs
+            - unique-ingress-host-and-path
+          # mutate:
+          #   - add-networkpolicy-dns
+          #   - add-pod-priorityclassname
+          #   - add-ttl-jobs
+          #   - always-pull-images
+          #   - mitigate-log4shell
+---
+name: fsx-lustre
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.2.0&depth=1
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: fs_deployment_type
+    value: PERSISTENT_1
+  - name: storage_throughput
+    value: 50
+  - name: data_bucket_name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: IntermediateBucketName
+  - name: export_path
+    value: "/fsx/export/"
+  - name: import_path
+    value: "/fsx/import/"
+  - name:  fsx_version
+    value : "2.15" 
+
+# ---
+# name: efs
+# path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs?ref=release/1.1.0&depth=1
+# parameters:
+#   - name: vpc-id
+#     valueFrom:
+#       moduleMetadata:
+#         group: optionals
+#         name: networking
+#         key: VpcId
+#   - name: retention-type
+#     value: RETAIN
