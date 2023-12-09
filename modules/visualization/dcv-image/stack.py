@@ -1,16 +1,15 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, List, cast
+from typing import Any, cast
 
-from aws_cdk import RemovalPolicy
-from aws_cdk import Stack, Tags
+from aws_cdk import RemovalPolicy, Stack, Tags
 from aws_cdk import aws_ecr as ecr
-from cdk_nag import AwsSolutionsChecks, NagPackSuppression, NagSuppressions
+from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 
-class DcvImagePublishingStack(Stack):
+class DcvImagePublishingStack(Stack):  # type: ignore
     def __init__(
         self,
         scope: Construct,
@@ -19,11 +18,9 @@ class DcvImagePublishingStack(Stack):
         repository_name: str,
         deployment_name: str,
         module_name: str,
-        stack_description: str,
         **kwargs: Any,
     ) -> None:
-
-        super().__init__(scope, id, description=stack_description, **kwargs)
+        super().__init__(scope, id, **kwargs)
 
         self.project_name = project_name
         self.deployment_name = deployment_name
@@ -39,7 +36,7 @@ class DcvImagePublishingStack(Stack):
             repository_name=repository_name,
             image_scan_on_push=True,
             image_tag_mutability=ecr.TagMutability.MUTABLE,
-            removal_policy=RemovalPolicy.DESTROY
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
         NagSuppressions.add_stack_suppressions(

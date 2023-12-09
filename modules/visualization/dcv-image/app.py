@@ -8,11 +8,11 @@ from aws_cdk import App, CfnOutput, Environment
 
 from stack import DcvImagePublishingStack
 
-
 # Project specific
 project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
 deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
 module_name = os.getenv("SEEDFARMER_MODULE_NAME")
+DEFAULT_EKS_DCV_REPO_NAME = "dcv-eks-image"
 
 if len(f"{project_name}-{deployment_name}") > 36:
     raise ValueError("This module cannot support a project+deployment name character length greater than 35")
@@ -22,19 +22,7 @@ def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
 
-ecr_repo_name = os.getenv(_param("DCV_EKS_REPO_NAME"))
-
-def generate_description() -> str:
-    soln_id = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_ID", None)
-    soln_name = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_NAME", None)
-    soln_version = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_VERSION", None)
-
-    desc = "My Module Default Description"
-    if soln_id and soln_name and soln_version:
-        desc = f"({soln_id}) {soln_name}. Version {soln_version}"
-    elif soln_id and soln_name:
-        desc = f"({soln_id}) {soln_name}"
-    return desc
+ecr_repo_name = os.getenv(_param("DCV_EKS_REPO_NAME"), DEFAULT_EKS_DCV_REPO_NAME)
 
 
 app = App()
@@ -47,7 +35,6 @@ dcv_image_pushing_stack = DcvImagePublishingStack(
     deployment_name=cast(str, deployment_name),
     repository_name=ecr_repo_name,
     module_name=cast(str, module_name),
-    stack_description=generate_description(),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

@@ -18,7 +18,26 @@ def stack_defaults():
 
     if "stack" in sys.modules:
         del sys.modules["stack"]
-        
-        
-def test_app(stack_defaults):   
-    pass
+
+
+def test_app(stack_defaults):
+    import stack
+
+    app = cdk.App()
+    dep_name = "test-deployment"
+    mod_name = "test-project"
+
+    stack = stack.DcvImagePublishingStack(
+        scope=app,
+        id="addf-dcv-image-test-module",
+        project_name=mod_name,
+        repository_name="test-repo",
+        deployment_name=dep_name,
+        module_name=mod_name,
+        env=cdk.Environment(
+            account=os.environ["CDK_DEFAULT_ACCOUNT"],
+            region=os.environ["CDK_DEFAULT_REGION"],
+        ),
+    )
+    template = Template.from_stack(stack)
+    template.resource_count_is("AWS::ECR::Repository", 1)
