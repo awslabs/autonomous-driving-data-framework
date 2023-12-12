@@ -1,9 +1,0 @@
-aws-cdk-lib==2.51.0
-aws-cdk.lambda-layer-kubectl-v23==2.0.3
-boto3==1.26.81
-cdk-nag==2.12.29
-constructs==10.0.91
-deepmerge==1.1.0
-moto==4.1.11
-packaging==23.0
-PyYAML==6.0

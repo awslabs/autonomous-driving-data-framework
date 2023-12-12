@@ -1,5 +1,0 @@
-aws-cdk-lib==2.70.0
-aws-cdk.aws-batch-alpha==2.70.0-alpha.0
-cdk-nag==2.12.29
-constructs==10.0.91
-boto3~=1.21.0
