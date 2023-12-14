@@ -1,5 +1,5 @@
 name: replication
-path: modules/replication/dockerimage-replication
+path: git::https://github.com/awslabs/idf-modules.git//modules/replication/dockerimage-replication?ref=release/1.2.0&depth=1
 dataFiles:
   - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.25.yaml?ref=v1.1.0&depth=1
   - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=v1.1.0&depth=1
