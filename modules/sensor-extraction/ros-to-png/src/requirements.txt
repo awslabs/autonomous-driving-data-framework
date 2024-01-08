@@ -53,7 +53,7 @@ psutil==5.9.1
     # via gnupg
 pycryptodome==3.19.1
     # via rosbag
-pycryptodomex==3.15.0
+pycryptodomex==3.19.1
     # via rosbag
 pyparsing==3.0.9
     # via catkin-pkg
