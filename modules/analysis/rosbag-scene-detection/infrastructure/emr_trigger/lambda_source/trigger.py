@@ -122,7 +122,7 @@ def process_sns_message(record, table, current_batch_id):
             "BatchId": current_batch_id,
             "Name": message["bag_file"],
         },
-        UpdateExpression="SET bag_file=:bf, files = list_append(if_not_exists(files, :empty_list), :new_object), topics = list_append(if_not_exists(topics, :empty_list), :topic)",
+        UpdateExpression="SET bag_file=:bf, files = list_append(if_not_exists(files, :empty_list), :new_object), topics = list_append(if_not_exists(topics, :empty_list), :topic)",  # noqa: E501
         ExpressionAttributeValues={
             ":empty_list": [],
             ":new_object": [f"s3://{message['bucket']}/{message['key']}"],

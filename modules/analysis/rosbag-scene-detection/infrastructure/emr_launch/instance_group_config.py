@@ -1,3 +1,4 @@
+# type: ignore
 from typing import Dict, List, Optional
 
 import constructs

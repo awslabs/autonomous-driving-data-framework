@@ -1,7 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import cast
+from typing import Any, cast
 
 # import cdk_nag
 from aws_cdk import Stack, Tags
@@ -21,7 +21,7 @@ class AirflowEmrEksStack(Stack):
         mwaa_exec_role: str,
         eks_cluster_name: str,
         emr_namespace: str,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         # ADDF Env vars
         self.deployment_name = deployment_name

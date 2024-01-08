@@ -1,6 +1,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+# type: ignore
+
 import random
 from typing import List, cast
 
@@ -465,7 +467,7 @@ class StudioLiveStack(Stack):
         cert.get_subject().C = countryName
         cert.get_subject().ST = stateOrProvinceName
         cert.get_subject().L = localityName
-        cert.get_subject().O = organizationName
+        cert.get_subject().O = organizationName  # noqa: E741
         cert.get_subject().OU = organizationUnitName
         cert.get_subject().CN = commonName
         cert.get_subject().emailAddress = emailAddress

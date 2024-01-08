@@ -18,7 +18,7 @@ def _param(name: str) -> str:
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS"))  # required
+private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS", ""))  # required
 opensearch_sg_id = os.getenv(_param("OPENSEARCH_SG_ID"), "")
 opensearch_domain_name = os.getenv(_param("OPENSEARCH_DOMAIN_NAME"), "")
 opensearch_domain_endpoint = os.getenv(_param("OPENSEARCH_DOMAIN_ENDPOINT"), "")

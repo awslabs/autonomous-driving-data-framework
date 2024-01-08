@@ -1,6 +1,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+# type: ignore
+
 import logging
 from typing import Any, cast
 
@@ -256,7 +258,7 @@ class EmronEksRbacStack(Stack):
             self,
             "ConditionJson",
             value={
-                f"{eks_openid_issuer}:sub": f"system:serviceaccount:{self.emr_namespace}:emr-containers-sa-*-*-{self.account}-*"
+                f"{eks_openid_issuer}:sub": f"system:serviceaccount:{self.emr_namespace}:emr-containers-sa-*-*-{self.account}-*"  # noqa: E501
             },
         )
         self.job_role.assume_role_policy.add_statements(

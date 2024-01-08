@@ -15,7 +15,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class AwsBatchPipeline(Stack):  # type: ignore
+class AwsBatchPipeline(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -93,7 +93,11 @@ class AwsBatchPipeline(Stack):  # type: ignore
                     "batch:TagResource",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[*job_queues, *job_definitions, f"arn:aws:batch:{self.region}:{self.account}:job/*"],
+                resources=[
+                    *job_queues,
+                    *job_definitions,
+                    f"arn:aws:batch:{self.region}:{self.account}:job/*",
+                ],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -147,7 +151,11 @@ class AwsBatchPipeline(Stack):  # type: ignore
             vpc_id=self.vpc_id,
         )
         self.sm_sg = ec2.SecurityGroup(
-            self, "SagemakerJobsSG", vpc=self.vpc, allow_all_outbound=True, description="Sagemaker Processing Jobs SG"
+            self,
+            "SagemakerJobsSG",
+            vpc=self.vpc,
+            allow_all_outbound=True,
+            description="Sagemaker Processing Jobs SG",
         )
 
         self.sm_sg.add_ingress_rule(peer=self.sm_sg, connection=ec2.Port.all_traffic())

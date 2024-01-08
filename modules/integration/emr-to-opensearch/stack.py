@@ -18,7 +18,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class EMRtoOpensearch(Stack):  # type: ignore
+class EMRtoOpensearch(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -160,11 +160,11 @@ class EMRtoOpensearch(Stack):  # type: ignore
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
                 },
