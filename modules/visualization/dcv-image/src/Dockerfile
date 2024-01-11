@@ -18,8 +18,6 @@
 
 FROM public.ecr.aws/amazonlinux/amazonlinux:2 as dcv
 
-USER root
-
 # Prepare the container to run systemd inside
 ENV container docker
 
@@ -50,9 +48,9 @@ RUN rpm --import https://d1uj6qtbmh3dt5.cloudfront.net/NICE-GPG-KEY \
     && for f in *.rpm ; do yum install -y "${f}" ; done \
     && rm -rf /tmp/dcv-inst
 
-RUN pip3 install kubernetes urllib3==1.26.6
+RUN pip3 install kubernetes urllib3==1.26.6 boto3
 
-# Define the dcvserver.service
+# Define the dcvserver.src
 COPY dcvserver.service /usr/lib/systemd/system/dcvserver.service
 
 # Copy the NICE DCV license file
@@ -75,7 +73,7 @@ COPY check_healthy.sh /usr/local/bin/check_healthy.sh
 
 RUN mkdir -p /opt/dcv_server/scripts
 
-COPY update_config_map.py /opt/dcv_server/scripts
+COPY update_parameters.py /opt/dcv_server/scripts
 
 # Fix permissions
 RUN chmod +x "/usr/local/bin/run_script.sh" \

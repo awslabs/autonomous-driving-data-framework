@@ -12,7 +12,6 @@ from stack import DcvImagePublishingStack
 project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
 deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
 module_name = os.getenv("SEEDFARMER_MODULE_NAME")
-DEFAULT_EKS_DCV_REPO_NAME = "dcv-eks-image"
 
 if len(f"{project_name}-{deployment_name}") > 36:
     raise ValueError("This module cannot support a project+deployment name character length greater than 35")
@@ -22,7 +21,7 @@ def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
 
-ecr_repo_name = os.getenv(_param("DCV_EKS_REPO_NAME"), DEFAULT_EKS_DCV_REPO_NAME)
+ecr_repo_name = os.getenv(_param("DCV_ECR_REPOSITORY_NAME"), "")
 
 
 app = App()
@@ -47,7 +46,7 @@ CfnOutput(
     id="metadata",
     value=dcv_image_pushing_stack.to_json_string(
         {
-            "DCVImageRepoUri": dcv_image_pushing_stack.repository.repository_uri,
+            "DCVImageUri": dcv_image_pushing_stack.image_uri,
         }
     ),
 )

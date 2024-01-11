@@ -13,17 +13,19 @@ spec:
         env: dcv
     spec:
       restartPolicy: Always
-      serviceAccountName: dcv-agent-service-account
+      serviceAccountName: dcv-agent-src-account
       containers:
         - name: nice-dcv-container
           image: $IMAGE
           command: [ "/usr/local/bin/run_script.sh" ]
           imagePullPolicy: "Always"
           env:
-            - name: ADDF_CONFIG_MAP_NAME
+            - name: DCV_EKS_CONFIG_MAP_NAME
               value: "dcv-agent-config-map"
             - name: AWS_REGION
               value: $REGION
+            - name: DCV_EKS_DISPLAY_PARAMETER_STORE
+              value: $DISPLAY_PARAMETER_NAME
           ports:
             - name: dcv-tcp
               protocol: TCP
@@ -53,4 +55,4 @@ spec:
       volumes:
         - name: addf-dcv-socket-volume
           hostPath:
-            path: "/var/addf/dcv-eks/sockets"
+            path: $SOCKET_PATH

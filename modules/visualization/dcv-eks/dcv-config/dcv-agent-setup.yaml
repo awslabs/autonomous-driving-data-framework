@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: dcv-agent-service-account
+  name: dcv-agent-src-account
   namespace: $NAMESPACE
   annotations:
     eks.amazonaws.com/role-arn: $RUNTIME_ROLE_ARN
@@ -27,7 +27,7 @@ metadata:
   name: dcv-agent-role-binding
 subjects:
   - kind: ServiceAccount
-    name: dcv-agent-service-account
+    name: dcv-agent-src-account
 roleRef:
   kind: Role
   name: dcv-agent-cluster-role
@@ -40,7 +40,7 @@ metadata:
   name: dcv-agent-config-map
 data:
   display: ""
-  socket_path: "/var/addf/dcv-eks/sockets"
+  socket_mount_path: $SOCKET_PATH
 ---
 apiVersion: v1
 kind: Service

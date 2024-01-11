@@ -25,8 +25,8 @@ def _param(name: str) -> str:
 
 
 dcv_namespace = os.getenv(_param("DCV_NAMESPACE"), DEFAULT_DCV_NAMESPACE)
-dcv_node_port = os.getenv(_param("DCV_NODE_PORT"), DEFAULT_DCV_NODEPORT)
-dcv_image_repo_uri = os.getenv(_param("DCV_IMAGE_REPO_URI"), "")
+dcv_node_port = os.getenv(_param("DCV_NODEPORT"), DEFAULT_DCV_NODEPORT)
+dcv_image_uri = os.getenv(_param("DCV_IMAGE_URI"), "")
 eks_cluster_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"), "")
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"), "")
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"), "")
@@ -44,7 +44,7 @@ dcv_eks_stack = DcvEksStack(
     deployment_name=cast(str, deployment_name),
     module_name=cast(str, module_name),
     dcv_namespace=dcv_namespace,
-    dcv_image_repo_uri=dcv_image_repo_uri,
+    dcv_image_uri=dcv_image_uri,
     eks_cluster_name=eks_cluster_name,
     eks_cluster_admin_role_arn=eks_cluster_admin_role_arn,
     eks_oidc_arn=eks_oidc_arn,
@@ -66,7 +66,9 @@ CfnOutput(
         {
             "DcvEksRoleArn": dcv_eks_stack.eks_admin_role.role_arn,
             "DcvNamespace": dcv_namespace,
-            "DcvNodepor": dcv_node_port,
+            "DcvNodeport": dcv_node_port,
+            "DcvDisplayParameterName": dcv_eks_stack.display_parameter_name,
+            "DcvSocketMountPathParameterName": dcv_eks_stack.socket_mount_path_parameter_name,
         }
     ),
 )

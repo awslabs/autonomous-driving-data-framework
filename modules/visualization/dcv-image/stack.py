@@ -1,10 +1,13 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 from typing import Any, cast
 
-from aws_cdk import RemovalPolicy, Stack, Tags
+from aws_cdk import Stack, Tags
 from aws_cdk import aws_ecr as ecr
+from aws_cdk.aws_ecr_assets import DockerImageAsset
+from cdk_ecr_deployment import DockerImageName, ECRDeployment
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -30,13 +33,20 @@ class DcvImagePublishingStack(Stack):  # type: ignore
         dep_mod = dep_mod[:64]
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=dep_mod)
 
-        self.repository = ecr.Repository(
+        repo = ecr.Repository.from_repository_name(self, id=dep_mod + repository_name, repository_name=repository_name)
+
+        local_image = DockerImageAsset(
             self,
-            id=repository_name,
-            repository_name=repository_name,
-            image_scan_on_push=True,
-            image_tag_mutability=ecr.TagMutability.MUTABLE,
-            removal_policy=RemovalPolicy.DESTROY,
+            "ImageExtractionDockerImage",
+            directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"),
+        )
+
+        self.image_uri = f"{repo.repository_uri}:dcv-latest"
+        ECRDeployment(
+            self,
+            "ImageURI",
+            src=DockerImageName(local_image.image_uri),
+            dest=DockerImageName(self.image_uri),
         )
 
         NagSuppressions.add_stack_suppressions(
@@ -46,7 +56,7 @@ class DcvImagePublishingStack(Stack):  # type: ignore
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-IAM4",
-                        "reason": "Managed Policies are for service account roles only",
+                        "reason": "Managed Policies are for src account roles only",
                     }
                 ),
                 NagPackSuppression(

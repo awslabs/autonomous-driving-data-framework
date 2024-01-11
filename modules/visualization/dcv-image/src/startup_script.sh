@@ -66,12 +66,12 @@ echo "XAUTHORITY is ${xauth_path}; DISPLAY is ${display}"
 XAUTHORITY=${xauth_path} DISPLAY="${display}" xhost +
 
 
-if python3 /opt/dcv_server/scripts/update_config_map.py
+if python3 /opt/dcv_server/scripts/update_parameters.py
 then
-    echo "ConfigMap updated"
+    echo "ConfigMap and SSM Parameter Store updated"
     mkdir -p /tmp/health-check
     touch /tmp/health-check/ready
 else
-    echo "Unable to update ConfigMap"
+    echo "Unable to update ConfigMap and SSM Parameter Store"
     exit 1
 fi
