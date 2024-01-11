@@ -134,23 +134,23 @@ class ProxyStack(Stack):
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-EC23",
                     "reason": "Access is using basic-auth challenge",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-EC28",
                     "reason": "Detailed Monitoring not enabled as this is a simple proxy",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-EC29",
                     "reason": "ASG not enabled as this is a simple proxy",
                 },

@@ -6,7 +6,7 @@ import re
 import os
 
 state_machine_arn = os.environ['state_machine_arn']
-    
+
 def trigger_bag_processing(bucket, prefix):
     s3_object = dict([("bucket", bucket), ("key", prefix)])
     now = str(int(time.time()))

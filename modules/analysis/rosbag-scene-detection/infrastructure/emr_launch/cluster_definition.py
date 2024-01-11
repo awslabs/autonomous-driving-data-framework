@@ -1,3 +1,4 @@
+# type: ignore
 from os import listdir
 from typing import Any, List
 

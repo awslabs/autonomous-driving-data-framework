@@ -6,7 +6,7 @@ import sys
 import boto3
 import numpy
 import pyspark.sql.functions as func
-from pyspark.sql import Row, SparkSession, Window, types
+from pyspark.sql import SparkSession, Window
 from pyspark.sql.types import StringType
 
 

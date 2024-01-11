@@ -83,7 +83,7 @@ typeguard==2.13.3
     #   aws-cdk-asset-node-proxy-agent-v5
     #   aws-cdk-lib
     #   jsii
-typing-extensions==4.2.0
+typing-extensions==4.6.3
     # via jsii
 urllib3==1.26.18
     # via botocore

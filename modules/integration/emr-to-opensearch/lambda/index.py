@@ -54,12 +54,12 @@ def download_logs(bucket_name, object_key):
 
 def enrich_log(log_entry):
     # Extract EMR cluster/step ID from the file path
-    re_match = re.search(f"/(j-[\w]+)/steps/(s-[\w]+)/", log_entry["log_file"])
+    re_match = re.search("/(j-[\w]+)/steps/(s-[\w]+)/", log_entry["log_file"])
     if re_match:
         log_entry["emr_cluster_id"] = re_match.group(1)
         log_entry["emr_step_id"] = re_match.group(2)
     else:
-        re_match = re.search(f"/(j-[\w]+)/", log_entry["log_file"])
+        re_match = re.search("/(j-[\w]+)/", log_entry["log_file"])
         if re_match:
             log_entry["emr_cluster_id"] = re_match.group(1)
 

@@ -7,7 +7,6 @@ import os
 import aws_cdk
 import boto3
 from aws_cdk import App
-
 from stack import VSCodeOnEKS
 
 account = os.environ["CDK_DEFAULT_ACCOUNT"]
@@ -30,9 +29,7 @@ secrets_manager_name = os.getenv(_param("SECRETS_MANAGER_NAME"), "")
 
 client = boto3.client("secretsmanager")
 secret_arn = f"arn:aws:secretsmanager:{region}:{account}:secret:{secrets_manager_name}"
-secrets_json = json.loads(
-    client.get_secret_value(SecretId=secret_arn).get("SecretString")
-)
+secrets_json = json.loads(client.get_secret_value(SecretId=secret_arn).get("SecretString"))
 vscode_password = secrets_json["password"]
 
 app = App()
