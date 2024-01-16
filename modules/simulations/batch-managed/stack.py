@@ -4,7 +4,6 @@
 import logging
 from typing import Any, Dict, List, cast
 
-import aws_cdk
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
@@ -27,7 +26,7 @@ class BatchDags(Stack):
         mwaa_exec_role: str,
         vpc_id: str,
         private_subnet_ids: List[str],
-        batch_compute: Dict[str, any],
+        batch_compute: Dict[str, Any],
         **kwargs: Any,
     ) -> None:
         # ADDF Env vars
@@ -158,7 +157,7 @@ class BatchDags(Stack):
                             instance_role=ec2IAMProfile.attr_arn,
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",
+                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",  # type: ignore
                             minv_cpus=0,
                             type=batch.ComputeResourceType.ON_DEMAND,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
@@ -185,7 +184,7 @@ class BatchDags(Stack):
                             instance_role=ec2IAMProfile.attr_arn,
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",
+                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",  # type: ignore
                             minv_cpus=0,
                             type=batch.ComputeResourceType.SPOT,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
@@ -249,11 +248,11 @@ class BatchDags(Stack):
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
                 },

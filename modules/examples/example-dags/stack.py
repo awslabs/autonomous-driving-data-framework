@@ -75,7 +75,7 @@ class DagIamRole(Stack):
         NagSuppressions.add_stack_suppressions(
             self,
             [
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced describe only",
                 },

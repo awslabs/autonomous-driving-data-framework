@@ -20,14 +20,13 @@ import random
 import string
 import textwrap
 from datetime import timedelta
-from typing import Iterator, List, TypeVar
+from typing import TypeVar
 
 import boto3
 from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
-from airflow.models.taskinstance import TaskInstance
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.operators.batch import AwsBatchOperator
 from airflow.utils.dates import days_ago
@@ -72,8 +71,8 @@ def get_job_queue_name() -> str:
     based on the inputs of the batch-compute manifest file.
     """
     ON_DEMAND_JOB_QUEUE_ARN = batch_dag_config.ON_DEMAND_JOB_QUEUE_ARN  # consume if created
-    SPOT_JOB_QUEUE_ARN = batch_dag_config.SPOT_JOB_QUEUE_ARN  # consume if created
-    FARGATE_JOB_QUEUE_ARN = batch_dag_config.FARGATE_JOB_QUEUE_ARN  # consume if created
+    # SPOT_JOB_QUEUE_ARN = batch_dag_config.SPOT_JOB_QUEUE_ARN  # consume if created
+    # FARGATE_JOB_QUEUE_ARN = batch_dag_config.FARGATE_JOB_QUEUE_ARN  # consume if created
 
     return ON_DEMAND_JOB_QUEUE_ARN.split("/")[-1]
 
@@ -84,7 +83,7 @@ def get_job_name() -> str:
 
 
 def get_job_def_name() -> str:
-    v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
+    # v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
     # return f"addf-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-jobdef-{v}"
     return f"addf-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-simplemock-jobdef"
 
@@ -171,7 +170,7 @@ with DAG(
         job_name=job_name,
         job_queue=queue_name,
         aws_conn_id="aws_batch",
-        # job_definition="{{ task_instance.xcom_pull(task_ids='register_batch_job_defintion', key='job_definition_name') }}",
+        # job_definition="{{ task_instance.xcom_pull(task_ids='register_batch_job_defintion', key='job_definition_name') }}", # noqa: E501
         job_definition="addf-local-simulations-batch-managed-simplemock-jobdef",  # TODO
         overrides={
             "command": [
@@ -223,7 +222,7 @@ with DAG(
         dag=dag,
         provide_context=True,
         op_kwargs={
-            # "job_def_arn": "{{ task_instance.xcom_pull(task_ids='deregister_batch_job_defintion', key='job_definition_arn') }}"
+            # "job_def_arn": "{{ task_instance.xcom_pull(task_ids='deregister_batch_job_defintion', key='job_definition_arn') }}" # noqa: E501
             "job_def_arn": "addf-local-simulations-batch-managed-simplemock-jobdef"
         },
         python_callable=deregister_job_definition,

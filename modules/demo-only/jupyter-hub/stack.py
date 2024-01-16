@@ -18,7 +18,7 @@ _logger: logging.Logger = logging.getLogger(__name__)
 project_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-class JupyterHubStack(Stack):  # type: ignore
+class JupyterHubStack(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -42,9 +42,7 @@ class JupyterHubStack(Stack):  # type: ignore
             description="This stack deploys Self managed JupyterHub environment for ADDF",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{deployment}"
-        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         dep_mod = f"addf-{deployment}-{module}"
 
@@ -74,9 +72,7 @@ class JupyterHubStack(Stack):  # type: ignore
             "jupyterhub", name="jupyterhub", namespace="jupyter-hub"
         )
 
-        jupyterhub_policy_statement_json_path = os.path.join(
-            project_dir, "addons-iam-policies", "jupyterhub-iam.json"
-        )
+        jupyterhub_policy_statement_json_path = os.path.join(project_dir, "addons-iam-policies", "jupyterhub-iam.json")
         with open(jupyterhub_policy_statement_json_path) as json_file:
             jupyterhub_policy_statement_json = json.load(json_file)
 
@@ -119,7 +115,7 @@ class JupyterHubStack(Stack):  # type: ignore
             },
         }
         if jh_image_name and jh_image_tag:
-            k8s_values["singleuser"]["image"] = {
+            k8s_values["singleuser"]["image"] = {  # type: ignore
                 "name": jh_image_name,
                 "tag": jh_image_tag,
                 "pullPolicy": "Always",
@@ -144,11 +140,11 @@ class JupyterHubStack(Stack):  # type: ignore
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM4",
                     "reason": "Managed Policies are for service account roles only",
                 },
-                {
+                {  # type: ignore
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
                 },

@@ -69,9 +69,16 @@ def iam_policy() -> dict:
                             "Resource": "*",
                         },
                         {
-                            "Action": ["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
+                            "Action": [
+                                "s3:GetObject",
+                                "s3:GetObjectAcl",
+                                "s3:ListBucket",
+                            ],
                             "Effect": "Allow",
-                            "Resource": ["arn:aws:s3:::addf-*", "arn:aws:s3:::addf-*/*"],
+                            "Resource": [
+                                "arn:aws:s3:::addf-*",
+                                "arn:aws:s3:::addf-*/*",
+                            ],
                         },
                     ]
                 }
@@ -101,7 +108,10 @@ def test_stack(stack_defaults):
         job_queues=["job-queue-1", "job-queue-2"],
         job_definitions=["job-def-1", "job-def-2"],
         stack_description="Testing",
-        env=cdk.Environment(account=(os.environ["CDK_DEFAULT_ACCOUNT"]), region=(os.environ["CDK_DEFAULT_REGION"])),
+        env=cdk.Environment(
+            account=(os.environ["CDK_DEFAULT_ACCOUNT"]),
+            region=(os.environ["CDK_DEFAULT_REGION"]),
+        ),
     )
     template = Template.from_stack(rosbag_stack)
 

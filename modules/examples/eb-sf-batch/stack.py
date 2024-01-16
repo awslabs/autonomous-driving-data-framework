@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from typing import Any, Dict, List, cast
+from typing import Any, cast
 
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_iam as iam
-from aws_cdk import Aspects, Duration, NestedStack, RemovalPolicy, Stack, Tags
+from aws_cdk import Duration, NestedStack, Stack, Tags
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_events as events
@@ -44,7 +44,7 @@ class EventDrivenBatch(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack deploys Cron Based Eventbridge which triggers Stepfunctions further triggering AWS Batch",
+            description="This stack deploys Cron Based Eventbridge which triggers Stepfunctions further triggering AWS Batch",  # noqa: E501
             **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
@@ -117,17 +117,17 @@ class EventDrivenBatch(Stack):
             self, "Wait 30 Seconds", time=stepfunctions.WaitTime.duration(Duration.seconds(30))
         )
 
-        fail_job = stepfunctions.Fail(self, "Fail", cause="AWS Batch Job Failed", error="DescribeJob returned FAILED")
+        # fail_job = stepfunctions.Fail(self, "Fail", cause="AWS Batch Job Failed", error="DescribeJob returned FAILED")
 
         succeed_job = stepfunctions.Succeed(self, "Succeeded", comment="AWS Batch Job succeeded")
 
         # Create Chain
 
-        definition = submit_metrics_job.next(wait_job).next(succeed_job)
+        definition = submit_metrics_job.next(wait_job).next(succeed_job)  # type: ignore
 
         self.eventbridge_sfn = EventbridgeToStepfunctions(
             self,
             f"addf-{deployment_name}-eb-sf-batch",
-            state_machine_props=stepfunctions.StateMachineProps(definition=definition),
+            state_machine_props=stepfunctions.StateMachineProps(definition=definition),  # type: ignore
             event_rule_props=events.RuleProps(schedule=events.Schedule.rate(Duration.minutes(1))),
         )
