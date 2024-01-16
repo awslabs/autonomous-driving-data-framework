@@ -1,0 +1,1 @@
+airflow-kubernetes-job-operator~=2.0.14

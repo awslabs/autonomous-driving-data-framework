@@ -3,7 +3,6 @@
 
 import logging
 import os
-import textwrap
 from datetime import timedelta
 
 from airflow import DAG
@@ -51,7 +50,12 @@ with DAG(
                             "name": "pytorch",
                             "image": dag_config.PYTORCH_IMAGE,
                             "imagePullPolicy": "Always",
-                            "volumeMounts": [{"name": "persistent-storage", "mountPath": "/data"}],
+                            "volumeMounts": [
+                                {
+                                    "name": "persistent-storage",
+                                    "mountPath": "/data",
+                                }
+                            ],
                             "command": [
                                 "python3",
                                 "/aws/pytorch-mnist/mnist.py",
@@ -64,7 +68,10 @@ with DAG(
                     ],
                     "nodeSelector": {"usage": "gpu"},
                     "volumes": [
-                        {"name": "persistent-storage", "persistentVolumeClaim": {"claimName": dag_config.PVC_NAME}}
+                        {
+                            "name": "persistent-storage",
+                            "persistentVolumeClaim": {"claimName": dag_config.PVC_NAME},
+                        }
                     ],
                 },
             },

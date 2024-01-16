@@ -78,7 +78,12 @@ class TrainingDags(Stack):
         )
 
         namespace = cluster.add_manifest(
-            "namespace", {"apiVersion": "v1", "kind": "Namespace", "metadata": {"name": module_name}}
+            "namespace",
+            {
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {"name": module_name},
+            },
         )
 
         service_account = cluster.add_service_account("service-account", name=module_name, namespace=module_name)
@@ -112,10 +117,18 @@ class TrainingDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "RoleBinding",
                 "metadata": {"name": module_name, "namespace": module_name},
-                "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "Role", "name": "module-owner"},
+                "roleRef": {
+                    "apiGroup": "rbac.authorization.k8s.io",
+                    "kind": "Role",
+                    "name": "module-owner",
+                },
                 "subjects": [
                     {"kind": "User", "name": f"addf-{module_name}"},
-                    {"kind": "ServiceAccount", "name": module_name, "namespace": module_name},
+                    {
+                        "kind": "ServiceAccount",
+                        "name": module_name,
+                        "namespace": module_name,
+                    },
                 ],
             },
         )
@@ -127,7 +140,13 @@ class TrainingDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "Role",
                 "metadata": {"name": "default-access", "namespace": "default"},
-                "rules": [{"apiGroups": ["*"], "resources": ["*"], "verbs": ["get", "list", "watch"]}],
+                "rules": [
+                    {
+                        "apiGroups": ["*"],
+                        "resources": ["*"],
+                        "verbs": ["get", "list", "watch"],
+                    }
+                ],
             },
         )
         rbac_role.node.add_dependency(namespace)
@@ -138,10 +157,18 @@ class TrainingDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "RoleBinding",
                 "metadata": {"name": "default-access", "namespace": "default"},
-                "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "Role", "name": "default-access"},
+                "roleRef": {
+                    "apiGroup": "rbac.authorization.k8s.io",
+                    "kind": "Role",
+                    "name": "default-access",
+                },
                 "subjects": [
                     {"kind": "User", "name": f"addf-{module_name}"},
-                    {"kind": "ServiceAccount", "name": module_name, "namespace": module_name},
+                    {
+                        "kind": "ServiceAccount",
+                        "name": module_name,
+                        "namespace": module_name,
+                    },
                 ],
             },
         )
@@ -153,10 +180,18 @@ class TrainingDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "ClusterRoleBinding",
                 "metadata": {"name": f"system-access-{module_name}"},
-                "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "system-access"},
+                "roleRef": {
+                    "apiGroup": "rbac.authorization.k8s.io",
+                    "kind": "ClusterRole",
+                    "name": "system-access",
+                },
                 "subjects": [
                     {"kind": "User", "name": f"addf-{module_name}"},
-                    {"kind": "ServiceAccount", "name": module_name, "namespace": module_name},
+                    {
+                        "kind": "ServiceAccount",
+                        "name": module_name,
+                        "namespace": module_name,
+                    },
                 ],
             },
         )

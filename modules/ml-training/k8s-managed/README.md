@@ -4,6 +4,8 @@
 
 This module:
 
+- deploys an ECR repository and pushes a docker container from images/pytorch-mnist for the training job
+
 - deploys an IAM Role assumed by the DAG with permissions to execute the Jobs
 - deploys a k8s `namespace` dedicated to simulations
 - deploys an IAM Role and associated k8s ServiceAccount that Jobs will use for execution
