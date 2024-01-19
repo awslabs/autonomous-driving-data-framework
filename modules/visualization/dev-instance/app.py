@@ -22,7 +22,7 @@ s3_script_bucket = os.getenv("ADDF_PARAMETER_S3_SCRIPT_BUCKET", None)
 
 demo_password = os.getenv("ADDF_PARAMETER_DEMO_PASSWORD", None)
 
-stack_id = "data-service-dev-instances"
+stack_id = "data-src-dev-instances"
 if deployment_name and module_name:
     stack_id = f"addf-{deployment_name}-{module_name}"
 

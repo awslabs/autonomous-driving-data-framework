@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - adding new `integration/opensearch-tunnel` module
 - Added unit-tests, enabled logging and versioning on buckets for datalake-buckets module
 - Added Unit tests to metadata-storage module
+- Added new `dcv-image` and `dcv-eks` module
 
 ### **Changed**
 
