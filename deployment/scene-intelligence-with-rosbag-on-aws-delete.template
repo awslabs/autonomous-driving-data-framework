@@ -296,9 +296,23 @@ Resources:
                 - cd autonomous-driving-data-framework/
                 - echo 'Installing dependencies...'
                 - pip install -r requirements.txt
-                - export LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name addf-aws-solutions-optionals-datalake-buckets --query 'Stacks[0].Outputs[?OutputKey==`metadata`].OutputValue' --output text | jq -r '.LogsBucketName') || true
-                - aws s3 rm s3://${LOGS_BUCKET_NAME} --recursive --quiet || true
-                - python -c "import boto3; import os; s3 = boto3.resource('s3'); bucket = s3.Bucket(os.getenv('LOGS_BUCKET_NAME')); bucket.object_versions.all().delete()" || true
+                - export LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name addf-aws-solutions-optionals-datalake-buckets --query 'Stacks[0].Outputs[?OutputKey==`metadata`].OutputValue' --output text | jq -r '.LogsBucketName')
+                - |
+                  cat << EOF > policy.json
+                  {
+                    "Statement": [
+                        {
+                          "Effect": "Deny",
+                          "Principal": "*",
+                          "Action": "s3:PutObject",
+                          "Resource": "arn:aws:s3:::${LOGS_BUCKET_NAME}/*"
+                        }
+                    ]
+                  }
+                  EOF
+                - aws s3api put-bucket-policy --bucket $LOGS_BUCKET_NAME --policy file://policy.json
+                - aws s3 rm s3://${LOGS_BUCKET_NAME} --recursive --quiet
+                - python -c "import boto3; import os; s3 = boto3.resource('s3'); bucket = s3.Bucket(os.getenv('LOGS_BUCKET_NAME')); bucket.object_versions.all().delete()"
                 - seedfarmer bootstrap toolchain --project addf --trusted-principal ${ROLE_ARN} --as-target
                 - TRUSTED_ROLES=$(aws iam get-role --role-name seedfarmer-addf-toolchain-role | jq -r '.Role.AssumeRolePolicyDocument.Statement[0].Principal.AWS')
                 - python manifests/aws-solutions/integ/role_assume_update.py ${ROLE_ARN}
