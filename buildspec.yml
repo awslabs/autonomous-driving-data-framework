@@ -2,6 +2,8 @@ version: 0.2
 
 phases:
   build:
+    runtime-versions:
+      python: 3.10
     commands:
       # CDK Version is defaulted to 2.82.0 if not mentioned using `-c`
       # Rosbag Image Pipeline
