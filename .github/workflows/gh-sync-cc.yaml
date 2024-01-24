@@ -62,6 +62,7 @@ jobs:
           cp LICENSE.txt scene-intelligence-with-rosbag-on-aws/
           cp .viperlightignore scene-intelligence-with-rosbag-on-aws/
           cp .bandit scene-intelligence-with-rosbag-on-aws/
+          cp buildspec.yml scene-intelligence-with-rosbag-on-aws/
           cp -r .github scene-intelligence-with-rosbag-on-aws/
           cp -R images scene-intelligence-with-rosbag-on-aws/
           cp -R deployment scene-intelligence-with-rosbag-on-aws/
