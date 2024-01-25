@@ -3,9 +3,13 @@
 
 import logging
 from typing import Any, cast
-
+import boto3
+import os
 import cdk_nag
-from aws_cdk import Aspects, Stack, Tags, aws_eks, aws_iam
+from aws_cdk import Aspects, Stack, Tags, aws_eks, aws_iam, Duration
+from aws_cdk import aws_stepfunctions as sfn
+
+from aws_cdk import aws_logs as logs
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -94,7 +98,7 @@ class TrainingDags(Stack):
                 aws_iam.PolicyStatement(
                     effect=aws_iam.Effect.ALLOW,
                     actions=["sts:AssumeRole"],
-                    principals=[aws_iam.ArnPrincipal(mwaa_exec_role)],
+                    principals=[aws_iam.ArnPrincipal(mwaa_exec_role), aws_iam.ServicePrincipal("states.amazonaws.com")],
                 )
             )
         for statement in policy_statements:
@@ -199,6 +203,94 @@ class TrainingDags(Stack):
 
         self.eks_service_account_role = service_account.role
 
+
+        final_status = sfn.Pass(self, "final step")
+
+        # States language JSON to put an item into DynamoDB
+        # snippet generated from https://docs.aws.amazon.com/step-functions/latest/dg/tutorial-code-snippet.html#tutorial-code-snippet-1
+        body = {
+            "apiVerson": "batch/v1",
+            "kind": "Job",
+            "metadata": {},
+            "spec": {
+                "backoffLimit": 1,
+                "template": {
+                    "metadata": {"annotations": {"sidecar.istio.io/inject": "false"}},
+                    "spec": {
+                        "restartPolicy": "OnFailure",
+                        "containers": [
+                            {
+                                "name": "pytorch",
+                                "image": f'{os.getenv("REPOSITORY_URI")}:{os.getenv("IMAGE_TAG")}',
+                                "imagePullPolicy": "Always",
+                                "volumeMounts": [
+                                    {
+                                        "name": "persistent-storage",
+                                        "mountPath": "/data",
+                                    }
+                                ],
+                                "command": [
+                                    "python3",
+                                    "/aws/pytorch-mnist/mnist.py",
+                                    "--epochs=1",
+                                    "--save-model",
+                                ],
+                                "env": [],
+                                # "resources": {"limits": {"nvidia.com/gpu": 1}},
+                            }
+                        ],
+                        "nodeSelector": {"usage": "gpu"},
+                        "volumes": [
+                            {
+                                "name": "persistent-storage",
+                                "persistentVolumeClaim": {"claimName": os.getenv('ADDF_PARAMETER_PVC_NAME')},
+                            }
+                        ],
+                    },
+                },
+            },
+        }
+        
+        client = boto3.client('eks')
+
+        response = client.describe_cluster(
+            name=eks_cluster_name
+        )
+
+        state_json = {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::eks:runJob.sync",
+            "Parameters": {
+                "ClusterName": eks_cluster_name,
+                "CertificateAuthority": response['cluster']['certificateAuthority']['data'],
+                "Endpoint": response['cluster']['endpoint'],
+                "LogOptions": {
+                    "RetrieveLogs": True
+                },
+                "Job": body
+            }
+        }
+
+        # custom state which represents a task to insert data into DynamoDB
+        custom = sfn.CustomState(self, "eks-training",
+            state_json=state_json
+        )
+
+        chain = sfn.Chain.start(custom).next(final_status)
+
+        log_group = logs.LogGroup(self, "TrainingOnEKSLogGroup")
+        
+        sm = sfn.StateMachine(self, "TrainingOnEKS", definition_body=sfn.DefinitionBody.from_chainable(chain),
+            timeout=Duration.minutes(30),
+            logs=sfn.LogOptions(
+                destination=log_group,
+                level=sfn.LogLevel.ALL
+            ),
+            role=service_account.role
+        )
+        """
+        
+"""
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
         NagSuppressions.add_stack_suppressions(
@@ -217,5 +309,12 @@ class TrainingDags(Stack):
                         "reason": "Resource access restriced to ADDF resources",
                     }
                 ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-SF2",
+                        "reason": "Xray disabled",
+                    }
+                ),
+                
             ],
         )

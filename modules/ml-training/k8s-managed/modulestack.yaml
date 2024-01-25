@@ -60,6 +60,7 @@ Resources:
           - Effect: Allow
             Action:
               - "iam:Get*"
+              - "eks:DescribeCluster"
               - "iam:List*"
               - "cloudformation:Describe*"
               - "s3:List*"

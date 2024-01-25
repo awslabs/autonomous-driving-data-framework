@@ -2,10 +2,13 @@ deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.82.0
+      - npm install -g aws-cdk@2.122.0
       - pip install -r requirements.txt
     build:
       commands:
+      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}"
+      - export IMAGE_TAG=${COMMIT_HASH:=latest}
+      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # Here we export some env vars and the write values into the dag_config.py file for use by the DAGs
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")

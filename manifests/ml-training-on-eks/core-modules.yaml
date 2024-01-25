@@ -1,10 +1,5 @@
 name: mwaa
-path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.2.0&depth=1
-dataFiles:
-  - filePath: data/mwaa/requirements/requirements-eks-operator.txt
-parameters:
-  - name: custom-requirements-path
-    value: data/mwaa/requirements/requirements-eks-operator.txt
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.3.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -27,7 +22,7 @@ parameters:
   - name: dag-path
     value: dags
   - name: airflow-version
-    value: "2.2.2"
+    value: "2.6.3"
 ---
 name: eks
 path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.2.0&depth=1
