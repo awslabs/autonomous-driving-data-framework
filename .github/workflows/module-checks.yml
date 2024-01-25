@@ -42,7 +42,7 @@ jobs:
       fail-fast: false
       matrix:
         modules: ${{ fromJson(needs.get-modules.outputs.matrix) }}
-        python-version: [3.9]
+        python-version: [3.9, 3.10]
     runs-on: ubuntu-latest
     env:
       MODULE_PATH: 'modules/${{ matrix.modules.module_name }}'
