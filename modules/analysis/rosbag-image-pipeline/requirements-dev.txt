@@ -9,6 +9,7 @@ Flask-Cors
 moto
 mypy-boto3-sqs
 mypy-boto3-batch
+pendulum==2.0.0
 pytest-cov
 pytest-spark
 pyspark
