@@ -7,6 +7,9 @@ Config
 ^dist/
 .github/
 .*/plugins/
+codebuild/
+etc/
+usr/
 .*/html_dir/
 ^codeseeder\.out/
 .*codeseeder\.out/

@@ -1,9 +1,6 @@
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      python: 3.10
   build:
     commands:
       # CDK Version is defaulted to 2.82.0 if not mentioned using `-c`
