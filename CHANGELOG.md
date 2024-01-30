@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updating cdk version for rosbag-webviz module, keeping in sync with release/1.0.0-reinvent branch
 - Fixed a bug in the ECR module to capture the metadata
 - Refactor to use ecr module from idf
+- updated `typing-extensions~=4.6.3` in modules that were below that spec to support seed-farmer 3.1.x
 
 ### **Removed**
 
