@@ -20,6 +20,10 @@ phases:
       # Sensor Extraction
       - bash gen-reports.sh -m sensor-extraction/ros-to-parquet -c 2.70.0 #Breaking changes from 2.82.0
       - bash gen-reports.sh -m sensor-extraction/ros-to-png -c 2.70.0 #Breaking changes from 2.82.0
+      # Invoke build-s3-dist.sh
+      - echo "Starting build `date` in `pwd`"
+      - chmod +x ./deployment/build-s3-dist.sh && ./deployment/build-s3-dist.sh $TEMPLATE_OUTPUT_BUCKET $DIST_OUTPUT_BUCKET $SOLUTION_NAME $VERSION
+      - echo "Build completed `date`"
   post_build:
     commands:
       - echo Build completed on `date`
