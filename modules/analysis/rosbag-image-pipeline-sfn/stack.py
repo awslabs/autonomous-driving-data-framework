@@ -80,6 +80,7 @@ class TemplateStack(cdk.Stack):
         project_name: str,
         deployment_name: str,
         module_name: str,
+        hash: str,
         stack_description: str,
         emr_job_exec_role_arn: str,
         emr_app_id: str,
@@ -139,6 +140,7 @@ class TemplateStack(cdk.Stack):
         state_machine = sfn.StateMachine(
             self,
             "StateMachine",
+            state_machine_name=f"{project_name}-{deployment_name}-rosbag-image-pipeline-{hash}",
             definition=tasks_create_batch_of_drives,
         )
 

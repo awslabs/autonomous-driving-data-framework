@@ -12,6 +12,7 @@ from stack import TemplateStack
 project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
 deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
 module_name = os.getenv("SEEDFARMER_MODULE_NAME")
+hash = os.getenv("SEEDFARMER_HASH", "")
 
 if len(f"{project_name}-{deployment_name}") > 36:
     raise ValueError("This module cannot support a project+deployment name character length greater than 35")
@@ -46,6 +47,7 @@ template_stack = TemplateStack(
     project_name=cast(str, project_name),
     deployment_name=cast(str, deployment_name),
     module_name=cast(str, module_name),
+    hash=cast(str, hash),
     stack_description=generate_description(),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],

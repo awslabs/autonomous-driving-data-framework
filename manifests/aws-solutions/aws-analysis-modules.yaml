@@ -156,8 +156,8 @@ parameters:
   - name: solution-version
     value: v1.0.0
 ---
-name: ripv2
-path: modules/analysis/rosbag-image-pipeline-v2
+name: rip-sfn
+path: modules/analysis/rosbag-image-pipeline-sfn
 parameters:
   - name: dag-id
     value: vsi_image_pipeline
