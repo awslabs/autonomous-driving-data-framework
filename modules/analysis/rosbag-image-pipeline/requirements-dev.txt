@@ -3,7 +3,7 @@
 # Check the version of MWAA you are using and compare
 # to these versions
 
-apache-airflow==2.7.1
+apache-airflow==2.8.1
 apache-airflow-providers-amazon~=8.5.1
 Flask-Cors~=4.0.0
 moto==4.2.9
