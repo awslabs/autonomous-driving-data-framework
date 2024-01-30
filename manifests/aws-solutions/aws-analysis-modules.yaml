@@ -155,3 +155,161 @@ parameters:
     value: 'Scene Intelligence with Rosbag on AWS'
   - name: solution-version
     value: v1.0.0
+---
+name: ripv2
+path: modules/analysis/rosbag-image-pipeline-v2
+parameters:
+  - name: dag-id
+    value: vsi_image_pipeline
+  - name: image-topics
+    value:
+      - /flir_adk/rgb_front_left/image_raw
+      - /flir_adk/rgb_front_right/image_raw
+  - name: sensor-topics
+    value:
+      - /vehicle/gps/fix
+      - /vehicle/gps/time
+      - /vehicle/gps/vel
+      - /imu_raw
+  - name: desired-encoding
+    value: bgr8
+  - name: lane-detection-job-concurrency
+    value: 20
+  - name: lane-detection-instance-type
+    value: ml.m5.2xlarge
+  - name: lane-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ImageUri
+  - name: lane-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ExecutionRole
+  - name: object-detection-job-concurrency
+    value: 30
+  - name: object-detection-instance-type
+    value: ml.m5.xlarge
+  - name: object-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ImageUri
+  - name: object-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ExecutionRole
+  - name: parquet-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-parquet
+        key: JobDefinitionArn
+  - name: png-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-png
+        key: JobDefinitionArn
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: rosbag-scene-metadata-table
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: metadata-storage
+        key: RosbagSceneMetadataTable
+  - name: source-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: RawBucketName
+  - name: intermediate-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: IntermediateBucketName
+  - name: dag-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: logs-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: LogsBucketName
+  - name: dag-path
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: DagPath
+  - name: full-access-policy-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: FullAccessPolicyArn
+  - name: on-demand-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: OnDemandJobQueueArn
+  - name: spot-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: SpotJobQueueArn
+  - name: fargate-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: FargateJobQueueArn
+  - name: mwaa-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: mwaa
+        key: MwaaExecRoleArn
+  - name: emr-job-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: emr-serverless
+        key: EmrJobExecutionRoleArn
+  - name: emr-app-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: emr-serverless
+        key: EmrApplicationId
+  - name: solution-id
+    value: 'SO0279-M'
+  - name: solution-name
+    value: 'Scene Intelligence with Rosbag on AWS'
+  - name: solution-version
+    value: v1.0.0
