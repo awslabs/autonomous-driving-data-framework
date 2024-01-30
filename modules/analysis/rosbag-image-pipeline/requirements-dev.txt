@@ -9,7 +9,7 @@ Flask-Cors~=4.0.0
 moto==4.2.9
 mypy-boto3-sqs
 mypy-boto3-batch
-pendulum==2.0.0
+pendulum==2.1.2
 pytest-cov~=4.1.0
 pytest-spark~=0.6.0
 pyspark~=3.5.0
