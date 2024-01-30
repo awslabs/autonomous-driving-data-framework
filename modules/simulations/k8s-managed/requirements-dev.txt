@@ -3,6 +3,6 @@
 # Check the version of MWAA you are using and compare
 # to these versions
 
-apache-airflow~=2.7.0
+apache-airflow~=2.8.1
 airflow-kubernetes-job-operator~=2.0.4
 certifi>=2023.7.22
