@@ -3,7 +3,7 @@
 # Check the version of MWAA you are using and compare
 # to these versions
 
-apache-airflow~=2.7.0
+apache-airflow~=2.8.1
 apache-airflow-providers-amazon~=8.5.1
 mypy-boto3-sqs
 mypy-boto3-batch
