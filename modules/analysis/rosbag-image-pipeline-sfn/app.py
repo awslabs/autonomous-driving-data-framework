@@ -55,7 +55,7 @@ template_stack = TemplateStack(
     ),
     emr_job_exec_role_arn=emr_job_exec_role_arn,
     emr_app_id=emr_app_id,
-    dag_bucket_name=dag_bucket_name,
+    bucket_name=dag_bucket_name,
 )
 
 

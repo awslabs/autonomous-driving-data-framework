@@ -5,6 +5,8 @@ from typing import Any, cast
 
 import aws_cdk as cdk
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_lambda as aws_lambda
+from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_s3_deployment as s3deploy
 from aws_cdk import aws_stepfunctions as sfn
 from aws_cdk import aws_stepfunctions_tasks as tasks
@@ -18,8 +20,8 @@ def _create_emr_job_run_task_chain(
     id: str,
     emr_job_exec_role: iam.Role,
     emr_app_id: str,
-    emr_app_arn: str,
-    job_driver: dict[str, Any]
+    emr_app_arn: str,    
+    job_driver: dict[str, Any],
 ) -> sfn.IChainable:
     run_job_task = tasks.CallAwsService(
         scope,
@@ -54,9 +56,10 @@ def _create_emr_job_run_task_chain(
         time=sfn.WaitTime.duration(cdk.Duration.seconds(30)),
     )
 
+    retry_chain = job_execution_status_wait.next(get_job_status_task)
+
     success_state = sfn.Succeed(scope, f"{id} Success")
     fail_state = sfn.Fail(scope, f"{id} Fail")
-    retry_chain = job_execution_status_wait.next(get_job_status_task)
 
     job_status_choice = sfn.Choice(scope, f"{id} Job Status Choice")\
         .when(sfn.Condition.string_equals("$.JobStatus.JobRun.State", "SUCCESS"), success_state)\
@@ -84,7 +87,7 @@ class TemplateStack(cdk.Stack):
         stack_description: str,
         emr_job_exec_role_arn: str,
         emr_app_id: str,
-        dag_bucket_name: str,
+        bucket_name: str,
         **kwargs: Any,
     ) -> None:
 
@@ -103,8 +106,8 @@ class TemplateStack(cdk.Stack):
         )
         emr_app_arn = f"arn:{self.partition}:emr-serverless:{self.region}:{self.account}:/applications/{emr_app_id}"
 
-        dag_bucket = cdk.aws_s3.Bucket.from_bucket_name(
-            self, "DagBucket", dag_bucket_name
+        bucket = s3.Bucket.from_bucket_name(
+            self, "Bucket", bucket_name
         )
 
         s3_emr_job_prefix = "emr-job-definitions/"
@@ -112,20 +115,20 @@ class TemplateStack(cdk.Stack):
             self,
             "S3BucketDagDeploymentTestJob",
             sources=[s3deploy.Source.asset("emr-scripts/")],
-            destination_bucket=dag_bucket,
+            destination_bucket=bucket,
             destination_key_prefix=s3_emr_job_prefix,
         )
 
-        tasks_create_batch_of_drives = _create_emr_job_run_task_chain(
+        emr_job_run = _create_emr_job_run_task_chain(
             self,
-            "Test Job",
+            "Create Batch of Drives",
             emr_job_exec_role=emr_job_exec_role,
             emr_app_id=emr_app_id,
             emr_app_arn=emr_app_arn,
             job_driver={
                 "SparkSubmit": {
-                    "EntryPoint": dag_bucket.s3_url_for_object(f"{s3_emr_job_prefix}test-job.py"),
-                    "EntryPointArguments": [dag_bucket.s3_url_for_object("emr-serverless-spark/output")],
+                    "EntryPoint": bucket.s3_url_for_object(f"{s3_emr_job_prefix}create-batch-of-drives.py"),
+                    "EntryPointArguments": [bucket.s3_url_for_object("emr-serverless-spark/output")],
                     "SparkSubmitParameters": (
                         "--conf spark.executor.cores=1 "
                         "--conf spark.executor.memory=4g "
@@ -137,11 +140,13 @@ class TemplateStack(cdk.Stack):
             }
         )
 
+        definition = emr_job_run
+
         state_machine = sfn.StateMachine(
             self,
             "StateMachine",
             state_machine_name=f"{project_name}-{deployment_name}-rosbag-image-pipeline-{hash}",
-            definition=tasks_create_batch_of_drives,
+            definition=definition,
         )
 
         state_machine.add_to_role_policy(
