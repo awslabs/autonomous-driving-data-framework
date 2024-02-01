@@ -1,0 +1,23 @@
+deploy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.124.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+      # Here we export some env vars
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      # - Here we write env values into the dag_config.py file for use by the DAGs
+destroy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.124.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      # Remove DAG files
+      - cdk destroy --force --app "python app.py"
+
