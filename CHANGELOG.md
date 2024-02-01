@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor to use ecr module from idf
 - updated `typing-extensions~=4.6.3` in modules that were below that spec to support seed-farmer 3.1.x
 - fixed security updates about apache-airflow version
+- made os-tunnel module generic by importing seedfarmer project name
 
 ### **Removed**
 
