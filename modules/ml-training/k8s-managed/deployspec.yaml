@@ -12,24 +12,7 @@ deploy:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # Here we export some env vars and the write values into the dag_config.py file for use by the DAGs
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
-      - export DAG_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".DagRoleArn")
       - export EKS_SERVICE_ACCOUNT_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EksServiceAccountRoleArn")
-      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}"
-      - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - export IMAGE_TAG=${COMMIT_HASH:=latest}
-      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
-      - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> training_dags/dag_config.py
-      - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> training_dags/dag_config.py
-      - echo "DAG_ROLE = '${DAG_ROLE}'" >> training_dags/dag_config.py
-      - echo "PVC_NAME = '${ADDF_PARAMETER_PVC_NAME}'" >> training_dags/dag_config.py
-      - echo "EKS_CLUSTER_NAME = '${ADDF_PARAMETER_EKS_CLUSTER_NAME}'" >> training_dags/dag_config.py
-      - echo "EKS_SERVICE_ACCOUNT_ROLE = '${EKS_SERVICE_ACCOUNT_ROLE}'" >> training_dags/dag_config.py
-      - echo "EKS_NAMESPACE = '${ADDF_MODULE_NAME}'" >> training_dags/dag_config.py
-      - echo "PYTORCH_IMAGE = '${REPOSITORY_URI}:${IMAGE_TAG}'" >> training_dags/dag_config.py
-      - echo "REGION = '${AWS_DEFAULT_REGION}'" >> training_dags/dag_config.py
-      - echo "ACCOUNT_ID = '${AWS_ACCOUNT_ID}'" >> training_dags/dag_config.py
-      # Copy DAG files to S3
-      - aws s3 cp --recursive training_dags/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/training_dags/
       # Assume the EKS_CLUSTER_ADMIN_ROLE and add our new service account role as a user in the aws_auth ConfigMap
       - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - |

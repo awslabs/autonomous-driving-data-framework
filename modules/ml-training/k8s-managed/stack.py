@@ -24,7 +24,6 @@ class TrainingDags(Stack):
         *,
         deployment_name: str,
         module_name: str,
-        mwaa_exec_role: str,
         eks_cluster_name: str,
         eks_admin_role_arn: str,
         eks_openid_connect_provider_arn: str,
@@ -33,7 +32,6 @@ class TrainingDags(Stack):
         # ADDF Env vars
         self.deployment_name = deployment_name
         self.module_name = module_name
-        self.mwaa_exec_role = mwaa_exec_role
 
         super().__init__(
             scope,
@@ -58,18 +56,7 @@ class TrainingDags(Stack):
                 ],
             ),
         ]
-        dag_document = aws_iam.PolicyDocument(statements=policy_statements)
-
-        r_name = f"addf-{self.deployment_name}-{self.module_name}-dag-role"
-        self.dag_role = aws_iam.Role(
-            self,
-            f"dag-role-{self.deployment_name}-{self.module_name}",
-            assumed_by=aws_iam.ArnPrincipal(self.mwaa_exec_role),
-            inline_policies={"DagPolicyDocument": dag_document},
-            role_name=r_name,
-            path="/",
-        )
-
+        
         provider = aws_eks.OpenIdConnectProvider.from_open_id_connect_provider_arn(
             self, "Provider", eks_openid_connect_provider_arn
         )
@@ -98,7 +85,7 @@ class TrainingDags(Stack):
                 aws_iam.PolicyStatement(
                     effect=aws_iam.Effect.ALLOW,
                     actions=["sts:AssumeRole"],
-                    principals=[aws_iam.ArnPrincipal(mwaa_exec_role), aws_iam.ServicePrincipal("states.amazonaws.com")],
+                    principals=[aws_iam.ServicePrincipal("states.amazonaws.com")],
                 )
             )
         for statement in policy_statements:
@@ -211,7 +198,7 @@ class TrainingDags(Stack):
         body = {
             "apiVerson": "batch/v1",
             "kind": "Job",
-            "metadata": {},
+            "metadata": {"namespace": module_name, "name": "pytorch-training"},
             "spec": {
                 "backoffLimit": 1,
                 "template": {
@@ -262,6 +249,7 @@ class TrainingDags(Stack):
             "Resource": "arn:aws:states:::eks:runJob.sync",
             "Parameters": {
                 "ClusterName": eks_cluster_name,
+                "Namespace": module_name,
                 "CertificateAuthority": response['cluster']['certificateAuthority']['data'],
                 "Endpoint": response['cluster']['endpoint'],
                 "LogOptions": {
@@ -276,21 +264,19 @@ class TrainingDags(Stack):
             state_json=state_json
         )
 
-        chain = sfn.Chain.start(custom).next(final_status)
-
         log_group = logs.LogGroup(self, "TrainingOnEKSLogGroup")
         
-        sm = sfn.StateMachine(self, "TrainingOnEKS", definition_body=sfn.DefinitionBody.from_chainable(chain),
-            timeout=Duration.minutes(30),
+        sm = sfn.StateMachine(self, "TrainingOnEKS", definition_body=sfn.DefinitionBody.from_chainable(
+            sfn.Chain.start(custom)
+        ),
+            timeout=Duration.minutes(15),
             logs=sfn.LogOptions(
                 destination=log_group,
                 level=sfn.LogLevel.ALL
             ),
             role=service_account.role
         )
-        """
-        
-"""
+
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
         NagSuppressions.add_stack_suppressions(

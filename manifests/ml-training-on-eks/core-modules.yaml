@@ -1,29 +1,3 @@
-name: mwaa
-path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.3.0&depth=1
-parameters:
-  - name: vpc-id
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: VpcId
-  - name: private-subnet-ids
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: PrivateSubnetIds
-  - name: dag-bucket-name
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: datalake-buckets
-        key: ArtifactsBucketName
-  - name: dag-path
-    value: dags
-  - name: airflow-version
-    value: "2.6.3"
----
 name: eks
 path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.2.0&depth=1
 dataFiles:
@@ -188,16 +162,3 @@ parameters:
     value: "/fsx/import/"
   - name:  fsx_version
     value : "2.15" 
-
-# ---
-# name: efs
-# path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs?ref=release/1.1.0&depth=1
-# parameters:
-#   - name: vpc-id
-#     valueFrom:
-#       moduleMetadata:
-#         group: optionals
-#         name: networking
-#         key: VpcId
-#   - name: retention-type
-#     value: RETAIN
