@@ -5,6 +5,7 @@ from typing import Any, cast
 
 import aws_cdk as cdk
 from aws_cdk import aws_iam as iam
+from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_lambda as aws_lambda
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_s3_deployment as s3deploy
@@ -87,7 +88,7 @@ class TemplateStack(cdk.Stack):
         stack_description: str,
         emr_job_exec_role_arn: str,
         emr_app_id: str,
-        bucket_name: str,
+        dag_bucket_name: str,
         **kwargs: Any,
     ) -> None:
 
@@ -101,13 +102,31 @@ class TemplateStack(cdk.Stack):
         dep_mod = dep_mod[:64]
         cdk.Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=dep_mod)
 
+        # DYNAMODB TRACKING TABLE
+        tracking_partition_key = "pk"  # batch_id or drive_id
+        tracking_sort_key = "sk"  # batch_id / array_index_id   or drive_id / file_part
+
+        table = dynamodb.Table(
+            self,
+            "Drive Tracking Table",
+            table_name=f"{dep_mod}-drive-tracking",
+            partition_key=dynamodb.Attribute(name=tracking_partition_key, type=dynamodb.AttributeType.STRING),
+            sort_key=dynamodb.Attribute(name=tracking_sort_key, type=dynamodb.AttributeType.STRING),
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=dynamodb.DESTROY,
+            point_in_time_recovery=True,
+            stream=dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
+        )
+
+
+        # Define EMR jobs and step functions
         emr_job_exec_role = iam.Role.from_role_arn(
             self, "EMR Job Execution Role", emr_job_exec_role_arn
         )
         emr_app_arn = f"arn:{self.partition}:emr-serverless:{self.region}:{self.account}:/applications/{emr_app_id}"
 
         bucket = s3.Bucket.from_bucket_name(
-            self, "Bucket", bucket_name
+            self, "DAG Bucket", dag_bucket_name
         )
 
         s3_emr_job_prefix = "emr-job-definitions/"
