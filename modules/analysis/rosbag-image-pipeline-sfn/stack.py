@@ -479,32 +479,23 @@ class AwsBatchPipeline(Stack):
                     "ExecutionRoleArn": self.emr_job_config["EMRJobRole"],
                     "JobDriver": {
                         "SparkSubmit": {
-                            "EntryPoint": f"s3://{self.target_bucket.bucket_name}/dags/aws-solutions/analysis-rip/image_dags/detect_scenes.py"
-                            "EntryPointArguments.$": sfn.Jso$.EMR.EMRArgs"
+                            "EntryPoint": f"s3://{self.target_bucket.bucket_name}/dags/aws-solutions/analysis-rip/image_dags/detect_scenes.py",
+                            "EntryPointArguments.$": sfn.JsonPath.string_at("$.EMR.EMRArgs"),
+                            "SparkSubmitParameters": [
+                                "--jars",
+                                f"s3://{self.target_bucket.bucket_name}/dags/aws-solutions/analysis-rip/image_dags/spark-dynamodb_2.12-1.1.1.jar"
+                            ]
+                        }
+                    },
+                    "ConfigurationOverrides": {
+                        "MonitoringConfiguration": {
+                            "Enabled": True,
+                            "LogUri": "s3://addf-aws-solutions-logs-bucket-f4efdad4/scene-detection"
                         }
                     }
                 },
             )
-            # Scene Detection:
-            # Type: Task
-            # Resource: arn:aws:states:::emr-serverless:startJobRun.sync
-            # Parameters:
-            #   JobDriver:
-            #     SparkSubmit:
-            #       EntryPoint: >-
-            #         s3://addf-aws-solutions-artifacts-bucket-f4efdad4/dags/aws-solutions/analysis-rip/image_dags/detect_scenes.py
-            #       EntryPointArguments.$: $.EMR.EMRArgs
-            #       SparkSubmitParameters: >-
-            #         --jars
-            #         s3://addf-aws-solutions-artifacts-bucket-f4efdad4/dags/aws-solutions/analysis-rip/image_dags/spark-dynamodb_2.12-1.1.1.jar
-            #   ConfigurationOverrides:
-            #     MonitoringConfiguration:
-            #       ManagedPersistenceMonitoringConfiguration:
-            #         Enabled: true
-            #       S3MonitoringConfiguration:
-            #         LogUri: >-
-            #           s3://addf-aws-solutions-logs-bucket-f4efdad4/scene-detection
-            # End: true
+
             definition = image_extraction_batch_job.next(get_image_directories).next(map).next(scene_detection_job).next(sfn.Succeed(self, "Success"))
 
             return sfn.Pass(self)
