@@ -113,7 +113,7 @@ class TemplateStack(cdk.Stack):
             partition_key=dynamodb.Attribute(name=tracking_partition_key, type=dynamodb.AttributeType.STRING),
             sort_key=dynamodb.Attribute(name=tracking_sort_key, type=dynamodb.AttributeType.STRING),
             billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
-            removal_policy=dynamodb.DESTROY,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
             point_in_time_recovery=True,
             stream=dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         )
