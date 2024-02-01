@@ -1,4 +1,4 @@
-# Kubernetes Managed Simulation
+# Kubernetes Managed GPU ML Training
 
 ## Description
 
