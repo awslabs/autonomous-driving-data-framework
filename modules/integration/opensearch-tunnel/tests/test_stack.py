@@ -11,16 +11,16 @@ from aws_cdk.assertions import Template
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-    os.environ["ADDF_PROJECT_NAME"] = "test-project"
-    os.environ["ADDF_DEPLOYMENT_NAME"] = "test-deployment"
-    os.environ["ADDF_MODULE_NAME"] = "test-module"
+    os.environ["SEEDFARMER_PROJECT_NAME"] = "test-project"
+    os.environ["SEEDFARMER_DEPLOYMENT_NAME"] = "test-deployment"
+    os.environ["SEEDFARMER_MODULE_NAME"] = "test-module"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
-    os.environ["ADDF_PARAMETER_VPC_ID"] = "vpc-12345"
+    os.environ["SEEDFARMER_PARAMETER_VPC_ID"] = "vpc-12345"
     os.environ[
-        "ADDF_PARAMETER_OPENSEARCH_DOMAIN_ENDPOINT"
+        "SEEDFARMER_PARAMETER_OPENSEARCH_DOMAIN_ENDPOINT"
     ] = "vpc-addf-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com"
-    os.environ["ADDF_PARAMETER_OPENSEARCH_SG_ID"] = "sg-084c0dd9dc65c6937"
+    os.environ["SEEDFARMER_PARAMETER_OPENSEARCH_SG_ID"] = "sg-084c0dd9dc65c6937"
 
     if "stack" in sys.modules:
         del sys.modules["stack"]
@@ -30,6 +30,7 @@ def test_synthesize_stack(stack_defaults):
     import stack
 
     app = cdk.App()
+    project_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
@@ -38,7 +39,8 @@ def test_synthesize_stack(stack_defaults):
 
     tunnel = stack.TunnelStack(
         scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
+        id=f"{project_name}-{dep_name}-{mod_name}",
+        project_name=project_name,
         deployment=dep_name,
         module=mod_name,
         vpc_id="vpc-12345",
