@@ -54,11 +54,12 @@ app = App()
 
 stack = TunnelStack(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    project_name=project_name,
     deployment=deployment_name,
     module=module_name,
     vpc_id=vpc_id,
