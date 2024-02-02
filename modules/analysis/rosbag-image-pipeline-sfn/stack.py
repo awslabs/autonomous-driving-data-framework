@@ -264,7 +264,7 @@ class AwsBatchPipeline(Stack):
         sfn_log_group = logs.LogGroup(self, "StateMachine Log Group")
         sfn.StateMachine(
             self,
-            "State Machine",
+            "Rosbag Image Pipeline State Machine",
             definition=definition,
             role=self.sfn_role,
             tracing_enabled=True,
