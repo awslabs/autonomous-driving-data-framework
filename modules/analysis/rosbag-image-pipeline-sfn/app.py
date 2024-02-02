@@ -16,11 +16,10 @@ def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
 vpc_id = os.getenv(_param("VPC_ID"))
-private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # type: ignore
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
-log_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
+logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
 detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
 spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
@@ -71,9 +70,6 @@ if not full_access_policy:
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
 
-if not private_subnet_ids:
-    raise ValueError("missing input parameter private-subnet-ids")
-
 if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
     raise ValueError("Requires at least one job queue.")
 
@@ -100,6 +96,7 @@ stack = AwsBatchPipeline(
     module_name=module_name,
     bucket_access_policy=full_access_policy,
     target_bucket_name=target_bucket_name,
+    logs_bucket_name=logs_bucket_name,
     vpc_id=vpc_id,
     job_queues={
         "fargate_job_queue": fargate_job_queue,
@@ -124,7 +121,7 @@ stack = AwsBatchPipeline(
         "ObjectDetectionInstanceType": object_detection_instance_type,
         "ObjectDetectionRole": object_detection_role,
     },
-    emr_config={
+    emr_job_config={
         "EMRApplicationId": emr_app_id,
         "EMRJobRole": emr_job_role,
     },
@@ -140,13 +137,13 @@ CfnOutput(
     id="metadata",
     value=stack.to_json_string(
         {
-            "SecurityGroupId": stack.sm_sg.security_group_id,
-            "DagRoleArn": stack.dag_role.role_arn,
+            "SecurityGroupId": stack.security_group.security_group_id,
+            "SfnRoleArn": stack.sfn_role.role_arn,
             "DynamoDbTableName": stack.tracking_table_name,
             "DetectionsDynamoDBName": detection_ddb_name,
             "SourceBucketName": source_bucket_name,
             "TargetBucketName": target_bucket_name,
-            "LogsBucketName": log_bucket_name,
+            "LogsBucketName": logs_bucket_name,
             "OnDemandJobQueueArn": on_demand_job_queue,
             "SpotJobQueueArn": spot_job_queue,
             "FargateJobQueueArn": fargate_job_queue,
@@ -163,8 +160,8 @@ CfnOutput(
             "FileSuffix": file_suffix,
             "DesiredEncoding": desired_encoding,
             "YoloModel": yolo_model,
-            "ImageTopics": json.loads(image_topics),  # type: ignore
-            "SensorTopics": json.loads(sensor_topics),  # type: ignore
+            "ImageTopics": image_topics,
+            "SensorTopics": sensor_topics,
         }
     ),
 )

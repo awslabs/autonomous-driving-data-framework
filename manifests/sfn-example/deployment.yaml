@@ -8,8 +8,8 @@ groups:
     path: manifests/sfn-example/core-modules.yaml
   - name: docker-images
     path: manifests/sfn-example/docker-image-modules.yaml
-  # - name: analysis
-  #   path: manifests/sfn-example/aws-analysis-modules.yaml
+  - name: analysis
+    path: manifests/sfn-example/aws-analysis-modules.yaml
 targetAccountMappings:
   - alias: primary
     accountId: 500369900939
