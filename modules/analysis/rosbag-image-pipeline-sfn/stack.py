@@ -176,57 +176,55 @@ class AwsBatchPipeline(Stack):
             self,
             "Map Each Driver",
             state_json={
-                "Map Each Driver": {
-                    "Type": "Map",
-                    "ItemProcessor": {
-                        "ProcessorConfig": {"Mode": "INLINE"},
-                        "StartAt": "For Each S3 Key in Path",
-                        "States": {
-                            "For Each S3 Key in Path": {
-                                "Type": "Map",
-                                "ItemProcessor": {
-                                    "ProcessorConfig": {"Mode": "DISTRIBUTED", "ExecutionType": "STANDARD"},
-                                    "StartAt": "BatchWriteItem",
-                                    "States": {
-                                        "BatchWriteItem": {
-                                            "Type": "Task",
-                                            "Resource": "arn:aws:states:::dynamodb:putItem",
-                                            "Parameters": {
-                                                "TableName": self.tracking_table.table_name,
-                                                "Item": {
-                                                    "pk": {"S.$": "$.execName"},
-                                                    "sk": {"S.$": "$.index"},
-                                                    "drive_id": {"S.$": "$.drive"},
-                                                    "file_id": {
-                                                        "S.$": "States.ArrayGetItem(States.StringSplit($.Key.Key, '/'), States.MathAdd(States.ArrayLength(States.StringSplit($.Key.Key, '/')), -1))"
-                                                    },
-                                                    "s3_bucket": {"S.$": "$.bucket"},
-                                                    "s3_key": {"S.$": "$.Key.Key"},
+                "Type": "Map",
+                "ItemProcessor": {
+                    "ProcessorConfig": {"Mode": "INLINE"},
+                    "StartAt": "For Each S3 Key in Path",
+                    "States": {
+                        "For Each S3 Key in Path": {
+                            "Type": "Map",
+                            "ItemProcessor": {
+                                "ProcessorConfig": {"Mode": "DISTRIBUTED", "ExecutionType": "STANDARD"},
+                                "StartAt": "BatchWriteItem",
+                                "States": {
+                                    "BatchWriteItem": {
+                                        "Type": "Task",
+                                        "Resource": "arn:aws:states:::dynamodb:putItem",
+                                        "Parameters": {
+                                            "TableName": self.tracking_table.table_name,
+                                            "Item": {
+                                                "pk": {"S.$": "$.execName"},
+                                                "sk": {"S.$": "$.index"},
+                                                "drive_id": {"S.$": "$.drive"},
+                                                "file_id": {
+                                                    "S.$": "States.ArrayGetItem(States.StringSplit($.Key.Key, '/'), States.MathAdd(States.ArrayLength(States.StringSplit($.Key.Key, '/')), -1))"
                                                 },
+                                                "s3_bucket": {"S.$": "$.bucket"},
+                                                "s3_key": {"S.$": "$.Key.Key"},
                                             },
-                                            "End": True,
-                                        }
-                                    },
+                                        },
+                                        "End": True,
+                                    }
                                 },
-                                "Label": "ForEachS3KeyinPath",
-                                "MaxConcurrency": 1000,
-                                "ItemReader": {
-                                    "Resource": "arn:aws:states:::s3:listObjectsV2",
-                                    "Parameters": {"Bucket.$": "$.s3.bucket", "Prefix.$": "$.s3.prefix"},
-                                },
-                                "End": True,
-                                "ItemSelector": {
-                                    "drive.$": "$.s3.drive",
-                                    "bucket.$": "$.s3.bucket",
-                                    "index.$": "States.Format('{}',$.index)",
-                                    "execName.$": "$.execName",
-                                    "Key.$": "$$.Map.Item.Value",
-                                },
-                                "ResultPath": "$.additional",
-                            }
-                        },
+                            },
+                            "Label": "ForEachS3KeyinPath",
+                            "MaxConcurrency": 1000,
+                            "ItemReader": {
+                                "Resource": "arn:aws:states:::s3:listObjectsV2",
+                                "Parameters": {"Bucket.$": "$.s3.bucket", "Prefix.$": "$.s3.prefix"},
+                            },
+                            "End": True,
+                            "ItemSelector": {
+                                "drive.$": "$.s3.drive",
+                                "bucket.$": "$.s3.bucket",
+                                "index.$": "States.Format('{}',$.index)",
+                                "execName.$": "$.execName",
+                                "Key.$": "$$.Map.Item.Value",
+                            },
+                            "ResultPath": "$.additional",
+                        }
                     },
-                }
+                },
             },
         )
 
@@ -326,7 +324,7 @@ class AwsBatchPipeline(Stack):
                 "TableName": self.tracking_table.table_name,
                 "KeyConditionExpression": "pk = :pk",
                 "ProjectionExpression": "resized_image_dirs",
-                "ExpressionAttributeValues": "':pk': S.$: $.executionContext.execName",
+                "ExpressionAttributeValues": {":pk": {"S.$": "$.executionContext.execName"}},
             },
             iam_resources=[self.tracking_table.table_arn],
             result_path="$.ImageDirs",
@@ -347,7 +345,7 @@ class AwsBatchPipeline(Stack):
             iam_resources=["*"],
             # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
             parameters={
-                "ProcessingJobName.$": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
+                "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
                 "AppSpecification": {
                     "ContainerArguments": [
                         "--save_dir",
@@ -441,7 +439,7 @@ class AwsBatchPipeline(Stack):
             iam_resources=["*"],
             # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
             parameters={
-                "ProcessingJobName.$": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
+                "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
                 "AppSpecification": {
                     "ContainerArguments": [
                         "--save_dir",
@@ -515,10 +513,11 @@ class AwsBatchPipeline(Stack):
             self,
             "Scene Detection",
             action="startJobRun",
-            service="emr-serverless",
+            service="emrserverless",
             iam_resources=["*"],
             # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
             parameters={
+                "ClientToken": sfn.JsonPath.string_at("States.UUID()"),
                 "ApplicationId": self.emr_job_config["EMRApplicationId"],
                 "ExecutionRoleArn": self.emr_job_config["EMRJobRole"],
                 "JobDriver": {
@@ -533,8 +532,9 @@ class AwsBatchPipeline(Stack):
                 },
                 "ConfigurationOverrides": {
                     "MonitoringConfiguration": {
-                        "Enabled": True,
-                        "LogUri": f"s3://{self.logs_bucket_name}/scene-detection",
+                        "S3MonitoringConfiguration": {
+                            "LogUri": f"s3://{self.logs_bucket_name}/scene-detection",
+                        }
                     }
                 },
             },
