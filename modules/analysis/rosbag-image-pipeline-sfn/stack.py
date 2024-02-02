@@ -7,8 +7,8 @@ from typing import Any, Dict, cast
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_logs as logs
-import aws_cdk.aws_stepfunctions as sfn
 import aws_cdk.aws_s3 as s3
+import aws_cdk.aws_stepfunctions as sfn
 import aws_cdk.aws_stepfunctions_tasks as tasks
 import cdk_nag
 from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
