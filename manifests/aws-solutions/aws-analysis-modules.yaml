@@ -1,5 +1,5 @@
 name: rip
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/analysis/rosbag-image-pipeline/?ref=SO0279-v1.0.0
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/analysis/rosbag-image-pipeline/?ref=SO0279-v1.0.1
 parameters:
   - name: dag-id
     value: vsi_image_pipeline
@@ -154,7 +154,7 @@ parameters:
   - name: solution-name
     value: 'Scene Intelligence with Rosbag on AWS'
   - name: solution-version
-    value: v1.0.0
+    value: v1.0.1
 ---
 name: rip-sfn
 path: modules/analysis/rosbag-image-pipeline-sfn

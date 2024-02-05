@@ -1,5 +1,5 @@
 name: opensearch-tunnel
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/opensearch-tunnel/?ref=SO0279-v1.0.0
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/opensearch-tunnel/?ref=SO0279-v1.0.1
 parameters:
   - name: opensearch-domain-endpoint
     valueFrom:
@@ -26,10 +26,10 @@ parameters:
   - name: solution-name
     value: 'Scene Intelligence with Rosbag on AWS'
   - name: solution-version
-    value: v1.0.0
+    value: v1.0.1
 ---
 name: rosbag-ddb-to-os
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/ddb-to-opensearch/?ref=SO0279-v1.0.0
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/ddb-to-opensearch/?ref=SO0279-v1.0.1
 parameters:
   - name: opensearch-domain-name
     valueFrom:
@@ -72,4 +72,4 @@ parameters:
   - name: solution-name
     value: 'Scene Intelligence with Rosbag on AWS'
   - name: solution-version
-    value: v1.0.0
+    value: v1.0.1

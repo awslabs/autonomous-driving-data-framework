@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: (SO0279-D) Deletes Scene Intelligence with Rosbag on AWS. Version v1.0.0
+Description: (SO0279-D) Deletes Scene Intelligence with Rosbag on AWS. Version v1.0.1
 Parameters:
   SolutionVersion:
     Type: String
-    Default: v1.0.0
-    Description: Solution Version. Should reference version tag e.g v1.0.0
+    Default: v1.0.1
+    Description: Solution Version. Should reference version tag e.g v1.0.1
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
