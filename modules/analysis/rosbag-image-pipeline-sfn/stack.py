@@ -147,7 +147,7 @@ class TemplateStack(cdk.Stack):
             lambda_function=create_batch_lambda_function,
             payload=sfn.TaskInput.from_object({
                 "drives_to_process.$": "$.drives_to_process",
-                "execution_id.$": "$$.Execution.Id",
+                "execution_id.$": "$$.Execution.Name",
             }),
         )
 
