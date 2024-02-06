@@ -18,7 +18,7 @@ def stack_defaults():
 
     if "stack" in sys.modules:
         del sys.modules["stack"]
-        
-        
-def test_app(stack_defaults):   
+
+
+def test_app(stack_defaults):
     pass

@@ -21,11 +21,13 @@ if len(f"{project_name}-{deployment_name}") > 36:
 def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
+
 emr_job_exec_role_arn = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
 emr_app_id = os.getenv(_param("EMR_APP_ID"))
 
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 dag_bucket_name = os.getenv(_param("DAG_BUCKET_NAME"))
+
 
 def generate_description() -> str:
     soln_id = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_ID", None)

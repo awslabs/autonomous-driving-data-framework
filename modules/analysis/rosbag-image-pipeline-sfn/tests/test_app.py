@@ -14,12 +14,14 @@ def stack_defaults():
     os.environ["SEEDFARMER_MODULE_NAME"] = "test-module"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
-    
+
     if "app" in sys.modules:
         del sys.modules["app"]
-    
-def test_app(stack_defaults):   
+
+
+def test_app(stack_defaults):
     import app  # noqa: F401
+
 
 def test_project_deployment_name_length(stack_defaults):
     os.environ["SEEDFARMER_PROJECT_NAME"] = "test-project-incredibly"

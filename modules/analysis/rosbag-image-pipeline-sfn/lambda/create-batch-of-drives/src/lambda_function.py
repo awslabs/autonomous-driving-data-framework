@@ -5,7 +5,6 @@ import typing
 import boto3
 from boto3.dynamodb.conditions import Key
 
-
 if typing.TYPE_CHECKING:
     from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
     from mypy_boto3_s3.client import S3Client
@@ -95,7 +94,9 @@ def get_drive_files(src_bucket: str, src_prefix: str, file_suffix: str, s3_clien
     return files
 
 
-def batch_write_files_to_dynamo(table: "DynamoDBServiceResource", drives_and_files: typing.Dict[str, typing.List[str]], batch_id: str) -> None:
+def batch_write_files_to_dynamo(
+    table: "DynamoDBServiceResource", drives_and_files: typing.Dict[str, typing.List[str]], batch_id: str
+) -> None:
     with table.batch_writer() as writer:
         idx = 0
         for drive_id, files in drives_and_files.items():
