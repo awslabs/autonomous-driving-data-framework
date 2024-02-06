@@ -24,6 +24,7 @@ def _param(name: str) -> str:
 emr_job_exec_role_arn = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
 emr_app_id = os.getenv(_param("EMR_APP_ID"))
 
+source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 dag_bucket_name = os.getenv(_param("DAG_BUCKET_NAME"))
 
 def generate_description() -> str:
@@ -55,6 +56,7 @@ template_stack = TemplateStack(
     ),
     emr_job_exec_role_arn=emr_job_exec_role_arn,
     emr_app_id=emr_app_id,
+    source_bucket_name=source_bucket_name,
     dag_bucket_name=dag_bucket_name,
 )
 

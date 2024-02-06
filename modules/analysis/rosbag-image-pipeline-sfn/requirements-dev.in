@@ -11,3 +11,6 @@ pyroma
 pytest
 types-PyYAML
 types-setuptools
+boto3-stubs
+mypy-boto3-dynamodb
+mypy-boto3-s3

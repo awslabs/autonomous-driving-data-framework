@@ -73,7 +73,7 @@ def _create_emr_job_run_task_chain(
         )\
         .otherwise(retry_chain)
     
-    return run_job_task.next(get_job_status_task).next(job_status_choice)
+    return run_job_task.next(get_job_status_task).next(job_status_choice).to_single_state(id)
 
 
 class TemplateStack(cdk.Stack):
@@ -88,6 +88,7 @@ class TemplateStack(cdk.Stack):
         stack_description: str,
         emr_job_exec_role_arn: str,
         emr_app_id: str,
+        source_bucket_name: str,
         dag_bucket_name: str,
         **kwargs: Any,
     ) -> None:
@@ -118,6 +119,37 @@ class TemplateStack(cdk.Stack):
             stream=dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
         )
 
+        # S3 buckets
+        source_bucket = s3.Bucket.from_bucket_name(self, "Source Bucket", source_bucket_name)
+
+        emr_scripts_bucket = s3.Bucket.from_bucket_name(
+            self, "Scripts Bucket", dag_bucket_name
+        )
+
+        # Define Lambda job for creating a batch of drives
+        create_batch_lambda_function = aws_lambda.Function(
+            self,
+            "CreateBatchOfDrivesFunction",
+            code=aws_lambda.Code.from_asset("lambda/create-batch-of-drives/src"),
+            handler="lambda_function.lambda_handler",
+            runtime=aws_lambda.Runtime.PYTHON_3_9,
+            environment={
+                "DYNAMODB_TABLE": table.table_name,
+                "FILE_SUFFIX": ".bag",
+            },
+        )
+        table.grant_read_write_data(create_batch_lambda_function)
+        source_bucket.grant_read(create_batch_lambda_function)
+
+        create_batch_task = tasks.LambdaInvoke(
+            self,
+            "Create Batch of Drives",
+            lambda_function=create_batch_lambda_function,
+            payload=sfn.TaskInput.from_object({
+                "drives_to_process.$": "$.drives_to_process",
+                "execution_id.$": "$$.Execution.Id",
+            }),
+        )
 
         # Define EMR jobs and step functions
         emr_job_exec_role = iam.Role.from_role_arn(
@@ -125,29 +157,25 @@ class TemplateStack(cdk.Stack):
         )
         emr_app_arn = f"arn:{self.partition}:emr-serverless:{self.region}:{self.account}:/applications/{emr_app_id}"
 
-        bucket = s3.Bucket.from_bucket_name(
-            self, "DAG Bucket", dag_bucket_name
-        )
-
         s3_emr_job_prefix = "emr-job-definitions/"
         s3deploy.BucketDeployment(
             self,
             "S3BucketDagDeploymentTestJob",
             sources=[s3deploy.Source.asset("emr-scripts/")],
-            destination_bucket=bucket,
+            destination_bucket=emr_scripts_bucket,
             destination_key_prefix=s3_emr_job_prefix,
         )
 
         emr_job_run = _create_emr_job_run_task_chain(
             self,
-            "Create Batch of Drives",
+            "Image Extraction",
             emr_job_exec_role=emr_job_exec_role,
             emr_app_id=emr_app_id,
             emr_app_arn=emr_app_arn,
             job_driver={
                 "SparkSubmit": {
-                    "EntryPoint": bucket.s3_url_for_object(f"{s3_emr_job_prefix}create-batch-of-drives.py"),
-                    "EntryPointArguments": [bucket.s3_url_for_object("emr-serverless-spark/output")],
+                    "EntryPoint": emr_scripts_bucket.s3_url_for_object(f"{s3_emr_job_prefix}create-batch-of-drives.py"),
+                    "EntryPointArguments": [emr_scripts_bucket.s3_url_for_object("emr-serverless-spark/output")],
                     "SparkSubmitParameters": (
                         "--conf spark.executor.cores=1 "
                         "--conf spark.executor.memory=4g "
@@ -159,7 +187,7 @@ class TemplateStack(cdk.Stack):
             }
         )
 
-        definition = emr_job_run
+        definition = create_batch_task.next(emr_job_run)
 
         state_machine = sfn.StateMachine(
             self,
