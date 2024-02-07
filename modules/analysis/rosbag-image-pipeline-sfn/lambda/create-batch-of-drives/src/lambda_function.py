@@ -115,8 +115,8 @@ def batch_write_files_to_dynamo(
 
 
 def lambda_handler(event: typing.Dict[str, typing.Any], context: typing.Any) -> int:
-    drives_to_process = event["drives_to_process"]
-    execution_id = event["execution_id"]
+    drives_to_process = event["DrivesToProcess"]
+    execution_id = event["ExecutionID"]
 
     table = dynamodb_resource.Table(DYNAMODB_TABLE)
 
@@ -141,4 +141,4 @@ def lambda_handler(event: typing.Dict[str, typing.Any], context: typing.Any) -> 
     if files_in_batch > 10_000:
         raise RuntimeError("Batch Size cannot exceed 10,000")
 
-    return files_in_batch
+    return {"BatchSize": files_in_batch, "ExecutionID": execution_id}

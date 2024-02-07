@@ -26,13 +26,13 @@ This module:
 The parameters `(solution-*)` will resolve a custom text that is used as a description of the stack if populated. 
 ### Module Metadata Outputs
 
-- `TemplateOuptut1`: ChnageME
+- `TemplateOutput1`: ChnageME
 
 #### Output Example
 
 ```json
 {
-    "TemplateOuptut1": "Add something from template_stack",
+    "TemplateOutput1": "Add something from template_stack",
 }
 
 
