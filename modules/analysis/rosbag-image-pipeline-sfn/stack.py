@@ -182,6 +182,7 @@ class TemplateStack(cdk.Stack):
                 "DYNAMODB_TABLE": tracking_table.table_name,
                 "FILE_SUFFIX": file_suffix,
             },
+            timeout=cdk.Duration.minutes(15),
         )
         tracking_table.grant_read_write_data(create_batch_lambda_function)
         source_bucket.grant_read(create_batch_lambda_function)
