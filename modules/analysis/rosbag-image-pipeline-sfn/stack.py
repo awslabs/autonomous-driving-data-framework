@@ -415,7 +415,7 @@ class TemplateStack(cdk.Stack):
             parameters={
                 "RoleArn": lane_detection_role_arn,
                 "ProcessingJobName": sfn.JsonPath.format(
-                    "Step-{}-LANE",
+                    "Step-{}-{}-LANE",
                     sfn_batch_id,
                     sfn.JsonPath.hash(
                         sfn.JsonPath.string_at("$"),
