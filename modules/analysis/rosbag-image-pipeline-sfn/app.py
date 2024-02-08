@@ -1,8 +1,9 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import os
-from typing import cast
+from typing import List, cast
 
 from aws_cdk import App, CfnOutput, Environment
 
@@ -39,8 +40,14 @@ png_batch_job_def_arn = os.getenv(_param("PNG_BATCH_JOB_DEF_ARN"))
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
 desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
 yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
-image_topics = os.getenv(_param("IMAGE_TOPICS"))
-sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
+image_topics: List[str] = json.loads(os.getenv(_param("IMAGE_TOPICS")))
+sensor_topics: List[str] = json.loads(os.getenv(_param("SENSOR_TOPICS")))
+
+if not isinstance(image_topics, list):
+    raise ValueError("image_topics must be a list")
+
+if not isinstance(sensor_topics, list):
+    raise ValueError("sensor_topics must be a list")
 
 
 def generate_description() -> str:

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import json
-from typing import Any, cast
+from typing import Any, List, cast
 
 import aws_cdk as cdk
 from aws_cdk import aws_batch as batch
@@ -128,8 +128,8 @@ class TemplateStack(cdk.Stack):
         file_suffix: str,
         desired_encoding: str,
         yolo_model: str,
-        image_topics: str,
-        sensor_topics: str,
+        image_topics: List[str],
+        sensor_topics: List[str],
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, id, description=stack_description, **kwargs)
