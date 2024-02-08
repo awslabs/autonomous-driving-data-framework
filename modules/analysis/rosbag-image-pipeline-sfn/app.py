@@ -105,7 +105,7 @@ stack = AwsBatchPipeline(
     },
     job_definitions={
         "png_batch_job_def_arn": png_batch_job_def_arn,
-        "parquet_batch_job_def_arn": png_batch_job_def_arn,
+        "parquet_batch_job_def_arn": parquet_batch_job_def_arn,
     },
     lane_detection_config={
         "LaneDetectionImageUri": lane_detection_image_uri,

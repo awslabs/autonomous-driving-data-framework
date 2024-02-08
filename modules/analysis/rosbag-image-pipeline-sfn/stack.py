@@ -57,6 +57,7 @@ class AwsBatchPipeline(Stack):
         self.lane_detection_config = lane_detection_config
         self.emr_job_config = emr_job_config
         self.logs_bucket_name = logs_bucket_name
+        state_machine_id = "Rosbag Image Pipeline State Machine"
 
         Tags.of(scope=cast(IConstruct, self)).add(
             key="Deployment",
@@ -140,6 +141,16 @@ class AwsBatchPipeline(Stack):
                 effect=iam.Effect.ALLOW,
                 resources=["arn:aws:s3:::addf-*", "arn:aws:s3:::addf-*/*"],
             ),
+            iam.PolicyStatement(
+                actions=["states:StartExecution"],
+                effect=iam.Effect.ALLOW,
+                resources=[f"arn:aws:states:{self.region}:{self.account}:stateMachine:{state_machine_id.split(' ')[0]}*"],
+            ),
+            iam.PolicyStatement(
+                actions=["dynamodb:PutItem"],
+                effect=iam.Effect.ALLOW,
+                resources=[self.tracking_table.table_arn],
+            ),
         ]
         sfn_policy_document = iam.PolicyDocument(statements=policy_statements)
 
@@ -157,6 +168,17 @@ class AwsBatchPipeline(Stack):
             role_name=f"{dep_mod}-sfn-{self.region}",
             max_session_duration=Duration.hours(12),
             path="/",
+        )
+
+        start_state = sfn.Pass(
+            self,
+            "Start Pipeline",
+            parameters={
+                "startTime.$": "$$.Execution.StartTime",
+                "execName.$": "$$.Execution.Name",
+                "drivesCount.$": "States.ArrayLength($.drives_to_process)",
+            },
+            result_path="$.executionContext",
         )
 
         dynamo_query = tasks.CallAwsService(
@@ -225,6 +247,13 @@ class AwsBatchPipeline(Stack):
                         }
                     },
                 },
+                "ItemsPath": "$.drives_to_process",
+                "ItemSelector": {
+                    "execName.$": "$.executionContext.execName",
+                    "index.$": "$$.Map.Item.Index",
+                    "s3.$": "States.ArrayGetItem($.drives_to_process, $$.Map.Item.Index)",
+                },
+                "ResultPath": sfn.JsonPath.DISCARD,
             },
         )
 
@@ -251,7 +280,7 @@ class AwsBatchPipeline(Stack):
             sfn.Parallel(self, "Start Processing").branch(scene_detection).branch(parquet_extraction).next(succeed_job)
         )
 
-        definition = dynamo_query.next(
+        definition = start_state.next(dynamo_query).next(
             sfn.Choice(self, "Choice")
             .when(
                 sfn.Condition.number_greater_than("$.ddbCount.Count", 0),
@@ -259,12 +288,11 @@ class AwsBatchPipeline(Stack):
             )
             .otherwise(map_each_driver.next(start_processing))
         )
-        # definition = dynamo_query.next(succeed_job)
 
         sfn_log_group = logs.LogGroup(self, "StateMachine Log Group")
         sfn.StateMachine(
             self,
-            "Rosbag Image Pipeline State Machine",
+            state_machine_id,
             definition=definition,
             role=self.sfn_role,
             tracing_enabled=True,
@@ -309,11 +337,12 @@ class AwsBatchPipeline(Stack):
                     "TABLE_NAME": self.tracking_table.table_name,
                     "BATCH_ID": sfn.JsonPath.string_at("$.executionContext.execName"),
                     "DEBUG": "true",
-                    "IMAGE_TOPICS": "/flir_adk/rgb_front_left/image_raw, /flir_adk/rgb_front_right/image_raw",
+                    "IMAGE_TOPICS": "[\"/flir_adk/rgb_front_left/image_raw\", \"/flir_adk/rgb_front_right/image_raw\"]",
                     "DESIRED_ENCODING": "bgr8",
                     "TARGET_BUCKET": self.target_bucket.bucket_name,
                 },
             ),
+            result_path=sfn.JsonPath.DISCARD
         )
         get_image_directories = tasks.CallAwsService(
             self,
@@ -548,15 +577,15 @@ class AwsBatchPipeline(Stack):
             "Parquet Extraction Batch Job",
             integration_pattern=sfn.IntegrationPattern.RUN_JOB,
             job_name="test-ros-image-pipeline-parq",
-            job_definition_arn=self.job_definitions["png_batch_job_def_arn"],
-            job_queue_arn=self.job_queues["on_demand_job_queue"],
+            job_definition_arn=self.job_definitions["parquet_batch_job_def_arn"],
+            job_queue_arn=self.job_queues["fargate_job_queue"],
             array_size=sfn.JsonPath.number_at("$.executionContext.drivesCount"),
             container_overrides=tasks.BatchContainerOverrides(
                 environment={
                     "TABLE_NAME": self.tracking_table.table_name,
                     "BATCH_ID": sfn.JsonPath.string_at("$.executionContext.execName"),
                     "DEBUG": "true",
-                    "TOPICS": "/vehicle/gps/fix,/vehicle/gps/time,/vehicle/gps/vel,/imu_raw",
+                    "TOPICS": "[\"/vehicle/gps/fix\", \"/vehicle/gps/time\", \"/vehicle/gps/vel\", \"/imu_raw\"]",
                     "TARGET_BUCKET": self.target_bucket.bucket_name,
                 },
             ),
