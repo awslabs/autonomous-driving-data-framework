@@ -23,6 +23,9 @@ def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
 
+vpc_id = os.getenv(_param("VPC_ID"))
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # type: ignore
+
 emr_job_exec_role_arn = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
 emr_app_id = os.getenv(_param("EMR_APP_ID"))
 
@@ -36,6 +39,16 @@ spot_job_queue_arn = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
 fargate_job_queue_arn = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
 parquet_batch_job_def_arn = os.getenv(_param("PARQUET_BATCH_JOB_DEF_ARN"))
 png_batch_job_def_arn = os.getenv(_param("PNG_BATCH_JOB_DEF_ARN"))
+
+object_detection_image_uri = os.getenv(_param("OBJECT_DETECTION_IMAGE_URI"))
+object_detection_role = os.getenv(_param("OBJECT_DETECTION_IAM_ROLE"))
+object_detection_job_concurrency = int(os.getenv(_param("OBJECT_DETECTION_JOB_CONCURRENCY"), 10))
+object_detection_instance_type = os.getenv(_param("OBJECT_DETECTION_INSTANCE_TYPE"), "ml.m5.xlarge")
+
+lane_detection_image_uri = os.getenv(_param("LANE_DETECTION_IMAGE_URI"))
+lane_detection_role = os.getenv(_param("LANE_DETECTION_IAM_ROLE"))
+lane_detection_job_concurrency = int(os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), 5))
+lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"), "ml.p3.2xlarge")
 
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
 desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
@@ -77,6 +90,8 @@ template_stack = TemplateStack(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    vpc_id=vpc_id,
+    private_subnet_ids=private_subnet_ids,
     emr_job_exec_role_arn=emr_job_exec_role_arn,
     emr_app_id=emr_app_id,
     source_bucket_name=source_bucket_name,
@@ -88,6 +103,14 @@ template_stack = TemplateStack(
     fargate_job_queue_arn=fargate_job_queue_arn,
     parquet_batch_job_def_arn=parquet_batch_job_def_arn,
     png_batch_job_def_arn=png_batch_job_def_arn,
+    object_detection_image_uri=object_detection_image_uri,
+    object_detection_role_arn=object_detection_role,
+    object_detection_job_concurrency=object_detection_job_concurrency,
+    object_detection_instance_type=object_detection_instance_type,
+    lane_detection_image_uri=lane_detection_image_uri,
+    lane_detection_role_arn=lane_detection_role,
+    lane_detection_job_concurrency=lane_detection_job_concurrency,
+    lane_detection_instance_type=lane_detection_instance_type,
     file_suffix=file_suffix,
     desired_encoding=desired_encoding,
     yolo_model=yolo_model,

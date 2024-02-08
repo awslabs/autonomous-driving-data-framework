@@ -127,7 +127,7 @@ def lambda_handler(event: typing.Dict[str, typing.Any], context: typing.Any) -> 
 
     if files_in_batch > 0:
         logger.info("Batch Id already exists in tracking table - using existing batch")
-        return files_in_batch
+        return {"BatchSize": files_in_batch, "ExecutionID": execution_id}
 
     logger.info("New Batch Id - collecting unprocessed drives from S3 and adding to the batch")
     files_in_batch = add_drives_to_batch(

@@ -7,6 +7,7 @@ from typing import Any, List, cast
 import aws_cdk as cdk
 from aws_cdk import aws_batch as batch
 from aws_cdk import aws_dynamodb as dynamodb
+from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as aws_lambda
 from aws_cdk import aws_s3 as s3
@@ -114,6 +115,8 @@ class TemplateStack(cdk.Stack):
         module_name: str,
         hash: str,
         stack_description: str,
+        vpc_id: str,
+        private_subnet_ids: List[str],
         emr_job_exec_role_arn: str,
         emr_app_id: str,
         source_bucket_name: str,
@@ -125,6 +128,14 @@ class TemplateStack(cdk.Stack):
         fargate_job_queue_arn: str,
         parquet_batch_job_def_arn: str,
         png_batch_job_def_arn: str,
+        object_detection_image_uri: str,
+        object_detection_role_arn: str,
+        object_detection_job_concurrency: int,
+        object_detection_instance_type: str,
+        lane_detection_image_uri: str,
+        lane_detection_role_arn: str,
+        lane_detection_job_concurrency: int,
+        lane_detection_instance_type: str,
         file_suffix: str,
         desired_encoding: str,
         yolo_model: str,
@@ -142,7 +153,19 @@ class TemplateStack(cdk.Stack):
         dep_mod = dep_mod[:64]
         cdk.Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=dep_mod)
 
-        # DYNAMODB TRACKING TABLE
+        # Sagemaker Security Group
+        vpc = ec2.Vpc.from_lookup(
+            self,
+            "VPC",
+            vpc_id=vpc_id,
+        )
+        security_group = ec2.SecurityGroup(
+            self, "Sagemaker Jobs SG", vpc=vpc, allow_all_outbound=True, description="Sagemaker Processing Jobs SG"
+        )
+
+        security_group.add_ingress_rule(peer=security_group, connection=ec2.Port.all_traffic())
+
+        # DynamoDB Tracking Table
         tracking_partition_key = "pk"  # batch_id or drive_id
         tracking_sort_key = "sk"  # batch_id / array_index_id   or drive_id / file_part
 
@@ -222,20 +245,22 @@ class TemplateStack(cdk.Stack):
         # )
 
         # Define step function
+        sfn_batch_id = sfn.JsonPath.string_at("$$.Execution.Name")
+
         create_batch_task = tasks.LambdaInvoke(
             self,
             "Create Batch of Drives",
             lambda_function=create_batch_lambda_function,
             payload=sfn.TaskInput.from_object(
                 {
-                    "DrivesToProcess.$": "$.DrivesToProcess",
-                    "ExecutionID.$": "$$.Execution.Name",
+                    "DrivesToProcess": sfn.JsonPath.string_at("$.DrivesToProcess"),
+                    "ExecutionID": sfn_batch_id,
                 }
             ),
+            result_path="$.LambdaOutput",
             result_selector={
                 "BatchSize.$": "$.Payload.BatchSize",
             },
-            result_path="$.LambdaOutput",
         )
 
         image_extraction_step_machine_task = tasks.BatchSubmitJob(
@@ -249,13 +274,14 @@ class TemplateStack(cdk.Stack):
             container_overrides=tasks.BatchContainerOverrides(
                 environment={
                     "TABLE_NAME": tracking_table.table_name,
-                    "BATCH_ID": sfn.JsonPath.string_at("$$.Execution.Name"),
+                    "BATCH_ID": sfn_batch_id,
                     "DEBUG": "true",
                     "IMAGE_TOPICS": json.dumps(image_topics),
                     "DESIRED_ENCODING": desired_encoding,
                     "TARGET_BUCKET": target_bucket.bucket_name,
                 },
             ),
+            result_path=sfn.JsonPath.DISCARD,
         )
 
         parquet_extraction_step_machine_task = tasks.BatchSubmitJob(
@@ -269,17 +295,238 @@ class TemplateStack(cdk.Stack):
             container_overrides=tasks.BatchContainerOverrides(
                 environment={
                     "TABLE_NAME": tracking_table.table_name,
-                    "BATCH_ID": sfn.JsonPath.string_at("$$.Execution.Name"),
+                    "BATCH_ID": sfn_batch_id,
                     "TOPICS": json.dumps(sensor_topics),
                     "TARGET_BUCKET": target_bucket.bucket_name,
                 },
             ),
+            result_path=sfn.JsonPath.DISCARD,
         )
 
-        definition = create_batch_task.next(
-            sfn.Parallel(self, "Sensor Extraction")
-            .branch(image_extraction_step_machine_task)
-            .branch(parquet_extraction_step_machine_task)
+        get_image_dirs_task = tasks.CallAwsService(
+            self,
+            "Get Image Directories",
+            service="dynamodb",
+            action="query",
+            iam_resources=[tracking_table.table_arn],
+            parameters={
+                "TableName": tracking_table.table_name,
+                "KeyConditionExpression": "pk = :pk",
+                "ExpressionAttributeValues": {
+                    ":pk": {"S": sfn_batch_id},
+                },
+                "ProjectionExpression": "resized_image_dirs",
+            },
+            result_path="$.ImageDirs",
+            result_selector={
+                "S3Paths.$": "$.Items[*].resized_image_dirs.L[*].S",
+            },
+        )
+
+        object_detection_task = tasks.CallAwsService(
+            self,
+            "Object Detection",
+            service="sagemaker",
+            action="createProcessingJob",
+            iam_resources=["*"],
+            # integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # not supported in CDK (as of 2024-02-08)
+            additional_iam_statements=[
+                iam.PolicyStatement(
+                    actions=["iam:PassRole"],
+                    resources=[object_detection_role_arn],
+                ),
+            ],
+            parameters={
+                "RoleArn": object_detection_role_arn,
+                "ProcessingJobName": sfn.JsonPath.format(
+                    "Step-{}-{}-YOLO",
+                    sfn_batch_id,
+                    sfn.JsonPath.hash(
+                        sfn.JsonPath.string_at("$"),
+                        "MD5",
+                    ),
+                ),
+                "AppSpecification": {
+                    "ImageUri": object_detection_image_uri,
+                    "ContainerArguments": [
+                        "--model",
+                        yolo_model,
+                    ],
+                },
+                "NetworkConfig": {
+                    "VpcConfig": {
+                        "SecurityGroupIds": [security_group.security_group_id],
+                        "Subnets": private_subnet_ids,
+                    }
+                },
+                "ProcessingResources": {
+                    "ClusterConfig": {
+                        "InstanceCount": 1,
+                        "InstanceType": object_detection_instance_type,
+                        "VolumeSizeInGB": 30,
+                    }
+                },
+                "ProcessingInputs": [
+                    {
+                        "InputName": "data",
+                        "S3Input": {
+                            "S3Uri": sfn.JsonPath.format(
+                                f"s3://{target_bucket.bucket_name}/{{}}/", sfn.JsonPath.string_at("$")
+                            ),
+                            "S3DataType": "S3Prefix",
+                            "LocalPath": "/opt/ml/processing/input/",
+                        },
+                    },
+                ],
+                "ProcessingOutputConfig": {
+                    "Outputs": [
+                        {
+                            "OutputName": "output",
+                            "S3Output": {
+                                "S3Uri": sfn.JsonPath.format(
+                                    f"s3://{target_bucket.bucket_name}/{{}}_post_obj_dets/", sfn.JsonPath.string_at("$")
+                                ),
+                                "S3UploadMode": "EndOfJob",
+                                "LocalPath": "/opt/ml/processing/output/",
+                            },
+                        }
+                    ]
+                },
+            },
+        )
+
+        sm_local_input = "/opt/ml/processing/input/image"
+        sm_local_output = "/opt/ml/processing/output/image"
+        sm_local_output_json = "/opt/ml/processing/output/json"
+        sm_local_output_csv = "/opt/ml/processing/output/csv"
+        lane_detection_task = tasks.CallAwsService(
+            self,
+            "Lane Detection",
+            service="sagemaker",
+            action="createProcessingJob",
+            iam_resources=["*"],
+            # integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # not supported in CDK (as of 2024-02-08)
+            additional_iam_statements=[
+                iam.PolicyStatement(
+                    actions=["iam:PassRole"],
+                    resources=[lane_detection_role_arn],
+                ),
+            ],
+            parameters={
+                "RoleArn": lane_detection_role_arn,
+                "ProcessingJobName": sfn.JsonPath.format(
+                    "Step-{}-LANE",
+                    sfn_batch_id,
+                    sfn.JsonPath.hash(
+                        sfn.JsonPath.string_at("$"),
+                        "MD5",
+                    ),
+                ),
+                "AppSpecification": {
+                    "ImageUri": lane_detection_image_uri,
+                    "ContainerArguments": [
+                        "--save_dir",
+                        sm_local_output,
+                        "--source",
+                        sm_local_input,
+                        "--json_path",
+                        sm_local_output_json,
+                        "--csv_path",
+                        sm_local_output_csv,
+                    ],
+                },
+                "NetworkConfig": {
+                    "VpcConfig": {
+                        "SecurityGroupIds": [security_group.security_group_id],
+                        "Subnets": private_subnet_ids,
+                    }
+                },
+                "ProcessingResources": {
+                    "ClusterConfig": {
+                        "InstanceCount": 1,
+                        "InstanceType": lane_detection_instance_type,
+                        "VolumeSizeInGB": 30,
+                    }
+                },
+                "ProcessingInputs": [
+                    {
+                        "InputName": "data",
+                        "S3Input": {
+                            "S3Uri": sfn.JsonPath.format(
+                                f"s3://{target_bucket.bucket_name}/{{}}/", sfn.JsonPath.string_at("$")
+                            ),
+                            "S3DataType": "S3Prefix",
+                            "LocalPath": sm_local_input,
+                        },
+                    },
+                ],
+                "ProcessingOutputConfig": {
+                    "Outputs": [
+                        {
+                            "OutputName": "image_output",
+                            "S3Output": {
+                                "S3Uri": sfn.JsonPath.format(
+                                    f"s3://{target_bucket.bucket_name}/{{}}_post_lane_dets/",
+                                    sfn.JsonPath.string_at("$"),
+                                ),
+                                "S3UploadMode": "EndOfJob",
+                                "LocalPath": sm_local_output,
+                            },
+                        },
+                        {
+                            "OutputName": "json_output",
+                            "S3Output": {
+                                "S3Uri": sfn.JsonPath.format(
+                                    f"s3://{target_bucket.bucket_name}/{{}}_post_lane_dets/",
+                                    sfn.JsonPath.string_at("$"),
+                                ),
+                                "S3UploadMode": "EndOfJob",
+                                "LocalPath": sm_local_output_json,
+                            },
+                        },
+                        {
+                            "OutputName": "csv_output",
+                            "S3Output": {
+                                "S3Uri": sfn.JsonPath.format(
+                                    f"s3://{target_bucket.bucket_name}/{{}}_post_lane_dets/",
+                                    sfn.JsonPath.string_at("$"),
+                                ),
+                                "S3UploadMode": "EndOfJob",
+                                "LocalPath": sm_local_output_csv,
+                            },
+                        },
+                    ]
+                },
+            },
+        )
+
+        obj_detection_map_task = sfn.Map(
+            self,
+            "Object Detection Parallel Map",
+            items_path="$.ImageDirs.S3Paths",
+            max_concurrency=object_detection_job_concurrency,
+        ).item_processor(
+            object_detection_task.next(sfn.Wait(self, "Wait 1", time=sfn.WaitTime.duration(cdk.Duration.seconds(60))))
+        )
+
+        lane_detection_map_task = sfn.Map(
+            self,
+            "Lane Detection Parallel Map",
+            items_path="$.ImageDirs.S3Paths",
+            max_concurrency=lane_detection_job_concurrency,
+        ).item_processor(
+            lane_detection_task.next(sfn.Wait(self, "Wait 2", time=sfn.WaitTime.duration(cdk.Duration.seconds(60))))
+        )
+
+        # Define state machine
+        definition = (
+            create_batch_task.next(
+                sfn.Parallel(self, "Sensor Extraction", result_path=sfn.JsonPath.DISCARD)
+                .branch(image_extraction_step_machine_task)
+                .branch(parquet_extraction_step_machine_task)
+            )
+            .next(get_image_dirs_task)
+            .next(sfn.Parallel(self, "Image Labelling").branch(obj_detection_map_task).branch(lane_detection_map_task))
         )
 
         sfn.StateMachine(
