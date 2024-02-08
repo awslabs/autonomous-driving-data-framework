@@ -15,6 +15,7 @@ module_name = os.getenv("ADDF_MODULE_NAME", "")
 def _param(name: str) -> str:
     return f"ADDF_PARAMETER_{name}"
 
+
 vpc_id = os.getenv(_param("VPC_ID"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))

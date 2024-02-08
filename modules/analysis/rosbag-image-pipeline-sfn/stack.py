@@ -144,7 +144,9 @@ class AwsBatchPipeline(Stack):
             iam.PolicyStatement(
                 actions=["states:StartExecution"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:states:{self.region}:{self.account}:stateMachine:{state_machine_id.split(' ')[0]}*"],
+                resources=[
+                    f"arn:aws:states:{self.region}:{self.account}:stateMachine:{state_machine_id.split(' ')[0]}*"
+                ],
             ),
             iam.PolicyStatement(
                 actions=["dynamodb:PutItem"],
@@ -337,12 +339,12 @@ class AwsBatchPipeline(Stack):
                     "TABLE_NAME": self.tracking_table.table_name,
                     "BATCH_ID": sfn.JsonPath.string_at("$.executionContext.execName"),
                     "DEBUG": "true",
-                    "IMAGE_TOPICS": "[\"/flir_adk/rgb_front_left/image_raw\", \"/flir_adk/rgb_front_right/image_raw\"]",
+                    "IMAGE_TOPICS": '["/flir_adk/rgb_front_left/image_raw", "/flir_adk/rgb_front_right/image_raw"]',
                     "DESIRED_ENCODING": "bgr8",
                     "TARGET_BUCKET": self.target_bucket.bucket_name,
                 },
             ),
-            result_path=sfn.JsonPath.DISCARD
+            result_path=sfn.JsonPath.DISCARD,
         )
         get_image_directories = tasks.CallAwsService(
             self,
@@ -364,7 +366,8 @@ class AwsBatchPipeline(Stack):
             self,
             "Map",
             items_path=sfn.JsonPath.string_at("$.ImageDirs.S3Paths"),
-            item_selector={"path.$": sfn.JsonPath.string_at("$$.Map.Item.Value")},
+            item_selector={"path": sfn.JsonPath.string_at("$$.Map.Item.Value")},
+            result_path=sfn.JsonPath.DISCARD,
         )
         lane_detection_sagemaker_job = tasks.CallAwsService(
             self,
@@ -372,6 +375,7 @@ class AwsBatchPipeline(Stack):
             action="createProcessingJob",
             service="sagemaker",
             iam_resources=["*"],
+            result_path=sfn.JsonPath.DISCARD,
             # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
             parameters={
                 "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
@@ -409,8 +413,8 @@ class AwsBatchPipeline(Stack):
                             "S3DataType": "S3Prefix",
                             "S3DataDistributionType": "FullyReplicated",
                             "S3InputMode": "File",
-                            "S3Uri.$": sfn.JsonPath.string_at(
-                                "States.Format('" + f"s3://{self.target_bucket.bucket_name}" + "/{}/', $.path)"
+                            "S3Uri.$": sfn.JsonPath.format(
+                                "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
                             ),
                         },
                     }
@@ -422,10 +426,10 @@ class AwsBatchPipeline(Stack):
                             "S3Output": {
                                 "S3UploadMode": "EndOfJob",
                                 "LocalPath": "/opt/ml/processing/output/image",
-                                "S3Uri.$": sfn.JsonPath.string_at(
-                                    "States.Format('"
-                                    + f"s3://{self.target_bucket.bucket_name}"
-                                    + "/{}_post_lane_dets/', $.path)"
+                                "S3Uri.$": sfn.JsonPath.format(
+                                    "s3://{}/{}/_post_lane_dets/",
+                                    self.target_bucket.bucket_name,
+                                    sfn.JsonPath.string_at("$.path"),
                                 ),
                             },
                         },
@@ -434,10 +438,10 @@ class AwsBatchPipeline(Stack):
                             "S3Output": {
                                 "S3UploadMode": "EndOfJob",
                                 "LocalPath": "/opt/ml/processing/output/json",
-                                "S3Uri.$": sfn.JsonPath.string_at(
-                                    "States.Format('"
-                                    + f"s3://{self.target_bucket.bucket_name}"
-                                    + "/{}_post_lane_dets/', $.path)"
+                                "S3Uri.$": sfn.JsonPath.format(
+                                    "s3://{}/{}/_post_lane_dets/",
+                                    self.target_bucket.bucket_name,
+                                    sfn.JsonPath.string_at("$.path"),
                                 ),
                             },
                         },
@@ -446,10 +450,10 @@ class AwsBatchPipeline(Stack):
                             "S3Output": {
                                 "S3UploadMode": "EndOfJob",
                                 "LocalPath": "/opt/ml/processing/output/csv",
-                                "S3Uri.$": sfn.JsonPath.string_at(
-                                    "States.Format('"
-                                    + f"s3://{self.target_bucket.bucket_name}"
-                                    + "/{}_post_lane_dets/', $.path)"
+                                "S3Uri.$": sfn.JsonPath.format(
+                                    "s3://{}/{}/_post_lane_dets/",
+                                    self.target_bucket.bucket_name,
+                                    sfn.JsonPath.string_at("$.path"),
                                 ),
                             },
                         },
@@ -466,6 +470,7 @@ class AwsBatchPipeline(Stack):
             action="createProcessingJob",
             service="sagemaker",
             iam_resources=["*"],
+            result_path=sfn.JsonPath.DISCARD,
             # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
             parameters={
                 "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
@@ -503,8 +508,8 @@ class AwsBatchPipeline(Stack):
                             "S3DataDistributionType": "FullyReplicated",
                             "S3InputMode": "File",
                             "S3DataType": "S3Prefix",
-                            "S3Uri.$": sfn.JsonPath.string_at(
-                                "States.Format('" + f"s3://{self.target_bucket.bucket_name}" + "/{}/', $.path)"
+                            "S3Uri.$": sfn.JsonPath.format(
+                                "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
                             ),
                         },
                     }
@@ -516,10 +521,10 @@ class AwsBatchPipeline(Stack):
                             "S3Output": {
                                 "S3UploadMode": "EndOfJob",
                                 "LocalPath": "/opt/ml/processing/output/",
-                                "S3Uri.$": sfn.JsonPath.string_at(
-                                    "States.Format('"
-                                    + f"s3://{self.target_bucket.bucket_name}"
-                                    + "/{}_post_obj_dets/', $.path)"
+                                "S3Uri.$": sfn.JsonPath.format(
+                                    "s3://{}/{}/_post_lane_dets/",
+                                    self.target_bucket.bucket_name,
+                                    sfn.JsonPath.string_at("$.path"),
                                 ),
                             },
                         }
@@ -537,6 +542,15 @@ class AwsBatchPipeline(Stack):
         )
 
         map.item_processor(item_processor_definition)
+
+        setup_emr_state = sfn.Pass(
+            self,
+            "Setup EMR Step",
+            parameters={
+                "EMRArgs.$": "States.Array('--batch-id', $.executionContext.execName,'--batch-metadata-table-name','addf-aws-solutions-analysis-rip-drive-tracking','--output-bucket','addf-aws-solutions-intermediate-bucket-f4efdad4','--region','us-east-1','--output-dynamo-table','addf-aws-solutions-core-metadata-storage-Rosbag-Scene-Metadata','--image-topics','[\"/flir_adk/rgb_front_left/image_raw\",\"/flir_adk/rgb_front_right/image_raw\"]')"
+            },
+            result_path="$.EMR",
+        )
 
         scene_detection_job = tasks.CallAwsService(
             self,
@@ -569,7 +583,12 @@ class AwsBatchPipeline(Stack):
             },
         )
 
-        return image_extraction_batch_job.next(get_image_directories).next(map).next(scene_detection_job)
+        return (
+            image_extraction_batch_job.next(get_image_directories)
+            .next(map)
+            .next(setup_emr_state)
+            .next(scene_detection_job)
+        )
 
     def parquet_extraction_definition(self) -> sfn.IChainable:
         return tasks.BatchSubmitJob(
@@ -585,7 +604,7 @@ class AwsBatchPipeline(Stack):
                     "TABLE_NAME": self.tracking_table.table_name,
                     "BATCH_ID": sfn.JsonPath.string_at("$.executionContext.execName"),
                     "DEBUG": "true",
-                    "TOPICS": "[\"/vehicle/gps/fix\", \"/vehicle/gps/time\", \"/vehicle/gps/vel\", \"/imu_raw\"]",
+                    "TOPICS": '["/vehicle/gps/fix", "/vehicle/gps/time", "/vehicle/gps/vel", "/imu_raw"]',
                     "TARGET_BUCKET": self.target_bucket.bucket_name,
                 },
             ),
