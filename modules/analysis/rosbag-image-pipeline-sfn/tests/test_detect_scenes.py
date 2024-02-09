@@ -1,8 +1,7 @@
 import os
 
-from pyspark.sql.types import ArrayType, IntegerType
-
 from image_dags.detect_scenes import *
+from pyspark.sql.types import ArrayType, IntegerType
 
 
 def create_spark_session(port: int):
