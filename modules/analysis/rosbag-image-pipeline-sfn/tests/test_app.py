@@ -16,13 +16,14 @@ def stack_defaults():
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
 
-    os.environ["ADDF_PARAMETER_DAG_ID"] = "dag-id"
     os.environ["ADDF_PARAMETER_VPC_ID"] = "vpc-id"
     os.environ["ADDF_PARAMETER_PRIVATE_SUBNET_IDS"] = '["subnet-12345", "subnet-54321"]'
-    os.environ["ADDF_PARAMETER_MWAA_EXEC_ROLE"] = "mwaa-exec-role"
     os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"] = "full-access-policy-arn"
     os.environ["ADDF_PARAMETER_SOURCE_BUCKET"] = "source-bucket"
     os.environ["ADDF_PARAMETER_INTERMEDIATE_BUCKET"] = "intermediate-bucket"
+    os.environ["ADDF_PARAMETER_LOGS_BUCKET_NAME"] = "logs-bucket"
+    os.environ["ADDF_PARAMETER_ARTIFACTS_BUCKET_NAME"] = "artifacts-bucket"
+    
 
     os.environ["ADDF_PARAMETER_ON_DEMAND_JOB_QUEUE_ARN"] = "on-demand-job-queue-arn"
     os.environ["ADDF_PARAMETER_SPOT_JOB_QUEUE_ARN"] = "spot-job-queue-arn"
@@ -118,15 +119,6 @@ def test_private_subnet_ids(stack_defaults):
         assert "missing input parameter private-subnet-ids" in str(e)
 
 
-def test_mwaa_exec_role(stack_defaults):
-    del os.environ["ADDF_PARAMETER_MWAA_EXEC_ROLE"]
-
-    with pytest.raises(ValueError) as e:
-        import app  # noqa: F401
-
-        assert "MWAA Execution Role is missing." in str(e)
-
-
 def test_full_access_policy(stack_defaults):
     del os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"]
 
@@ -145,20 +137,6 @@ def test_no_queue_provided():
         import app  # noqa: F401
 
         assert "Requires at least one job queue." in str(e)
-
-
-def test_image_topics_no_json(stack_defaults):
-    os.environ["ADDF_PARAMETER_IMAGE_TOPICS"] = "no json"
-
-    with pytest.raises(JSONDecodeError):
-        import app  # noqa: F401
-
-
-def test_sensor_topics_no_json(stack_defaults):
-    os.environ["ADDF_PARAMETER_SENSOR_TOPICS"] = "no json"
-
-    with pytest.raises(JSONDecodeError):
-        import app  # noqa: F401
 
 
 def test_solution_description(stack_defaults):

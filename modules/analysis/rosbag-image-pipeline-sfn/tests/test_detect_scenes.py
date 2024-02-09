@@ -1,6 +1,6 @@
 import os
 
-from image_dags.detect_scenes import *
+from artifacts.detect_scenes import *
 from pyspark.sql.types import ArrayType, IntegerType
 
 

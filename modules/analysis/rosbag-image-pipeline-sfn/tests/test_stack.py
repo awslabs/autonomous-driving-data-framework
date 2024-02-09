@@ -20,73 +20,6 @@ def stack_defaults():
         del sys.modules["stack"]
 
 
-def iam_policy() -> dict:
-    return {
-        "Policies": [
-            {
-                "PolicyDocument": {
-                    "Statement": [
-                        {
-                            "Action": "dynamodb:*",
-                            "Effect": "Allow",
-                            "Resource": "arn:aws:dynamodb:us-east-1:111111111111:table/addf-test-deployment-test-module*",
-                        },
-                        {
-                            "Action": "ecr:*",
-                            "Effect": "Allow",
-                            "Resource": "arn:aws:ecr:us-east-1:111111111111:repository/addf-test-deployment-test-module*",
-                        },
-                        {
-                            "Action": [
-                                "batch:UntagResource",
-                                "batch:DeregisterJobDefinition",
-                                "batch:TerminateJob",
-                                "batch:CancelJob",
-                                "batch:SubmitJob",
-                                "batch:RegisterJobDefinition",
-                                "batch:TagResource",
-                            ],
-                            "Effect": "Allow",
-                            "Resource": [
-                                "job-queue-1",
-                                "job-queue-2",
-                                "job-def-1",
-                                "job-def-2",
-                                "arn:aws:batch:us-east-1:111111111111:job/*",
-                            ],
-                        },
-                        {
-                            "Action": "iam:PassRole",
-                            "Effect": "Allow",
-                            "Resource": [
-                                "obj-detection-role",
-                                "lane-detection-role",
-                            ],
-                        },
-                        {
-                            "Action": ["batch:Describe*", "batch:List*"],
-                            "Effect": "Allow",
-                            "Resource": "*",
-                        },
-                        {
-                            "Action": [
-                                "s3:GetObject",
-                                "s3:GetObjectAcl",
-                                "s3:ListBucket",
-                            ],
-                            "Effect": "Allow",
-                            "Resource": [
-                                "arn:aws:s3:::addf-*",
-                                "arn:aws:s3:::addf-*/*",
-                            ],
-                        },
-                    ]
-                }
-            }
-        ],
-    }
-
-
 def test_stack(stack_defaults):
     import stack
 
@@ -101,13 +34,39 @@ def test_stack(stack_defaults):
         deployment_name=dep_name,
         module_name=mod_name,
         vpc_id="vpc-id",
-        mwaa_exec_role="mwaa-exec-role",
+        target_bucket_name="intermediate-bucket",
+        logs_bucket_name="logs-bucket",
+        artifacts_bucket_name="artifacts-bucket",
         bucket_access_policy="bucket-access-policy",
-        object_detection_role="obj-detection-role",
-        lane_detection_role="lane-detection-role",
-        job_queues=["job-queue-1", "job-queue-2"],
-        job_definitions=["job-def-1", "job-def-2"],
+        job_queues={
+            "fargate_job_queue": "queue",
+            "spot_job_queue": "queue",
+            "on_demand_job_queue": "queue",
+        },
+        job_definitions={
+            "png_batch_job_def_arn": "dummyarn",
+            "parquet_batch_job_def_arn": "dummyarn",
+        },
+        lane_detection_config={
+            "LaneDetectionImageUri": "dummyuri",
+            "LaneDetectionRole": "dummyrole",
+            "LaneDetectionJobConcurrency": "10",
+            "LaneDetectionInstanceType": "m5.xlarge",
+            "LaneDetectionRole": "dummy-sagemaker-role",
+        },
+        object_detection_config={
+            "ObjectDetectionImageUri": "dummyuri",
+            "ObjectDetectionRole": "dummyrole",
+            "ObjectDetectionJobConcurrency": "10",
+            "ObjectDetectionInstanceType": "m5.xlarge",
+            "ObjectDetectionRole": "dummy-sagemaker-role",
+        },
+        emr_job_config={
+            "EMRApplicationId": "012345678",
+            "EMRJobRole": "dummy-emr-role",
+        },
         stack_description="Testing",
+        image_topics='["foo", "bar"]',
         env=cdk.Environment(
             account=(os.environ["CDK_DEFAULT_ACCOUNT"]),
             region=(os.environ["CDK_DEFAULT_REGION"]),
@@ -118,32 +77,4 @@ def test_stack(stack_defaults):
     template.resource_count_is("AWS::DynamoDB::Table", 1)
 
     template.resource_count_is("AWS::IAM::Role", 1)
-    template.has_resource_properties(
-        "AWS::IAM::Role",
-        {
-            "AssumeRolePolicyDocument": {
-                "Statement": [
-                    {
-                        "Action": "sts:AssumeRole",
-                        "Effect": "Allow",
-                        "Principal": {"AWS": "mwaa-exec-role"},
-                    }
-                ],
-                "Version": "2012-10-17",
-            },
-            "ManagedPolicyArns": [
-                "bucket-access-policy",
-                {
-                    "Fn::Join": [
-                        "",
-                        [
-                            "arn:",
-                            {"Ref": "AWS::Partition"},
-                            ":iam::aws:policy/AmazonSageMakerFullAccess",
-                        ],
-                    ]
-                },
-            ],
-        },
-    )
-    template.has_resource_properties("AWS::IAM::Role", iam_policy())
+    
