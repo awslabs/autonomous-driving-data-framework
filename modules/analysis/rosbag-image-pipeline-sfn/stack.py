@@ -592,7 +592,7 @@ class AwsBatchPipeline(Stack):
                     "ExecutionRoleArn": self.emr_job_config["EMRJobRole"],
                     "JobDriver": {
                         "SparkSubmit": {
-                            "EntryPoint": f"s3://{self.target_bucket.bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/detect_scenes.py",
+                            "EntryPoint": f"s3://{self.artifacts_bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/detect_scenes.py",
                             "EntryPointArguments.$": sfn.JsonPath.array(
                                 "--batch-id",
                                 sfn.JsonPath.string_at("$.executionContext.execName"),
