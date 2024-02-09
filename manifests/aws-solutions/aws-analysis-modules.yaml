@@ -159,8 +159,6 @@ parameters:
 name: rip-sfn
 path: modules/analysis/rosbag-image-pipeline-sfn
 parameters:
-  - name: dag-id
-    value: vsi_image_pipeline
   - name: image-topics
     value:
       - /flir_adk/rgb_front_left/image_raw
@@ -259,36 +257,18 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: LogsBucketName
-  - name: full-access-policy-arn
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: datalake-buckets
-        key: FullAccessPolicyArn
   - name: on-demand-job-queue-arn
     valueFrom:
       moduleMetadata:
         group: core
         name: batch-compute
         key: OnDemandJobQueueArn
-  - name: spot-job-queue-arn
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: batch-compute
-        key: SpotJobQueueArn
   - name: fargate-job-queue-arn
     valueFrom:
       moduleMetadata:
         group: core
         name: batch-compute
         key: FargateJobQueueArn
-  - name: mwaa-exec-role
-    valueFrom:
-      moduleMetadata:
-        group: core
-        name: mwaa
-        key: MwaaExecRoleArn
   - name: emr-job-exec-role
     valueFrom:
       moduleMetadata:
