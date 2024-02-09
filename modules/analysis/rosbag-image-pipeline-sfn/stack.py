@@ -174,7 +174,10 @@ class AwsBatchPipeline(Stack):
                 resources=[self.tracking_table.table_arn],
             ),
             iam.PolicyStatement(
-                actions=["emr-serverless:StartJobRun"],
+                actions=[
+                    "emr-serverless:StartJobRun",
+                    "emr-serverless:GetJobRun",
+                ],
                 effect=iam.Effect.ALLOW,
                 resources=["*"],
             ),
