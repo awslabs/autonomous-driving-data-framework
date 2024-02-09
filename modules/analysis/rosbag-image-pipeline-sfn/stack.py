@@ -553,7 +553,7 @@ class AwsBatchPipeline(Stack):
                                     "S3UploadMode": "EndOfJob",
                                     "LocalPath": "/opt/ml/processing/output/",
                                     "S3Uri.$": sfn.JsonPath.format(
-                                        "s3://{}/{}_post_lane_dets/",
+                                        "s3://{}/{}_post_obj_dets/",
                                         self.target_bucket.bucket_name,
                                         sfn.JsonPath.string_at("$.path"),
                                     ),
