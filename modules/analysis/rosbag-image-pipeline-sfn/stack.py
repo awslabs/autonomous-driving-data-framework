@@ -135,6 +135,11 @@ class AwsBatchPipeline(Stack):
                 ],
             ),
             iam.PolicyStatement(
+                actions=["events:PutTargets", "events:PutRule", "events:DescribeRule"],
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+            ),
+            iam.PolicyStatement(
                 actions=[
                     "sagemaker:CreateProcessingJob",
                 ],
@@ -563,15 +568,6 @@ class AwsBatchPipeline(Stack):
 
         map.item_processor(item_processor_definition)
 
-        setup_emr_state = sfn.Pass(
-            self,
-            "Setup EMR Step",
-            parameters={
-                "EMRArgs.$": "States.Array('--batch-id', $.executionContext.execName,'--batch-metadata-table-name','addf-aws-solutions-analysis-rip-drive-tracking','--output-bucket','addf-aws-solutions-intermediate-bucket-f4efdad4','--region','us-east-1','--output-dynamo-table','addf-aws-solutions-core-metadata-storage-Rosbag-Scene-Metadata','--image-topics','[\"/flir_adk/rgb_front_left/image_raw\",\"/flir_adk/rgb_front_right/image_raw\"]')"
-            },
-            result_path="$.EMR",
-        )
-
         scene_detection_job = sfn.CustomState(
             self,
             "Scene Detection",
@@ -586,7 +582,7 @@ class AwsBatchPipeline(Stack):
                     "JobDriver": {
                         "SparkSubmit": {
                             "EntryPoint": f"s3://{self.target_bucket.bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/detect_scenes.py",
-                            "EntryPointArguments": sfn.JsonPath.array(
+                            "EntryPointArguments.$": sfn.JsonPath.array(
                                 "--batch-id",
                                 sfn.JsonPath.string_at("$.executionContext.execName"),
                                 "--batch-metadata-table-name",
@@ -614,12 +610,7 @@ class AwsBatchPipeline(Stack):
             },
         )
 
-        return (
-            image_extraction_batch_job.next(get_image_directories)
-            .next(map)
-            .next(setup_emr_state)
-            .next(scene_detection_job)
-        )
+        return image_extraction_batch_job.next(get_image_directories).next(map).next(scene_detection_job)
 
     def parquet_extraction_definition(self) -> sfn.IChainable:
         return tasks.BatchSubmitJob(

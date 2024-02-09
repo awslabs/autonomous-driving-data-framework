@@ -8,7 +8,7 @@ deploy:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # Here we export some env vars
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])") || true
       - wget -O artifacts/spark-dynamodb_2.12-1.1.1.jar  https://repo1.maven.org/maven2/com/audienceproject/spark-dynamodb_2.12/1.1.1/spark-dynamodb_2.12-1.1.1.jar
       - aws s3 cp --recursive artifacts/ s3://$ADDF_PARAMETER_ARTIFACTS_BUCKET/artifacts/$ADDF_DEPLOYMENT_NAME/$ADDF_MODULE_NAME/
 destroy:
