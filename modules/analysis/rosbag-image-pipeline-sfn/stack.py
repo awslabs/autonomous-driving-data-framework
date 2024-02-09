@@ -35,6 +35,7 @@ class TemplateStack(cdk.Stack):
         source_bucket_name: str,
         target_bucket_name: str,
         artifacts_bucket_name: str,
+        logs_bucket_name: str,
         detection_ddb_name: str,
         on_demand_job_queue_arn: str,
         fargate_job_queue_arn: str,
@@ -104,6 +105,7 @@ class TemplateStack(cdk.Stack):
         source_bucket = s3.Bucket.from_bucket_name(self, "Source Bucket", source_bucket_name)
         target_bucket = s3.Bucket.from_bucket_name(self, "Target Bucket", target_bucket_name)
         artifacts_bucket = s3.Bucket.from_bucket_name(self, "Artifacts Bucket", artifacts_bucket_name)
+        logs_bucket = s3.Bucket.from_bucket_name(self, "Logs Bucket", logs_bucket_name)
 
         # Define Lambda job for creating a batch of drives
         create_batch_lambda_function = aws_lambda.Function(
@@ -406,6 +408,7 @@ class TemplateStack(cdk.Stack):
             emr_job_exec_role_arn=emr_job_exec_role_arn,
             target_bucket=target_bucket,
             artifacts_bucket=artifacts_bucket,
+            logs_bucket=logs_bucket,
             image_topics=image_topics,
             tracking_table=tracking_table,
             detection_ddb_table=detection_ddb_table,
@@ -420,11 +423,15 @@ class TemplateStack(cdk.Stack):
                 .branch(parquet_extraction_step_machine_task)
             )
             .next(get_image_dirs_task)
-            .next(sfn.Parallel(self, "Image Labelling").branch(obj_detection_map_task).branch(lane_detection_map_task))
+            .next(
+                sfn.Parallel(self, "Image Labelling", result_path=sfn.JsonPath.DISCARD)
+                .branch(obj_detection_map_task)
+                .branch(lane_detection_map_task)
+            )
             .next(emr_task_chain)
         )
 
-        sfn.StateMachine(
+        self.state_machine = sfn.StateMachine(
             self,
             "StateMachine",
             state_machine_name=f"{project_name}-{deployment_name}-rosbag-image-pipeline-{hash}",
@@ -506,6 +513,7 @@ class TemplateStack(cdk.Stack):
         emr_job_exec_role_arn: str,
         artifacts_bucket: s3.IBucket,
         target_bucket: s3.IBucket,
+        logs_bucket: s3.IBucket,
         tracking_table: dynamodb.Table,
         detection_ddb_table: dynamodb.Table,
         image_topics: List[str],
@@ -529,6 +537,7 @@ class TemplateStack(cdk.Stack):
             service="emrserverless",
             action="startJobRun",
             iam_resources=[emr_app_arn],
+            iam_action="emr-serverless:startJobRun",
             additional_iam_statements=[
                 iam.PolicyStatement(
                     actions=["iam:PassRole"],
@@ -539,6 +548,7 @@ class TemplateStack(cdk.Stack):
                 "ApplicationId": emr_app_id,
                 "ExecutionRoleArn": emr_job_exec_role_arn,
                 "ClientToken": sfn.JsonPath.uuid(),
+                "Name": sfn.JsonPath.format("scene-detection-step-functons-{}", batch_id),
                 "JobDriver": {
                     "SparkSubmit": {
                         "EntryPoint": f"{s3_script_dir}detect_scenes.py",
@@ -550,11 +560,23 @@ class TemplateStack(cdk.Stack):
                             batch_id,
                             "--output-bucket",
                             target_bucket.bucket_name,
+                            "--region",
+                            self.region,
                             "--output-dynamo-table",
                             detection_ddb_table.table_name,
                             "--image-topics",
                             json.dumps(image_topics),
                         ),
+                    },
+                },
+                "ConfigurationOverrides": {
+                    "MonitoringConfiguration": {
+                        "ManagedPersistenceMonitoringConfiguration": {
+                            "Enabled": True,
+                        },
+                        "S3MonitoringConfiguration": {
+                            "LogUri": logs_bucket.s3_url_for_object("scene-detection"),
+                        },
                     },
                 },
             },
@@ -565,8 +587,9 @@ class TemplateStack(cdk.Stack):
             "Get Scene Detection Job Status",
             service="emrserverless",
             action="getJobRun",
-            result_path="$.JobStatus",
             iam_resources=[f"{emr_app_arn}/jobruns/*"],
+            iam_action="emr-serverless:getJobRun",
+            result_path="$.JobStatus",
             parameters={
                 "ApplicationId": sfn.JsonPath.string_at("$.ApplicationId"),
                 "JobRunId": sfn.JsonPath.string_at("$.JobRunId"),
@@ -585,7 +608,7 @@ class TemplateStack(cdk.Stack):
         fail_state = sfn.Fail(self, "Scene Detection Failed")
 
         job_status_choice = (
-            sfn.Choice(self, "Job Status Choice")
+            sfn.Choice(self, "Did Scene Detection Finish?")
             .when(sfn.Condition.string_equals("$.JobStatus.JobRun.State", "SUCCESS"), success_state)
             .when(
                 sfn.Condition.or_(

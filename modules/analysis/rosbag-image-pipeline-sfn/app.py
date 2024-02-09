@@ -32,6 +32,7 @@ emr_app_id = os.getenv(_param("EMR_APP_ID"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
 artifacts_bucket_name = os.getenv(_param("ARTIFACTS_BUCKET_NAME"))
+logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
 
 detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
 on_demand_job_queue_arn = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
@@ -96,6 +97,7 @@ template_stack = TemplateStack(
     source_bucket_name=source_bucket_name,
     target_bucket_name=target_bucket_name,
     artifacts_bucket_name=artifacts_bucket_name,
+    logs_bucket_name=logs_bucket_name,
     detection_ddb_name=detection_ddb_name,
     on_demand_job_queue_arn=on_demand_job_queue_arn,
     fargate_job_queue_arn=fargate_job_queue_arn,
@@ -122,7 +124,7 @@ CfnOutput(
     id="metadata",
     value=template_stack.to_json_string(
         {
-            "TemplateOutput1": "Add something from template_stack",
+            "StateMachineArn": template_stack.state_machine.state_machine_arn,
         }
     ),
 )
