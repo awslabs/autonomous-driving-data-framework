@@ -24,18 +24,17 @@ def _param(name: str) -> str:
 
 
 vpc_id = os.getenv(_param("VPC_ID"))
-private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # type: ignore
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))
 
 emr_job_exec_role_arn = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
 emr_app_id = os.getenv(_param("EMR_APP_ID"))
 
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
-dag_bucket_name = os.getenv(_param("DAG_BUCKET_NAME"))
+artifacts_bucket_name = os.getenv(_param("ARTIFACTS_BUCKET_NAME"))
 
 detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
 on_demand_job_queue_arn = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
-spot_job_queue_arn = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
 fargate_job_queue_arn = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
 parquet_batch_job_def_arn = os.getenv(_param("PARQUET_BATCH_JOB_DEF_ARN"))
 png_batch_job_def_arn = os.getenv(_param("PNG_BATCH_JOB_DEF_ARN"))
@@ -96,10 +95,9 @@ template_stack = TemplateStack(
     emr_app_id=emr_app_id,
     source_bucket_name=source_bucket_name,
     target_bucket_name=target_bucket_name,
-    dag_bucket_name=dag_bucket_name,
+    artifacts_bucket_name=artifacts_bucket_name,
     detection_ddb_name=detection_ddb_name,
     on_demand_job_queue_arn=on_demand_job_queue_arn,
-    spot_job_queue_arn=spot_job_queue_arn,
     fargate_job_queue_arn=fargate_job_queue_arn,
     parquet_batch_job_def_arn=parquet_batch_job_def_arn,
     png_batch_job_def_arn=png_batch_job_def_arn,

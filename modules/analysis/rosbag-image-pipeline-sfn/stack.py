@@ -18,93 +18,6 @@ from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 
-class EMRServerlessExecutionStateMachineConstruct(Construct):
-    def __init__(
-        self,
-        scope: Construct,
-        id: str,
-        emr_job_exec_role: iam.Role,
-        emr_app_id: str,
-        emr_app_arn: str,
-        job_driver: dict[str, Any],
-    ) -> None:
-        super().__init__(scope, id)
-
-        run_job_task = tasks.CallAwsService(
-            self,
-            "Start Job Run",
-            service="emrserverless",
-            action="startJobRun",
-            iam_resources=[emr_app_arn],
-            parameters={
-                "ApplicationId": emr_app_id,
-                "ExecutionRoleArn": emr_job_exec_role.role_arn,
-                "JobDriver": job_driver,
-                "ClientToken.$": "States.UUID()",
-            },
-        )
-
-        get_job_status_task = tasks.CallAwsService(
-            self,
-            "Get Job Status",
-            service="emrserverless",
-            action="getJobRun",
-            result_path="$.JobStatus",
-            iam_resources=[emr_app_arn],
-            parameters={
-                "ApplicationId.$": "$.ApplicationId",
-                "JobRunId.$": "$.JobRunId",
-            },
-        )
-
-        job_execution_status_wait = sfn.Wait(
-            self,
-            "Wait Before Checking Job Status",
-            time=sfn.WaitTime.duration(cdk.Duration.seconds(30)),
-        )
-
-        retry_chain = job_execution_status_wait.next(get_job_status_task)
-
-        success_state = sfn.Succeed(self, "Success")
-        fail_state = sfn.Fail(self, "Fail")
-
-        job_status_choice = (
-            sfn.Choice(self, "Job Status Choice")
-            .when(sfn.Condition.string_equals("$.JobStatus.JobRun.State", "SUCCESS"), success_state)
-            .when(
-                sfn.Condition.or_(
-                    sfn.Condition.string_equals("$.JobStatus.JobRun.State", "FAILED"),
-                    sfn.Condition.string_equals("$.JobStatus.JobRun.State", "CANCELLED"),
-                ),
-                fail_state,
-            )
-            .otherwise(retry_chain)
-        )
-
-        definition = run_job_task.next(get_job_status_task).next(job_status_choice)
-
-        self.state_machine = sfn.StateMachine(
-            self,
-            "Resource",
-            definition=definition,
-        )
-
-        self.state_machine.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=[
-                    "emr-serverless:StartJobRun",
-                    "emr-serverless:GetJobRun",
-                    "emr-serverless:CancelJobRun",
-                ],
-                resources=[
-                    emr_app_arn,
-                    f"{emr_app_arn}/jobruns/*",
-                ],
-            )
-        )
-        emr_job_exec_role.grant_pass_role(self.state_machine)
-
-
 class TemplateStack(cdk.Stack):
     def __init__(
         self,
@@ -121,10 +34,9 @@ class TemplateStack(cdk.Stack):
         emr_app_id: str,
         source_bucket_name: str,
         target_bucket_name: str,
-        dag_bucket_name: str,
+        artifacts_bucket_name: str,
         detection_ddb_name: str,
         on_demand_job_queue_arn: str,
-        spot_job_queue_arn: str,
         fargate_job_queue_arn: str,
         parquet_batch_job_def_arn: str,
         png_batch_job_def_arn: str,
@@ -186,13 +98,12 @@ class TemplateStack(cdk.Stack):
 
         # Batch definitions
         on_demand_job_queue = batch.JobQueue.from_job_queue_arn(self, "On Demand Job Queue", on_demand_job_queue_arn)
-        spot_job_queue = batch.JobQueue.from_job_queue_arn(self, "Spot Job Queue", spot_job_queue_arn)
         fargate_job_queue = batch.JobQueue.from_job_queue_arn(self, "Fargate Job Queue", fargate_job_queue_arn)
 
         # S3 buckets
         source_bucket = s3.Bucket.from_bucket_name(self, "Source Bucket", source_bucket_name)
         target_bucket = s3.Bucket.from_bucket_name(self, "Target Bucket", target_bucket_name)
-        emr_scripts_bucket = s3.Bucket.from_bucket_name(self, "Scripts Bucket", dag_bucket_name)
+        artifacts_bucket = s3.Bucket.from_bucket_name(self, "Artifacts Bucket", artifacts_bucket_name)
 
         # Define Lambda job for creating a batch of drives
         create_batch_lambda_function = aws_lambda.Function(
@@ -209,40 +120,6 @@ class TemplateStack(cdk.Stack):
         )
         tracking_table.grant_read_write_data(create_batch_lambda_function)
         source_bucket.grant_read(create_batch_lambda_function)
-
-        # Define EMR jobs
-        emr_job_exec_role = iam.Role.from_role_arn(self, "EMR Job Execution Role", emr_job_exec_role_arn)
-        emr_app_arn = f"arn:{self.partition}:emr-serverless:{self.region}:{self.account}:/applications/{emr_app_id}"
-
-        s3_emr_job_prefix = "emr-job-definitions/"
-        s3deploy.BucketDeployment(
-            self,
-            "S3BucketDagDeploymentTestJob",
-            sources=[s3deploy.Source.asset("emr-scripts/")],
-            destination_bucket=emr_scripts_bucket,
-            destination_key_prefix=s3_emr_job_prefix,
-        )
-
-        # image_extraction_step_machine = EMRServerlessExecutionStateMachineConstruct(
-        #     self,
-        #     "Image Extraction State Machine",
-        #     emr_job_exec_role=emr_job_exec_role,
-        #     emr_app_id=emr_app_id,
-        #     emr_app_arn=emr_app_arn,
-        #     job_driver={
-        #         "SparkSubmit": {
-        #             "EntryPoint": emr_scripts_bucket.s3_url_for_object(f"{s3_emr_job_prefix}image-extraction.py"),
-        #             "EntryPointArguments": [emr_scripts_bucket.s3_url_for_object("emr-serverless-spark/output")],
-        #             "SparkSubmitParameters": (
-        #                 "--conf spark.executor.cores=1 "
-        #                 "--conf spark.executor.memory=4g "
-        #                 "--conf spark.driver.cores=1 "
-        #                 "--conf spark.driver.memory=4g "
-        #                 "--conf spark.executor.instances=1"
-        #             ),
-        #         },
-        #     },
-        # )
 
         # Define step function
         sfn_batch_id = sfn.JsonPath.string_at("$$.Execution.Name")
@@ -524,6 +401,17 @@ class TemplateStack(cdk.Stack):
             ),
         )
 
+        emr_task_chain = self.create_emr_task_chain(
+            emr_app_id=emr_app_id,
+            emr_job_exec_role_arn=emr_job_exec_role_arn,
+            target_bucket=target_bucket,
+            artifacts_bucket=artifacts_bucket,
+            image_topics=image_topics,
+            tracking_table=tracking_table,
+            detection_ddb_table=detection_ddb_table,
+            batch_id=sfn_batch_id,
+        )
+
         # Define state machine
         definition = (
             create_batch_task.next(
@@ -533,6 +421,7 @@ class TemplateStack(cdk.Stack):
             )
             .next(get_image_dirs_task)
             .next(sfn.Parallel(self, "Image Labelling").branch(obj_detection_map_task).branch(lane_detection_map_task))
+            .next(emr_task_chain)
         )
 
         sfn.StateMachine(
@@ -610,3 +499,102 @@ class TemplateStack(cdk.Stack):
         )
 
         return start_process_task.next(get_job_status_task).next(job_status_choice)
+
+    def create_emr_task_chain(
+        self,
+        emr_app_id: str,
+        emr_job_exec_role_arn: str,
+        artifacts_bucket: s3.IBucket,
+        target_bucket: s3.IBucket,
+        tracking_table: dynamodb.Table,
+        detection_ddb_table: dynamodb.Table,
+        image_topics: List[str],
+        batch_id: str,
+    ) -> sfn.IChainable:
+        emr_app_arn = f"arn:{self.partition}:emr-serverless:{self.region}:{self.account}:/applications/{emr_app_id}"
+
+        s3_emr_job_prefix = "emr-scripts/"
+        s3deploy.BucketDeployment(
+            self,
+            "S3BucketDagDeploymentTestJob",
+            sources=[s3deploy.Source.asset(s3_emr_job_prefix)],
+            destination_bucket=artifacts_bucket,
+            destination_key_prefix=s3_emr_job_prefix,
+        )
+        s3_script_dir = artifacts_bucket.s3_url_for_object(s3_emr_job_prefix)
+
+        run_job_task = tasks.CallAwsService(
+            self,
+            "Start Scene Detection Job",
+            service="emrserverless",
+            action="startJobRun",
+            iam_resources=[emr_app_arn],
+            additional_iam_statements=[
+                iam.PolicyStatement(
+                    actions=["iam:PassRole"],
+                    resources=[emr_job_exec_role_arn],
+                ),
+            ],
+            parameters={
+                "ApplicationId": emr_app_id,
+                "ExecutionRoleArn": emr_job_exec_role_arn,
+                "ClientToken": sfn.JsonPath.uuid(),
+                "JobDriver": {
+                    "SparkSubmit": {
+                        "EntryPoint": f"{s3_script_dir}detect_scenes.py",
+                        "SparkSubmitParameters": f"--jars {s3_script_dir}spark-dynamodb_2.12-1.1.1.jar",
+                        "EntryPointArguments": sfn.JsonPath.array(
+                            "--batch-metadata-table-name",
+                            tracking_table.table_name,
+                            "--batch-id",
+                            batch_id,
+                            "--output-bucket",
+                            target_bucket.bucket_name,
+                            "--output-dynamo-table",
+                            detection_ddb_table.table_name,
+                            "--image-topics",
+                            json.dumps(image_topics),
+                        ),
+                    },
+                },
+            },
+        )
+
+        get_job_status_task = tasks.CallAwsService(
+            self,
+            "Get Scene Detection Job Status",
+            service="emrserverless",
+            action="getJobRun",
+            result_path="$.JobStatus",
+            iam_resources=[f"{emr_app_arn}/jobruns/*"],
+            parameters={
+                "ApplicationId": sfn.JsonPath.string_at("$.ApplicationId"),
+                "JobRunId": sfn.JsonPath.string_at("$.JobRunId"),
+            },
+        )
+
+        wait_task = sfn.Wait(
+            self,
+            "Wait for Scene Detection",
+            time=sfn.WaitTime.duration(cdk.Duration.seconds(15)),
+        )
+
+        retry_chain = wait_task.next(get_job_status_task)
+
+        success_state = sfn.Succeed(self, "Scene Detection Succeeded")
+        fail_state = sfn.Fail(self, "Scene Detection Failed")
+
+        job_status_choice = (
+            sfn.Choice(self, "Job Status Choice")
+            .when(sfn.Condition.string_equals("$.JobStatus.JobRun.State", "SUCCESS"), success_state)
+            .when(
+                sfn.Condition.or_(
+                    sfn.Condition.string_equals("$.JobStatus.JobRun.State", "FAILED"),
+                    sfn.Condition.string_equals("$.JobStatus.JobRun.State", "CANCELLED"),
+                ),
+                fail_state,
+            )
+            .otherwise(retry_chain)
+        )
+
+        return run_job_task.next(get_job_status_task).next(job_status_choice)

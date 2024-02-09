@@ -5,30 +5,24 @@ deploy:
       commands:
       - npm install -g aws-cdk@2.126.0
       - pip install -r requirements.txt
-    pre_build:
-      commands:
-      - echo "Prebuild stage"
     build:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      - seedfarmer metadata convert -f cdk-exports.json || true
-    post_build:
-      commands:
-      - echo "Destroy successful"
+      # Here we export some env vars
+      - export SEEDFARMER_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}']['metadata'])")
+      # TODO move to proper location and update EMR with path dynamically
+      - export EMR_DIR="emr-scripts"
+      - wget -O $EMR_DIR/spark-dynamodb_2.12-1.1.1.jar https://repo1.maven.org/maven2/com/audienceproject/spark-dynamodb_2.12/1.1.1/spark-dynamodb_2.12-1.1.1.jar
+      - aws s3 cp --recursive $EMR_DIR/ s3://$SEEDFARMER_PARAMETER_ARTIFACTS_BUCKET_NAME/$EMR_DIR/
 destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.83.1
+      - npm install -g aws-cdk@2.126.0
       - pip install -r requirements.txt
-    pre_build:
-      commands:
-      - echo "Prebuild stage"
     build:
       commands:
+      # Remove spark files
+      - export EMR_DIR="emr-scripts"
+      - aws s3 rm --recursive s3://$SEEDFARMER_PARAMETER_ARTIFACTS_BUCKET_NAME/$EMR_DIR/
       - cdk destroy --force --app "python app.py"
-    post_build:
-      commands:
-      - echo "Destroy successful"
-
-build_type: BUILD_GENERAL1_SMALL
