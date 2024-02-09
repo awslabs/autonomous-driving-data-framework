@@ -370,6 +370,9 @@ class TemplateStack(cdk.Stack):
                                 f"s3://{target_bucket.bucket_name}/{{}}/", sfn.JsonPath.string_at("$")
                             ),
                             "S3DataType": "S3Prefix",
+                            "S3InputMode": "File",
+                            "S3DataDistributionType": "FullyReplicated",
+                            "S3CompressionType": "None",
                             "LocalPath": "/opt/ml/processing/input/",
                         },
                     },
@@ -448,6 +451,9 @@ class TemplateStack(cdk.Stack):
                                 f"s3://{target_bucket.bucket_name}/{{}}/", sfn.JsonPath.string_at("$")
                             ),
                             "S3DataType": "S3Prefix",
+                            "S3InputMode": "File",
+                            "S3DataDistributionType": "FullyReplicated",
+                            "S3CompressionType": "None",
                             "LocalPath": sm_local_input,
                         },
                     },
@@ -498,7 +504,11 @@ class TemplateStack(cdk.Stack):
             items_path="$.ImageDirs.S3Paths",
             max_concurrency=object_detection_job_concurrency,
         ).item_processor(
-            object_detection_task.next(sfn.Wait(self, "Wait 1", time=sfn.WaitTime.duration(cdk.Duration.seconds(60))))
+            self.processing_job_add_wait(
+                id=object_detection_task.id,
+                start_process_task=object_detection_task,
+                wait_time_seconds=15,
+            )
         )
 
         lane_detection_map_task = sfn.Map(
@@ -507,7 +517,11 @@ class TemplateStack(cdk.Stack):
             items_path="$.ImageDirs.S3Paths",
             max_concurrency=lane_detection_job_concurrency,
         ).item_processor(
-            lane_detection_task.next(sfn.Wait(self, "Wait 2", time=sfn.WaitTime.duration(cdk.Duration.seconds(60))))
+            self.processing_job_add_wait(
+                id=lane_detection_task.id,
+                start_process_task=lane_detection_task,
+                wait_time_seconds=15,
+            ),
         )
 
         # Define state machine
@@ -542,3 +556,57 @@ class TemplateStack(cdk.Stack):
                 ),
             ],
         )
+
+    def processing_job_add_wait(
+        self,
+        id: str,
+        start_process_task: tasks.CallAwsService,
+        wait_time_seconds: int,
+    ) -> sfn.IChainable:
+        start_process_task = start_process_task.add_retry(
+            errors=["SageMaker.SageMakerException"],
+            interval=cdk.Duration.seconds(5),
+            max_attempts=5,
+            jitter_strategy=sfn.JitterType.FULL,
+        )
+
+        get_job_status_task = tasks.CallAwsService(
+            self,
+            f"Get {id} Status",
+            service="sagemaker",
+            action="describeProcessingJob",
+            iam_resources=["*"],
+            parameters={
+                "ProcessingJobName": sfn.JsonPath.array_get_item(
+                    sfn.JsonPath.string_split(sfn.JsonPath.string_at("$.ProcessingJobArn"), "/"),
+                    1,
+                )
+            },
+            result_path="$.ProcessingJobStatus",
+        )
+
+        wait_task = sfn.Wait(
+            self,
+            f"Wait {id}",
+            time=sfn.WaitTime.duration(cdk.Duration.seconds(wait_time_seconds)),
+        )
+
+        retry_chain = wait_task.next(get_job_status_task)
+
+        success_state = sfn.Succeed(self, f"{id} Succeeded")
+        fail_state = sfn.Fail(self, f"{id} Failed")
+
+        job_status_choice = (
+            sfn.Choice(self, f"Did {id} finish?")
+            .when(sfn.Condition.string_equals("$.ProcessingJobStatus.ProcessingJobStatus", "Completed"), success_state)
+            .when(
+                sfn.Condition.or_(
+                    sfn.Condition.string_equals("$.ProcessingJobStatus.ProcessingJobStatus", "Failed"),
+                    sfn.Condition.string_equals("$.ProcessingJobStatus.ProcessingJobStatus", "Stopped"),
+                ),
+                fail_state,
+            )
+            .otherwise(retry_chain)
+        )
+
+        return start_process_task.next(get_job_status_task).next(job_status_choice)
