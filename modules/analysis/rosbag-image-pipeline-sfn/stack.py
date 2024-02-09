@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, List, Union, cast
 
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
@@ -34,8 +34,8 @@ class AwsBatchPipeline(Stack):
         artifacts_bucket_name: str,
         job_queues: Dict[str, str],
         job_definitions: Dict[str, str],
-        object_detection_config: Dict[str, str],
-        lane_detection_config: Dict[str, str],
+        object_detection_config: Dict[str, Union[int, str]],
+        lane_detection_config: Dict[str, Union[int, str]],
         emr_job_config: Dict[str, str],
         stack_description: str,
         image_topics: List[str],

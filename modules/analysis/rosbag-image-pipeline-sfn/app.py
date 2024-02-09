@@ -80,8 +80,20 @@ if not full_access_policy:
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
 
-if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
-    raise ValueError("Requires at least one job queue.")
+if not on_demand_job_queue:
+    raise ValueError("missing input parameter on-demand-job-queue-arn")
+
+if not spot_job_queue:
+    raise ValueError("missing input parameter spot-job-queue-arn")
+
+if not fargate_job_queue:
+    raise ValueError("missing input parameter fargate-job-queue-arn")
+
+if not emr_app_id:
+    raise ValueError("missing input parameter emr-app-id")
+
+if not emr_job_role:
+    raise ValueError("missing input parameter emr-job-role")
 
 
 def generate_description() -> str:
