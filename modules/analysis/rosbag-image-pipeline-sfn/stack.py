@@ -402,7 +402,7 @@ class AwsBatchPipeline(Stack):
                 "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
                 "Retry": [{"ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "JitterStrategy": "FULL"}],
                 "Parameters": {
-                    "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
+                    "ProcessingJobName.$": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
                     "AppSpecification": {
                         "ContainerArguments": [
                             "--save_dir",
@@ -437,7 +437,7 @@ class AwsBatchPipeline(Stack):
                                 "S3DataType": "S3Prefix",
                                 "S3DataDistributionType": "FullyReplicated",
                                 "S3InputMode": "File",
-                                "S3Uri": sfn.JsonPath.format(
+                                "S3Uri.$": sfn.JsonPath.format(
                                     "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
                                 ),
                             },
@@ -450,7 +450,7 @@ class AwsBatchPipeline(Stack):
                                 "S3Output": {
                                     "S3UploadMode": "EndOfJob",
                                     "LocalPath": "/opt/ml/processing/output/image",
-                                    "S3Uri": sfn.JsonPath.format(
+                                    "S3Uri.$": sfn.JsonPath.format(
                                         "s3://{}/{}/_post_lane_dets/",
                                         self.target_bucket.bucket_name,
                                         sfn.JsonPath.string_at("$.path"),
@@ -462,7 +462,7 @@ class AwsBatchPipeline(Stack):
                                 "S3Output": {
                                     "S3UploadMode": "EndOfJob",
                                     "LocalPath": "/opt/ml/processing/output/json",
-                                    "S3Uri": sfn.JsonPath.format(
+                                    "S3Uri.$": sfn.JsonPath.format(
                                         "s3://{}/{}/_post_lane_dets/",
                                         self.target_bucket.bucket_name,
                                         sfn.JsonPath.string_at("$.path"),
@@ -474,7 +474,7 @@ class AwsBatchPipeline(Stack):
                                 "S3Output": {
                                     "S3UploadMode": "EndOfJob",
                                     "LocalPath": "/opt/ml/processing/output/csv",
-                                    "S3Uri": sfn.JsonPath.format(
+                                    "S3Uri.$": sfn.JsonPath.format(
                                         "s3://{}/{}/_post_lane_dets/",
                                         self.target_bucket.bucket_name,
                                         sfn.JsonPath.string_at("$.path"),
@@ -489,6 +489,10 @@ class AwsBatchPipeline(Stack):
             },
         )
 
+        lane_detection_sagemaker_job.add_retry(
+            errors=[sfn.Errors.ALL], interval=Duration.seconds(10), jitter_strategy=sfn.JitterType.FULL
+        )
+
         object_detection_sagemaker_job = sfn.CustomState(
             self,
             "Object Detection Sagemaker Job",
@@ -497,7 +501,7 @@ class AwsBatchPipeline(Stack):
                 "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
                 "Retry": [{"ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "JitterStrategy": "FULL"}],
                 "Parameters": {
-                    "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
+                    "ProcessingJobName.$": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
                     "AppSpecification": {
                         "ContainerArguments": [
                             "--save_dir",
@@ -532,7 +536,7 @@ class AwsBatchPipeline(Stack):
                                 "S3DataDistributionType": "FullyReplicated",
                                 "S3InputMode": "File",
                                 "S3DataType": "S3Prefix",
-                                "S3Uri": sfn.JsonPath.format(
+                                "S3Uri.$": sfn.JsonPath.format(
                                     "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
                                 ),
                             },
@@ -545,7 +549,7 @@ class AwsBatchPipeline(Stack):
                                 "S3Output": {
                                     "S3UploadMode": "EndOfJob",
                                     "LocalPath": "/opt/ml/processing/output/",
-                                    "S3Uri": sfn.JsonPath.format(
+                                    "S3Uri.$": sfn.JsonPath.format(
                                         "s3://{}/{}/_post_lane_dets/",
                                         self.target_bucket.bucket_name,
                                         sfn.JsonPath.string_at("$.path"),
@@ -558,6 +562,10 @@ class AwsBatchPipeline(Stack):
                     "StoppingCondition": {"MaxRuntimeInSeconds": 86400},
                 },
             },
+        )
+
+        object_detection_sagemaker_job.add_retry(
+            errors=[sfn.Errors.ALL], interval=Duration.seconds(10), jitter_strategy=sfn.JitterType.FULL
         )
 
         item_processor_definition = (
@@ -576,7 +584,7 @@ class AwsBatchPipeline(Stack):
                 "Resource": "arn:aws:states:::emr-serverless:startJobRun.sync",
                 "Retry": [{"ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "JitterStrategy": "FULL"}],
                 "Parameters": {
-                    "ClientToken": sfn.JsonPath.string_at("States.UUID()"),
+                    "ClientToken.$": sfn.JsonPath.string_at("States.UUID()"),
                     "ApplicationId": self.emr_job_config["EMRApplicationId"],
                     "ExecutionRoleArn": self.emr_job_config["EMRJobRole"],
                     "JobDriver": {
