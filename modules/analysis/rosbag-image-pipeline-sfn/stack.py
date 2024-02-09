@@ -1,8 +1,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
-
+import json
 import logging
-from typing import Any, Dict, cast
+from typing import Any, Dict, List, cast
 
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam
@@ -31,12 +31,14 @@ class AwsBatchPipeline(Stack):
         vpc_id: str,
         bucket_access_policy: str,
         logs_bucket_name: str,
+        artifacts_bucket_name: str,
         job_queues: Dict[str, str],
         job_definitions: Dict[str, str],
         object_detection_config: Dict[str, str],
         lane_detection_config: Dict[str, str],
         emr_job_config: Dict[str, str],
         stack_description: str,
+        image_topics: List[str],
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -57,6 +59,8 @@ class AwsBatchPipeline(Stack):
         self.lane_detection_config = lane_detection_config
         self.emr_job_config = emr_job_config
         self.logs_bucket_name = logs_bucket_name
+        self.artifacts_bucket_name = artifacts_bucket_name
+        self.image_topics = image_topics
         state_machine_id = "Rosbag Image Pipeline State Machine"
 
         Tags.of(scope=cast(IConstruct, self)).add(
@@ -124,7 +128,18 @@ class AwsBatchPipeline(Stack):
                     "iam:PassRole",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[lane_detection_config["LaneDetectionRole"], object_detection_config["ObjectDetectionRole"]],
+                resources=[
+                    lane_detection_config["LaneDetectionRole"],
+                    object_detection_config["ObjectDetectionRole"],
+                    emr_job_config["EMRJobRole"],
+                ],
+            ),
+            iam.PolicyStatement(
+                actions=[
+                    "sagemaker:CreateProcessingJob",
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -152,6 +167,11 @@ class AwsBatchPipeline(Stack):
                 actions=["dynamodb:PutItem"],
                 effect=iam.Effect.ALLOW,
                 resources=[self.tracking_table.table_arn],
+            ),
+            iam.PolicyStatement(
+                actions=["emr-serverless:StartJobRun"],
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
             ),
         ]
         sfn_policy_document = iam.PolicyDocument(statements=policy_statements)
@@ -369,169 +389,169 @@ class AwsBatchPipeline(Stack):
             item_selector={"path": sfn.JsonPath.string_at("$$.Map.Item.Value")},
             result_path=sfn.JsonPath.DISCARD,
         )
-        lane_detection_sagemaker_job = tasks.CallAwsService(
+        lane_detection_sagemaker_job = sfn.CustomState(
             self,
             "Lane Detection Sagemaker Job",
-            action="createProcessingJob",
-            service="sagemaker",
-            iam_resources=["*"],
-            result_path=sfn.JsonPath.DISCARD,
-            # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
-            parameters={
-                "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
-                "AppSpecification": {
-                    "ContainerArguments": [
-                        "--save_dir",
-                        "/opt/ml/processing/output/image",
-                        "--source",
-                        "/opt/ml/processing/input/image",
-                        "--json_path",
-                        "/opt/ml/processing/output/json",
-                        "--csv_path",
-                        "/opt/ml/processing/output/csv",
-                    ],
-                    "ImageUri": self.lane_detection_config["LaneDetectionImageUri"],
-                },
-                "ProcessingResources": {
-                    "ClusterConfig": {
-                        "InstanceCount": 1,
-                        "InstanceType": self.lane_detection_config["LaneDetectionInstanceType"],
-                        "VolumeSizeInGB": 30,
-                    }
-                },
-                "NetworkConfig": {
-                    "VpcConfig": {
-                        "SecurityGroupIds": [self.security_group.security_group_id],
-                        "Subnets": self.private_subnet_ids,
-                    }
-                },
-                "ProcessingInputs": [
-                    {
-                        "InputName": "data",
-                        "S3Input": {
-                            "LocalPath": "/opt/ml/processing/input/image",
-                            "S3DataType": "S3Prefix",
-                            "S3DataDistributionType": "FullyReplicated",
-                            "S3InputMode": "File",
-                            "S3Uri.$": sfn.JsonPath.format(
-                                "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
-                            ),
-                        },
-                    }
-                ],
-                "ProcessingOutputConfig": {
-                    "Outputs": [
+            state_json={
+                "Type": "Task",
+                "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
+                "Retry": [{"ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "JitterStrategy": "FULL"}],
+                "Parameters": {
+                    "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
+                    "AppSpecification": {
+                        "ContainerArguments": [
+                            "--save_dir",
+                            "/opt/ml/processing/output/image",
+                            "--source",
+                            "/opt/ml/processing/input/image",
+                            "--json_path",
+                            "/opt/ml/processing/output/json",
+                            "--csv_path",
+                            "/opt/ml/processing/output/csv",
+                        ],
+                        "ImageUri": self.lane_detection_config["LaneDetectionImageUri"],
+                    },
+                    "ProcessingResources": {
+                        "ClusterConfig": {
+                            "InstanceCount": 1,
+                            "InstanceType": self.lane_detection_config["LaneDetectionInstanceType"],
+                            "VolumeSizeInGB": 30,
+                        }
+                    },
+                    "NetworkConfig": {
+                        "VpcConfig": {
+                            "SecurityGroupIds": [self.security_group.security_group_id],
+                            "Subnets": self.private_subnet_ids,
+                        }
+                    },
+                    "ProcessingInputs": [
                         {
-                            "OutputName": "image_output",
-                            "S3Output": {
-                                "S3UploadMode": "EndOfJob",
-                                "LocalPath": "/opt/ml/processing/output/image",
-                                "S3Uri.$": sfn.JsonPath.format(
-                                    "s3://{}/{}/_post_lane_dets/",
-                                    self.target_bucket.bucket_name,
-                                    sfn.JsonPath.string_at("$.path"),
-                                ),
-                            },
-                        },
-                        {
-                            "OutputName": "json_output",
-                            "S3Output": {
-                                "S3UploadMode": "EndOfJob",
-                                "LocalPath": "/opt/ml/processing/output/json",
-                                "S3Uri.$": sfn.JsonPath.format(
-                                    "s3://{}/{}/_post_lane_dets/",
-                                    self.target_bucket.bucket_name,
-                                    sfn.JsonPath.string_at("$.path"),
-                                ),
-                            },
-                        },
-                        {
-                            "OutputName": "csv_output",
-                            "S3Output": {
-                                "S3UploadMode": "EndOfJob",
-                                "LocalPath": "/opt/ml/processing/output/csv",
-                                "S3Uri.$": sfn.JsonPath.format(
-                                    "s3://{}/{}/_post_lane_dets/",
-                                    self.target_bucket.bucket_name,
-                                    sfn.JsonPath.string_at("$.path"),
-                                ),
-                            },
-                        },
-                    ]
-                },
-                "RoleArn": self.lane_detection_config["LaneDetectionRole"],
-                "StoppingCondition": {"MaxRuntimeInSeconds": 86400},
-            },
-        )
-
-        object_detection_sagemaker_job = tasks.CallAwsService(
-            self,
-            "Object Detection Sagemaker Job",
-            action="createProcessingJob",
-            service="sagemaker",
-            iam_resources=["*"],
-            result_path=sfn.JsonPath.DISCARD,
-            # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
-            parameters={
-                "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
-                "AppSpecification": {
-                    "ContainerArguments": [
-                        "--save_dir",
-                        "/opt/ml/processing/output/image",
-                        "--source",
-                        "/opt/ml/processing/input/image",
-                        "--json_path",
-                        "/opt/ml/processing/output/json",
-                        "--csv_path",
-                        "/opt/ml/processing/output/csv",
-                    ],
-                    "ImageUri": self.object_detection_config["ObjectDetectionImageUri"],
-                },
-                "ProcessingResources": {
-                    "ClusterConfig": {
-                        "InstanceCount": 1,
-                        "InstanceType": self.object_detection_config["ObjectDetectionInstanceType"],
-                        "VolumeSizeInGB": 30,
-                    }
-                },
-                "NetworkConfig": {
-                    "VpcConfig": {
-                        "SecurityGroupIds": [self.security_group.security_group_id],
-                        "Subnets": self.private_subnet_ids,
-                    }
-                },
-                "ProcessingInputs": [
-                    {
-                        "InputName": "data",
-                        "S3Input": {
-                            "LocalPath": "/opt/ml/processing/input/",
-                            "S3DataDistributionType": "FullyReplicated",
-                            "S3InputMode": "File",
-                            "S3DataType": "S3Prefix",
-                            "S3Uri.$": sfn.JsonPath.format(
-                                "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
-                            ),
-                        },
-                    }
-                ],
-                "ProcessingOutputConfig": {
-                    "Outputs": [
-                        {
-                            "OutputName": "output",
-                            "S3Output": {
-                                "S3UploadMode": "EndOfJob",
-                                "LocalPath": "/opt/ml/processing/output/",
-                                "S3Uri.$": sfn.JsonPath.format(
-                                    "s3://{}/{}/_post_lane_dets/",
-                                    self.target_bucket.bucket_name,
-                                    sfn.JsonPath.string_at("$.path"),
+                            "InputName": "data",
+                            "S3Input": {
+                                "LocalPath": "/opt/ml/processing/input/image",
+                                "S3DataType": "S3Prefix",
+                                "S3DataDistributionType": "FullyReplicated",
+                                "S3InputMode": "File",
+                                "S3Uri": sfn.JsonPath.format(
+                                    "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
                                 ),
                             },
                         }
-                    ]
+                    ],
+                    "ProcessingOutputConfig": {
+                        "Outputs": [
+                            {
+                                "OutputName": "image_output",
+                                "S3Output": {
+                                    "S3UploadMode": "EndOfJob",
+                                    "LocalPath": "/opt/ml/processing/output/image",
+                                    "S3Uri": sfn.JsonPath.format(
+                                        "s3://{}/{}/_post_lane_dets/",
+                                        self.target_bucket.bucket_name,
+                                        sfn.JsonPath.string_at("$.path"),
+                                    ),
+                                },
+                            },
+                            {
+                                "OutputName": "json_output",
+                                "S3Output": {
+                                    "S3UploadMode": "EndOfJob",
+                                    "LocalPath": "/opt/ml/processing/output/json",
+                                    "S3Uri": sfn.JsonPath.format(
+                                        "s3://{}/{}/_post_lane_dets/",
+                                        self.target_bucket.bucket_name,
+                                        sfn.JsonPath.string_at("$.path"),
+                                    ),
+                                },
+                            },
+                            {
+                                "OutputName": "csv_output",
+                                "S3Output": {
+                                    "S3UploadMode": "EndOfJob",
+                                    "LocalPath": "/opt/ml/processing/output/csv",
+                                    "S3Uri": sfn.JsonPath.format(
+                                        "s3://{}/{}/_post_lane_dets/",
+                                        self.target_bucket.bucket_name,
+                                        sfn.JsonPath.string_at("$.path"),
+                                    ),
+                                },
+                            },
+                        ]
+                    },
+                    "RoleArn": self.lane_detection_config["LaneDetectionRole"],
+                    "StoppingCondition": {"MaxRuntimeInSeconds": 86400},
                 },
-                "RoleArn": self.object_detection_config["ObjectDetectionRole"],
-                "StoppingCondition": {"MaxRuntimeInSeconds": 86400},
+            },
+        )
+
+        object_detection_sagemaker_job = sfn.CustomState(
+            self,
+            "Object Detection Sagemaker Job",
+            state_json={
+                "Type": "Task",
+                "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
+                "Retry": [{"ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "JitterStrategy": "FULL"}],
+                "Parameters": {
+                    "ProcessingJobName": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
+                    "AppSpecification": {
+                        "ContainerArguments": [
+                            "--save_dir",
+                            "/opt/ml/processing/output/image",
+                            "--source",
+                            "/opt/ml/processing/input/image",
+                            "--json_path",
+                            "/opt/ml/processing/output/json",
+                            "--csv_path",
+                            "/opt/ml/processing/output/csv",
+                        ],
+                        "ImageUri": self.object_detection_config["ObjectDetectionImageUri"],
+                    },
+                    "ProcessingResources": {
+                        "ClusterConfig": {
+                            "InstanceCount": 1,
+                            "InstanceType": self.object_detection_config["ObjectDetectionInstanceType"],
+                            "VolumeSizeInGB": 30,
+                        }
+                    },
+                    "NetworkConfig": {
+                        "VpcConfig": {
+                            "SecurityGroupIds": [self.security_group.security_group_id],
+                            "Subnets": self.private_subnet_ids,
+                        }
+                    },
+                    "ProcessingInputs": [
+                        {
+                            "InputName": "data",
+                            "S3Input": {
+                                "LocalPath": "/opt/ml/processing/input/",
+                                "S3DataDistributionType": "FullyReplicated",
+                                "S3InputMode": "File",
+                                "S3DataType": "S3Prefix",
+                                "S3Uri": sfn.JsonPath.format(
+                                    "s3://{}/{}/", self.target_bucket.bucket_name, sfn.JsonPath.string_at("$.path")
+                                ),
+                            },
+                        }
+                    ],
+                    "ProcessingOutputConfig": {
+                        "Outputs": [
+                            {
+                                "OutputName": "output",
+                                "S3Output": {
+                                    "S3UploadMode": "EndOfJob",
+                                    "LocalPath": "/opt/ml/processing/output/",
+                                    "S3Uri": sfn.JsonPath.format(
+                                        "s3://{}/{}/_post_lane_dets/",
+                                        self.target_bucket.bucket_name,
+                                        sfn.JsonPath.string_at("$.path"),
+                                    ),
+                                },
+                            }
+                        ]
+                    },
+                    "RoleArn": self.object_detection_config["ObjectDetectionRole"],
+                    "StoppingCondition": {"MaxRuntimeInSeconds": 86400},
+                },
             },
         )
 
@@ -552,33 +572,44 @@ class AwsBatchPipeline(Stack):
             result_path="$.EMR",
         )
 
-        scene_detection_job = tasks.CallAwsService(
+        scene_detection_job = sfn.CustomState(
             self,
             "Scene Detection",
-            action="startJobRun",
-            service="emrserverless",
-            iam_resources=["*"],
-            # integration_pattern=sfn.IntegrationPattern.RUN_JOB,
-            parameters={
-                "ClientToken": sfn.JsonPath.string_at("States.UUID()"),
-                "ApplicationId": self.emr_job_config["EMRApplicationId"],
-                "ExecutionRoleArn": self.emr_job_config["EMRJobRole"],
-                "JobDriver": {
-                    "SparkSubmit": {
-                        "EntryPoint": f"s3://{self.target_bucket.bucket_name}/dags/aws-solutions/analysis-rip/image_dags/detect_scenes.py",
-                        "EntryPointArguments.$": sfn.JsonPath.string_at("$.EMR.EMRArgs"),
-                        "SparkSubmitParameters": [
-                            "--jars",
-                            f"s3://{self.target_bucket.bucket_name}/dags/aws-solutions/analysis-rip/image_dags/spark-dynamodb_2.12-1.1.1.jar",
-                        ],
-                    }
-                },
-                "ConfigurationOverrides": {
-                    "MonitoringConfiguration": {
-                        "S3MonitoringConfiguration": {
-                            "LogUri": f"s3://{self.logs_bucket_name}/scene-detection",
+            state_json={
+                "Type": "Task",
+                "Resource": "arn:aws:states:::emr-serverless:startJobRun.sync",
+                "Retry": [{"ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "JitterStrategy": "FULL"}],
+                "Parameters": {
+                    "ClientToken": sfn.JsonPath.string_at("States.UUID()"),
+                    "ApplicationId": self.emr_job_config["EMRApplicationId"],
+                    "ExecutionRoleArn": self.emr_job_config["EMRJobRole"],
+                    "JobDriver": {
+                        "SparkSubmit": {
+                            "EntryPoint": f"s3://{self.target_bucket.bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/detect_scenes.py",
+                            "EntryPointArguments": sfn.JsonPath.array(
+                                "--batch-id",
+                                sfn.JsonPath.string_at("$.executionContext.execName"),
+                                "--batch-metadata-table-name",
+                                self.tracking_table.table_name,
+                                "--output-bucket",
+                                self.target_bucket.bucket_name,
+                                "--region",
+                                self.region,
+                                "--output-dynamo-table",
+                                "addf-aws-solutions-core-metadata-storage-Rosbag-Scene-Metadata",
+                                "--image-topics",
+                                json.dumps(self.image_topics),
+                            ),
+                            "SparkSubmitParameters": f"--jars s3://{self.artifacts_bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/spark-dynamodb_2.12-1.1.1.jar",
                         }
-                    }
+                    },
+                    "ConfigurationOverrides": {
+                        "MonitoringConfiguration": {
+                            "S3MonitoringConfiguration": {
+                                "LogUri": f"s3://{self.logs_bucket_name}/scene-detection",
+                            }
+                        }
+                    },
                 },
             },
         )

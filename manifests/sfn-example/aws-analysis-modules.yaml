@@ -93,11 +93,17 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: LogsBucketName
-  - name: full-access-policy-arn
+  - name: artifacts-bucket-name
     valueFrom:
       moduleMetadata:
         group: optionals
         name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: full-access-policy-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: dataxlake-buckets
         key: FullAccessPolicyArn
   - name: on-demand-job-queue-arn
     valueFrom:

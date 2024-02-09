@@ -20,6 +20,7 @@ vpc_id = os.getenv(_param("VPC_ID"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
+artifacts_bucket_name = os.getenv(_param("ARTIFACTS_BUCKET_NAME"))
 logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
 detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
 on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
@@ -98,6 +99,7 @@ stack = AwsBatchPipeline(
     bucket_access_policy=full_access_policy,
     target_bucket_name=target_bucket_name,
     logs_bucket_name=logs_bucket_name,
+    artifacts_bucket_name=artifacts_bucket_name,
     vpc_id=vpc_id,
     job_queues={
         "fargate_job_queue": fargate_job_queue,
@@ -126,6 +128,7 @@ stack = AwsBatchPipeline(
         "EMRApplicationId": emr_app_id,
         "EMRJobRole": emr_job_role,
     },
+    image_topics=image_topics,
     stack_description=generate_description(),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
