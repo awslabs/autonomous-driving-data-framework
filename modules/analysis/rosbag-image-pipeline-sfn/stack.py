@@ -340,10 +340,7 @@ class TemplateStack(cdk.Stack):
                 "RoleArn": object_detection_role_arn,
                 "ProcessingJobName": sfn.JsonPath.format(
                     "Step-{}-YOLO",
-                    sfn.JsonPath.hash(
-                        sfn.JsonPath.string_at("$"),
-                        "MD5",
-                    ),
+                    sfn.JsonPath.uuid(),
                 ),
                 "AppSpecification": {
                     "ImageUri": object_detection_image_uri,
@@ -415,10 +412,7 @@ class TemplateStack(cdk.Stack):
                 "RoleArn": lane_detection_role_arn,
                 "ProcessingJobName": sfn.JsonPath.format(
                     "Step-{}-LANE",
-                    sfn.JsonPath.hash(
-                        sfn.JsonPath.string_at("$"),
-                        "MD5",
-                    ),
+                    sfn.JsonPath.uuid(),
                 ),
                 "AppSpecification": {
                     "ImageUri": lane_detection_image_uri,
