@@ -47,6 +47,15 @@ emr_job_role = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
 emr_app_id = os.getenv(_param("EMR_APP_ID"))
 
 
+if not artifacts_bucket_name:
+    raise ValueError("missing input parameter artifacts-bucket-name")
+
+if not logs_bucket_name:
+    raise ValueError("missing input parameter logs-bucket-name")
+
+if not target_bucket_name:
+    raise ValueError("missing input parameter intermediate-bucket")
+
 if not png_batch_job_def_arn:
     raise ValueError("missing input parameter png-batch-job-def-arn")
 
