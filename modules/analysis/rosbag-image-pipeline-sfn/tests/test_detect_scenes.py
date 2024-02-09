@@ -1,7 +1,8 @@
 import os
 
-from artifacts.detect_scenes import *
 from pyspark.sql.types import ArrayType, IntegerType
+
+from artifacts.detect_scenes import *
 
 
 def create_spark_session(port: int):
