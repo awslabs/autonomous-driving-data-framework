@@ -249,7 +249,7 @@ class AwsBatchPipeline(Stack):
                                                 "sk": {"S.$": "$.index"},
                                                 "drive_id": {"S.$": "$.drive"},
                                                 "file_id": {
-                                                    "S.$": "States.ArrayGetItem(States.StringSplit($.Key.Key, '/'), States.MathAdd(States.ArrayLength(States.StringSplit($.Key.Key, '/')), -1))"
+                                                    "S.$": "States.ArrayGetItem(States.StringSplit($.Key.Key, '/'), States.MathAdd(States.ArrayLength(States.StringSplit($.Key.Key, '/')), -1))" # noqa: E501
                                                 },
                                                 "s3_bucket": {"S.$": "$.bucket"},
                                                 "s3_key": {"S.$": "$.Key.Key"},
@@ -592,7 +592,7 @@ class AwsBatchPipeline(Stack):
                     "ExecutionRoleArn": self.emr_job_config["EMRJobRole"],
                     "JobDriver": {
                         "SparkSubmit": {
-                            "EntryPoint": f"s3://{self.artifacts_bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/detect_scenes.py",
+                            "EntryPoint": f"s3://{self.artifacts_bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/detect_scenes.py", # noqa: E501
                             "EntryPointArguments.$": sfn.JsonPath.array(
                                 "--batch-id",
                                 sfn.JsonPath.string_at("$.executionContext.execName"),
@@ -607,7 +607,7 @@ class AwsBatchPipeline(Stack):
                                 "--image-topics",
                                 json.dumps(self.image_topics),
                             ),
-                            "SparkSubmitParameters": f"--jars s3://{self.artifacts_bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/spark-dynamodb_2.12-1.1.1.jar",
+                            "SparkSubmitParameters": f"--jars s3://{self.artifacts_bucket_name}/artifacts/{self.deployment_name}/{self.module_name}/spark-dynamodb_2.12-1.1.1.jar", # noqa: E501
                         }
                     },
                     "ConfigurationOverrides": {
