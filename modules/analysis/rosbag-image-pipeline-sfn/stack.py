@@ -38,7 +38,7 @@ class AwsBatchPipeline(Stack):
         lane_detection_config: Dict[str, str],
         emr_job_config: Dict[str, str],
         stack_description: str,
-        image_topics: List[str],
+        image_topics: Any,
         **kwargs: Any,
     ) -> None:
         super().__init__(

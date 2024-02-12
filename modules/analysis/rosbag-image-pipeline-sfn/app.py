@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import json
 
 from aws_cdk import App, CfnOutput, Environment
 
@@ -40,8 +41,8 @@ lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"),
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
 desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
 yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
-image_topics = os.getenv(_param("IMAGE_TOPICS"))
-sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
+image_topics = json.loads(os.getenv(_param("IMAGE_TOPICS")))
+sensor_topics = json.loads(os.getenv(_param("SENSOR_TOPICS")))
 
 emr_job_role = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
 emr_app_id = os.getenv(_param("EMR_APP_ID"))

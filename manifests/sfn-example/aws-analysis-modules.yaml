@@ -1,5 +1,5 @@
 name: rip
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/analysis/rosbag-image-pipeline/?ref=main
+path: modules/analysis/rosbag-image-pipeline-sfn
 parameters:
   - name: vpc-id
     valueFrom:
@@ -103,7 +103,7 @@ parameters:
     valueFrom:
       moduleMetadata:
         group: optionals
-        name: dataxlake-buckets
+        name: datalake-buckets
         key: FullAccessPolicyArn
   - name: on-demand-job-queue-arn
     valueFrom:
