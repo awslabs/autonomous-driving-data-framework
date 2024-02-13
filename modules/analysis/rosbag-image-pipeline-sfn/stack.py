@@ -506,7 +506,7 @@ class AwsBatchPipeline(Stack):
                 "Resource": "arn:aws:states:::sagemaker:createProcessingJob.sync",
                 "Retry": [{"ErrorEquals": ["States.ALL"], "IntervalSeconds": 10, "JitterStrategy": "FULL"}],
                 "Parameters": {
-                    "ProcessingJobName.$": sfn.JsonPath.string_at("States.Format('lanedet-{}', States.UUID())"),
+                    "ProcessingJobName.$": sfn.JsonPath.string_at("States.Format('objectdet-{}', States.UUID())"),
                     "AppSpecification": {
                         "ContainerArguments": [
                             "--save_dir",
