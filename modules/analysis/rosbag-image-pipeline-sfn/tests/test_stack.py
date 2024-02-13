@@ -67,6 +67,7 @@ def test_stack(stack_defaults):
         },
         stack_description="Testing",
         image_topics='["foo", "bar"]',
+        rosbag_scene_metadata_table="scene-metadata-table",
         env=cdk.Environment(
             account=(os.environ["CDK_DEFAULT_ACCOUNT"]),
             region=(os.environ["CDK_DEFAULT_REGION"]),

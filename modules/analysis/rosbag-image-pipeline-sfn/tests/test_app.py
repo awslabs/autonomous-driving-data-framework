@@ -36,6 +36,10 @@ def stack_defaults():
     os.environ["ADDF_PARAMETER_LANE_DETECTION_IAM_ROLE"] = "lane-detection-iam-role"
     os.environ["ADDF_PARAMETER_IMAGE_TOPICS"] = "{}"
     os.environ["ADDF_PARAMETER_SENSOR_TOPICS"] = "{}"
+    os.environ["ADDF_PARAMETER_EMR_APP_ID"] = "emrappid"
+    os.environ["EMR_JOB_EXEC_ROLE"] = "emrrole"
+    os.environ["ROSBAG_SCENE_METADATA_TABLE"] = "scene-metadata-table"
+
 
     # Unload the app import so that subsequent tests don't reuse
     if "app" in sys.modules:
