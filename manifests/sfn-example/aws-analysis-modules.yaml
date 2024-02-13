@@ -140,3 +140,4 @@ parameters:
       moduleMetadata:
         group: core
         name: metadata-storage
+        key: RosbagSceneMetadataTable
