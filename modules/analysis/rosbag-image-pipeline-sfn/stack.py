@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 import logging
-from typing import Any, Dict, List, cast
+from typing import Any, Dict, cast
 
 import aws_cdk.aws_ec2 as ec2
 import aws_cdk.aws_iam as iam

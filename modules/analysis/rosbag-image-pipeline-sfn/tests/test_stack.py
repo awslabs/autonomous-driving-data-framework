@@ -77,4 +77,3 @@ def test_stack(stack_defaults):
     template.resource_count_is("AWS::DynamoDB::Table", 1)
 
     template.resource_count_is("AWS::IAM::Role", 1)
-    

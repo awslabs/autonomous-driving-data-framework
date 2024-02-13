@@ -23,7 +23,6 @@ def stack_defaults():
     os.environ["ADDF_PARAMETER_INTERMEDIATE_BUCKET"] = "intermediate-bucket"
     os.environ["ADDF_PARAMETER_LOGS_BUCKET_NAME"] = "logs-bucket"
     os.environ["ADDF_PARAMETER_ARTIFACTS_BUCKET_NAME"] = "artifacts-bucket"
-    
 
     os.environ["ADDF_PARAMETER_ON_DEMAND_JOB_QUEUE_ARN"] = "on-demand-job-queue-arn"
     os.environ["ADDF_PARAMETER_SPOT_JOB_QUEUE_ARN"] = "spot-job-queue-arn"
