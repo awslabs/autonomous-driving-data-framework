@@ -603,7 +603,7 @@ class AwsBatchPipeline(Stack):
                                 "--region",
                                 self.region,
                                 "--output-dynamo-table",
-                                "addf-aws-solutions-core-metadata-storage-Rosbag-Scene-Metadata",
+                                f"addf-{self.deployment_name}-core-metadata-storage-Rosbag-Scene-Metadata",
                                 "--image-topics",
                                 json.dumps(self.image_topics),
                             ),
