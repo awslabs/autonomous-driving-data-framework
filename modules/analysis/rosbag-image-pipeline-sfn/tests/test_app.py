@@ -40,7 +40,6 @@ def stack_defaults():
     os.environ["EMR_JOB_EXEC_ROLE"] = "emrrole"
     os.environ["ROSBAG_SCENE_METADATA_TABLE"] = "scene-metadata-table"
 
-
     # Unload the app import so that subsequent tests don't reuse
     if "app" in sys.modules:
         del sys.modules["app"]
