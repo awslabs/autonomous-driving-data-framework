@@ -39,6 +39,7 @@ class AwsBatchPipeline(Stack):
         emr_job_config: Dict[str, str],
         stack_description: str,
         image_topics: Any,
+        rosbag_scene_metadata_table: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -61,6 +62,7 @@ class AwsBatchPipeline(Stack):
         self.logs_bucket_name = logs_bucket_name
         self.artifacts_bucket_name = artifacts_bucket_name
         self.image_topics = image_topics
+        self.rosbag_scene_metadata_table = rosbag_scene_metadata_table
         state_machine_id = "Rosbag Image Pipeline State Machine"
 
         Tags.of(scope=cast(IConstruct, self)).add(
@@ -603,7 +605,7 @@ class AwsBatchPipeline(Stack):
                                 "--region",
                                 self.region,
                                 "--output-dynamo-table",
-                                f"addf-{self.deployment_name}-core-metadata-storage-Rosbag-Scene-Metadata",
+                                self.rosbag_scene_metadata_table,
                                 "--image-topics",
                                 json.dumps(self.image_topics),
                             ),

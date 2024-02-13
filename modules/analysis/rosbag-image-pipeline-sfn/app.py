@@ -47,6 +47,8 @@ sensor_topics = json.loads(os.getenv(_param("SENSOR_TOPICS")))  # type: ignore
 emr_job_role = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
 emr_app_id = os.getenv(_param("EMR_APP_ID"))
 
+rosbag_scene_metadata_table = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
+
 
 if not artifacts_bucket_name:
     raise ValueError("missing input parameter artifacts-bucket-name")
@@ -95,6 +97,9 @@ if not emr_app_id:
 
 if not emr_job_role:
     raise ValueError("missing input parameter emr-job-role")
+
+if not rosbag_scene_metadata_table:
+    raise ValueError("missing input parameter rosbag-scene-metadata-table")
 
 
 def generate_description() -> str:
@@ -150,6 +155,7 @@ stack = AwsBatchPipeline(
         "EMRJobRole": emr_job_role,
     },
     image_topics=image_topics,
+    rosbag_scene_metadata_table=rosbag_scene_metadata_table,
     stack_description=generate_description(),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],

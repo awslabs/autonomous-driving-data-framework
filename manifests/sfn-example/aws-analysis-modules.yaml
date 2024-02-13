@@ -135,3 +135,8 @@ parameters:
         group: core
         name: emr-serverless
         key: EmrApplicationId
+  - name: rosbag-scene-metadata-table
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: metadata-storage
