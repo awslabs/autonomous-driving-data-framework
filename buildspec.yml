@@ -4,8 +4,19 @@ phases:
   build:
     commands:
       # CDK Version is defaulted to 2.82.0 if not mentioned using `-c`
-      # Rosbag Image Pipeline
       - apt-get update -y && apt-get install -y net-tools
+      # Network
+      - bash gen-reports.sh -m network/basic-cdk 
+      # Storage
+      - bash gen-reports.sh -m storage/opensearch 
+      # Orch
+      - bash gen-reports.sh -m orchestration/mwaa
+      # Compute
+      - bash gen-reports.sh -m compute/aws-batch -c 2.70.0 
+      - bash gen-reports.sh -m compute/emr-serverless -c 2.83.1
+      # Catalog
+      - bash gen-reports.sh -m service-catalog/app-registry -c 2.70.0 # needed for solutions
+      # Rosbag Image Pipeline
       - bash gen-reports.sh -m analysis/rosbag-image-pipeline -r requirements-dev.txt
       # Storage
       - bash gen-reports.sh -m core/metadata-storage
