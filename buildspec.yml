@@ -10,7 +10,7 @@ phases:
       # Storage
       - bash gen-reports.sh -m storage/opensearch 
       # Orch
-      - bash gen-reports.sh -m orchestration/mwaa
+      #- bash gen-reports.sh -m orchestration/mwaa
       # Compute
       - bash gen-reports.sh -m compute/aws-batch -c 2.70.0 
       - bash gen-reports.sh -m compute/emr-serverless -c 2.83.1
