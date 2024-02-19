@@ -3,111 +3,72 @@
 
 import json
 import os
+from typing import List, cast
 
 from aws_cdk import App, CfnOutput, Environment
 
-from stack import AwsBatchPipeline
+from stack import TemplateStack
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+# Project specific
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME")
+hash = os.getenv("SEEDFARMER_HASH", "")
+
+if len(f"{project_name}-{deployment_name}") > 36:
+    raise ValueError("This module cannot support a project+deployment name character length greater than 35")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 vpc_id = os.getenv(_param("VPC_ID"))
-full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))
+
+emr_job_exec_role_arn = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
+emr_app_id = os.getenv(_param("EMR_APP_ID"))
+
 source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
 target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
 artifacts_bucket_name = os.getenv(_param("ARTIFACTS_BUCKET_NAME"))
 logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
+
 detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
-on_demand_job_queue = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
-spot_job_queue = os.getenv(_param("SPOT_JOB_QUEUE_ARN"))
-fargate_job_queue = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
+on_demand_job_queue_arn = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
+fargate_job_queue_arn = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
 parquet_batch_job_def_arn = os.getenv(_param("PARQUET_BATCH_JOB_DEF_ARN"))
 png_batch_job_def_arn = os.getenv(_param("PNG_BATCH_JOB_DEF_ARN"))
+
 object_detection_image_uri = os.getenv(_param("OBJECT_DETECTION_IMAGE_URI"))
 object_detection_role = os.getenv(_param("OBJECT_DETECTION_IAM_ROLE"))
-object_detection_job_concurrency = os.getenv(_param("OBJECT_DETECTION_JOB_CONCURRENCY"), "10")
+object_detection_job_concurrency = int(os.getenv(_param("OBJECT_DETECTION_JOB_CONCURRENCY"), 10))
 object_detection_instance_type = os.getenv(_param("OBJECT_DETECTION_INSTANCE_TYPE"), "ml.m5.xlarge")
 
 lane_detection_image_uri = os.getenv(_param("LANE_DETECTION_IMAGE_URI"))
 lane_detection_role = os.getenv(_param("LANE_DETECTION_IAM_ROLE"))
-lane_detection_job_concurrency = os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), "5")
+lane_detection_job_concurrency = int(os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), 5))
 lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"), "ml.p3.2xlarge")
 
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
 desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
 yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
-image_topics = json.loads(os.getenv(_param("IMAGE_TOPICS")))  # type: ignore
-sensor_topics = json.loads(os.getenv(_param("SENSOR_TOPICS")))  # type: ignore
+image_topics: List[str] = json.loads(os.getenv(_param("IMAGE_TOPICS")))
+sensor_topics: List[str] = json.loads(os.getenv(_param("SENSOR_TOPICS")))
 
-emr_job_role = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
-emr_app_id = os.getenv(_param("EMR_APP_ID"))
+if not isinstance(image_topics, list):
+    raise ValueError("image_topics must be a list")
 
-rosbag_scene_metadata_table = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
-
-
-if not artifacts_bucket_name:
-    raise ValueError("missing input parameter artifacts-bucket-name")
-
-if not logs_bucket_name:
-    raise ValueError("missing input parameter logs-bucket-name")
-
-if not target_bucket_name:
-    raise ValueError("missing input parameter intermediate-bucket")
-
-if not png_batch_job_def_arn:
-    raise ValueError("missing input parameter png-batch-job-def-arn")
-
-if not parquet_batch_job_def_arn:
-    raise ValueError("missing input parameter parquet-batch-job-def-arn")
-
-if not object_detection_role:
-    raise ValueError("missing input parameter object-detection-iam-role")
-
-if not object_detection_image_uri:
-    raise ValueError("missing input parameter object-detection-image-uri")
-
-if not lane_detection_role:
-    raise ValueError("missing input parameter lane-detection-iam-role")
-
-if not lane_detection_image_uri:
-    raise ValueError("missing input parameter lane-detection-image-uri")
-
-if not full_access_policy:
-    raise ValueError("S3 Full Access Policy ARN is missing.")
-
-if not vpc_id:
-    raise ValueError("missing input parameter vpc-id")
-
-if not on_demand_job_queue:
-    raise ValueError("missing input parameter on-demand-job-queue-arn")
-
-if not spot_job_queue:
-    raise ValueError("missing input parameter spot-job-queue-arn")
-
-if not fargate_job_queue:
-    raise ValueError("missing input parameter fargate-job-queue-arn")
-
-if not emr_app_id:
-    raise ValueError("missing input parameter emr-app-id")
-
-if not emr_job_role:
-    raise ValueError("missing input parameter emr-job-role")
-
-if not rosbag_scene_metadata_table:
-    raise ValueError("missing input parameter rosbag-scene-metadata-table")
+if not isinstance(sensor_topics, list):
+    raise ValueError("sensor_topics must be a list")
 
 
 def generate_description() -> str:
-    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
-    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
-    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+    soln_id = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_VERSION", None)
 
-    desc = "Autonomous Driving Data Framework (ADDF) - rosbag-image-pipeline-sfn"
+    desc = "My Module Default Description"
     if soln_id and soln_name and soln_version:
         desc = f"({soln_id}) {soln_name}. Version {soln_version}"
     elif soln_id and soln_name:
@@ -117,84 +78,55 @@ def generate_description() -> str:
 
 app = App()
 
-stack = AwsBatchPipeline(
+template_stack = TemplateStack(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
-    deployment_name=deployment_name,
-    module_name=module_name,
-    bucket_access_policy=full_access_policy,
-    target_bucket_name=target_bucket_name,
-    logs_bucket_name=logs_bucket_name,
-    artifacts_bucket_name=artifacts_bucket_name,
-    vpc_id=vpc_id,
-    job_queues={
-        "fargate_job_queue": fargate_job_queue,
-        "spot_job_queue": spot_job_queue,
-        "on_demand_job_queue": on_demand_job_queue,
-    },
-    job_definitions={
-        "png_batch_job_def_arn": png_batch_job_def_arn,
-        "parquet_batch_job_def_arn": parquet_batch_job_def_arn,
-    },
-    lane_detection_config={
-        "LaneDetectionImageUri": lane_detection_image_uri,
-        "LaneDetectionRole": lane_detection_role,
-        "LaneDetectionJobConcurrency": lane_detection_job_concurrency,
-        "LaneDetectionInstanceType": lane_detection_instance_type,
-        "LaneDetectionRole": lane_detection_role,
-    },
-    object_detection_config={
-        "ObjectDetectionImageUri": object_detection_image_uri,
-        "ObjectDetectionRole": object_detection_role,
-        "ObjectDetectionJobConcurrency": object_detection_job_concurrency,
-        "ObjectDetectionInstanceType": object_detection_instance_type,
-        "ObjectDetectionRole": object_detection_role,
-    },
-    emr_job_config={
-        "EMRApplicationId": emr_app_id,
-        "EMRJobRole": emr_job_role,
-    },
-    image_topics=image_topics,
-    rosbag_scene_metadata_table=rosbag_scene_metadata_table,
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=cast(str, project_name),
+    deployment_name=cast(str, deployment_name),
+    module_name=cast(str, module_name),
+    hash=cast(str, hash),
     stack_description=generate_description(),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    vpc_id=vpc_id,
+    private_subnet_ids=private_subnet_ids,
+    emr_job_exec_role_arn=emr_job_exec_role_arn,
+    emr_app_id=emr_app_id,
+    source_bucket_name=source_bucket_name,
+    target_bucket_name=target_bucket_name,
+    artifacts_bucket_name=artifacts_bucket_name,
+    logs_bucket_name=logs_bucket_name,
+    detection_ddb_name=detection_ddb_name,
+    on_demand_job_queue_arn=on_demand_job_queue_arn,
+    fargate_job_queue_arn=fargate_job_queue_arn,
+    parquet_batch_job_def_arn=parquet_batch_job_def_arn,
+    png_batch_job_def_arn=png_batch_job_def_arn,
+    object_detection_image_uri=object_detection_image_uri,
+    object_detection_role_arn=object_detection_role,
+    object_detection_job_concurrency=object_detection_job_concurrency,
+    object_detection_instance_type=object_detection_instance_type,
+    lane_detection_image_uri=lane_detection_image_uri,
+    lane_detection_role_arn=lane_detection_role,
+    lane_detection_job_concurrency=lane_detection_job_concurrency,
+    lane_detection_instance_type=lane_detection_instance_type,
+    file_suffix=file_suffix,
+    desired_encoding=desired_encoding,
+    yolo_model=yolo_model,
+    image_topics=image_topics,
+    sensor_topics=sensor_topics,
 )
 
+
 CfnOutput(
-    scope=stack,
+    scope=template_stack,
     id="metadata",
-    value=stack.to_json_string(
+    value=template_stack.to_json_string(
         {
-            "SecurityGroupId": stack.security_group.security_group_id,
-            "SfnRoleArn": stack.sfn_role.role_arn,
-            "DynamoDbTableName": stack.tracking_table_name,
-            "DetectionsDynamoDBName": detection_ddb_name,
-            "SourceBucketName": source_bucket_name,
-            "TargetBucketName": target_bucket_name,
-            "LogsBucketName": logs_bucket_name,
-            "OnDemandJobQueueArn": on_demand_job_queue,
-            "SpotJobQueueArn": spot_job_queue,
-            "FargateJobQueueArn": fargate_job_queue,
-            "ParquetBatchJobDefArn": parquet_batch_job_def_arn,
-            "PngBatchJobDefArn": png_batch_job_def_arn,
-            "ObjectDetectionImageUri": object_detection_image_uri,
-            "ObjectDetectionRole": object_detection_role,
-            "ObjectDetectionJobConcurrency": object_detection_job_concurrency,
-            "ObjectDetectionInstanceType": object_detection_instance_type,
-            "LaneDetectionImageUri": lane_detection_image_uri,
-            "LaneDetectionRole": lane_detection_role,
-            "LaneDetectionJobConcurrency": lane_detection_job_concurrency,
-            "LaneDetectionInstanceType": lane_detection_instance_type,
-            "FileSuffix": file_suffix,
-            "DesiredEncoding": desired_encoding,
-            "YoloModel": yolo_model,
-            "ImageTopics": image_topics,
-            "SensorTopics": sensor_topics,
+            "StateMachineArn": template_stack.state_machine.state_machine_arn,
         }
     ),
 )
 
-app.synth(force=True)
+app.synth()
