@@ -1,5 +1,5 @@
 name: lustre-on-eks
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/fsx-lustre-on-eks?ref=release/1.2.0&depth=1
+path: git::https://github.com/a13zen/autonomous-driving-data-framework.git//modules/integration/fsx-lustre-on-eks?ref=integration-fixes&depth=1
 parameters:
   - name: EksClusterAdminRoleArn
     valueFrom:
