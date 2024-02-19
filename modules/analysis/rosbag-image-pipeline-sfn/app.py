@@ -3,7 +3,7 @@
 
 import json
 import os
-from typing import List, cast
+from typing import List, Optional, cast
 
 from aws_cdk import App, CfnOutput, Environment
 
@@ -19,42 +19,49 @@ if len(f"{project_name}-{deployment_name}") > 36:
     raise ValueError("This module cannot support a project+deployment name character length greater than 35")
 
 
-def _param(name: str) -> str:
-    return f"SEEDFARMER_PARAMETER_{name}"
+def get_arg_value(name: str, default: Optional[str] = None) -> str:
+
+    value = (
+        os.getenv(f"SEEDFARMER_PARAMETER_{name}", default) if default else os.getenv(f"SEEDFARMER_PARAMETER_{name}", "")
+    )
+    if value == "":
+        raise ValueError(f"required argument {name.replace('_', '-').lower()} is missing")
+    else:
+        return value
 
 
-vpc_id = os.getenv(_param("VPC_ID"))
-private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))
+vpc_id = get_arg_value("VPC_ID")
+private_subnet_ids = json.loads(get_arg_value("PRIVATE_SUBNET_IDS"))
 
-emr_job_exec_role_arn = os.getenv(_param("EMR_JOB_EXEC_ROLE"))
-emr_app_id = os.getenv(_param("EMR_APP_ID"))
+emr_job_exec_role_arn = get_arg_value("EMR_JOB_EXEC_ROLE")
+emr_app_id = get_arg_value("EMR_APP_ID")
 
-source_bucket_name = os.getenv(_param("SOURCE_BUCKET"))
-target_bucket_name = os.getenv(_param("INTERMEDIATE_BUCKET"))
-artifacts_bucket_name = os.getenv(_param("ARTIFACTS_BUCKET_NAME"))
-logs_bucket_name = os.getenv(_param("LOGS_BUCKET_NAME"))
+source_bucket_name = get_arg_value("SOURCE_BUCKET")
+target_bucket_name = get_arg_value("INTERMEDIATE_BUCKET")
+artifacts_bucket_name = get_arg_value("ARTIFACTS_BUCKET_NAME")
+logs_bucket_name = get_arg_value("LOGS_BUCKET_NAME")
 
-detection_ddb_name = os.getenv(_param("ROSBAG_SCENE_METADATA_TABLE"))
-on_demand_job_queue_arn = os.getenv(_param("ON_DEMAND_JOB_QUEUE_ARN"))
-fargate_job_queue_arn = os.getenv(_param("FARGATE_JOB_QUEUE_ARN"))
-parquet_batch_job_def_arn = os.getenv(_param("PARQUET_BATCH_JOB_DEF_ARN"))
-png_batch_job_def_arn = os.getenv(_param("PNG_BATCH_JOB_DEF_ARN"))
+detection_ddb_name = get_arg_value("ROSBAG_SCENE_METADATA_TABLE")
+on_demand_job_queue_arn = get_arg_value("ON_DEMAND_JOB_QUEUE_ARN")
+fargate_job_queue_arn = get_arg_value("FARGATE_JOB_QUEUE_ARN")
+parquet_batch_job_def_arn = get_arg_value("PARQUET_BATCH_JOB_DEF_ARN")
+png_batch_job_def_arn = get_arg_value("PNG_BATCH_JOB_DEF_ARN")
 
-object_detection_image_uri = os.getenv(_param("OBJECT_DETECTION_IMAGE_URI"))
-object_detection_role = os.getenv(_param("OBJECT_DETECTION_IAM_ROLE"))
-object_detection_job_concurrency = int(os.getenv(_param("OBJECT_DETECTION_JOB_CONCURRENCY"), 10))
-object_detection_instance_type = os.getenv(_param("OBJECT_DETECTION_INSTANCE_TYPE"), "ml.m5.xlarge")
+object_detection_image_uri = get_arg_value("OBJECT_DETECTION_IMAGE_URI")
+object_detection_role = get_arg_value("OBJECT_DETECTION_IAM_ROLE")
+object_detection_job_concurrency = int(get_arg_value("OBJECT_DETECTION_JOB_CONCURRENCY", "10"))
+object_detection_instance_type = get_arg_value("OBJECT_DETECTION_INSTANCE_TYPE", "ml.m5.xlarge")
 
-lane_detection_image_uri = os.getenv(_param("LANE_DETECTION_IMAGE_URI"))
-lane_detection_role = os.getenv(_param("LANE_DETECTION_IAM_ROLE"))
-lane_detection_job_concurrency = int(os.getenv(_param("LANE_DETECTION_JOB_CONCURRENCY"), 5))
-lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"), "ml.p3.2xlarge")
+lane_detection_image_uri = get_arg_value("LANE_DETECTION_IMAGE_URI")
+lane_detection_role = get_arg_value("LANE_DETECTION_IAM_ROLE")
+lane_detection_job_concurrency = int(get_arg_value("LANE_DETECTION_JOB_CONCURRENCY", "5"))
+lane_detection_instance_type = get_arg_value("LANE_DETECTION_INSTANCE_TYPE", "ml.p3.2xlarge")
 
-file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
-desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
-yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov5s")
-image_topics: List[str] = json.loads(os.getenv(_param("IMAGE_TOPICS")))
-sensor_topics: List[str] = json.loads(os.getenv(_param("SENSOR_TOPICS")))
+file_suffix = get_arg_value("FILE_SUFFIX", ".bag")
+desired_encoding = get_arg_value("DESIRED_ENCODING", "bgr8")
+yolo_model = get_arg_value("YOLO_MODEL", "yolov5s")
+image_topics: List[str] = json.loads(get_arg_value("IMAGE_TOPICS"))
+sensor_topics: List[str] = json.loads(get_arg_value("SENSOR_TOPICS"))
 
 if not isinstance(image_topics, list):
     raise ValueError("image_topics must be a list")
@@ -84,7 +91,7 @@ template_stack = TemplateStack(
     project_name=cast(str, project_name),
     deployment_name=cast(str, deployment_name),
     module_name=cast(str, module_name),
-    hash=cast(str, hash),
+    hash=hash,
     stack_description=generate_description(),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],

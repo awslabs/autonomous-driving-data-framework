@@ -459,7 +459,7 @@ class TemplateStack(cdk.Stack):
         start_process_task: tasks.CallAwsService,
         wait_time_seconds: int,
     ) -> sfn.IChainable:
-        start_process_task = start_process_task.add_retry(
+        start_process_task.add_retry(
             errors=["SageMaker.SageMakerException"],
             interval=cdk.Duration.seconds(5),
             max_attempts=5,
@@ -515,7 +515,7 @@ class TemplateStack(cdk.Stack):
         target_bucket: s3.IBucket,
         logs_bucket: s3.IBucket,
         tracking_table: dynamodb.Table,
-        detection_ddb_table: dynamodb.Table,
+        detection_ddb_table: dynamodb.ITable,
         image_topics: List[str],
         batch_id: str,
     ) -> sfn.IChainable:
