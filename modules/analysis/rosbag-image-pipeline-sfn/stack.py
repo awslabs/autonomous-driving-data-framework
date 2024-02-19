@@ -14,7 +14,6 @@ from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_s3_deployment as s3deploy
 from aws_cdk import aws_stepfunctions as sfn
 from aws_cdk import aws_stepfunctions_tasks as tasks
-from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 
@@ -436,21 +435,6 @@ class TemplateStack(cdk.Stack):
             "StateMachine",
             state_machine_name=f"{project_name}-{deployment_name}-rosbag-image-pipeline-{hash}",
             definition_body=sfn.DefinitionBody.from_chainable(definition),
-        )
-
-        NagSuppressions.add_stack_suppressions(
-            self,
-            apply_to_nested_stacks=True,
-            suppressions=[
-                NagPackSuppression(
-                    id="AwsSolutions-IAM4",
-                    reason="Managed Policies are for service account roles only",
-                ),
-                NagPackSuppression(
-                    id="AwsSolutions-IAM5",
-                    reason="Resource access restriced to resources",
-                ),
-            ],
         )
 
     def processing_job_add_wait(
