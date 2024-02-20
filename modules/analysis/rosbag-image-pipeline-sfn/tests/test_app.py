@@ -80,6 +80,15 @@ def test_app(stack_defaults):
     import app  # noqa: F401
 
 
+def test_missing_argument(stack_defaults):
+
+    with pytest.raises(ValueError) as e:
+        import app  # noqa: F401
+
+        os.environ["SEEDFARMER_PARAMETER_SOURCE_BUCKET"] = ""
+        app.get_arg_value("SOURCE_BUCKET")
+
+
 def test_project_deployment_name_length(stack_defaults):
     os.environ["SEEDFARMER_PROJECT_NAME"] = "test-project-incredibly"
 
