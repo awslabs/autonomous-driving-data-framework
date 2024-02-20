@@ -9,7 +9,7 @@ deploy:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # Here we export some env vars
-      - export SEEDFARMER_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}']['metadata'])")
+      - export SEEDFARMER_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}']['metadata'])") || true
       - export EMR_DIR="emr-scripts"
       - wget -O $EMR_DIR/spark-dynamodb_2.12-1.1.1.jar https://repo1.maven.org/maven2/com/audienceproject/spark-dynamodb_2.12/1.1.1/spark-dynamodb_2.12-1.1.1.jar
       - aws s3 cp --recursive $EMR_DIR/ s3://$SEEDFARMER_PARAMETER_ARTIFACTS_BUCKET_NAME/$EMR_DIR/

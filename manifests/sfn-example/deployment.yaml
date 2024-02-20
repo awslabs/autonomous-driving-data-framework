@@ -12,7 +12,7 @@ groups:
     path: manifests/sfn-example/aws-analysis-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 500369900939
+    accountId: 123456789101
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
