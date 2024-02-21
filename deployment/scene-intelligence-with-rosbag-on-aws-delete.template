@@ -461,7 +461,7 @@ Resources:
 
               return response
       Handler: index.lambda_handler
-      Runtime: python3.7
+      Runtime: python3.9
       Timeout: 300
       Role: !GetAtt CodeBuildLambdaExecutionRole.Arn
   CodeBuildLambdaExecutionRole:
