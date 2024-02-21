@@ -30,8 +30,12 @@ WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
 INPUT_DATASET_PATH = os.environ.get("DATASET_PATH", "/data/fsx/import")
 OUTPUT_ARTIFACTS_PATH = os.environ.get("OUTPUT_ARTIFACTS_PATH", "/data/fsx/export")
 TRAINING_JOB_ID = os.environ["TRAINING_JOB_ID"]
-JOB_OUTPUT_PATH = os.environ.join(OUTPUT_ARTIFACTS_PATH, TRAINING_JOB_ID)
+JOB_OUTPUT_PATH = os.path.join(OUTPUT_ARTIFACTS_PATH, TRAINING_JOB_ID)
 
+# Create JOB specific output path if not exists
+if not os.path.exists(JOB_OUTPUT_PATH):
+    os.makedirs(JOB_OUTPUT_PATH)
+    
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -216,7 +220,7 @@ def main():
         datefmt="%Y-%m-%dT%H:%M:%SZ",
         level=logging.DEBUG,
         handlers=[
-            logging.FileHandler(os.environ.join(JOB_OUTPUT_PATH, "training.log")),
+            logging.FileHandler(os.path.join(JOB_OUTPUT_PATH, "training.log")),
             logging.StreamHandler()
         ]
     )
