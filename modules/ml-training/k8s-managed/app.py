@@ -6,11 +6,12 @@ import os
 from aws_cdk import App, CfnOutput, Environment
 from stack import TrainingDags
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
-eks_cluster_name = os.getenv("ADDF_PARAMETER_EKS_CLUSTER_NAME", "")
-eks_admin_role_arn = os.getenv("ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN", "")
-eks_oidc_provider_arn = os.getenv("ADDF_PARAMETER_EKS_OIDC_ARN", "")
+deployment_name = os.environ["ADDF_DEPLOYMENT_NAME"]
+module_name = os.environ["ADDF_MODULE_NAME"]
+eks_cluster_name = os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"]
+eks_admin_role_arn = os.environ["ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"]
+eks_oidc_provider_arn = os.environ["ADDF_PARAMETER_EKS_OIDC_ARN"]
+training_namespace_name = os.environ["ADDF_PARAMETER_TRAINING_NAMESPACE_NAME"]
 
 app = App()
 
@@ -22,6 +23,7 @@ stack = TrainingDags(
     eks_cluster_name=eks_cluster_name,
     eks_admin_role_arn=eks_admin_role_arn,
     eks_openid_connect_provider_arn=eks_oidc_provider_arn,
+    training_namespace_name=training_namespace_name,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
@@ -34,6 +36,7 @@ CfnOutput(
     value=stack.to_json_string(
         {
             "EksServiceAccountRoleArn": stack.eks_service_account_role.role_arn,
+            "TrainingNamespaceName": training_namespace_name
         }
     ),
 )

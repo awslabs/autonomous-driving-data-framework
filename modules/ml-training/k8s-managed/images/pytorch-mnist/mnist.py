@@ -27,7 +27,10 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 
 WORLD_SIZE = int(os.environ.get("WORLD_SIZE", 1))
-
+INPUT_DATASET_PATH = os.environ.get("DATASET_PATH", "/data/fsx/import")
+OUTPUT_ARTIFACTS_PATH = os.environ.get("OUTPUT_ARTIFACTS_PATH", "/data/fsx/export")
+TRAINING_JOB_ID = os.environ["TRAINING_JOB_ID"]
+JOB_OUTPUT_PATH = os.environ.join(OUTPUT_ARTIFACTS_PATH, TRAINING_JOB_ID)
 
 class Net(nn.Module):
     def __init__(self):
@@ -47,6 +50,14 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
+def check_dataset_exists(data_path, dataset_name):
+  dataset_path = os.path.join(data_path, dataset_name)
+  if os.path.exists(dataset_path):
+    print('MNIST dataset found at:', dataset_path)
+    return True
+  else:  
+    print('MNIST dataset not found')
+    return False
 
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()
@@ -199,20 +210,16 @@ def main():
     args = parser.parse_args()
 
     # Use this format (%Y-%m-%dT%H:%M:%SZ) to record timestamp of the metrics.
-    # If log_path is empty print log to StdOut, otherwise print log to the file.
-    if args.log_path == "" or args.logger == "hypertune":
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)-8s %(message)s",
-            datefmt="%Y-%m-%dT%H:%M:%SZ",
-            level=logging.DEBUG,
-        )
-    else:
-        logging.basicConfig(
-            format="%(asctime)s %(levelname)-8s %(message)s",
-            datefmt="%Y-%m-%dT%H:%M:%SZ",
-            level=logging.DEBUG,
-            filename=args.log_path,
-        )
+
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)-8s %(message)s",
+        datefmt="%Y-%m-%dT%H:%M:%SZ",
+        level=logging.DEBUG,
+        handlers=[
+            logging.FileHandler(os.environ.join(JOB_OUTPUT_PATH, "training.log")),
+            logging.StreamHandler()
+        ]
+    )
 
     if args.logger == "hypertune" and args.log_path != "":
         os.environ["CLOUD_ML_HP_METRIC_FILE"] = args.log_path
@@ -237,11 +244,13 @@ def main():
 
     kwargs = {"num_workers": 1, "pin_memory": True} if use_cuda else {}
 
+    dataset_exists = check_dataset_exists(data_path=INPUT_DATASET_PATH, dataset_name="FashionMNIST")
+
     train_loader = torch.utils.data.DataLoader(
         datasets.FashionMNIST(
-            "/data/fsx/import",
+            INPUT_DATASET_PATH,
             train=True,
-            download=False,
+            download=False if dataset_exists else True,
             transform=transforms.Compose([transforms.ToTensor()]),
         ),
         batch_size=args.batch_size,
@@ -251,9 +260,9 @@ def main():
 
     test_loader = torch.utils.data.DataLoader(
         datasets.FashionMNIST(
-            "/data/fsx/import",
+            INPUT_DATASET_PATH,
             train=False,
-            download=False,
+            download=False if dataset_exists else True,
             transform=transforms.Compose([transforms.ToTensor()]),
         ),
         batch_size=args.test_batch_size,
@@ -275,7 +284,7 @@ def main():
         test(args, model, device, test_loader, epoch, hpt)
 
     if args.save_model:
-        torch.save(model.state_dict(), "/data/model.pt")
+        torch.save(model.state_dict(), os.path.join(JOB_OUTPUT_PATH, "model.pt"))
         print("Model Saved")
 
 

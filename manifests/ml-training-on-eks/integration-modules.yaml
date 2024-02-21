@@ -6,7 +6,7 @@ parameters:
       moduleMetadata:
         group: core
         name: eks
-        key: EksClusterAdminRoleArn
+        key: EksClusterMasterRoleArn
   - name: EksClusterName
     valueFrom:
       moduleMetadata:
@@ -26,7 +26,8 @@ parameters:
         name: eks
         key: EksClusterSecurityGroupId
   - name: Namespace
-    value: "training-training"
+    valueFrom:
+      parameterValue: trainingNamespaceName
   - name: FsxFileSystemId
     valueFrom:
       moduleMetadata:

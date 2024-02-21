@@ -33,4 +33,6 @@ parameters:
         group: integration
         name: lustre-on-eks
         key: PersistentVolumeClaimName
- 
+  - name: training-namespace-name
+    valueFrom:
+      parameterValue: trainingNamespaceName

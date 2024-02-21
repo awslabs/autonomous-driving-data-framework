@@ -27,6 +27,7 @@ class TrainingDags(Stack):
         eks_cluster_name: str,
         eks_admin_role_arn: str,
         eks_openid_connect_provider_arn: str,
+        training_namespace_name: str,
         **kwargs: Any,
     ) -> None:
         # ADDF Env vars
@@ -73,11 +74,11 @@ class TrainingDags(Stack):
             {
                 "apiVersion": "v1",
                 "kind": "Namespace",
-                "metadata": {"name": module_name},
+                "metadata": {"name": training_namespace_name},
             },
         )
 
-        service_account = cluster.add_service_account("service-account", name=module_name, namespace=module_name)
+        service_account = cluster.add_service_account("service-account", name=module_name, namespace=training_namespace_name)
         service_account.node.add_dependency(namespace)
         service_account_role: aws_iam.Role = cast(aws_iam.Role, service_account.role)
         if service_account_role.assume_role_policy:
@@ -96,7 +97,7 @@ class TrainingDags(Stack):
             {
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "Role",
-                "metadata": {"name": "module-owner", "namespace": module_name},
+                "metadata": {"name": "module-owner", "namespace": training_namespace_name},
                 "rules": [{"apiGroups": ["*"], "resources": ["*"], "verbs": ["*"]}],
             },
         )
@@ -107,7 +108,7 @@ class TrainingDags(Stack):
             {
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "RoleBinding",
-                "metadata": {"name": module_name, "namespace": module_name},
+                "metadata": {"name": module_name, "namespace": training_namespace_name},
                 "roleRef": {
                     "apiGroup": "rbac.authorization.k8s.io",
                     "kind": "Role",
@@ -118,7 +119,7 @@ class TrainingDags(Stack):
                     {
                         "kind": "ServiceAccount",
                         "name": module_name,
-                        "namespace": module_name,
+                        "namespace": training_namespace_name,
                     },
                 ],
             },
@@ -158,7 +159,7 @@ class TrainingDags(Stack):
                     {
                         "kind": "ServiceAccount",
                         "name": module_name,
-                        "namespace": module_name,
+                        "namespace": training_namespace_name,
                     },
                 ],
             },
@@ -181,7 +182,7 @@ class TrainingDags(Stack):
                     {
                         "kind": "ServiceAccount",
                         "name": module_name,
-                        "namespace": module_name,
+                        "namespace": training_namespace_name,
                     },
                 ],
             },
@@ -198,7 +199,9 @@ class TrainingDags(Stack):
         body = {
             "apiVerson": "batch/v1",
             "kind": "Job",
-            "metadata": {"namespace": module_name, "name": "pytorch-training"},
+            "metadata": {
+                "namespace": training_namespace_name, 
+                "name.$": "States.Format('pytorch-training-{}', $$.Execution.Name)"},
             "spec": {
                 "backoffLimit": 1,
                 "template": {
@@ -222,7 +225,12 @@ class TrainingDags(Stack):
                                     "--epochs=1",
                                     "--save-model",
                                 ],
-                                "env": [],
+                                "env": [
+                                    {
+                                        "name": "TRAINING_JOB_ID",
+                                        "value.$": "States.Format('pytorch-training-{}', $$.Execution.Name)"
+                                    }
+                                ],
                                 # "resources": {"limits": {"nvidia.com/gpu": 1}},
                             }
                         ],
@@ -249,7 +257,7 @@ class TrainingDags(Stack):
             "Resource": "arn:aws:states:::eks:runJob.sync",
             "Parameters": {
                 "ClusterName": eks_cluster_name,
-                "Namespace": module_name,
+                "Namespace": training_namespace_name,
                 "CertificateAuthority": response['cluster']['certificateAuthority']['data'],
                 "Endpoint": response['cluster']['endpoint'],
                 "LogOptions": {
