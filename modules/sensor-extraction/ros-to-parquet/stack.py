@@ -108,7 +108,7 @@ class RosToParquetBatchJob(Stack):
         )
 
         if platform == "FARGATE":
-            container_definition = batch.EcsFargateContainerDefinition(
+            container_definition: batch.IJobDefinition = batch.EcsFargateContainerDefinition(
                 self,
                 "batch-job-container-def",
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
