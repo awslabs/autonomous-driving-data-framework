@@ -1,6 +1,5 @@
-aws-cdk-lib==2.70.0
-aws-cdk.aws-batch-alpha==2.70.0-alpha.0
+aws-cdk-lib==2.126.0
 cdk-ecr-deployment==2.5.5
 cdk-nag==2.12.29
-constructs==10.0.91
+constructs==10.3.0
 boto3~=1.24.0

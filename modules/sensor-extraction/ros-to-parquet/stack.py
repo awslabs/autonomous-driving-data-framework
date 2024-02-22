@@ -5,12 +5,12 @@ import logging
 import os
 from typing import Any, cast
 
-import aws_cdk.aws_batch_alpha as batch
+import aws_cdk.aws_batch as batch
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
+from aws_cdk import Aspects, Duration, RemovalPolicy, Size, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
 from cdk_nag import NagPackSuppression, NagSuppressions
@@ -107,10 +107,12 @@ class RosToParquetBatchJob(Stack):
             max_session_duration=Duration.hours(12),
         )
 
-        self.batch_job = batch.JobDefinition(
+        self.batch_job = batch.EcsJobDefinition(
             self,
             "batch-job-def-from-ecr",
-            container=batch.JobDefinitionContainer(
+            container=batch.EcsFargateContainerDefinition(  # type: ignore
+                self,
+                "batch-job-container-def",
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
                 command=["bash", "entrypoint.sh"],
                 environment={
@@ -120,13 +122,26 @@ class RosToParquetBatchJob(Stack):
                 },
                 job_role=role,
                 execution_role=role,
-                memory_limit_mib=memory_limit_mib,
-                vcpus=vcpus,
+                memory=Size.mebibytes(memory_limit_mib),
+                cpu=vcpus,
+            )
+            if platform == "FARGATE"
+            else batch.EcsEc2ContainerDefinition(
+                self,
+                "batch-job-container-def",
+                image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
+                command=["bash", "entrypoint.sh"],
+                environment={
+                    "AWS_DEFAULT_REGION": self.region,
+                    "AWS_ACCOUNT_ID": self.account,
+                    "DEBUG": "true",
+                },
+                job_role=role,
+                execution_role=role,
+                memory=Size.mebibytes(memory_limit_mib),
+                cpu=vcpus,
             ),
             job_definition_name=self.repository_name,
-            platform_capabilities=[
-                batch.PlatformCapabilities.FARGATE if platform == "FARGATE" else batch.PlatformCapabilities.EC2
-            ],
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),
         )
