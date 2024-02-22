@@ -126,7 +126,7 @@ class RosToParquetBatchJob(Stack):
                 cpu=vcpus,
             )
             if platform == "FARGATE"
-            else batch.EcsEc2ContainerDefinition(  # type: ignore
+            else batch.EcsEc2ContainerDefinition(
                 self,
                 "batch-job-container-def",
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
