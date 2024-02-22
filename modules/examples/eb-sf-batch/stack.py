@@ -4,7 +4,7 @@
 import logging
 from typing import Any, cast
 
-import aws_cdk.aws_batch_alpha as batch
+import aws_cdk.aws_batch as batch
 import aws_cdk.aws_iam as iam
 from aws_cdk import Duration, NestedStack, Stack, Tags
 from aws_cdk import aws_ecr as ecr
@@ -86,7 +86,7 @@ class EventDrivenBatch(Stack):
 
         img = ecs.EcrImage.from_ecr_repository(repository=repository, tag="latest")
 
-        definition = batch.JobDefinition(
+        definition = batch.EcsJobDefinition(
             self,
             f"{dep_mod}-JobDefinition",
             job_definition_name=f"addf-{deployment_name}-Job-Definition",
