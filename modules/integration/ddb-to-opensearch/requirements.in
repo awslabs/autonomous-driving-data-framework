@@ -1,7 +1,7 @@
-aws-cdk-lib==2.82.0
+aws-cdk-lib==2.126.0
 cdk-nag==2.12.29
-constructs==10.0.91
-aws-cdk.aws-lambda-python-alpha==2.82.0a0
+constructs==10.3.0
+aws-cdk.aws-lambda-python-alpha==2.126.0a0
 boto3~=1.24.0
 requests~=2.31.0
 requests-aws4auth~=1.2.3
