@@ -110,7 +110,7 @@ class RosToParquetBatchJob(Stack):
         self.batch_job = batch.EcsJobDefinition(
             self,
             "batch-job-def-from-ecr",
-            container=batch.EcsFargateContainerDefinition(
+            container=batch.EcsFargateContainerDefinition( # type: ignore
                 self,
                 "batch-job-container-def",
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
@@ -126,7 +126,7 @@ class RosToParquetBatchJob(Stack):
                 cpu=vcpus,
             )
             if platform == "FARGATE"
-            else batch.EcsEc2ContainerDefinition(
+            else batch.EcsEc2ContainerDefinition( # type: ignore
                 self,
                 "batch-job-container-def",
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
