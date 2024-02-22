@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys a Module specific IAM permissions
+
+Parameters:
+  RoleName:
+    Type: String
+    Description: The name of the IAM Role
+  ArtifactsBucketName:
+    Type: String
+    Description: The name of the bucket to store artifacts in
+
+Resources:
+  Policy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "s3:Put*"
+              - "s3:Delete*"
+              - "s3:Get*"
+              - "s3:List*"
+            Resource:
+              - !Sub "arn:aws:s3:::${ArtifactsBucketName}"
+              - !Sub "arn:aws:s3:::${ArtifactsBucketName}/*"
+        Version: 2012-10-17
+      PolicyName: seed-farmer-modulespecific-policy
+      Roles: [!Ref RoleName]
