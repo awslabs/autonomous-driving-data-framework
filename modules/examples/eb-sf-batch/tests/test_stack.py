@@ -35,8 +35,8 @@ def test_synthesize_stack(stack_defaults):
         module_name=mod_name,
         fargate_job_queue_arn="arn:foobar",
         ecr_repo_name="myrepo",
-        vcpus=2, 
-        memory_limit_mib=2048, 
+        vcpus=2,
+        memory_limit_mib=2048,
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],
