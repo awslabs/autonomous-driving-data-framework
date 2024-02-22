@@ -107,42 +107,40 @@ class RosToParquetBatchJob(Stack):
             max_session_duration=Duration.hours(12),
         )
 
-        if platform == "FARGATE":
-            container_definition: batch.IEcsContainerDefintion = batch.EcsFargateContainerDefinition(
-                self,
-                "batch-job-container-def",
-                image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
-                command=["bash", "entrypoint.sh"],
-                environment={
-                    "AWS_DEFAULT_REGION": self.region,
-                    "AWS_ACCOUNT_ID": self.account,
-                    "DEBUG": "true",
-                },
-                job_role=role,
-                execution_role=role,
-                memory=Size.mebibytes(memory_limit_mib),
-                cpu=vcpus,
-            )
-        else:
-            container_definition = batch.EcsEc2ContainerDefinition(
-                self,
-                "batch-job-container-def",
-                image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
-                command=["bash", "entrypoint.sh"],
-                environment={
-                    "AWS_DEFAULT_REGION": self.region,
-                    "AWS_ACCOUNT_ID": self.account,
-                    "DEBUG": "true",
-                },
-                job_role=role,
-                execution_role=role,
-                memory=Size.mebibytes(memory_limit_mib),
-                cpu=vcpus,
-            )
         self.batch_job = batch.EcsJobDefinition(
             self,
             "batch-job-def-from-ecr",
-            container=container_definition,
+            container=batch.EcsFargateContainerDefinition(
+                self,
+                "batch-job-container-def",
+                image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
+                command=["bash", "entrypoint.sh"],
+                environment={
+                    "AWS_DEFAULT_REGION": self.region,
+                    "AWS_ACCOUNT_ID": self.account,
+                    "DEBUG": "true",
+                },
+                job_role=role,
+                execution_role=role,
+                memory=Size.mebibytes(memory_limit_mib),
+                cpu=vcpus,
+            )
+            if platform == "FARGATE"
+            else batch.EcsEc2ContainerDefinition(
+                self,
+                "batch-job-container-def",
+                image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
+                command=["bash", "entrypoint.sh"],
+                environment={
+                    "AWS_DEFAULT_REGION": self.region,
+                    "AWS_ACCOUNT_ID": self.account,
+                    "DEBUG": "true",
+                },
+                job_role=role,
+                execution_role=role,
+                memory=Size.mebibytes(memory_limit_mib),
+                cpu=vcpus,
+            ),
             job_definition_name=self.repository_name,
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),
