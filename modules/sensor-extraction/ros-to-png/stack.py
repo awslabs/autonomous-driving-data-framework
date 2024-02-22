@@ -5,12 +5,12 @@ import logging
 import os
 from typing import Any, Dict, cast
 
-import aws_cdk.aws_batch_alpha as batch
+import aws_cdk.aws_batch as batch
 import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import Aspects, Duration, RemovalPolicy, Stack, Tags
+from aws_cdk import Aspects, Duration, RemovalPolicy, Size, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
 from cdk_nag import NagPackSuppression, NagSuppressions
@@ -114,35 +114,28 @@ class RosToPngBatchJob(Stack):
         if batch_config.get("resized_height"):
             batch_env["RESIZE_HEIGHT"] = str(batch_config["resized_height"])
 
-        self.batch_job = batch.JobDefinition(
+        self.batch_job = batch.EcsJobDefinition(
             self,
             "batch-job-def-from-ecr",
-            container=batch.JobDefinitionContainer(
+            container=batch.EcsEc2ContainerDefinition(
+                self,
+                "batch-container-def",
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),
                 command=["bash", "entrypoint.sh"],
                 environment=batch_env,
                 job_role=role,
                 execution_role=role,
-                memory_limit_mib=batch_config["memory_limit_mib"],
-                vcpus=batch_config["vcpus"],
+                memory=Size.mebibytes(batch_config["memory_limit_mib"]),
+                cpu=batch_config["vcpus"],
                 volumes=[
-                    ecs.Volume(
+                    batch.EcsVolume.host(
                         name="scratch",
-                        docker_volume_configuration=ecs.DockerVolumeConfiguration(
-                            scope=ecs.Scope.TASK, driver="local", labels={"scratch": "space"}
-                        ),
-                    ),
-                ],
-                mount_points=[
-                    ecs.MountPoint(
-                        source_volume="scratch",
                         container_path="/mnt/ebs",
-                        read_only=False,
+                        readonly=False,
                     ),
                 ],
             ),
             job_definition_name=self.repository_name,
-            platform_capabilities=[batch.PlatformCapabilities.EC2],
             retry_attempts=batch_config["retries"],
             timeout=Duration.seconds(batch_config["timeout_seconds"]),
         )

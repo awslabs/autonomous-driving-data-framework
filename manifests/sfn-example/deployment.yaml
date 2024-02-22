@@ -1,0 +1,21 @@
+name: sfn-example
+toolchainRegion: us-west-2
+forceDependencyRedeploy: True
+groups:
+  - name: optionals
+    path: manifests/sfn-example/optional-modules.yaml
+  - name: core
+    path: manifests/sfn-example/core-modules.yaml
+  - name: docker-images
+    path: manifests/sfn-example/docker-image-modules.yaml
+  - name: analysis
+    path: manifests/sfn-example/aws-analysis-modules.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 123456789101
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true
