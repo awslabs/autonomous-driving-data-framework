@@ -27,9 +27,7 @@ from aws_cdk.aws_ec2 import (
 )
 from constructs import Construct, IConstruct
 
-default_ami_ssm_parameter_name: str = (
-    "/aws/service/canonical/ubuntu/server/focal/stable/current/amd64/hvm/ebs-gp2/ami-id"
-)
+default_ami_ssm_parameter_name: str = "/aws/src/canonical/ubuntu/server/focal/stable/current/amd64/hvm/ebs-gp2/ami-id"
 
 
 class DataServiceDevInstancesStack(Stack):

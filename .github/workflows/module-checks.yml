@@ -36,13 +36,13 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
 
   test:
-    name: Run unit tests for module ${{ matrix.modules.module_name }}
+    name: (${{ matrix.python-version }}) Run unit tests for module ${{ matrix.modules.module_name }}
     needs: get-modules
     strategy:
       fail-fast: false
       matrix:
         modules: ${{ fromJson(needs.get-modules.outputs.matrix) }}
-        python-version: [3.9]
+        python-version: ['3.9', '3.10']
     runs-on: ubuntu-latest
     env:
       MODULE_PATH: 'modules/${{ matrix.modules.module_name }}'

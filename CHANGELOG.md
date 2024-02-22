@@ -12,9 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 ### **Changed**
-- updating cdk version for rosbag-webviz module, keeping in sync with release/1.0.0-reinvent branch
 
+- updating cdk version for rosbag-webviz module, keeping in sync with release/1.0.0-reinvent branch
 - Fixed a bug in the ECR module to capture the metadata
+- Refactor to use ecr module from idf
+- updated `typing-extensions~=4.6.3` in modules that were below that spec to support seed-farmer 3.1.x
+- fixed security updates about apache-airflow version
+- made os-tunnel module generic by importing seedfarmer project name
 
 ### **Removed**
 
@@ -27,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - adding new `integration/opensearch-tunnel` module
 - Added unit-tests, enabled logging and versioning on buckets for datalake-buckets module
 - Added Unit tests to metadata-storage module
+- Added new `dcv-image` and `dcv-eks` module
 
 ### **Changed**
 

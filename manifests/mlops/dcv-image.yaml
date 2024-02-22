@@ -1,0 +1,9 @@
+name: dcv-image
+path: modules/visualization/dcv-image
+parameters:
+  - name: dcv-ecr-repository-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: dcv
+        key: EcrRepositoryName

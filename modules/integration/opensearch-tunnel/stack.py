@@ -25,6 +25,7 @@ class TunnelStack(Stack):
         *,
         deployment: str,
         module: str,
+        project_name: str,
         vpc_id: str,
         opensearch_sg_id: str,
         opensearch_domain_endpoint: str,
@@ -40,9 +41,9 @@ class TunnelStack(Stack):
             description=stack_description,
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project_name}-{deployment}-{module}"
         # CDK Env Vars
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
@@ -86,7 +87,7 @@ class TunnelStack(Stack):
                 iam.PolicyStatement(
                     actions=["sts:AssumeRole"],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:iam::{account}:role/addf-*"],
+                    resources=[f"arn:aws:iam::{account}:role/{project_name}-*"],
                 ),
             ]
         )

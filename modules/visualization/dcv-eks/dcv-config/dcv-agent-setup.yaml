@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dcv-agent-src-account
+  namespace: $NAMESPACE
+  annotations:
+    eks.amazonaws.com/role-arn: $RUNTIME_ROLE_ARN
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dcv-agent-cluster-role
+  namespace: $NAMESPACE
+rules:
+  - apiGroups: [""]
+    resources:
+      - configmaps
+      - namespaces
+    verbs:
+      - list
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: $NAMESPACE
+  name: dcv-agent-role-binding
+subjects:
+  - kind: ServiceAccount
+    name: dcv-agent-src-account
+roleRef:
+  kind: Role
+  name: dcv-agent-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: $NAMESPACE
+  name: dcv-agent-config-map
+data:
+  display: ""
+  socket_mount_path: $SOCKET_PATH
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dcv-svc
+  namespace: $NAMESPACE
+  labels:
+    env: dcv
+spec:
+  type: NodePort
+  selector:
+    env: dcv
+  externalTrafficPolicy: Local
+  ports:
+  - name: dcv-tcp
+    protocol: TCP
+    port: 8443
+    targetPort: 8443
+    nodePort: $NODEPORT
+  - name: dcv-udp
+    protocol: UDP
+    port: 8443
+    targetPort: 8443
+    nodePort: $NODEPORT

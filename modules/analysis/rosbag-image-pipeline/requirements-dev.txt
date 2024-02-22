@@ -3,15 +3,16 @@
 # Check the version of MWAA you are using and compare
 # to these versions
 
-apache-airflow==2.8.0
+apache-airflow==2.8.1
 apache-airflow-providers-amazon~=8.5.1
-Flask-Cors
-moto
+Flask-Cors~=4.0.0
+moto==4.2.9
 mypy-boto3-sqs
 mypy-boto3-batch
-pytest-cov
-pytest-spark
-pyspark
-Pillow~=10.0.1
+pendulum==2.1.2
+pytest-cov~=4.1.0
+pytest-spark~=0.6.0
+pyspark~=3.5.0
+Pillow~=10.2.0
 sagemaker==2.180.0
 emr_serverless @ https://github.com/aws-samples/emr-serverless-samples/releases/download/v1.0.1/mwaa_plugin.zip
