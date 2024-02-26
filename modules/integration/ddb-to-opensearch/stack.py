@@ -115,14 +115,14 @@ class DDBtoOpensearch(Stack):
             id=f"{dep_mod}-requests-aws4auth",
             entry="layers/",
             layer_version_name=f"{dep_mod}-requests-aws4auth",
-            compatible_runtimes=[lambda_.Runtime.PYTHON_3_7],
+            compatible_runtimes=[lambda_.Runtime.PYTHON_3_9],
         )
 
         lambda_trigger = PythonFunction(
             self,
             "DDBtoOSTriggerLambda",
             entry="lambda",
-            runtime=lambda_.Runtime.PYTHON_3_7,
+            runtime=lambda_.Runtime.PYTHON_3_9,
             index="index.py",
             handler="handler",
             timeout=Duration.minutes(1),
