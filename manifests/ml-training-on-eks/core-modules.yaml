@@ -12,23 +12,15 @@ parameters:
         name: replication
         key: s3_full_path
   - name: vpc-id
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: VpcId
+    value: vpc-0df274984bede770a
   - name: controlplane-subnet-ids
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: PrivateSubnetIds
+    value:
+      - subnet-0bd17274b94a3e0b4
+      - subnet-0b124fabe4d7ba425
   - name: dataplane-subnet-ids
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: networking
-        key: PrivateSubnetIds
+    value:
+      - subnet-0bd17274b94a3e0b4
+      - subnet-0b124fabe4d7ba425
   - name: eks-admin-role-name
     value: Admin
   - name: eks-poweruser-role-name
