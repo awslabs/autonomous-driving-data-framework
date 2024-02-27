@@ -21,7 +21,8 @@ phases:
       # Storage
       - bash gen-reports.sh -m core/metadata-storage
       # Integration
-      - bash gen-reports.sh -m integration/ddb-to-opensearch
+      # Currently issue with the solutions pipeline, works fine locally and in nightswatch
+      #- bash gen-reports.sh -m integration/ddb-to-opensearch
       - bash gen-reports.sh -m integration/opensearch-tunnel
       # Optionals
       - bash gen-reports.sh -m optionals/datalake-buckets
