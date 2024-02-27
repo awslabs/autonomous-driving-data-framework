@@ -49,7 +49,7 @@ parameters:
           eks_node_disk_size: 50
           eks_node_instance_type: "m5.large"
         - eks_ng_name: ng-gpu
-          eks_node_quantity: 1
+          eks_node_quantity: 0
           eks_node_max_quantity: 2
           eks_node_min_quantity: 0
           eks_node_disk_size: 100
