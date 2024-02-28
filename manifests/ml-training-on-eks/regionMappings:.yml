@@ -1,0 +1,4 @@
+regionMappings:
+- region:  eu-central-1
+  default: true
+  codebuildImage: aws/codebuild/standard:7.0

@@ -88,7 +88,17 @@ class FSXFileStorageOnEKS(Stack):
         self.pv_name = f"{module_name}-fsx-pv"
         self.pvc_name = f"{module_name}-fsx-pvc"
 
-        eks_cluster.add_manifest(
+        namespace_manifest = eks.KubernetesManifest(self, "namespace",
+            cluster=eks_cluster,
+            manifest=[{
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {"name": eks_namespace}, # Create if not exist
+            }],
+            overwrite=True
+        )
+
+        storage_class_manifest = eks_cluster.add_manifest(
             "FSXCSIStorageClass",
             {
                 "apiVersion": "storage.k8s.io/v1",
@@ -100,7 +110,9 @@ class FSXFileStorageOnEKS(Stack):
             },
         )
 
-        eks_cluster.add_manifest(
+        storage_class_manifest.node.add_dependency(namespace_manifest)
+
+        persistent_volume_manifest = eks_cluster.add_manifest(
             "FSXCSIPersistentVolume",
             {
                 "apiVersion": "v1",
@@ -122,7 +134,9 @@ class FSXFileStorageOnEKS(Stack):
             },
         )
 
-        eks_cluster.add_manifest(
+        persistent_volume_manifest.node.add_dependency(namespace_manifest)
+
+        pvc_manifest = eks_cluster.add_manifest(
             "FSXCSIPersistentVolumeClaim",
             {
                 "apiVersion": "v1",
@@ -137,8 +151,11 @@ class FSXFileStorageOnEKS(Stack):
                 },
             },
         )
+
+        pvc_manifest.node.add_dependency(namespace_manifest)
+
         # Add a job that will change the permissions on FSx so that users w/o sudo can write to it
-        eks_cluster.add_manifest(
+        job_manifest = eks_cluster.add_manifest(
             "SetPermissionsJob",
             {
                 "apiVersion": "batch/v1",
@@ -168,6 +185,10 @@ class FSXFileStorageOnEKS(Stack):
             },
         )
 
+        job_manifest.node.add_dependency(namespace_manifest)
+        job_manifest.node.add_dependency(persistent_volume_manifest)
+        job_manifest.node.add_dependency(pvc_manifest)
+
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
         NagSuppressions.add_stack_suppressions(
@@ -186,5 +207,11 @@ class FSXFileStorageOnEKS(Stack):
                         "reason": "Resource access restriced to ADDF resources",
                     }
                 ),
-            ],
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-L1",
+                        "reason": "Suppress error caused by python_3_12 release in December"
+                    }
+                )
+            ]
         )

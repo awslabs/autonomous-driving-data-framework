@@ -1,5 +1,6 @@
 name: lustre-on-eks
-path: git::https://github.com/a13zen/autonomous-driving-data-framework.git//modules/integration/fsx-lustre-on-eks?ref=integration-fixes&depth=1
+# TODO: Fix local ref to release 
+path: modules/integration/fsx-lustre-on-eks
 parameters:
   - name: EksClusterAdminRoleArn
     valueFrom:

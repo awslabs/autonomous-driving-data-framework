@@ -1,5 +1,6 @@
 name: ml-eks
 toolchainRegion: eu-central-1
+forceDependencyRedeploy: True
 groups:
   - name: optionals
     path: manifests/ml-training-on-eks/optional-modules.yaml
@@ -17,6 +18,7 @@ targetAccountMappings:
       valueFrom:
         envVariable: ACCOUNT_ID
     default: true
+    codebuildImage: aws/codebuild/standard:7.0
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
       trainingNamespaceName: training

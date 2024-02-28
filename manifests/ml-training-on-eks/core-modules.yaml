@@ -119,8 +119,7 @@ parameters:
           #   - mitigate-log4shell
 ---
 name: fsx-lustre
-# TODO: Point to proper release once PR is merged and released: https://github.com/awslabs/idf-modules/pull/127
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/fsx-lustre-on-eks?ref=main&depth=1 
+path: git::https://github.com/dgraeber/idf-modules.git//modules/storage/fsx-lustre?ref=feature/auto-import-fsx-lustre&depth=1 
 parameters:
   - name: vpc-id
     value: vpc-0df274984bede770a
@@ -144,3 +143,8 @@ parameters:
     value: "/fsx/import/"
   - name:  fsx_version
     value : "2.15" 
+  - name: Namespace
+    valueFrom:
+      parameterValue: trainingNamespaceName
+  - name: import_policy
+    value: "NEW_CHANGED_DELETED"

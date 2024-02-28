@@ -8,7 +8,6 @@ import os
 import cdk_nag
 from aws_cdk import Aspects, Stack, Tags, aws_eks, aws_iam, Duration
 from aws_cdk import aws_stepfunctions as sfn
-
 from aws_cdk import aws_logs as logs
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
@@ -69,13 +68,14 @@ class TrainingDags(Stack):
             kubectl_role_arn=eks_admin_role_arn,
         )
 
-        namespace = cluster.add_manifest(
-            "namespace",
-            {
+        namespace = aws_eks.KubernetesManifest(self, "namespace",
+            cluster=cluster,
+            manifest=[{
                 "apiVersion": "v1",
                 "kind": "Namespace",
                 "metadata": {"name": training_namespace_name},
-            },
+            }],
+            overwrite=True # Create if not exists
         )
 
         service_account = cluster.add_service_account("service-account", name=module_name, namespace=training_namespace_name)
