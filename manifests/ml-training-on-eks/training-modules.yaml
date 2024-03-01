@@ -1,14 +1,6 @@
 name: training
 path: modules/ml-training/k8s-managed
 parameters:
-  - name: dag-bucket-name
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: datalake-buckets
-        key: ArtifactsBucketName
-  - name: dag-path
-    value: "abc"
   - name: eks-cluster-name
     valueFrom:
       moduleMetadata:

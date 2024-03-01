@@ -10,7 +10,6 @@ deploy:
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      # Here we export some env vars and the write values into the dag_config.py file for use by the DAGs
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
       - export EKS_SERVICE_ACCOUNT_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EksServiceAccountRoleArn")
       - echo "Configure Cluster-AutoScaler ASG Tags" && python configure_asgs.py
@@ -48,7 +47,5 @@ destroy:
         || echo "IAM Identity Mapping not found"
       # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will faile
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-      # Remove DAG files
-      - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/training_dags
       - cdk destroy --force --app "python app.py"
 

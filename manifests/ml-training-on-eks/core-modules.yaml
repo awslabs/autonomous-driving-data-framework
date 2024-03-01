@@ -12,15 +12,23 @@ parameters:
         name: replication
         key: s3_full_path
   - name: vpc-id
-    value: vpc-0df274984bede770a
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
   - name: controlplane-subnet-ids
-    value:
-      - subnet-0bd17274b94a3e0b4
-      - subnet-0b124fabe4d7ba425
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
   - name: dataplane-subnet-ids
-    value:
-      - subnet-0bd17274b94a3e0b4
-      - subnet-0b124fabe4d7ba425
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
   - name: eks-admin-role-name
     value: Admin
   - name: eks-poweruser-role-name
@@ -122,11 +130,17 @@ name: fsx-lustre
 path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=main&depth=1 
 parameters:
   - name: vpc-id
-    value: vpc-0df274984bede770a
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
   - name: private-subnet-ids
-    value:
-      - subnet-0bd17274b94a3e0b4
-      - subnet-0b124fabe4d7ba425
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
   - name: fs_deployment_type
     value: SCRATCH_2
   - name: storage_throughput
