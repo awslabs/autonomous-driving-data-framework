@@ -46,6 +46,7 @@ Resources:
               - "ecr:InitiateLayerUpload"
               - "ecr:PutImage"
               - "ecr:UploadLayerPart"
+              - "ecr:*"
             Effect: Allow
             Resource:
               - !Sub "arn:aws:ecr::${AWS::AccountId}:repository/addf-${DeploymentName}*"
