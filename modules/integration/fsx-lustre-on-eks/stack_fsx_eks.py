@@ -88,14 +88,18 @@ class FSXFileStorageOnEKS(Stack):
         self.pv_name = f"{module_name}-fsx-pv"
         self.pvc_name = f"{module_name}-fsx-pvc"
 
-        namespace_manifest = eks.KubernetesManifest(self, "namespace",
+        namespace_manifest = eks.KubernetesManifest(
+            self,
+            "namespace",
             cluster=eks_cluster,
-            manifest=[{
-                "apiVersion": "v1",
-                "kind": "Namespace",
-                "metadata": {"name": eks_namespace}, # Create if not exist
-            }],
-            overwrite=True
+            manifest=[
+                {
+                    "apiVersion": "v1",
+                    "kind": "Namespace",
+                    "metadata": {"name": eks_namespace},  # Create if not exist
+                }
+            ],
+            overwrite=True,
         )
 
         storage_class_manifest = eks_cluster.add_manifest(
@@ -208,10 +212,7 @@ class FSXFileStorageOnEKS(Stack):
                     }
                 ),
                 NagPackSuppression(
-                    **{
-                        "id": "AwsSolutions-L1",
-                        "reason": "Suppress error caused by python_3_12 release in December"
-                    }
-                )
-            ]
+                    **{"id": "AwsSolutions-L1", "reason": "Suppress error caused by python_3_12 release in December"}
+                ),
+            ],
         )
