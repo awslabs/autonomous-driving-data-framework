@@ -3,6 +3,7 @@
 import os
 
 from aws_cdk import App, CfnOutput, Environment
+
 from stack import TrainingPipeline
 
 deployment_name = os.environ["ADDF_DEPLOYMENT_NAME"]
@@ -39,5 +40,4 @@ CfnOutput(
         }
     ),
 )
-
 app.synth(force=True)
