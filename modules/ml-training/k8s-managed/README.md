@@ -1,34 +1,30 @@
-# Kubernetes Managed GPU ML Training
+# ml-training-k8s-managed
 
-## Description
+This module deploys a Kubernetes Job on Amazon EKS via AWS Step Functions to run sample ML PyTorch training code
 
-This module:
+## Architecture
 
-- deploys an ECR repository and pushes a docker container from images/pytorch-mnist for the training job
+The following resources are created:
 
-- deploys a k8s `namespace` dedicated to simulations
-- deploys an IAM Role and associated k8s ServiceAccount that Jobs will use for execution
-- deploys a Step Function to execute the pytorch image on kubernetes
+- Kubernetes Namespace
+- Kubernetes ServiceAccount and associated IAM Role
+- Kubernetes RBAC Roles and RoleBindings to grant the ServiceAccount access
+- Step Functions State Machine definition that calls the EKS RunJob API
 
-## Inputs/Outputs
+The State Machine executes the following steps:
 
-### Input Parameters
+## Parameters
 
-#### Required
+The module requires the following parameters:
 
-- `eks-cluster-name`: name of the EKS Cluster to send Jobs to
-- `eks-oidc-arn`: ARN of the OpenID Connect Provider assigned to the EKS Cluster
-- `eks-cluster-admin-role-arn`: ARN of the IAM Role configured as a Cluster Admin and associated with the `system:masters` Kubernetes Group
+- `eks_cluster_name` - Name of the EKS cluster to deploy to 
+- `eks_admin_role_arn` - ARN of EKS admin role to authenticate kubectl
+- `eks_oidc_provider_arn` - ARN of EKS OIDC provider for IAM roles
+- `training_namespace_name` - Kubernetes namespace to create for training
 
+## Output
 
-### Module Metadata Outputs
+The module outputs:
 
-- `EksServiceAccountRoleArn`: ARN of the EKS Role used by the Step Function to orchestrate the training job
-
-#### Output Example
-
-```json
-{
-    "EksServiceAccountRoleArn": "arn::::"
-}
-```
+- `EksServiceAccountRoleArn` - ARN of the IAM role assigned to the Kubernetes ServiceAccount
+- `TrainingNamespaceName` - The Kubernetes namespace created for training
