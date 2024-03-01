@@ -3,3 +3,9 @@ path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//mod
 parameters:
   - name: encryption-type
     value: SSE
+---
+name: networking
+path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk
+parameters:
+  - name: internet-accessible
+    value: false

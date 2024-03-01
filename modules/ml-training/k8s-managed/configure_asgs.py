@@ -31,7 +31,9 @@ def get_asg_tag(asg_name, key, value):
 for nodegroup_name in nodegroup_names:
     print(f"Node Group: {nodegroup_name}")
 
-    nodegroup = eks.describe_nodegroup(clusterName=CLUSTER_NAME, nodegroupName=nodegroup_name)["nodegroup"]
+    nodegroup = eks.describe_nodegroup(
+        clusterName=CLUSTER_NAME, nodegroupName=nodegroup_name
+    )["nodegroup"]
     labels = nodegroup["labels"]
 
     if labels:
@@ -40,7 +42,9 @@ for nodegroup_name in nodegroup_names:
         )
         asg_name = nodegroup["resources"]["autoScalingGroups"][0]["name"]
 
-        asg = as_client.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name])["AutoScalingGroups"][0]
+        asg = as_client.describe_auto_scaling_groups(AutoScalingGroupNames=[asg_name])[
+            "AutoScalingGroups"
+        ][0]
 
         tags = asg["Tags"]
         print(f"Tags:")
@@ -53,15 +57,25 @@ for nodegroup_name in nodegroup_names:
         for label in labels.keys():
             cluster_autoscaler_label_tag = f"{LABEL_TAG_PREFIX}/{label}"
             if not cluster_autoscaler_label_tag in tag_keys:
-                target_tags.append(get_asg_tag(asg_name, cluster_autoscaler_label_tag, labels[label]))
+                target_tags.append(
+                    get_asg_tag(asg_name, cluster_autoscaler_label_tag, labels[label])
+                )
         taint_autoscaler_tag = TAINT_TAG_KEY
         if not taint_autoscaler_tag in tag_keys:
-            target_tags.append(get_asg_tag(asg_name, taint_autoscaler_tag, TAINT_TAG_VALUE))
+            target_tags.append(
+                get_asg_tag(asg_name, taint_autoscaler_tag, TAINT_TAG_VALUE)
+            )
 
         if target_tags:
             print(f"Tags to update: {target_tags}")
-            create_update_tags_response = as_client.create_or_update_tags(Tags=target_tags)
-            if create_update_tags_response and create_update_tags_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            create_update_tags_response = as_client.create_or_update_tags(
+                Tags=target_tags
+            )
+            if (
+                create_update_tags_response
+                and create_update_tags_response["ResponseMetadata"]["HTTPStatusCode"]
+                == 200
+            ):
                 print("Tags updated")
             else:
                 print(f"Error: {create_update_tags_response}")

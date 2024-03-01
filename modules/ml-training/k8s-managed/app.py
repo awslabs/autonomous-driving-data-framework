@@ -36,7 +36,7 @@ CfnOutput(
     value=stack.to_json_string(
         {
             "EksServiceAccountRoleArn": stack.eks_service_account_role.role_arn,
-            "TrainingNamespaceName": training_namespace_name
+            "TrainingNamespaceName": training_namespace_name,
         }
     ),
 )

@@ -2,13 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
-from typing import Any, cast
-import boto3
 import os
+from typing import Any, cast
+
+import boto3
 import cdk_nag
-from aws_cdk import Aspects, Stack, Tags, aws_eks, aws_iam, Duration
-from aws_cdk import aws_stepfunctions as sfn
+from aws_cdk import Aspects, Duration, Stack, Tags, aws_eks, aws_iam
 from aws_cdk import aws_logs as logs
+from aws_cdk import aws_stepfunctions as sfn
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -39,13 +40,17 @@ class TrainingPipeline(Stack):
             description="(SO9154) Autonomous Driving Data Framework (ADDF) - k8s-managed",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(
+            key="Deployment", value=f"addf-{deployment_name}"
+        )
 
         policy_statements = [
             aws_iam.PolicyStatement(
                 actions=["sqs:*"],
                 effect=aws_iam.Effect.ALLOW,
-                resources=[f"arn:aws:sqs:{self.region}:{self.account}:addf-{deployment_name}-{module_name}*"],
+                resources=[
+                    f"arn:aws:sqs:{self.region}:{self.account}:addf-{deployment_name}-{module_name}*"
+                ],
             ),
             aws_iam.PolicyStatement(
                 actions=["ecr:*"],
@@ -55,7 +60,7 @@ class TrainingPipeline(Stack):
                 ],
             ),
         ]
-        
+
         provider = aws_eks.OpenIdConnectProvider.from_open_id_connect_provider_arn(
             self, "Provider", eks_openid_connect_provider_arn
         )
@@ -67,17 +72,23 @@ class TrainingPipeline(Stack):
             kubectl_role_arn=eks_admin_role_arn,
         )
 
-        namespace = aws_eks.KubernetesManifest(self, "namespace",
+        namespace = aws_eks.KubernetesManifest(
+            self,
+            "namespace",
             cluster=cluster,
-            manifest=[{
-                "apiVersion": "v1",
-                "kind": "Namespace",
-                "metadata": {"name": training_namespace_name},
-            }],
-            overwrite=True # Create if not exists
+            manifest=[
+                {
+                    "apiVersion": "v1",
+                    "kind": "Namespace",
+                    "metadata": {"name": training_namespace_name},
+                }
+            ],
+            overwrite=True,  # Create if not exists
         )
 
-        service_account = cluster.add_service_account("service-account", name=module_name, namespace=training_namespace_name)
+        service_account = cluster.add_service_account(
+            "service-account", name=module_name, namespace=training_namespace_name
+        )
         service_account.node.add_dependency(namespace)
         service_account_role: aws_iam.Role = cast(aws_iam.Role, service_account.role)
         if service_account_role.assume_role_policy:
@@ -96,7 +107,10 @@ class TrainingPipeline(Stack):
             {
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "Role",
-                "metadata": {"name": "module-owner", "namespace": training_namespace_name},
+                "metadata": {
+                    "name": "module-owner",
+                    "namespace": training_namespace_name,
+                },
                 "rules": [{"apiGroups": ["*"], "resources": ["*"], "verbs": ["*"]}],
             },
         )
@@ -190,7 +204,6 @@ class TrainingPipeline(Stack):
 
         self.eks_service_account_role = service_account.role
 
-
         final_status = sfn.Pass(self, "final step")
 
         # States language JSON to put an item into DynamoDB
@@ -199,8 +212,9 @@ class TrainingPipeline(Stack):
             "apiVerson": "batch/v1",
             "kind": "Job",
             "metadata": {
-                "namespace": training_namespace_name, 
-                "name.$": "States.Format('pytorch-training-{}', $$.Execution.Name)"},
+                "namespace": training_namespace_name,
+                "name.$": "States.Format('pytorch-training-{}', $$.Execution.Name)",
+            },
             "spec": {
                 "backoffLimit": 1,
                 "template": {
@@ -227,7 +241,7 @@ class TrainingPipeline(Stack):
                                 "env": [
                                     {
                                         "name": "TRAINING_JOB_ID",
-                                        "value.$": "States.Format('pytorch-training-{}', $$.Execution.Name)"
+                                        "value.$": "States.Format('pytorch-training-{}', $$.Execution.Name)",
                                     }
                                 ],
                                 # "resources": {"limits": {"nvidia.com/gpu": 1}},
@@ -237,19 +251,19 @@ class TrainingPipeline(Stack):
                         "volumes": [
                             {
                                 "name": "persistent-storage",
-                                "persistentVolumeClaim": {"claimName": os.getenv('ADDF_PARAMETER_PVC_NAME')},
+                                "persistentVolumeClaim": {
+                                    "claimName": os.getenv("ADDF_PARAMETER_PVC_NAME")
+                                },
                             }
                         ],
                     },
                 },
             },
         }
-        
-        client = boto3.client('eks')
 
-        response = client.describe_cluster(
-            name=eks_cluster_name
-        )
+        client = boto3.client("eks")
+
+        response = client.describe_cluster(name=eks_cluster_name)
 
         state_json = {
             "Type": "Task",
@@ -257,31 +271,27 @@ class TrainingPipeline(Stack):
             "Parameters": {
                 "ClusterName": eks_cluster_name,
                 "Namespace": training_namespace_name,
-                "CertificateAuthority": response['cluster']['certificateAuthority']['data'],
-                "Endpoint": response['cluster']['endpoint'],
-                "LogOptions": {
-                    "RetrieveLogs": True
-                },
-                "Job": body
-            }
+                "CertificateAuthority": response["cluster"]["certificateAuthority"][
+                    "data"
+                ],
+                "Endpoint": response["cluster"]["endpoint"],
+                "LogOptions": {"RetrieveLogs": True},
+                "Job": body,
+            },
         }
 
         # custom state which represents a task to insert data into DynamoDB
-        custom = sfn.CustomState(self, "eks-training",
-            state_json=state_json
-        )
+        custom = sfn.CustomState(self, "eks-training", state_json=state_json)
 
         log_group = logs.LogGroup(self, "TrainingOnEKSLogGroup")
-        
-        sm = sfn.StateMachine(self, "TrainingOnEKS", definition_body=sfn.DefinitionBody.from_chainable(
-            sfn.Chain.start(custom)
-        ),
+
+        sm = sfn.StateMachine(
+            self,
+            "TrainingOnEKS",
+            definition_body=sfn.DefinitionBody.from_chainable(sfn.Chain.start(custom)),
             timeout=Duration.minutes(15),
-            logs=sfn.LogOptions(
-                destination=log_group,
-                level=sfn.LogLevel.ALL
-            ),
-            role=service_account.role
+            logs=sfn.LogOptions(destination=log_group, level=sfn.LogLevel.ALL),
+            role=service_account.role,
         )
 
         Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
@@ -308,6 +318,5 @@ class TrainingPipeline(Stack):
                         "reason": "Xray disabled",
                     }
                 ),
-                
             ],
         )

@@ -35,7 +35,8 @@ JOB_OUTPUT_PATH = os.path.join(OUTPUT_ARTIFACTS_PATH, TRAINING_JOB_ID)
 # Create JOB specific output path if not exists
 if not os.path.exists(JOB_OUTPUT_PATH):
     os.makedirs(JOB_OUTPUT_PATH)
-    
+
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
@@ -54,14 +55,16 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
+
 def check_dataset_exists(data_path, dataset_name):
-  dataset_path = os.path.join(data_path, dataset_name)
-  if os.path.exists(dataset_path):
-    print('MNIST dataset found at:', dataset_path)
-    return True
-  else:  
-    print('MNIST dataset not found')
-    return False
+    dataset_path = os.path.join(data_path, dataset_name)
+    if os.path.exists(dataset_path):
+        print("MNIST dataset found at:", dataset_path)
+        return True
+    else:
+        print("MNIST dataset not found")
+        return False
+
 
 def train(args, model, device, train_loader, optimizer, epoch):
     model.train()
@@ -91,8 +94,12 @@ def test(args, model, device, test_loader, epoch, hpt):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction="sum").item()  # sum up batch loss
-            pred = output.max(1, keepdim=True)[1]  # get the index of the max log-probability
+            test_loss += F.nll_loss(
+                output, target, reduction="sum"
+            ).item()  # sum up batch loss
+            pred = output.max(1, keepdim=True)[
+                1
+            ]  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
@@ -221,8 +228,8 @@ def main():
         level=logging.DEBUG,
         handlers=[
             logging.FileHandler(os.path.join(JOB_OUTPUT_PATH, "training.log")),
-            logging.StreamHandler()
-        ]
+            logging.StreamHandler(),
+        ],
     )
 
     if args.logger == "hypertune" and args.log_path != "":
@@ -248,7 +255,9 @@ def main():
 
     kwargs = {"num_workers": 1, "pin_memory": True} if use_cuda else {}
 
-    dataset_exists = check_dataset_exists(data_path=INPUT_DATASET_PATH, dataset_name="FashionMNIST")
+    dataset_exists = check_dataset_exists(
+        data_path=INPUT_DATASET_PATH, dataset_name="FashionMNIST"
+    )
 
     train_loader = torch.utils.data.DataLoader(
         datasets.FashionMNIST(
@@ -278,7 +287,11 @@ def main():
     print("is_distributed?")
     print(is_distributed())
     if is_distributed():
-        Distributor = nn.parallel.DistributedDataParallel if use_cuda else nn.parallel.DistributedDataParallelCPU
+        Distributor = (
+            nn.parallel.DistributedDataParallel
+            if use_cuda
+            else nn.parallel.DistributedDataParallelCPU
+        )
         model = Distributor(model)
 
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
