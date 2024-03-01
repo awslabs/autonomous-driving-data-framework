@@ -15,7 +15,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class TrainingDags(Stack):
+class TrainingPipeline(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -41,7 +41,6 @@ class TrainingDags(Stack):
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
 
-        # Create Dag IAM Role and policy
         policy_statements = [
             aws_iam.PolicyStatement(
                 actions=["sqs:*"],

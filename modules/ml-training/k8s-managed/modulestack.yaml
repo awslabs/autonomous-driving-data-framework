@@ -11,12 +11,6 @@ Parameters:
   RoleName:
     Type: String
     Description: The name of the IAM Role
-  DagBucketName:
-    Type: String
-    Description: The name Bucket where MWAA DAG artifacts are deployed
-  DagPath:
-    Type: String
-    Description: The path in the Dag Bucket where MWAA DAG artifacts are deployed
   EksClusterAdminRoleArn:
     Type: String
     Description: Role from the EKS module with cluster admin permissions
@@ -37,7 +31,6 @@ Resources:
             Effect: Allow
             Resource:
               - 'arn:aws:s3:::cdk*'
-              - !Sub "arn:aws:s3:::${DagBucketName}/${DagPath}/*"
           - Action:
               - 'iam:CreatePolicy'
               - 'iam:DetachRolePolicy'

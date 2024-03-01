@@ -4,7 +4,7 @@
 import os
 
 from aws_cdk import App, CfnOutput, Environment
-from stack import TrainingDags
+from stack import TrainingPipeline
 
 deployment_name = os.environ["ADDF_DEPLOYMENT_NAME"]
 module_name = os.environ["ADDF_MODULE_NAME"]
@@ -15,7 +15,7 @@ training_namespace_name = os.environ["ADDF_PARAMETER_TRAINING_NAMESPACE_NAME"]
 
 app = App()
 
-stack = TrainingDags(
+stack = TrainingPipeline(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
     deployment_name=deployment_name,
