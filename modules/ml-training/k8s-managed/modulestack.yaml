@@ -102,6 +102,22 @@ Resources:
               - "sts:AssumeRole"
             Resource:
               - !Ref EksClusterAdminRoleArn
+          - Effect: Allow
+            Action:
+              - "eks:ListNodegroups"
+            Resource:
+              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/addf-${DeploymentName}*"
+          - Effect: Allow
+            Action:
+              - "eks:DescribeNodegroup"
+            Resource:
+              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/addf-${DeploymentName}*"
+          - Effect: Allow
+            Action:
+              - "autoscaling:CreateOrUpdateTags"
+              - "autoscaling:DescribeAutoScalingGroups"
+            Resource:
+              - "*"
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"
       Roles: [!Ref RoleName]
