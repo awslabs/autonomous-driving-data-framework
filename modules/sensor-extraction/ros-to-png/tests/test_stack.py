@@ -56,6 +56,25 @@ def test_synthesize_stack(stack_defaults):
     template.resource_count_is("AWS::Lambda::Function", 2)
     template.resource_count_is("AWS::Batch::JobDefinition", 1)
     template.resource_count_is("AWS::IAM::Role", 3)
+    # Check ecr.Repository 'auto_delete' runtime version
+    template.has_resource_properties(
+        type="AWS::Lambda::Function",
+        props={
+            "Runtime": "nodejs18.x",
+        },
+    )
+    # Check batch job definition properties
+    template.has_resource_properties(
+        type="AWS::Batch::JobDefinition",
+        props={
+            "ContainerProperties": {
+                "MountPoints": [{"ContainerPath": "/mnt/ebs", "ReadOnly": False, "SourceVolume": "scratch"}],
+                "ReadonlyRootFilesystem": False,
+                "ResourceRequirements": [{"Type": "MEMORY", "Value": "8192"}, {"Type": "VCPU", "Value": "2"}],
+                "Volumes": [{"Name": "scratch"}],
+            }
+        },
+    )
 
 
 def test_synthesize_stack_without_resize(stack_defaults):

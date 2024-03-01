@@ -1,0 +1,91 @@
+name: batch-compute
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=main
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: batch-compute
+    value:
+      batch_compute_config:
+        - env_name: ng1
+          compute_type: ON_DEMAND
+          max_vcpus: 4800
+          desired_vcpus: 0
+          order: 1
+          instance_types:
+             - "m5.xlarge"
+        - env_name: ng2
+          max_vcpus: 4800
+          desired_vcpus: 0
+          compute_type: SPOT
+          order: 1
+          # instance_types: #if not set, the code defaults to "optimal"
+          #   - "m5.large"
+        - env_name: ng3
+          max_vcpus: 4800
+          desired_vcpus: 0
+          compute_type: FARGATE
+          order: 1
+---
+name: metadata-storage
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=main
+parameters:
+  - name: glue-db-suffix
+    value: vsidata
+  - name: rosbag-bagfile-table-suffix
+    value: Rosbag-BagFile-Metadata
+  - name: rosbag-scene-table-suffix
+    value: Rosbag-Scene-Metadata
+---
+name: opensearch
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=main
+parameters:
+  - name: retention-type
+    value: DESTROY
+  - name: opensearch_data_nodes
+    value: 1
+  - name: opensearch_data_nodes_instance_type
+    value: r6g.large.search
+  - name: opensearch_master_nodes
+    value: 0
+  - name: opensearch_master_nodes_instance_type
+    value: r6g.large.search
+  - name: opensearch_ebs_volume_size
+    value: 50
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+---
+name: emr-serverless
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=main
+parameters:
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId

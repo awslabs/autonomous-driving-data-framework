@@ -1,0 +1,143 @@
+name: rip
+path: modules/analysis/rosbag-image-pipeline-sfn
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: image-topics
+    value:
+      - /flir_adk/rgb_front_left/image_raw
+      - /flir_adk/rgb_front_right/image_raw
+  - name: sensor-topics
+    value:
+      - /vehicle/gps/fix
+      - /vehicle/gps/time
+      - /vehicle/gps/vel
+      - /imu_raw
+  - name: desired-encoding
+    value: bgr8
+  - name: lane-detection-job-concurrency
+    value: 20
+  - name: lane-detection-instance-type
+    value: ml.m5.2xlarge
+  - name: lane-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ImageUri
+  - name: lane-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: lane-detection
+        key: ExecutionRole
+  - name: object-detection-job-concurrency
+    value: 30
+  - name: object-detection-instance-type
+    value: ml.m5.xlarge
+  - name: object-detection-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ImageUri
+  - name: object-detection-iam-role
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: object-detection
+        key: ExecutionRole
+  - name: parquet-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-parquet
+        key: JobDefinitionArn
+  - name: png-batch-job-def-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-images
+        name: ros-to-png
+        key: JobDefinitionArn
+  - name: rosbag-scene-metadata-table
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: metadata-storage
+        key: RosbagSceneMetadataTable
+  - name: source-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: RawBucketName
+  - name: intermediate-bucket
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: IntermediateBucketName
+  - name: logs-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: LogsBucketName
+  - name: artifacts-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: ArtifactsBucketName
+  - name: full-access-policy-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: datalake-buckets
+        key: FullAccessPolicyArn
+  - name: on-demand-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: OnDemandJobQueueArn
+  - name: spot-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: SpotJobQueueArn
+  - name: fargate-job-queue-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: batch-compute
+        key: FargateJobQueueArn
+  - name: emr-job-exec-role
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: emr-serverless
+        key: EmrJobExecutionRoleArn
+  - name: emr-app-id
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: emr-serverless
+        key: EmrApplicationId
+  - name: rosbag-scene-metadata-table
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: metadata-storage
+        key: RosbagSceneMetadataTable
