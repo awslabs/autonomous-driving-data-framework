@@ -37,7 +37,6 @@ class TrainingPipeline(Stack):
         super().__init__(
             scope,
             id,
-            description="(SO9154) Autonomous Driving Data Framework (ADDF) - k8s-managed",
             **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(
