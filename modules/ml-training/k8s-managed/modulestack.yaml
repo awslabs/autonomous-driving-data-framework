@@ -22,8 +22,18 @@ Resources:
       PolicyDocument:
         Statement:
           - Action:
-              - "ecr:DescribeRepositories"
+              - "autoscaling:DescribeAutoScalingGroups"
               - "sts:GetCallerIdentity"
+            Effect: Allow
+            Resource:
+              - "*"
+          - Sid: "AccessToPyTorchPublicECR"
+            Action:
+              - "ecr:DescribeRepositories"
+              - "ecr:GetAuthorizationToken"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:BatchCheckLayerAvailability"
             Effect: Allow
             Resource:
               - "*"
@@ -114,7 +124,6 @@ Resources:
           - Effect: Allow
             Action:
               - "autoscaling:CreateOrUpdateTags"
-              - "autoscaling:DescribeAutoScalingGroups"
             Resource:
               - !Sub "arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
         Version: 2012-10-17
