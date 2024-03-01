@@ -15,76 +15,81 @@ Parameters:
     Type: String
     Description: Role from the EKS module with cluster admin permissions
 
-
 Resources:
   Policy:
-    Type: 'AWS::IAM::Policy'
+    Type: "AWS::IAM::Policy"
     Properties:
       PolicyDocument:
         Statement:
           - Action:
-              - 's3:Create*'
-              - 's3:Put*'
-              - 's3:Delete*'
-              - 's3:Get*'
-              - 's3:List*'
+              - "ecr:DescribeRepositories"
+              - "sts:GetCallerIdentity"
             Effect: Allow
             Resource:
-              - 'arn:aws:s3:::cdk*'
+              - "*"
           - Action:
-              - 'iam:CreatePolicy'
-              - 'iam:DetachRolePolicy'
-              - 'iam:DeletePolicy'
-              - 'iam:DeleteRolePolicy'
-              - 'iam:CreateRole'
-              - 'iam:DeleteRole'
-              - 'iam:AttachRolePolicy'
-              - 'iam:PutRolePolicy'
-              - 'iam:UpdateRole'
-              - 'iam:CreatePolicyVersion'
-              - 'iam:DeletePolicyVersion'
-              - 'iam:TagRole'
-              - 'iam:UntagRole'
-              - 'iam:PassRole'
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:BatchGetImage"
+              - "ecr:GetAuthorizationToken"
+              - "ecr:CompleteLayerUpload"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:PutImage"
+              - "ecr:UploadLayerPart"
+            Effect: Allow
+            Resource:
+              - !Sub "arn:aws:ecr::${AWS::AccountId}:repository/addf-${DeploymentName}*"
+          - Action:
+              - "s3:Create*"
+              - "s3:Put*"
+              - "s3:Delete*"
+              - "s3:Get*"
+              - "s3:List*"
+            Effect: Allow
+            Resource:
+              - "arn:aws:s3:::cdk*"
+          - Action:
+              - "iam:CreatePolicy"
+              - "iam:DetachRolePolicy"
+              - "iam:DeletePolicy"
+              - "iam:DeleteRolePolicy"
+              - "iam:CreateRole"
+              - "iam:DeleteRole"
+              - "iam:AttachRolePolicy"
+              - "iam:PutRolePolicy"
+              - "iam:UpdateRole"
+              - "iam:CreatePolicyVersion"
+              - "iam:DeletePolicyVersion"
+              - "iam:TagRole"
+              - "iam:UntagRole"
+              - "iam:PassRole"
             Effect: Allow
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/addf-${DeploymentName}-${ModuleName}*"
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/addf-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
-              - "iam:Get*"
-              - "eks:DescribeCluster"
-              - "iam:List*"
-              - "cloudformation:Describe*"
-              - "s3:List*"
-              - 'kms:CreateKey'
-              - 'kms:List*'
-              - 'kms:Describe*'
-              - 'kms:TagResource'
-              - "cloudformation:GetTemplate"
-              - "ecr:*"
-              - "ec2:Get*"
-              - "ec2:Describe*"
-              - "elasticloadbalancing:Describe*"
               - "logs:CreateLogGroup"
               - "logs:Describe*"
               - "logs:DescribeLogGroups"
-            Resource: '*'
+            Resource: 
+            - !Sub "arn:aws:logs::${AWS::AccountId}:log-group/*"
+          - Effect: Allow
+            Action:
+              - "iam:Get*"
+              - "iam:List*"
+            Resource:
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/addf-${DeploymentName}*"
           - Effect: Allow
             Action:
               - ssm:GetParameter
             Resource:
-              -  !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cdk-bootstrap*"
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cdk-bootstrap*"
           - Effect: Allow
             Action:
               - cloudformation:*
             Resource:
               - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/addf-${DeploymentName}-${ModuleName}*"
-          - Effect: Allow
-            Action:
-              - ecr:*
-            Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "iam:PassRole"
@@ -98,6 +103,7 @@ Resources:
           - Effect: Allow
             Action:
               - "eks:ListNodegroups"
+              - "eks:DescribeCluster"
             Resource:
               - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/addf-${DeploymentName}*"
           - Effect: Allow
@@ -110,7 +116,7 @@ Resources:
               - "autoscaling:CreateOrUpdateTags"
               - "autoscaling:DescribeAutoScalingGroups"
             Resource:
-              - "*"
+              - !Sub "arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"
       Roles: [!Ref RoleName]
