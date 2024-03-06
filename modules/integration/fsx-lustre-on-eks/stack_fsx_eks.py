@@ -111,7 +111,7 @@ class FSXFileStorageOnEKS(Stack):
                 "provisioner": "fsx.csi.aws.com",
                 "reclaimPolicy": "Delete",
                 "volumeBindingMode": "Immediate",
-            },
+            }
         )
 
         storage_class_manifest.node.add_dependency(namespace_manifest)
