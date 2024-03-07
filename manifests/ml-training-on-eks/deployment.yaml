@@ -1,4 +1,4 @@
-name: ml-eks
+name: ml-eks-ks
 toolchainRegion: eu-central-1
 forceDependencyRedeploy: True
 groups:
@@ -10,6 +10,8 @@ groups:
     path: manifests/ml-training-on-eks/core-modules.yaml
   - name: integration
     path: manifests/ml-training-on-eks/integration-modules.yaml  
+  - name: images
+    path: manifests/ml-training-on-eks/docker-image-modules.yaml
   - name: training
     path: manifests/ml-training-on-eks/training-modules.yaml
 targetAccountMappings:
@@ -18,7 +20,7 @@ targetAccountMappings:
       valueFrom:
         envVariable: ACCOUNT_ID
     default: true
-    codebuildImage: aws/codebuild/standard:7.0
+    #codebuildImage: aws/codebuild/standard:7.0
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
       trainingNamespaceName: training

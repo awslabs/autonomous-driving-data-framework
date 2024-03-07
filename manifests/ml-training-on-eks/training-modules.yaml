@@ -28,3 +28,9 @@ parameters:
   - name: training-namespace-name
     valueFrom:
       parameterValue: trainingNamespaceName
+  - name: training-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: images
+        name: mnist
+        key: ImageUri

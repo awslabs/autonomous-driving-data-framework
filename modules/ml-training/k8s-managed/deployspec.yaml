@@ -19,18 +19,6 @@ deploy:
         eksctl get iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
         && echo "IAM Identity Mapping already found" \
         || eksctl create iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} --username addf-${ADDF_MODULE_NAME}
-      # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will fail
-      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-      # Build and push image
-      # - Logging into AWS Deep Learning ECR Repository to pull Pytorch Base Image. Needs specific supported region
-      # https://github.com/aws/deep-learning-containers/blob/master/available_images.md
-      - aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 763104351884.dkr.ecr.eu-central-1.amazonaws.com
-      - cd images/pytorch-mnist && docker build -t $REPOSITORY_URI:latest .
-      # - cd src && docker build -t $IMAGE_URI . --build-arg BASE_IMAGE=$BASE_IMAGE
-      - aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || aws ecr create-repository --repository-name ${ECR_REPO_NAME}
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
-      - docker push $REPOSITORY_URI:latest && docker push $REPOSITORY_URI:$IMAGE_TAG
 
 destroy:
   phases:

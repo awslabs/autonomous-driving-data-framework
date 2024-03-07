@@ -38,6 +38,7 @@ Resources:
             Resource:
               - "*"
           - Action:
+              - "ecr:DescribeRepositories"
               - "ecr:BatchCheckLayerAvailability"
               - "ecr:BatchGetImage"
               - "ecr:GetAuthorizationToken"
@@ -46,7 +47,7 @@ Resources:
               - "ecr:InitiateLayerUpload"
               - "ecr:PutImage"
               - "ecr:UploadLayerPart"
-              - "ecr:*"
+              - "ecr:CreateRepository"
             Effect: Allow
             Resource:
               - !Sub "arn:aws:ecr::${AWS::AccountId}:repository/addf-${DeploymentName}*"

@@ -28,6 +28,7 @@ class TrainingPipeline(Stack):
         eks_admin_role_arn: str,
         eks_openid_connect_provider_arn: str,
         training_namespace_name: str,
+        training_image_uri: str,
         **kwargs: Any,
     ) -> None:
         # ADDF Env vars
@@ -42,6 +43,8 @@ class TrainingPipeline(Stack):
         Tags.of(scope=cast(IConstruct, self)).add(
             key="Deployment", value=f"addf-{deployment_name}"
         )
+
+        
 
         policy_statements = [
             aws_iam.PolicyStatement(
@@ -223,7 +226,7 @@ class TrainingPipeline(Stack):
                         "containers": [
                             {
                                 "name": "pytorch",
-                                "image": f'{os.getenv("REPOSITORY_URI")}:{os.getenv("IMAGE_TAG")}',
+                                "image": training_image_uri,
                                 "imagePullPolicy": "Always",
                                 "volumeMounts": [
                                     {
