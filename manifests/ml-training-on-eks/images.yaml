@@ -1,5 +1,5 @@
 name: mnist
-path: modules/ml-training/training-images/mnist
+path: modules/training-images/mnist
 parameters:
   - name: ecr-repository-name
     valueFrom:
@@ -13,3 +13,8 @@ parameters:
         group: optionals
         name: ecr-ml-images
         key: EcrRepositoryArn
+  # Base Image = 763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/pytorch-training:2.1.0-gpu-py310-cu121-ubuntu20.04-ec2:
+  - name: base-image-ecr-account-id 
+    value: 763104351884
+  - name: base-image-name
+    value: pytorch-training:2.1.0-gpu-py310-cu121-ubuntu20.04-ec2

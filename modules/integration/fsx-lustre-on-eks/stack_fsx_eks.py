@@ -29,7 +29,6 @@ class FSXFileStorageOnEKS(Stack):
         eks_cluster_security_group_id: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
             scope,
             id,
@@ -111,7 +110,7 @@ class FSXFileStorageOnEKS(Stack):
                 "provisioner": "fsx.csi.aws.com",
                 "reclaimPolicy": "Delete",
                 "volumeBindingMode": "Immediate",
-            }
+            },
         )
 
         storage_class_manifest.node.add_dependency(namespace_manifest)
