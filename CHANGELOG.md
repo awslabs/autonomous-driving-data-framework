@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Changed**
 
 - update cdk version for 'eb-sf-batch', 'efs-on-eks' & 'fsx-lustre-on-eks' modules
+- upgrading lambda runtimes in 'ddb-to-os' module
+- upgrading cdk version for 'ddb-to-os' module
 - upgrading cdk version for sensor-extraction modules as well as refactoring for new constructs introduced by aws-cdk-lib
 - updating cdk version for rosbag-webviz module, keeping in sync with release/1.0.0-reinvent branch
 - Fixed a bug in the ECR module to capture the metadata
