@@ -1,0 +1,15 @@
+name: mnist
+path: modules/ml-training/training-images/mnist
+parameters:
+  - name: ecr-repository-name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: ecr-ml-images
+        key: EcrRepositoryName
+  - name: ecr-repository-arn
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: ecr-ml-images
+        key: EcrRepositoryArn

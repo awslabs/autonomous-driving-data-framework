@@ -12,15 +12,18 @@ The following resources are created:
 - Step Functions State Machine definition that calls the EKS RunJob API
 
 The State Machine executes the following steps:
+1. Execute EKS Job on the target cluster in the training-namespace
+2. Retrieve Raw Logs
 
 ## Parameters
 
 The module requires the following parameters:
 
-- `eks_cluster_name` - Name of the EKS cluster to deploy to 
-- `eks_admin_role_arn` - ARN of EKS admin role to authenticate kubectl
-- `eks_oidc_provider_arn` - ARN of EKS OIDC provider for IAM roles
-- `training_namespace_name` - Kubernetes namespace to create for training
+- `eks-cluster-name` - Name of the EKS cluster to deploy to 
+- `eks-admin-role-arn` - ARN of EKS admin role to authenticate kubectl
+- `eks-oidc-provider-arn` - ARN of EKS OIDC provider for IAM roles
+- `training-namespace-name` - Kubernetes namespace to create for training
+- `training-image-uri` - Docker Image URI to use for training
 
 ## Output
 

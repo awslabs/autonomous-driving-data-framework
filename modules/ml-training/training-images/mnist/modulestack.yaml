@@ -28,16 +28,22 @@ Resources:
             Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
           - Effect: Allow
             Action:
-              - "ecr:Describe*"
-              - "ecr:Get*"
-              - "ecr:List*"
+              - "ecr:DescribeRepositories"
+              - "ecr:BatchCheckLayerAvailability"
               - "ecr:BatchGetImage"
+              - "ecr:GetAuthorizationToken"
+              - "ecr:CompleteLayerUpload"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:PutImage"
+              - "ecr:UploadLayerPart"
+              - "ecr:CreateRepository"
             Resource: '*'
           - Effect: Allow
             Action:
               - ecr:*
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*"
           - Action:
               - "iam:CreateServiceLinkedRole"
             Effect: Allow

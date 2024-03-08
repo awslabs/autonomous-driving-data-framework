@@ -6,9 +6,8 @@ deploy:
       - pip install -r requirements.txt
     build:
       commands:
-      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}"
-      - export IMAGE_TAG=${COMMIT_HASH:=latest}
-      - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
+      - export ECR_REGISTRY_URL=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - export REPOSITORY_URI=$ECR_REGISTRY_URL/$ADDF_PARAMETER_ECR_REPOSITORY_NAME
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
       - export EKS_SERVICE_ACCOUNT_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EksServiceAccountRoleArn")
@@ -19,7 +18,8 @@ deploy:
         eksctl get iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
         && echo "IAM Identity Mapping already found" \
         || eksctl create iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} --username addf-${ADDF_MODULE_NAME}
-
+      # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will faile
+      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
 destroy:
   phases:
     install:

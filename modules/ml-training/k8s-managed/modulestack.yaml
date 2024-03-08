@@ -23,34 +23,14 @@ Resources:
         Statement:
           - Action:
               - "autoscaling:DescribeAutoScalingGroups"
-              - "sts:GetCallerIdentity"
-            Effect: Allow
-            Resource:
-              - "*"
-          - Sid: "AccessToPyTorchPublicECR"
-            Action:
-              - "ecr:DescribeRepositories"
-              - "ecr:GetAuthorizationToken"
-              - "ecr:GetDownloadUrlForLayer"
-              - "ecr:BatchGetImage"
-              - "ecr:BatchCheckLayerAvailability"
             Effect: Allow
             Resource:
               - "*"
           - Action:
-              - "ecr:DescribeRepositories"
-              - "ecr:BatchCheckLayerAvailability"
-              - "ecr:BatchGetImage"
-              - "ecr:GetAuthorizationToken"
-              - "ecr:CompleteLayerUpload"
-              - "ecr:GetDownloadUrlForLayer"
-              - "ecr:InitiateLayerUpload"
-              - "ecr:PutImage"
-              - "ecr:UploadLayerPart"
-              - "ecr:CreateRepository"
+              - "sts:GetCallerIdentity"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:ecr::${AWS::AccountId}:repository/addf-${DeploymentName}*"
+              - "*"
           - Action:
               - "s3:Create*"
               - "s3:Put*"
@@ -128,6 +108,12 @@ Resources:
               - "autoscaling:CreateOrUpdateTags"
             Resource:
               - !Sub "arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
+          - Effect: Allow
+            Action:
+              - "ssm:PutParameter"
+              - "ssm:GetParameter"
+            Resource:
+              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/addf*"
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"
       Roles: [!Ref RoleName]
