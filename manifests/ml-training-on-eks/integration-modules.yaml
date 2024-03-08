@@ -1,0 +1,55 @@
+name: lustre-on-eks
+# TODO: Fix local ref to release 
+path: modules/integration/fsx-lustre-on-eks
+parameters:
+  - name: EksClusterAdminRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterMasterRoleArn
+  - name: EksClusterName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: EksOidcArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: EksClusterSecurityGroupId
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterSecurityGroupId
+  - name: Namespace
+    valueFrom:
+      parameterValue: trainingNamespaceName
+  - name: FsxFileSystemId
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreFileSystemId
+  - name: FsxSecurityGroupId
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreSecurityGroup
+  - name: FsxMountName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreMountName
+  - name: FsxDnsName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreAttrDnsName
