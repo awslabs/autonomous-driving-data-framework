@@ -4,9 +4,9 @@
 import logging
 from typing import Any, cast
 
-import aws_cdk.aws_batch_alpha as batch
+import aws_cdk.aws_batch as batch
 import aws_cdk.aws_iam as iam
-from aws_cdk import Duration, NestedStack, Stack, Tags
+from aws_cdk import Duration, NestedStack, Size, Stack, Tags
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_events as events
@@ -86,16 +86,17 @@ class EventDrivenBatch(Stack):
 
         img = ecs.EcrImage.from_ecr_repository(repository=repository, tag="latest")
 
-        definition = batch.JobDefinition(
+        definition = batch.EcsJobDefinition(
             self,
             f"{dep_mod}-JobDefinition",
             job_definition_name=f"addf-{deployment_name}-Job-Definition",
             retry_attempts=1,
-            platform_capabilities=[batch.PlatformCapabilities.FARGATE],
-            container=batch.JobDefinitionContainer(
+            container=batch.EcsFargateContainerDefinition(
+                self,
+                f"{dep_mod} Container Definition",
                 environment={"AWS_REGION": NestedStack.of(self).region},
-                vcpus=int(vcpus),
-                memory_limit_mib=int(memory_limit_mib),
+                cpu=int(vcpus),
+                memory=Size.mebibytes(int(memory_limit_mib)),
                 execution_role=role,
                 job_role=role,
                 image=img,
