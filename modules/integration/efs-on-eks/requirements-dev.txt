@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements-dev.in
 #
-attrs==21.4.0
+attrs==23.1.0
     # via
     #   jschema-to-python
     #   jsonschema
