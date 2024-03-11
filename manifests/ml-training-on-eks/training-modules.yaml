@@ -1,0 +1,36 @@
+name: training
+path: modules/ml-training/k8s-managed
+parameters:
+  - name: eks-cluster-name
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: eks-oidc-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: eks-cluster-admin-role-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterMasterRoleArn
+  - name: pvc-name
+    valueFrom:
+      moduleMetadata:
+        group: integration
+        name: lustre-on-eks
+        key: PersistentVolumeClaimName
+  - name: training-namespace-name
+    valueFrom:
+      parameterValue: trainingNamespaceName
+  - name: training-image-uri
+    valueFrom:
+      moduleMetadata:
+        group: images
+        name: mnist
+        key: ImageUri

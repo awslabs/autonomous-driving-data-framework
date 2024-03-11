@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## UNRELEASED
 
 ### **Added**
+- Added `ml-training/k8s-managed` module: Run ML Training jobs on EKS via AWS Step Function (Sample PyTorch Training Job)
 
 ### **Changed**
 
@@ -23,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated `typing-extensions~=4.6.3` in modules that were below that spec to support seed-farmer 3.1.x
 - fixed security updates about apache-airflow version
 - made os-tunnel module generic by importing seedfarmer project name
+- updated fsx-lustre-on-eks module to create EKS namespace if it does not exist
+- fix removed default region from fsx-lustre-on-eks deployspec
+- update cdk version for 'fsx-lustre-on-eks' module
 
 ### **Removed**
 
