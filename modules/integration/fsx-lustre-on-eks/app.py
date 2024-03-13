@@ -33,13 +33,17 @@ fsx_security_group_id = os.getenv(_param("FSX_SECURITY_GROUP_ID"))
 fsx_mount_name = os.getenv(_param("FSX_MOUNT_NAME"))
 fsx_dns_name = os.getenv(_param("FSX_DNS_NAME"))
 
+fsx_storage_capacity = int(os.getenv(_param("FSX_STORAGE_CAPACITY"), 1200))
+
 # This gets set in the deployspec...NOTE no PARAMETER prefix
 eks_namespace = os.getenv("EKS_NAMESPACE")
 
 if not eks_namespace:
-    print("No EKS Namespace defined...error")
-    exit(1)
+    raise ValueError("No EKS Namespace defined...error")
 
+
+if fsx_storage_capacity not in [1200, 2400] and (fsx_storage_capacity % 3600) != 0:
+    raise ValueError("Storage_capacity must be 1200, 2400 or an increment of 3600 - see README")
 
 app = App()
 
@@ -53,6 +57,7 @@ stack = FSXFileStorageOnEKS(
     fsx_security_group_id=cast(str, fsx_security_group_id),
     fsx_mount_name=cast(str, fsx_mount_name),
     fsx_dns_name=cast(str, fsx_dns_name),
+    fsx_storage_capacity=f"{fsx_storage_capacity}Gi",
     eks_cluster_name=cast(str, eks_cluster_name),
     eks_admin_role_arn=cast(str, eks_admin_role_arn),
     eks_oidc_arn=cast(str, eks_oidc_arn),

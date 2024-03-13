@@ -40,6 +40,7 @@ def test_synthesize_stack(stack_defaults):
         fsx_security_group_id="sg-0123456",
         fsx_mount_name="foobar",
         fsx_dns_name="example.com",
+        fsx_storage_capacity="1200Gi",
         eks_namespace="service.example.com",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],

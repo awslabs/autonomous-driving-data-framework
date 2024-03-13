@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated fsx-lustre-on-eks module to create EKS namespace if it does not exist
 - fix removed default region from fsx-lustre-on-eks deployspec
 - update cdk version for 'fsx-lustre-on-eks' module
+- adding storage capacity configuration for `fsx-lusre-on-eks` module
 
 ### **Removed**
 
