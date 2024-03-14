@@ -22,6 +22,7 @@ class FSXFileStorageOnEKS(Stack):
         fsx_mount_name: str,
         fsx_file_system_id: str,
         fsx_security_group_id: str,
+        fsx_storage_capacity: str,
         eks_namespace: str,
         eks_cluster_name: str,
         eks_admin_role_arn: str,
@@ -123,7 +124,7 @@ class FSXFileStorageOnEKS(Stack):
                 "metadata": {"name": self.pv_name},
                 "spec": {
                     "storageClassName": self.storage_class_name,
-                    "capacity": {"storage": "1200Gi"},
+                    "capacity": {"storage": fsx_storage_capacity},
                     "volumeMode": "Filesystem",
                     "accessModes": ["ReadWriteMany"],
                     "mountOptions": ["flock"],
