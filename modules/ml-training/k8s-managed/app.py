@@ -12,7 +12,7 @@ eks_cluster_name = os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"]
 eks_admin_role_arn = os.environ["ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"]
 eks_oidc_provider_arn = os.environ["ADDF_PARAMETER_EKS_OIDC_ARN"]
 training_namespace_name = os.environ["ADDF_PARAMETER_TRAINING_NAMESPACE_NAME"]
-training_image_uri = os.environ['ADDF_PARAMETER_TRAINING_IMAGE_URI']
+training_image_uri = os.environ["ADDF_PARAMETER_TRAINING_IMAGE_URI"]
 
 app = App()
 

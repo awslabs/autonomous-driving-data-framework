@@ -1,4 +1,5 @@
 import os
+from typing import Any, Dict
 
 import boto3
 
@@ -6,19 +7,18 @@ eks = boto3.client("eks")
 as_client = boto3.client("autoscaling")
 
 # This script fixes missing tags for the cluster autoscaler that need to be added to the nodegroup autoscaling group
-# docs: https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
+# docs:
+# https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#auto-discovery-setup
 # issue: https://github.com/aws/aws-cdk/issues/29280
 # container-roadmap: https://github.com/aws/containers-roadmap/issues/1541
 
 CLUSTER_NAME = os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"]
-TAINT_TAG_KEY = "k8s.io/cluster-autoscaler/node-template/taint/dedicated"
-TAINT_TAG_VALUE = "true:NoSchedule"
 LABEL_TAG_PREFIX = "k8s.io/cluster-autoscaler/node-template/label"
 
 nodegroup_names = eks.list_nodegroups(clusterName=CLUSTER_NAME)["nodegroups"]
 
 
-def get_asg_tag(asg_name, key, value):
+def get_asg_tag(asg_name: str, key: str, value: str) -> Dict[str, Any]:
     return {
         "ResourceId": asg_name,
         "ResourceType": "auto-scaling-group",
@@ -38,7 +38,8 @@ for nodegroup_name in nodegroup_names:
 
     if labels:
         print(
-            f"Found autoscaling group for NodeGroup ({nodegroup_name}) with eks_node_labels ({labels}). Checking if any cluster-autoscaler tags are missing..."
+            f"""Found autoscaling group for NodeGroup ({nodegroup_name}) with eks_node_labels ({labels}).
+            Checking if any cluster-autoscaler tags are missing..."""
         )
         asg_name = nodegroup["resources"]["autoScalingGroups"][0]["name"]
 
@@ -47,7 +48,7 @@ for nodegroup_name in nodegroup_names:
         ][0]
 
         tags = asg["Tags"]
-        print(f"Tags:")
+        print("Tags:")
         for tag in tags:
             print(f"{tag['Key']}: {tag['Value']}")
         tag_keys = [tag["Key"] for tag in tags]
@@ -56,15 +57,10 @@ for nodegroup_name in nodegroup_names:
 
         for label in labels.keys():
             cluster_autoscaler_label_tag = f"{LABEL_TAG_PREFIX}/{label}"
-            if not cluster_autoscaler_label_tag in tag_keys:
+            if cluster_autoscaler_label_tag not in tag_keys:
                 target_tags.append(
                     get_asg_tag(asg_name, cluster_autoscaler_label_tag, labels[label])
                 )
-        taint_autoscaler_tag = TAINT_TAG_KEY
-        if not taint_autoscaler_tag in tag_keys:
-            target_tags.append(
-                get_asg_tag(asg_name, taint_autoscaler_tag, TAINT_TAG_VALUE)
-            )
 
         if target_tags:
             print(f"Tags to update: {target_tags}")

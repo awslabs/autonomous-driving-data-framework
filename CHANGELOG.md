@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix removed default region from fsx-lustre-on-eks deployspec
 - update cdk version for 'fsx-lustre-on-eks' module
 - adding storage capacity configuration for `fsx-lusre-on-eks` module
+- removing taint tag on asgs for `ml-training/k8s-managed`, stubbing out tests to fit standards
 
 ### **Removed**
 

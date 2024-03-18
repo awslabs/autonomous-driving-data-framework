@@ -44,8 +44,6 @@ class TrainingPipeline(Stack):
             key="Deployment", value=f"addf-{deployment_name}"
         )
 
-        
-
         policy_statements = [
             aws_iam.PolicyStatement(
                 actions=["sqs:*"],
@@ -206,10 +204,11 @@ class TrainingPipeline(Stack):
 
         self.eks_service_account_role = service_account.role
 
-        final_status = sfn.Pass(self, "final step")
+        final_status = sfn.Pass(self, "final step")  # noqa: F841
 
         # States language JSON to put an item into DynamoDB
-        # snippet generated from https://docs.aws.amazon.com/step-functions/latest/dg/tutorial-code-snippet.html#tutorial-code-snippet-1
+        # snippet generated from
+        # https://docs.aws.amazon.com/step-functions/latest/dg/tutorial-code-snippet.html#tutorial-code-snippet-1
         body = {
             "apiVerson": "batch/v1",
             "kind": "Job",
@@ -287,7 +286,7 @@ class TrainingPipeline(Stack):
 
         log_group = logs.LogGroup(self, "TrainingOnEKSLogGroup")
 
-        sm = sfn.StateMachine(
+        sm = sfn.StateMachine(  # noqa: F841
             self,
             "TrainingOnEKS",
             definition_body=sfn.DefinitionBody.from_chainable(sfn.Chain.start(custom)),
