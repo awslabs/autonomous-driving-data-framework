@@ -1,5 +1,5 @@
 name: mnist
-path: modules/training-images/mnist
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/training-images/mnist?ref=release/3.1.0
 parameters:
   - name: ecr-repository-name
     valueFrom:
