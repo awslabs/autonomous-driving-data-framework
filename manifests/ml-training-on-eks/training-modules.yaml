@@ -1,5 +1,5 @@
 name: training
-path: modules/ml-training/k8s-managed
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/ml-training/k8s-managed?ref=release/3.1.0
 parameters:
   - name: eks-cluster-name
     valueFrom:
