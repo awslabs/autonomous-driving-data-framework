@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 =======
 
+=======
+
 ## UNRELEASED
+
+### **Added**
+
+### **Changed**
+
+### **Removed**
+
+=======
+
+## [V3.1.0] - [03/19/2024]
 
 ### **Added**
 - Added `ml-training/k8s-managed` module: Run ML Training jobs on EKS via AWS Step Function (Sample PyTorch Training Job)
