@@ -14,7 +14,7 @@ aws-sam-translator==1.45.0
     # via cfn-lint
 awscli==1.22.97
     # via -r requirements-dev.in
-black==22.3.0
+black==24.3.0
     # via -r requirements-dev.in
 boto3==1.21.42
     # via aws-sam-translator
