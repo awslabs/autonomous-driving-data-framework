@@ -14,7 +14,7 @@ aws-sam-translator==1.45.0
     # via cfn-lint
 awscli==1.22.97
     # via -r requirements-dev.in
-black==22.3.0
+black==24.3.0
     # via -r requirements-dev.in
 boto3==1.21.42
     # via aws-sam-translator
@@ -83,8 +83,9 @@ mypy-extensions==0.4.3
     #   mypy
 networkx==2.6.3
     # via cfn-lint
-packaging==21.3
+packaging==24.0
     # via
+    #   black
     #   build
     #   pytest
 pathspec==0.9.0
@@ -116,9 +117,7 @@ pyflakes==2.4.0
 pygments==2.11.2
     # via pyroma
 pyparsing==3.0.8
-    # via
-    #   packaging
-    #   pydot
+    # via pydot
 pyroma==4.0
     # via -r requirements-dev.in
 pyrsistent==0.18.1
@@ -148,6 +147,7 @@ six==1.16.0
     #   python-dateutil
 tomli==2.0.1
     # via
+    #   black
     #   build
     #   check-manifest
     #   mypy
@@ -158,7 +158,9 @@ types-pyyaml==6.0.5
 types-setuptools==57.4.12
     # via -r requirements-dev.in
 typing-extensions==4.1.1
-    # via mypy
+    # via
+    #   black
+    #   mypy
 urllib3==1.26.18
     # via
     #   botocore
