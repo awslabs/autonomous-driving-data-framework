@@ -57,6 +57,7 @@ Resources:
               - iam:PutRolePolicy
               - iam:DeleteRolePolicy
               - iam:getRolePolicy
+              - iam:UntagRole
               Resource:
               - !Sub arn:aws:iam::${AWS::AccountId}:role/cdk-*
               - !Sub arn:aws:iam::${AWS::AccountId}:role/seedfarmer-*
