@@ -5,7 +5,6 @@ import logging
 import os
 from typing import Any, cast
 
-import boto3
 import cdk_nag
 from aws_cdk import Aspects, Duration, Stack, Tags, aws_eks, aws_iam
 from aws_cdk import aws_logs as logs
@@ -27,6 +26,8 @@ class TrainingPipeline(Stack):
         eks_cluster_name: str,
         eks_admin_role_arn: str,
         eks_openid_connect_provider_arn: str,
+        eks_cluster_endpoint: str,
+        eks_cert_auth_data: str,
         training_namespace_name: str,
         training_image_uri: str,
         **kwargs: Any,
@@ -219,9 +220,9 @@ class TrainingPipeline(Stack):
             "spec": {
                 "backoffLimit": 1,
                 "template": {
-                    "metadata": {"annotations": {"sidecar.istio.io/inject": "false"}},
                     "spec": {
                         "restartPolicy": "OnFailure",
+                        "serviceAccountName": module_name,
                         "containers": [
                             {
                                 "name": "pytorch",
@@ -262,20 +263,14 @@ class TrainingPipeline(Stack):
             },
         }
 
-        client = boto3.client("eks")
-
-        response = client.describe_cluster(name=eks_cluster_name)
-
         state_json = {
             "Type": "Task",
             "Resource": "arn:aws:states:::eks:runJob.sync",
             "Parameters": {
                 "ClusterName": eks_cluster_name,
                 "Namespace": training_namespace_name,
-                "CertificateAuthority": response["cluster"]["certificateAuthority"][
-                    "data"
-                ],
-                "Endpoint": response["cluster"]["endpoint"],
+                "CertificateAuthority": eks_cert_auth_data,
+                "Endpoint": eks_cluster_endpoint,
                 "LogOptions": {"RetrieveLogs": True},
                 "Job": body,
             },

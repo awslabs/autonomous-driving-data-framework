@@ -19,6 +19,18 @@ parameters:
         group: core
         name: eks
         key: EksClusterMasterRoleArn
+  - name: eks-cluster-endpoint
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterEndpoint
+  - name: eks-cert-auth-data
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterCertAuthData
   - name: pvc-name
     valueFrom:
       moduleMetadata:

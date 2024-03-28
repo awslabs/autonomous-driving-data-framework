@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- minor changes to ml on eks module w/ imports, env vars
 - locked the cryptography package version to `42.0.5` as per depandabot alert
 
 ### **Removed**

@@ -25,25 +25,23 @@ def test_synthesize_stack(stack_defaults):
     import stack
 
     app = cdk.App()
-
     dep_name = "test-deployment"
     mod_name = "test-module"
-    # this fails due to mock not finding the eks cluster...
-    # should stub this out, but it is fine for now
-    with pytest.raises(Exception) as e:
 
-        step_function = stack.TrainingPipeline(
-            scope=app,
-            id=f"addf-{dep_name}-{mod_name}",
-            deployment_name=dep_name,
-            module_name=mod_name,
-            eks_cluster_name=mod_name,
-            eks_admin_role_arn="arn:aws:iam::123456789012:role/addf-eks-testing-derek",
-            eks_openid_connect_provider_arn="arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/3BF275A8EB229AC8630CD2C8006BC073",
-            training_namespace_name="namespace",
-            training_image_uri="mnist:latest",
-            env=cdk.Environment(
-                account=os.environ["CDK_DEFAULT_ACCOUNT"],
-                region=os.environ["CDK_DEFAULT_REGION"],
-            ),
-        )
+    step_function = stack.TrainingPipeline(
+        scope=app,
+        id=f"addf-{dep_name}-{mod_name}",
+        deployment_name=dep_name,
+        module_name=mod_name,
+        eks_cluster_name=mod_name,
+        eks_admin_role_arn="arn:aws:iam::123456789012:role/addf-eks-testing-XXXXXX",
+        eks_openid_connect_provider_arn="arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/XXXXXXXX",
+        eks_cluster_endpoint="oidc.eks.us-west-2.amazonaws.com/id/XXXXXXXXXX",
+        eks_cert_auth_data="BQTRJQkR3QXdnZ0VLCkFvSUJ",
+        training_namespace_name="namespace",
+        training_image_uri="mnist:latest",
+        env=cdk.Environment(
+            account=os.environ["CDK_DEFAULT_ACCOUNT"],
+            region=os.environ["CDK_DEFAULT_REGION"],
+        ),
+    )

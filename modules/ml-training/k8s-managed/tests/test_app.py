@@ -16,11 +16,15 @@ def stack_defaults():
     os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"] = "my-cluster"
     os.environ[
         "ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"
-    ] = "arn:aws:iam::123456789012:role/addf-eks-testing-derek"
+    ] = "arn:aws:iam::123456789012:role/addf-eks-testing-XXXXXX"
     os.environ[
         "ADDF_PARAMETER_EKS_OIDC_ARN"
-    ] = "arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/3BF275A8EB229AC8630CD2C8006BC073"
+    ] = "arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/XXXXXXXX"
     os.environ["ADDF_PARAMETER_TRAINING_NAMESPACE_NAME"] = "namespace"
+    os.environ[
+        "ADDF_PARAMETER_EKS_CLUSTER_ENDPOINT"
+    ] = "oidc.eks.us-west-2.amazonaws.com/id/XXXXXXXXXX"
+    os.environ["ADDF_PARAMETER_EKS_CERT_AUTH_DATA"] = "BQTRJQkR3QXdnZ0VLCkFvSUJ"
     os.environ["ADDF_PARAMETER_TRAINING_IMAGE_URI"] = "mnist:latest"
 
     # Unload the app import so that subsequent tests don't reuse
@@ -29,6 +33,34 @@ def stack_defaults():
 
 
 def test_app(stack_defaults):
-    # this fails due to mock not finding the eks cluster...should stub this out, but it is fine for now
-    with pytest.raises(Exception) as e:
+    import app  # noqa: F401
+
+
+def test_cluster_name(stack_defaults):
+    del os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"]
+
+    with pytest.raises(Exception):
         import app  # noqa: F401
+
+        assert os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"] == "my-cluster"
+
+
+def test_training_namespace_name(stack_defaults):
+    del os.environ["ADDF_PARAMETER_TRAINING_NAMESPACE_NAME"]
+
+    with pytest.raises(Exception):
+        import app  # noqa: F401
+
+        assert os.environ["ADDF_PARAMETER_TRAINING_NAMESPACE_NAME"] == "namespace"
+
+
+def test_cert_auth_data(stack_defaults):
+    del os.environ["ADDF_PARAMETER_EKS_CERT_AUTH_DATA"]
+
+    with pytest.raises(Exception):
+        import app  # noqa: F401
+
+        assert (
+            os.environ["ADDF_PARAMETER_EKS_CERT_AUTH_DATA"]
+            == "BQTRJQkR3QXdnZ0VLCkFvSUJ"
+        )
