@@ -68,6 +68,7 @@ class RosToPngBatchJob(Stack):
             "RosToPngURI",
             src=DockerImageName(local_image.image_uri),
             dest=DockerImageName(image_uri),
+            build_image="public.ecr.aws/lambda/provided:al2023",
         )
 
         policy_statements = [
