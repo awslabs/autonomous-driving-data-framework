@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - minor changes to ml on eks module w/ imports, env vars
 - locked the cryptography package version to `42.0.5` as per depandabot alert
+- fixes the deprecated go1.x runtime for custom resources created by CDK for ECR Deployments
 
 ### **Removed**
 
