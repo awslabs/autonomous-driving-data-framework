@@ -1,7 +1,7 @@
 name: eks
 path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.25.yaml 
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml 
   - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml
 parameters:
   # - name: replicated-ecr-images-metadata-s3-path
@@ -59,6 +59,7 @@ parameters:
           eks_node_min_quantity: 1
           eks_node_disk_size: 100
           eks_node_instance_type: "g4dn.xlarge"
+          use_gpu_ami: True
           eks_node_labels:
             usage: visualization
       eks_node_spot: False
@@ -75,8 +76,9 @@ parameters:
       deploy_metrics_server: True # We deploy it unless set to False
       deploy_secretsmanager_csi: True # We deploy it unless set to False
       deploy_external_secrets: False
-      deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
-      deploy_cloudwatch_container_insights_logs: True
+      deploy_cloudwatch_observability_addon: True # managed addon for observability
+      deploy_cloudwatch_container_insights_metrics: False # We deploy it unless set to False
+      deploy_cloudwatch_container_insights_logs: False
       cloudwatch_container_insights_logs_retention_days: 7
       deploy_adot: False
       deploy_amp: False
