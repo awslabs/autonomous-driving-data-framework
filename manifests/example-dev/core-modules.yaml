@@ -65,10 +65,10 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.6.0
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.25.yaml?ref=v1.1.0&depth=1
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=v1.1.0&depth=1
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.6.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.6.0
 parameters:
   - name: replicated-ecr-images-metadata-s3-path
     valueFrom:
@@ -101,24 +101,27 @@ parameters:
   - name: eks-read-only-role-name
     value: ReadOnly
   - name: eks-version
-    value: "1.25"
+    value: "1.29"
     # valueFrom:
     #   envVariable: GLOBAL_EKS_VERSION
   - name: eks-compute
     value:
       eks_nodegroup_config:
-        - eks_ng_name: ng1
+        - eks_ng_name: ng1 # General app workloads
           eks_node_quantity: 2
           eks_node_max_quantity: 5
           eks_node_min_quantity: 1
           eks_node_disk_size: 20
           eks_node_instance_type: "m5.large"
-        - eks_ng_name: ng2
-          eks_node_quantity: 2
-          eks_node_max_quantity: 5
-          eks_node_min_quantity: 1
-          eks_node_disk_size: 20
-          eks_node_instance_type: "m5.xlarge"
+        - eks_ng_name: ng-gpu # GPU Workloads example
+          eks_node_quantity: 0
+          eks_node_max_quantity: 2
+          eks_node_min_quantity: 0
+          eks_node_disk_size: 100
+          eks_node_instance_type: "g4dn.xlarge"
+          use_gpu_ami: True
+          eks_node_labels:
+            usage: gpu
       eks_node_spot: False
       eks_secrets_envelope_encryption: False
       eks_api_endpoint_private: False
@@ -133,8 +136,9 @@ parameters:
       deploy_metrics_server: True # We deploy it unless set to False
       deploy_secretsmanager_csi: True # We deploy it unless set to False
       deploy_external_secrets: False
-      deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
-      deploy_cloudwatch_container_insights_logs: True
+      deploy_cloudwatch_observability_addon: True # managed addon for observability
+      deploy_cloudwatch_container_insights_metrics: False # We deploy it unless set to False
+      deploy_cloudwatch_container_insights_logs: False
       cloudwatch_container_insights_logs_retention_days: 7
       deploy_adot: False
       deploy_amp: False
