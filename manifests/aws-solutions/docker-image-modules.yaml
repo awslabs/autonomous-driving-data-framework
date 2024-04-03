@@ -1,5 +1,5 @@
 name: ros-to-parquet
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/sensor-extraction/ros-to-parquet/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/sensor-extraction/ros-to-parquet/?ref=SO0279-v1.0.2
 parameters:
   - name: platform
     value: FARGATE
@@ -27,7 +27,7 @@ parameters:
     value: v1.0.1
 ---
 name: ros-to-png
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/sensor-extraction/ros-to-png/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/sensor-extraction/ros-to-png/?ref=SO0279-v1.0.2
 parameters:
   - name: platform
     value: FARGATE
@@ -59,7 +59,7 @@ parameters:
     value: v1.0.1
 ---
 name: object-detection
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/post-processing/yolo-object-detection/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/post-processing/yolo-object-detection/?ref=SO0279-v1.0.2
 parameters:
   - name: removal-policy
     value: DESTROY
@@ -77,7 +77,7 @@ parameters:
     value: v1.0.1
 ---
 name: lane-detection
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/post-processing/yolop-lane-detection/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/post-processing/yolop-lane-detection/?ref=SO0279-v1.0.2
 parameters:
   - name: removal-policy
     value: DESTROY

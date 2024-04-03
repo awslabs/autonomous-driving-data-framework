@@ -1,7 +1,7 @@
 name: mwaa
-path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa/?ref=SO0279-v1.0.2
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=SO0279-v1.0.1
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/mwaa/requirements/requirements-emr-serverless.txt?ref=SO0279-v1.0.2
 parameters:
   - name: vpc-id
     valueFrom:
@@ -35,7 +35,7 @@ parameters:
     value: v1.0.1
 ---
 name: batch-compute
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=SO0279-v1.0.2
 parameters:
   - name: vpc-id
     valueFrom:
@@ -79,7 +79,7 @@ parameters:
     value: v1.0.1
 ---
 name: metadata-storage
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=SO0279-v1.0.2
 parameters:
   - name: glue-db-suffix
     value: vsidata
@@ -95,7 +95,7 @@ parameters:
     value: v1.0.1
 ---
 name: opensearch
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=SO0279-v1.0.2
 parameters:
   - name: retention-type
     value: DESTROY
@@ -129,7 +129,7 @@ parameters:
     value: v1.0.1
 ---
 name: emr-serverless
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=SO0279-v1.0.1
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=SO0279-v1.0.2
 parameters:
   - name: private-subnet-ids
     valueFrom:
