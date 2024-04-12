@@ -47,7 +47,7 @@ docutils==0.15.2
     #   pyroma
 flake8==4.0.1
     # via -r requirements-dev.in
-idna==3.3
+idna==3.7
     # via requests
 importlib-metadata==4.2.0
     # via
