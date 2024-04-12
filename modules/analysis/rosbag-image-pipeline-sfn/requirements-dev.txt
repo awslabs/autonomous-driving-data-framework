@@ -54,7 +54,7 @@ docutils==0.16
     #   pyroma
 flake8==7.0.0
     # via -r requirements-dev.in
-idna==3.6
+idna==3.7
     # via requests
 iniconfig==2.0.0
     # via pytest
