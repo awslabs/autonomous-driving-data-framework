@@ -37,7 +37,7 @@ genpy==0.6.14
     #   std-msgs
 gnupg==2.3.1
     # via rosbag
-idna==3.3
+idna==3.7
     # via requests
 jmespath==1.0.1
     # via
