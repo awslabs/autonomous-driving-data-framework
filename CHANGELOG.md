@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+- added image extraction module for pre-processing use-cases
+
 ### **Changed**
+
+- updated the modules which uses CDK to build and push images to ECR to use the cdk-ecr lib `3.0.42`
 
 ### **Removed**
 
