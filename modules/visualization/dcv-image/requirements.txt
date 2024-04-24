@@ -12,9 +12,9 @@ aws-cdk-asset-awscli-v1==2.2.202
     # via aws-cdk-lib
 aws-cdk-asset-kubectl-v20==2.1.2
     # via aws-cdk-lib
-aws-cdk-asset-node-proxy-agent-v5==2.0.166
+aws-cdk-asset-node-proxy-agent-v6==2.0.3
     # via aws-cdk-lib
-aws-cdk-lib==2.83.1
+aws-cdk-lib==2.126.0
     # via
     #   -r requirements.in
     #   cdk-ecr-deployment
@@ -37,16 +37,10 @@ constructs==10.0.91
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   cdk-nag
-coverage[toml]==7.5.0
-    # via pytest-cov
 exceptiongroup==1.2.1
-    # via
-    #   cattrs
-    #   pytest
+    # via cattrs
 importlib-resources==6.4.0
     # via jsii
-iniconfig==2.0.0
-    # via pytest
 jmespath==1.0.1
     # via
     #   boto3
@@ -55,31 +49,21 @@ jsii==1.97.0
     # via
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
-    #   aws-cdk-asset-node-proxy-agent-v5
+    #   aws-cdk-asset-node-proxy-agent-v6
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   cdk-nag
     #   constructs
-packaging==24.0
-    # via pytest
-pluggy==1.5.0
-    # via pytest
 publication==0.0.3
     # via
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
-    #   aws-cdk-asset-node-proxy-agent-v5
+    #   aws-cdk-asset-node-proxy-agent-v6
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   cdk-nag
     #   constructs
     #   jsii
-pytest==7.4.3
-    # via
-    #   -r requirements.in
-    #   pytest-cov
-pytest-cov==4.1.0
-    # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
     #   botocore
@@ -88,15 +72,11 @@ s3transfer==0.5.2
     # via boto3
 six==1.16.0
     # via python-dateutil
-tomli==2.0.1
-    # via
-    #   coverage
-    #   pytest
 typeguard==2.13.3
     # via
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
-    #   aws-cdk-asset-node-proxy-agent-v5
+    #   aws-cdk-asset-node-proxy-agent-v6
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   jsii

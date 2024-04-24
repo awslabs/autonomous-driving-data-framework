@@ -1,7 +1,5 @@
-aws-cdk-lib==2.83.1
+aws-cdk-lib==2.126.0
 constructs==10.0.91
 cdk-nag==2.12.29
 boto3~=1.21.0
-pytest==7.4.3
-pytest-cov==4.1.0
 cdk_ecr_deployment==3.0.42
