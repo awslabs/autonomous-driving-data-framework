@@ -1,8 +1,8 @@
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.6.0
+path: git::https://github.com/srinivasreddych/idf-modules.git//modules/compute/eks/?ref=main
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.6.0
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.6.0
+  - filePath: git::https://github.com/srinivasreddych/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=main
+  - filePath: git::https://github.com/srinivasreddych/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=main
 parameters:
   # - name: replicated-ecr-images-metadata-s3-path
   #   valueFrom:
@@ -77,7 +77,7 @@ parameters:
       deploy_secretsmanager_csi: True # We deploy it unless set to False
       deploy_external_secrets: False
       # Monitoring/Logging/Tracing
-      deploy_cloudwatch_observability_addon: False
+      deploy_cloudwatch_observability_addon: True
       deploy_cloudwatch_container_insights_metrics: False # We deploy it unless set to False
       deploy_cloudwatch_container_insights_logs: False
       cloudwatch_container_insights_logs_retention_days: 7

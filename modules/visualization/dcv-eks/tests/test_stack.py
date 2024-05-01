@@ -48,6 +48,6 @@ def test_app(stack_defaults):
     )
     template = Template.from_stack(stack)
     template.resource_count_is("AWS::IAM::Role", 1)
-    template.resource_count_is("AWS::IAM::Policy", 2)
+    template.resource_count_is("AWS::IAM::Policy", 3)
     template.resource_count_is("Custom::AWSCDK-EKS-KubernetesResource", 7)
     template.resource_count_is("AWS::EC2::SecurityGroupIngress", 2)
