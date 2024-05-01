@@ -1,0 +1,16 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+  pre_build:
+    commands:
+      - pip install boto3
+  build:
+    commands:
+      - aws s3 cp s3://${ARTIFACTS_BUCKET}/artifacts/github-webhook-event-handler.py .
+      - python github-webhook-event-handler.py
+  post_build:
+    commands:
+      - echo Build completed on `date`

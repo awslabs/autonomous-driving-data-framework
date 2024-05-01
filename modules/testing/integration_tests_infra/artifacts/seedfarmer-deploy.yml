@@ -1,0 +1,29 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+  pre_build:
+    commands:
+      - pip install -r requirements.txt
+      - pip install pyyaml
+  build:
+    commands:
+      - ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
+      - aws s3 cp s3://${ARTIFACTS_BUCKET} . --recursive
+      - for value in $MANIFEST_PATHS;
+        do
+            echo "deploying manifest ${value}";
+            python artifacts/bin/manifest-update.py ${value} ${AWS_REGION} ${AWS_REGION} ${ACCOUNT_ID};
+            cat deployment.yaml;
+            seedfarmer apply deployment.yaml;
+            echo "manifest deployed successfully";
+            seedfarmer destroy deployment.yaml;
+        done
+      - echo "run the next command"
+      - cat deployment.yaml
+      - seedfarmer apply deployment.yaml
+  post_build:
+    commands:
+      - echo Build completed on `date`
