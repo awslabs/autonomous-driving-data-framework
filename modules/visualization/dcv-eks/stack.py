@@ -34,6 +34,7 @@ class DcvEksStack(Stack):  # type: ignore
         dcv_image_uri: str,
         eks_cluster_name: str,
         eks_cluster_admin_role_arn: str,
+        eks_handler_role_arn: str,
         eks_oidc_arn: str,
         eks_cluster_open_id_connect_issuer: str,
         eks_cluster_security_group_id: str,
@@ -72,6 +73,7 @@ class DcvEksStack(Stack):  # type: ignore
             f"{dep_mod}-eks-cluster",
             cluster_name=eks_cluster_name,
             kubectl_role_arn=eks_cluster_admin_role_arn,
+            kubectl_lambda_role=iam.Role.from_role_arn(self, "KubectlHandlerArn", eks_handler_role_arn),
             open_id_connect_provider=provider,
         )
 
