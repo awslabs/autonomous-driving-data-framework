@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- `modules/visualization/dev-instance`: Fixed incorrect SSM Parameter for Ubuntu AMI ID
+- `modules/demo-only/rosbag-webviz`:
+  - CDK and ending up in fatal error when installing `cdk@2.110.0` and then installing the same version through package.json (aws-cdk / aws-cdk-lib): `Cloud assembly schema version mismatch: Maximum schema version supported is 35.0.0, but found 36.0.0`. Needed to bump to version `2.117.0` which is the first version that states `36.0.0` as their cloud assembly version.
+  - Updated `semver` due to security findings from npm audit
+
 ### **Removed**
 
 =======
