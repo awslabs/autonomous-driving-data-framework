@@ -36,6 +36,7 @@ def test_app(stack_defaults):
         eks_cluster_name="test_cluster",
         eks_cluster_admin_role_arn="arn:aws:iam:us-east-1:1234567890:role/test-role",
         eks_oidc_arn="arn:aws:eks:us-east-1:1234567890:oidc-provider/oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/test-ocid",
+        eks_handler_role_arn="arn:aws:iam:us-east-1:1234567890:role/k8s-handler-role",
         eks_cluster_open_id_connect_issuer="test_open_id_connect_issuer",
         eks_cluster_security_group_id="sg-1234567890",
         eks_node_role_arn="arn:aws:iam:us-east-1:1234567890:role/test-role",
