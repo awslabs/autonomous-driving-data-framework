@@ -1,8 +1,8 @@
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.6.0
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.25.yaml 
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.6.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.6.0
 parameters:
   # - name: replicated-ecr-images-metadata-s3-path
   #   valueFrom:
@@ -35,7 +35,7 @@ parameters:
   - name: eks-read-only-role-name
     value: ReadOnly
   - name: eks-version
-    value: "1.25"
+    value: "1.29"
     # valueFrom:
     #   envVariable: GLOBAL_EKS_VERSION
   - name: eks-compute
@@ -61,13 +61,14 @@ parameters:
           eks_node_instance_type: "g4dn.xlarge"
           eks_node_labels:
             usage: visualization
+          use_gpu_ami: True
       eks_node_spot: False
       eks_secrets_envelope_encryption: False
       eks_api_endpoint_private: False
   - name: eks-addons
     value:
       deploy_aws_lb_controller: True # We deploy it unless set to False
-      deploy_external_dns: True # We deploy it unless set to False
+      # deploy_external_dns: True # We deploy it unless set to False
       deploy_aws_ebs_csi: True # We deploy it unless set to False
       deploy_aws_efs_csi: True # We deploy it unless set to False
       deploy_aws_fsx_csi: True # We deploy it unless set to False
@@ -75,8 +76,10 @@ parameters:
       deploy_metrics_server: True # We deploy it unless set to False
       deploy_secretsmanager_csi: True # We deploy it unless set to False
       deploy_external_secrets: False
-      deploy_cloudwatch_container_insights_metrics: True # We deploy it unless set to False
-      deploy_cloudwatch_container_insights_logs: True
+      # Monitoring/Logging/Tracing
+      deploy_cloudwatch_observability_addon: False
+      deploy_cloudwatch_container_insights_metrics: False # We deploy it unless set to False
+      deploy_cloudwatch_container_insights_logs: False
       cloudwatch_container_insights_logs_retention_days: 7
       deploy_adot: False
       deploy_amp: False
@@ -87,60 +90,47 @@ parameters:
         value: False
         nginx_additional_annotations:
           nginx.ingress.kubernetes.io/whitelist-source-range: "100.64.0.0/10,10.0.0.0/8"
-      deploy_kyverno:
-        value: False
-        kyverno_policies:
-          validate:
-            - block-ephemeral-containers
-            - block-stale-images
-            - block-updates-deletes
-            - check-deprecated-apis
-            - disallow-cri-sock-mount
-            - disallow-custom-snippets
-            - disallow-empty-ingress-host
-            - disallow-helm-tiller
-            - disallow-latest-tag
-            - disallow-localhost-services
-            - disallow-secrets-from-env-vars
-            - ensure-probes-different
-            - ingress-host-match-tls
-            - limit-hostpath-vols
-            - prevent-naked-pods
-            - require-drop-cap-net-raw
-            - require-emptydir-requests-limits
-            - require-labels
-            - require-pod-requests-limits
-            - require-probes
-            - restrict-annotations
-            - restrict-automount-sa-token
-            - restrict-binding-clusteradmin
-            - restrict-clusterrole-nodesproxy
-            - restrict-escalation-verbs-roles
-            - restrict-ingress-classes
-            - restrict-ingress-defaultbackend
-            - restrict-node-selection
-            - restrict-path
-            - restrict-service-external-ips
-            - restrict-wildcard-resources
-            - restrict-wildcard-verbs
-            - unique-ingress-host-and-path
+      # deploy_kyverno:
+      #   value: False
+      #   kyverno_policies:
+      #     validate:
+      #       - block-ephemeral-containers
+      #       - block-stale-images
+      #       - block-updates-deletes
+      #       - check-deprecated-apis
+      #       - disallow-cri-sock-mount
+      #       - disallow-custom-snippets
+      #       - disallow-empty-ingress-host
+      #       - disallow-helm-tiller
+      #       - disallow-latest-tag
+      #       - disallow-localhost-services
+      #       - disallow-secrets-from-env-vars
+      #       - ensure-probes-different
+      #       - ingress-host-match-tls
+      #       - limit-hostpath-vols
+      #       - prevent-naked-pods
+      #       - require-drop-cap-net-raw
+      #       - require-emptydir-requests-limits
+      #       - require-labels
+      #       - require-pod-requests-limits
+      #       - require-probes
+      #       - restrict-annotations
+      #       - restrict-automount-sa-token
+      #       - restrict-binding-clusteradmin
+      #       - restrict-clusterrole-nodesproxy
+      #       - restrict-escalation-verbs-roles
+      #       - restrict-ingress-classes
+      #       - restrict-ingress-defaultbackend
+      #       - restrict-node-selection
+      #       - restrict-path
+      #       - restrict-service-external-ips
+      #       - restrict-wildcard-resources
+      #       - restrict-wildcard-verbs
+      #       - unique-ingress-host-and-path
           # mutate:
           #   - add-networkpolicy-dns
           #   - add-pod-priorityclassname
           #   - add-ttl-jobs
           #   - always-pull-images
           #   - mitigate-log4shell
-# ---
-# name: efs
-# path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs
-# targetAccount: primary
-# targetRegion: us-east-1
-# parameters:
-#   - name: vpc-id
-#     valueFrom:
-#       moduleMetadata:
-#         group: optionals
-#         name: networking
-#         key: VpcId
-#   - name: removal-policy
-#     value: DESTROY
+

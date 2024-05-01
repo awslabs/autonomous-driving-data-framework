@@ -9,9 +9,3 @@ path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=r
 parameter:
   - name: image-tag-mutability
     value: "MUTABLE"
-# ---
-# name: datalake-buckets
-# path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/optionals/datalake-buckets
-# parameters:
-#   - name: encryption-type
-#     value: SSE
