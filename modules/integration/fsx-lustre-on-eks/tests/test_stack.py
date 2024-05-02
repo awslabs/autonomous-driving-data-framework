@@ -10,9 +10,9 @@ import pytest
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-    os.environ["SEEDFARMER_PARAMETER_PROJECT_NAME"] = "test-project"
-    os.environ["SEEDFARMER_PARAMETER_DEPLOYMENT_NAME"] = "test-deployment"
-    os.environ["SEEDFARMER_PARAMETER_MODULE_NAME"] = "test-module"
+    os.environ["SEEDFARMER_PROJECT_NAME"] = "test-project"
+    os.environ["SEEDFARMER_DEPLOYMENT_NAME"] = "test-deployment"
+    os.environ["SEEDFARMER_MODULE_NAME"] = "test-module"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
 

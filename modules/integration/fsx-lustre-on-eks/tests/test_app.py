@@ -9,10 +9,9 @@ import pytest
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-    # os.environ["AWS_CODESEEDER_NAME"] = "test-project"
-    os.environ["SEEDFARMER_PARAMETER_PROJECT_NAME"] = "test-project"
-    os.environ["SEEDFARMER_PARAMETER_DEPLOYMENT_NAME"] = "test-deployment"
-    os.environ["SEEDFARMER_PARAMETER_MODULE_NAME"] = "test-module"
+    os.environ["SEEDFARMER_PROJECT_NAME"] = "test-project"
+    os.environ["SEEDFARMER_DEPLOYMENT_NAME"] = "test-deployment"
+    os.environ["SEEDFARMER_MODULE_NAME"] = "test-module"
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME"] = "cluster"
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"] = "arn:aws:iam:::role/x"
     os.environ["SEEDFARMER_PARAMETER_EKS_OIDC_ARN"] = "arn:aws:eks:::oidc-provider/y"
