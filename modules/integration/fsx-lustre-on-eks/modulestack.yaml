@@ -31,5 +31,5 @@ Resources:
             Effect: Allow
             Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${NamespaceSsm}"
         Version: 2012-10-17
-      PolicyName: "addf-modulespecific-policy"
+      PolicyName: "seed-farmer-modulespecific-policy"
       Roles: [!Ref RoleName]
