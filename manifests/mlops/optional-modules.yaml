@@ -9,3 +9,9 @@ path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=r
 parameter:
   - name: image-tag-mutability
     value: "MUTABLE"
+---
+name: app
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=release/1.3.0&depth=1
+parameter:
+  - name: image-tag-mutability
+    value: "MUTABLE"

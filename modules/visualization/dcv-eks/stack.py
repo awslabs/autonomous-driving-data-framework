@@ -32,6 +32,7 @@ class DcvEksStack(Stack):  # type: ignore
         module_name: str,
         dcv_namespace: str,
         dcv_image_uri: str,
+        app_image_uri: str,
         eks_cluster_name: str,
         eks_cluster_admin_role_arn: str,
         eks_handler_role_arn: str,
@@ -95,6 +96,7 @@ class DcvEksStack(Stack):  # type: ignore
         dcv_agent_yaml_file = t.substitute(
             NAMESPACE=dcv_namespace,
             IMAGE=dcv_image_uri,
+            APP_IMAGE=app_image_uri,
             REGION=env.region,
             SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
             DISPLAY_PARAMETER_NAME=self.display_parameter_name,
@@ -168,6 +170,9 @@ class DcvEksStack(Stack):  # type: ignore
                 {"StringLike": {f"{eks_cluster_open_id_connect_issuer}:sub": "system:serviceaccount:*"}},
                 "sts:AssumeRoleWithWebIdentity",
             ),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess")
+            ]
         )
 
         role.add_to_principal_policy(

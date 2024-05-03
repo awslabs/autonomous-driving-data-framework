@@ -1,33 +1,33 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: dcv-agent
-  namespace: $NAMESPACE
+  name: app
+  namespace: dcv
 spec:
   selector:
     matchLabels:
-      env: dcv
+      env: app
   template:
     metadata:
       labels:
-        env: dcv
+        env: app
     spec:
       restartPolicy: Always
-      serviceAccountName: dcv-agent-src-account
-      nodeSelector:
-        usage: visualization
+      hostNetwork: true
+#      serviceAccountName: dcv-agent-src-account
       containers:
-        - name: nice-dcv-container
-          image: $IMAGE
-          command: [ "/usr/local/bin/run_script.sh" ]
+        - name: app
+          image: 663086445302.dkr.ecr.eu-central-1.amazonaws.com/addf-eks-viz-optionals-app-ecr:app-latest
           imagePullPolicy: "Always"
           env:
             - name: DCV_EKS_CONFIG_MAP_NAME
               value: "dcv-agent-config-map"
             - name: AWS_REGION
-              value: $REGION
+              value: eu-central-1
             - name: DCV_EKS_DISPLAY_PARAMETER_STORE
-              value: $DISPLAY_PARAMETER_NAME
+              value: ":0"
+            - name: DISPLAY
+              value: ":0"
             - name: XAUTHORITY
               value: /run/user/1000/dcv/default-session.xauth
           ports:
@@ -62,7 +62,7 @@ spec:
       volumes:
         - name: addf-dcv-socket-volume
           hostPath:
-            path: $SOCKET_PATH
+            path: /tmp/x11-containers/
         - name: addf-dcv-auth-volume
           hostPath:
             path: /var/addf/dcv-eks/auth

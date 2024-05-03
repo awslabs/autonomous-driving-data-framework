@@ -76,3 +76,11 @@ The key `dcv-cred-user` and `dcv-cred-passwd` need to exist in AWS SecretsManage
     "DcvDisplayParameterName": "/addf/mlops/dcv-eks-dcv-eks/dcv-display",
     "DcvSocketMountPathParameterName": "/addf/mlops/dcv-eks-dcv-eks/dcv-socket-mount-path"
 }
+
+
+## Additional Resources
+
+- https://docs.aws.amazon.com/dcv/latest/adminguide/setting-up-installing-linux-prereq.html
+- https://github.com/cazlo/aws-batch-using-nice-dcv/blob/el9/README.md
+
+
