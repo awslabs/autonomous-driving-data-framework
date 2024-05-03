@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+- 'fsx-lustre-on-eks' module - added genric env
+
 ### **Changed**
 
 - `modules/visualization/dev-instance`: Fixed incorrect SSM Parameter for Ubuntu AMI ID

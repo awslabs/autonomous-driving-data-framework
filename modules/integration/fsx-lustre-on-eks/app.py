@@ -9,19 +9,14 @@ from aws_cdk import App, CfnOutput
 
 from stack_fsx_eks import FSXFileStorageOnEKS
 
-project_name = os.getenv("AWS_CODESEEDER_NAME", "addf")
-
-
-def _proj(name: str) -> str:
-    return f"{project_name.upper()}_{name}"
-
 
 def _param(name: str) -> str:
-    return f"{project_name.upper()}_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
-deployment_name = os.getenv(_proj("DEPLOYMENT_NAME"))
-module_name = os.getenv(_proj("MODULE_NAME"))
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"))
 eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"))
@@ -50,9 +45,10 @@ app = App()
 
 stack = FSXFileStorageOnEKS(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
-    deployment_name=cast(str, deployment_name),
-    module_name=cast(str, module_name),
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
+    deployment_name=deployment_name,
+    module_name=module_name,
     fsx_file_system_id=cast(str, fsx_file_system_id),
     fsx_security_group_id=cast(str, fsx_security_group_id),
     fsx_mount_name=cast(str, fsx_mount_name),
