@@ -22,15 +22,26 @@ FROM public.ecr.aws/amazonlinux/amazonlinux:2 as dcv
 ENV container docker
 
 # Install tools
-RUN yum -y install tar sudo less vim lsof firewalld net-tools pciutils \
+RUN yum -y install gcc make tar sudo less vim lsof firewalld net-tools pciutils \
                    file wget kmod ca-certificates binutils kbd \
                    python3-pip bind-utils jq bc xz-utils openssl-devel libffi-devel xdg-utils
+
+RUN yum -y install kernel-devel-5.10.210-201.852.amzn2.x86_64 || true
 
 # Install X server and GNOME desktop
 RUN yum -y install glx-utils mesa-dri-drivers xorg-x11-server-Xorg \
                    xorg-x11-utils xorg-x11-xauth xorg-x11-xinit  \
                    xorg*fonts* xterm libXvMC mesa-libxatracker freeglut \
-                   metacity xvattr mesa-libGLU unzip dbus-x11
+                   metacity xvattr mesa-libGLU unzip dbus-x11 
+
+# NEw GNOME
+RUN yum -y install gdm gnome-session gnome-classic-session gnome-session-xsession
+RUN yum -y install     xorg-x11-server-Xorg xorg-x11-fonts-Type1 xorg-x11-drivers \
+    gnome-terminal gnu-free-fonts-common gnu-free-mono-fonts gnu-free-sans-fonts gnu-free-serif-fonts \
+    glx-utils 
+
+
+
 
 # Install awscliv2
 RUN mkdir -p /tmp/awscli-install \
@@ -40,6 +51,26 @@ RUN mkdir -p /tmp/awscli-install \
     && ./aws/install \
     && rm -rf /tmp/awscli-install
 
+# Install GPU driver
+
+RUN wget -q http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-418.87.00.run -O /tmp/NVIDIA-installer.run \
+ && bash /tmp/NVIDIA-installer.run --accept-license \
+                              --no-runlevel-check \
+                              --no-questions \
+                              --no-backup \
+                              --ui=none \
+                              --no-kernel-module \
+                              --no-nouveau-check \
+                              --install-libglvnd \
+                              --no-nvidia-modprobe \
+                              --no-kernel-module-source \
+ && rm -f /tmp/NVIDIA-installer.run
+
+RUN nvidia-xconfig --preserve-busid --enable-all-gpus
+RUN touch /etc/modprobe.d/nvidia.conf
+RUN echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprobe.d/nvidia.conf
+RUN rm -rf /etc/X11/XF86Config* || true
+
 RUN rpm --import https://d1uj6qtbmh3dt5.cloudfront.net/NICE-GPG-KEY \
     && mkdir -p /tmp/dcv-inst \
     && cd /tmp/dcv-inst \
@@ -47,6 +78,9 @@ RUN rpm --import https://d1uj6qtbmh3dt5.cloudfront.net/NICE-GPG-KEY \
     && ls -al \
     && for f in *.rpm ; do yum install -y "${f}" ; done \
     && rm -rf /tmp/dcv-inst
+
+
+RUN amazon-linux-extras install firefox
 
 RUN pip3 install kubernetes urllib3==1.26.6 boto3
 
