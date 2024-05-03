@@ -91,7 +91,9 @@ class IntegrationTestsInfrastructure(cdk.Stack):
         source_artifact = codepipeline.Artifact()
         source_stage.add_action(
             codepipeline_actions.GitHubSourceAction(
-                oauth_token_secret_name=oauth_token_secret_name,
+                oauth_token=cdk.SecretValue.secrets_manager(
+                    oauth_token_secret_name
+                ),
                 action_name="Github_Source",
                 owner=repo_owner,
                 repo=repo_name,
@@ -110,6 +112,9 @@ class IntegrationTestsInfrastructure(cdk.Stack):
                         "artifacts/seedfarmer-bootstrap.yml",
                         "bootstraps seedfarmer",
                         environment_variables={
+                            "ARTIFACTS_BUCKET": codebuild.BuildEnvironmentVariable(
+                                value=self.artifacts_bucket.bucket_name
+                            ),
                             "PRINCIPAL_ROLE": codebuild.BuildEnvironmentVariable(
                                 value=self.codebuild_service_role.role_arn
                             ),
@@ -151,7 +156,7 @@ class IntegrationTestsInfrastructure(cdk.Stack):
             "CodeBuildLogsSAR",
             location=sam.CfnApplication.ApplicationLocationProperty(
                 application_id="arn:aws:serverlessrepo:us-east-1:277187709615:applications/github-codebuild-logs",
-                semantic_version="1.4.0",
+                semantic_version="1.5.0",
             ),
             parameters={
                 "CodeBuildProjectName": deploy_project.project_name,
