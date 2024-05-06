@@ -1,8 +1,5 @@
 version: 0.2
 
-env:
-  shell: bash
-
 phases:
   install:
     runtime-versions:
@@ -16,10 +13,9 @@ phases:
     commands:
       - ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
       - aws s3 cp s3://${ARTIFACTS_BUCKET} . --recursive
-      - manifests=()
-      - echo $MANIFEST_PATHS
-      - for i in $MANIFEST_PATHS; do manifests+=($i) ; done
-      - for value in $manifests;
+      - manifests=$(python artifacts/bin/create_manifest_list.py ${MANIFEST_PATHS})
+      - echo $manifests
+      - for manifest in $manifests;
         do
             echo "deploying manifest ${manifest}";
             python artifacts/bin/manifest-update.py ${manifest} ${AWS_REGION} ${AWS_REGION} ${ACCOUNT_ID};
