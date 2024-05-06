@@ -1,5 +1,8 @@
 version: 0.2
 
+env:
+  shell: bash
+
 phases:
   install:
     runtime-versions:
@@ -14,6 +17,7 @@ phases:
       - ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
       - aws s3 cp s3://${ARTIFACTS_BUCKET} . --recursive
       - manifests=()
+      - echo $MANIFEST_PATHS
       - for i in $MANIFEST_PATHS; do manifests+=($i) ; done
       - for value in $manifests;
         do

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## UNRELEASED
 
 ### **Added**
+- `modules/testing/integration-tests`: New module deploys Codepipeline to run seed-farmer apply & destroy of `>=1` manifests in any given repository.
 
 ### **Changed**
 
