@@ -1,0 +1,15 @@
+name: dummy
+toolchainRegion: us-west-2
+forceDependencyRedeploy: True
+groups:
+  - name: optionals
+    path: manifests/sfn-example/optional-modules.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 123456789101
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true

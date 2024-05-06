@@ -6,10 +6,13 @@ phases:
       python: 3.9
   pre_build:
     commands:
+      - rm .python-version
       - pip install -r requirements.txt
   build:
     commands:
       - seedfarmer bootstrap toolchain --project ${SEEDFARMER_PROJECT_NAME} --trusted-principal ${PRINCIPAL_ROLE} --as-target
+      - aws s3 cp s3://${ARTIFACTS_BUCKET} . --recursive
+      - python artifacts/bin/role_assume_update.py ${PRINCIPAL_ROLE} ${SEEDFARMER_PROJECT_NAME}
   post_build:
     commands:
       - echo Build completed on `date`

@@ -8,7 +8,8 @@ if len(sys.argv) != 5:
     )
     exit(1)
 
-manifest_path = sys.argv[1]
+manifest_path = sys.argv[1].strip('\"')
+print(f"mainfest path: {manifest_path}")
 toolchain_region = sys.argv[2]
 target_region = sys.argv[3]
 target_account = sys.argv[4]

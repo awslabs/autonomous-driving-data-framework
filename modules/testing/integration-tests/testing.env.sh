@@ -1,7 +1,0 @@
-export SEEDFARMER_PROJECT_NAME="addf"
-export SEEDFARMER_DEPLOYMENT_NAME="feat450"
-export SEEDFARMER_MODULE_NAME="integration-tests"
-export SEEDFARMER_PARAMETER_MANIFEST_PATHS="manifests/sfn-example/deployment.yaml"
-export SEEDFARMER_PARAMETER_REPO_OWNER="malachi-constant"
-export SEEDFARMER_PARAMETER_REPO_NAME="autonomous-driving-data-framework"
-export SEEDFARMER_PARAMETER_OAUTH_TOKEN_SECRET_NAME="lucas-oauth-token"

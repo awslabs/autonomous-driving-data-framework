@@ -98,7 +98,7 @@ class IntegrationTestsInfrastructure(cdk.Stack):
                 owner=repo_owner,
                 repo=repo_name,
                 output=source_artifact,
-                branch=branch,
+                branch=branch if branch else "main",
             )
         )
 
@@ -144,6 +144,15 @@ class IntegrationTestsInfrastructure(cdk.Stack):
                         "MANIFEST_PATHS": codebuild.BuildEnvironmentVariable(
                             value=json.dumps(manifests)
                         ),
+                        "ARTIFACTS_BUCKET": codebuild.BuildEnvironmentVariable(
+                                value=self.artifacts_bucket.bucket_name
+                        ),
+                        "ROLE_ARN": codebuild.BuildEnvironmentVariable(
+                            value=self.codebuild_service_role.role_arn
+                        ),
+                        "SEEDFARMER_PROJECT_NAME": codebuild.BuildEnvironmentVariable(
+                            value=seedfarmer_project_name,
+                        ),
                     },
                     input=source_artifact,
                     run_order=3,
@@ -164,27 +173,6 @@ class IntegrationTestsInfrastructure(cdk.Stack):
                     oauth_token_secret_name
                 ).unsafe_unwrap(),
             },
-        )
-
-        self.pipeline.add_stage(
-            stage_name="Destroy",
-            actions=[
-                codepipeline_actions.CodeBuildAction(
-                    action_name="Destroy",
-                    project=self.create_codebuild_project(
-                        "Destroy",
-                        "artifacts/seedfarmer-deploy.yml",
-                        "deploys seedfarmer with manifest 'manifests/aws-solutions/integ/idf-modules.yaml'",
-                    ),
-                    environment_variables={
-                        "MANIFEST_PATH": codebuild.BuildEnvironmentVariable(
-                            value="manifests/aws-solutions/integ/idf-modules.yaml"
-                        )
-                    },
-                    input=source_artifact,
-                    run_order=4,
-                ),
-            ],
         )
 
     def create_codebuild_project(
