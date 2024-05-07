@@ -35,6 +35,12 @@ with open(manifest_path, "r") as file:
 remove_integration_tests_group(data)
 data["toolchainRegion"] = toolchain_region
 data["targetAccountMappings"][0]["accountId"] = target_account
+if data["targetAccountMappings"] > 1:
+    count = 1
+    for mapping in data["targetAccountMappings"]:
+        data["targetAccountMappings"][count]["accountId"] = target_account
+
+
 data["targetAccountMappings"][0]["regionMappings"][0]["region"] = target_region
 
 with open("deployment.yaml", "w") as file:
