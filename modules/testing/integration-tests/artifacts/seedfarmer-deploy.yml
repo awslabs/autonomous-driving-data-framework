@@ -14,7 +14,8 @@ phases:
       - ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
       - aws s3 cp s3://${ARTIFACTS_BUCKET} . --recursive
       - manifests=$(python artifacts/bin/create_manifest_list.py ${MANIFEST_PATHS})
-      - rm seedfarmer.yaml && echo "project: ${SEEDFARMER_PROJECT_NAME}" > seedfarmer.yaml
+      - rm seedfarmer.yaml
+      - "echo project: ${SEEDFARMER_PROJECT_NAME} > seedfarmer.yaml"
       - echo $manifests
       - for manifest in $manifests;
         do

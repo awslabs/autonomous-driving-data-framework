@@ -10,7 +10,8 @@ phases:
       - pip install -r requirements.txt
   build:
     commands:
-      - rm seedfarmer.yaml && echo "project: ${SEEDFARMER_PROJECT_NAME}" > seedfarmer.yaml
+      - rm seedfarmer.yaml
+      - "echo project: ${SEEDFARMER_PROJECT_NAME} > seedfarmer.yaml"
       - seedfarmer bootstrap toolchain --project ${SEEDFARMER_PROJECT_NAME} --trusted-principal ${PRINCIPAL_ROLE} --as-target
       - aws s3 cp s3://${ARTIFACTS_BUCKET} . --recursive
       - python artifacts/bin/role_assume_update.py ${PRINCIPAL_ROLE} ${SEEDFARMER_PROJECT_NAME}
