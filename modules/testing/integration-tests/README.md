@@ -28,6 +28,7 @@ parameters:
 ### Deployment
 It is recommended that you do not deploy your integration test module in the same region/account you deploy the rest of your modules to. Use a different target region and/or account to avoid resource conflicts during invocations of the integration tests pipeline.
 
+**Account mapping alias must be one of `["integ","integration","integ-tests", "integration-tests",]` for the integration test to work properly**
 
 [Example deployment manifest using an alias for integration tests region](../../../manifests/example-integration-tests/deployment.yaml):
 

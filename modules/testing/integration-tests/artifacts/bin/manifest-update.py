@@ -2,14 +2,14 @@ import sys
 
 import yaml
 
-
-def remove_integration_tests_group(data):
-    integration_test_group_keywords = [
+integration_test_group_keywords = [
         "integ",
         "integration",
         "integ-tests",
         "integration-tests",
     ]
+
+def remove_integration_tests_group(data):
     for group in data["groups"]:
         for keyword in integration_test_group_keywords:
             if keyword == group["name"]:
@@ -38,7 +38,8 @@ data["targetAccountMappings"][0]["accountId"] = target_account
 if len(data["targetAccountMappings"]) > 1:
     count = 1
     for mapping in data["targetAccountMappings"]:
-        data["targetAccountMappings"][count]["accountId"] = target_account
+        if data["targetAccountMappings"][count]["alias"] in integration_test_group_keywords:
+            data["targetAccountMappings"].pop(count)
 
 
 data["targetAccountMappings"][0]["regionMappings"][0]["region"] = target_region
