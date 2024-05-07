@@ -118,7 +118,7 @@ class IntegrationTestsInfrastructure(cdk.Stack):
                                 value=self.codebuild_service_role.role_arn
                             ),
                             "SEEDFARMER_PROJECT_NAME": codebuild.BuildEnvironmentVariable(
-                                value=seedfarmer_project_name,
+                                value=f"{seedfarmer_project_name}-integ",
                             ),
                         },
                     ),
@@ -150,7 +150,7 @@ class IntegrationTestsInfrastructure(cdk.Stack):
                             value=self.codebuild_service_role.role_arn
                         ),
                         "SEEDFARMER_PROJECT_NAME": codebuild.BuildEnvironmentVariable(
-                            value=seedfarmer_project_name,
+                            value=f"{seedfarmer_project_name}-integ",
                         ),
                     },
                     input=source_artifact,
