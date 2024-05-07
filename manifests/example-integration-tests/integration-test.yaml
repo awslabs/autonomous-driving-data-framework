@@ -1,0 +1,13 @@
+---
+name: integration-test
+path: modules/testing/integration-tests
+targetAccount: integ
+parameters:
+  - name: manifest-paths
+    value: manifests/example-integration-tests/deployment.yaml
+  - name: repo-owner
+    value: malachi-constant # change after review
+  - name: repo-name
+    value: autonomous-driving-data-framework
+  - name: oauth-token-secret-name
+    value: my-oauth-token

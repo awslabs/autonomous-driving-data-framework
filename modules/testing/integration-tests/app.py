@@ -58,4 +58,14 @@ stack = IntegrationTestsInfrastructure(
     branch=branch,
 )
 
+cdk.CfnOutput(
+    scope=stack,
+    id="metadata",
+    value=stack.to_json_string(
+        {
+            f"{project_name.capitalize()}IntegrationTestPipeline": stack.pipeline.pipeline_name,
+            f"{project_name.capitalize()}IntegrationTestAlertsTopic": stack.alerts_topic.topic_name,
+        }
+    ),
+)
 app.synth()

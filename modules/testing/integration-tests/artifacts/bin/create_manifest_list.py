@@ -3,7 +3,7 @@ from typing import List
 
 
 if len(sys.argv) > 1:
-    manifests: List[str] = list(sys.argv[1].strip('\"').split(','))
+    manifests: List[str] = list(sys.argv[1].strip('"').split(","))
 else:
     print("")
     exit()

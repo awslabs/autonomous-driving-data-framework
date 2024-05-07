@@ -1,0 +1,21 @@
+publishGenericEnvVariables: True
+deploy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.140.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
+      - seedfarmer metadata convert -f cdk-exports.json || true
+destroy:
+  phases:
+    install:
+      commands:
+      - npm install -g aws-cdk@2.140.0
+      - pip install -r requirements.txt
+    build:
+      commands:
+      - cdk destroy --force --app "python app.py"
+

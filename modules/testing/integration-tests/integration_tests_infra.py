@@ -5,11 +5,12 @@ import aws_cdk as cdk
 import aws_cdk.aws_codebuild as codebuild
 import aws_cdk.aws_codepipeline as codepipeline
 import aws_cdk.aws_codepipeline_actions as codepipeline_actions
+import aws_cdk.aws_codestarnotifications as notifications
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_kms as kms
 import aws_cdk.aws_s3 as s3
 import aws_cdk.aws_s3_deployment as s3_deploy
-import aws_cdk.aws_sam as sam
+import aws_cdk.aws_sns as sns
 from constructs import Construct
 
 
@@ -91,9 +92,7 @@ class IntegrationTestsInfrastructure(cdk.Stack):
         source_artifact = codepipeline.Artifact()
         source_stage.add_action(
             codepipeline_actions.GitHubSourceAction(
-                oauth_token=cdk.SecretValue.secrets_manager(
-                    oauth_token_secret_name
-                ),
+                oauth_token=cdk.SecretValue.secrets_manager(oauth_token_secret_name),
                 action_name="Github_Source",
                 owner=repo_owner,
                 repo=repo_name,
@@ -145,7 +144,7 @@ class IntegrationTestsInfrastructure(cdk.Stack):
                             value=json.dumps(manifests)
                         ),
                         "ARTIFACTS_BUCKET": codebuild.BuildEnvironmentVariable(
-                                value=self.artifacts_bucket.bucket_name
+                            value=self.artifacts_bucket.bucket_name
                         ),
                         "ROLE_ARN": codebuild.BuildEnvironmentVariable(
                             value=self.codebuild_service_role.role_arn
@@ -160,20 +159,23 @@ class IntegrationTestsInfrastructure(cdk.Stack):
             ],
         )
 
-        sam.CfnApplication(
+        self.alerts_topic = sns.Topic(
             self,
-            "CodeBuildLogsSAR",
-            location=sam.CfnApplication.ApplicationLocationProperty(
-                application_id="arn:aws:serverlessrepo:us-east-1:277187709615:applications/github-codebuild-logs",
-                semantic_version="1.5.0",
-            ),
-            parameters={
-                "CodeBuildProjectName": deploy_project.project_name,
-                "GitHubOAuthToken": cdk.SecretValue.secrets_manager(
-                    oauth_token_secret_name
-                ).unsafe_unwrap(),
-            },
+            "Slack Alerts Topic",
+            topic_name="seedfarmer-integration-tests-slack-alerts",
         )
+
+        rule = notifications.NotificationRule(
+            self,
+            "Integration Test Status Notification",
+            source=self.pipeline,
+            events=[
+                "codepipeline-pipeline-pipeline-execution-failed",
+                "codepipeline-pipeline-pipeline-execution-succeeded",
+            ],
+            targets=[self.alerts_topic],
+        )
+        rule.node.add_dependency(self.alerts_topic.node.find_child('Policy'))
 
     def create_codebuild_project(
         self,
@@ -195,5 +197,6 @@ class IntegrationTestsInfrastructure(cdk.Stack):
             environment_variables=environment_variables,
             role=self.codebuild_service_role,
             encryption_key=self.artifacts_cmk,
+            timeout=cdk.Duration.hours(4),
             badge=False,
         )

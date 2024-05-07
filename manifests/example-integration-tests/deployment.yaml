@@ -1,0 +1,23 @@
+name: example-integration-tests
+toolchainRegion: us-west-2
+publishGenericEnvVariables: True
+forceDependencyRedeploy: True
+groups:
+  - name: optionals
+    path: manifests/example-integration-tests/optional-modules.yaml
+  - name: integration
+    path: manifests/example-integration-tests/integration-test.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 123456789
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true
+  - alias: integ
+    accountId: 123456789
+    regionMappings:
+      - region: us-east-1
+        default: true
