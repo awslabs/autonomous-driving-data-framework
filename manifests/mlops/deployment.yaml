@@ -3,18 +3,12 @@ toolchainRegion: eu-central-1
 groups:
   - name: optionals
     path: manifests/mlops/optional-modules.yaml
-  # - name: replication
-  #   path: manifests/mlops/replicator-modules.yaml
   - name: core
     path: manifests/mlops/core-modules.yaml
   - name: dcv-image
     path: manifests/mlops/dcv-image.yaml
   - name: dcv-eks
     path: manifests/mlops/dcv-eks.yaml
-  # - name: platform
-  #   path: manifests/mlops/kf-platform.yaml
-  # - name: users
-  #   path: manifests/mlops/kf-users.yaml
 targetAccountMappings:
   - alias: primary
     accountId:

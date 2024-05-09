@@ -170,9 +170,7 @@ class DcvEksStack(Stack):  # type: ignore
                 {"StringLike": {f"{eks_cluster_open_id_connect_issuer}:sub": "system:serviceaccount:*"}},
                 "sts:AssumeRoleWithWebIdentity",
             ),
-            managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess")
-            ]
+            managed_policies=[iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess")],
         )
 
         role.add_to_principal_policy(
