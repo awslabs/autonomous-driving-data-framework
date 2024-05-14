@@ -3,7 +3,7 @@
 
 <img src="https://github.com/awslabs/autonomous-driving-data-framework/blob/main/docs/images/logo.png?raw=true" width="300" alt="ADDF logo">
 
-![Static Checking / Unit Tests](https://github.com/awslabs/autonomous-driving-data-framework/workflows/module-checks/badge.svg?branch=main)
+![Static Checking](https://github.com/awslabs/autonomous-driving-data-framework/workflows/Module%20Checks/badge.svg?branch=main)(https://github.com/awslabs/autonomous-driving-data-framework/workflows/module-checks/badge.svg?branch=main)
 ![Integration Tests](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoicVlmcUxrUjVSZ3dyT1FtUWNPUkxwK3lWZjU2RHZJT0xGYU5jbjdQcUV2QTZaSnlKSi9TeGZ6Smttck9rdTBVYWdEblB6VG9KMTloVWp6N3VhRFIzTzhzPSIsIml2UGFyYW1ldGVyU3BlYyI6IkUzUzBKcDhxZ0szM1JzRkYiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=main)
 
 ADDF is a collection of modules for Scene Detection, Simulation (mock), Visualization, Compute, Storage, Centralized logging etc, deployed using [SeedFarmer](https://github.com/awslabs/seed-farmer) orchestration tool. ADDF allows you to build distinct, stand alone Infrastructure as code (IAAC) modules and exchange information about dependencies using metadata which can be exported from one module and imported into another. Each module can be found under the `modules` directory of this repository.
