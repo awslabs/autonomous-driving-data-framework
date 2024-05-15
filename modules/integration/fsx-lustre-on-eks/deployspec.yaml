@@ -1,3 +1,4 @@
+publishGenericEnvVariables: true
 deploy:
   phases:
     install:
@@ -7,15 +8,15 @@ deploy:
     build:
       commands:
       - >
-        if [[ ${ADDF_PARAMETER_NAMESPACE_SECRET} ]]; then
-            export EKS_NAMESPACE=$(aws secretsmanager get-secret-value --secret-id ${ADDF_PARAMETER_NAMESPACE_SECRET} --query SecretString --output text | jq -r '.username');
-        elif [[ ${ADDF_PARAMETER_NAMESPACE_SSM} ]]; then
-            export EKS_NAMESPACE=${ADDF_PARAMETER_NAMESPACE_SSM} ;
+        if [[ ${SEEDFARMER_PARAMETER_NAMESPACE_SECRET} ]]; then
+            export EKS_NAMESPACE=$(aws secretsmanager get-secret-value --secret-id ${SEEDFARMER_PARAMETER_NAMESPACE_SECRET} --query SecretString --output text | jq -r '.username');
+        elif [[ ${SEEDFARMER_PARAMETER_NAMESPACE_SSM} ]]; then
+            export EKS_NAMESPACE=${SEEDFARMER_PARAMETER_NAMESPACE_SSM} ;
         else 
-            export EKS_NAMESPACE=${ADDF_PARAMETER_NAMESPACE} ;
+            export EKS_NAMESPACE=${SEEDFARMER_PARAMETER_NAMESPACE} ;
         fi;
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - export SEEDFARMER_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['${SEEDFARMER_PARAMETER_PROJECT_NAME}-${SEEDFARMER_PARAMETER_DEPLOYMENT_NAME}-${SEEDFARMER_PARAMETER_MODULE_NAME}']['metadata'])")
 destroy:
   phases:
     install:
@@ -25,14 +26,14 @@ destroy:
     build:
       commands:
       - >
-        if [[ ${ADDF_MODULE_METADATA} ]]; then
-            export EKS_NAMESPACE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".Namespace");
-        elif [[ ${ADDF_PARAMETER_NAMESPACE_SECRET} ]]; then
-            export EKS_NAMESPACE=$(aws secretsmanager get-secret-value --secret-id ${ADDF_PARAMETER_NAMESPACE_SECRET} --query SecretString --output text --region us-east-1 | jq -r '.username');
-        elif [[ ${ADDF_PARAMETER_NAMESPACE_SSM} ]]; then
-            export EKS_NAMESPACE=${ADDF_PARAMETER_NAMESPACE_SSM} ;
+        if [[ ${SEEDFARMER_MODULE_METADATA} ]]; then
+            export EKS_NAMESPACE=$(echo ${SEEDFARMER_MODULE_METADATA} | jq -r ".Namespace");
+        elif [[ ${SEEDFARMER_PARAMETER_NAMESPACE_SECRET} ]]; then
+            export EKS_NAMESPACE=$(aws secretsmanager get-secret-value --secret-id ${SEEDFARMER_PARAMETER_NAMESPACE_SECRET} --query SecretString --output text --region us-east-1 | jq -r '.username');
+        elif [[ ${SEEDFARMER_PARAMETER_NAMESPACE_SSM} ]]; then
+            export EKS_NAMESPACE=${SEEDFARMER_PARAMETER_NAMESPACE_SSM} ;
         else 
-            export EKS_NAMESPACE=${ADDF_PARAMETER_NAMESPACE} ;
+            export EKS_NAMESPACE=${SEEDFARMER_PARAMETER_NAMESPACE} ;
         fi; 
       - cdk destroy --force --app "python app.py"
 build_type: BUILD_GENERAL1_SMALL

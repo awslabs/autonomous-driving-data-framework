@@ -16,6 +16,7 @@ class FSXFileStorageOnEKS(Stack):
         self,
         scope: Construct,
         id: str,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         fsx_dns_name: str,
@@ -37,11 +38,12 @@ class FSXFileStorageOnEKS(Stack):
             **kwargs,
         )
 
+        self.project_name = project_name
         self.deployment_name = deployment_name
         self.module_name = module_name
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{self.deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{self.project_name}-{self.deployment_name}")
 
-        dep_mod = f"addf-{self.deployment_name}-{self.module_name}"
+        dep_mod = f"{self.project_name}-{self.deployment_name}-{self.module_name}"
         dep_mod = dep_mod[:30]
 
         # Import EKS Cluster
