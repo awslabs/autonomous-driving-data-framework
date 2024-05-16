@@ -74,7 +74,7 @@ class DataServiceDevInstancesStack(Stack):
 
         ###################
         # AMI Selection
-        ami_selected = SSM_PARAMETER_MAP.get(ami_id, "focal")
+        ami_selected = SSM_PARAMETER_MAP.get(ami_id, SSM_PARAMETER_MAP.get("focal"))
         if ami_id is not None:
             ami = MachineImage.lookup(name=ami_id)
         else:
