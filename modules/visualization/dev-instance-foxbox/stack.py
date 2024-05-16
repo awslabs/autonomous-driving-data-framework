@@ -160,7 +160,7 @@ class DataServiceDevInstancesStack(Stack):
         ###################
         # Instances Iterator
         for idx in range(0, instance_count):
-            instance_name = f"{prefix}-{idx}"
+            instance_name = f"{module_name}-{idx}"
 
             ###################
             # Secret Manager (Ubuntu Password)

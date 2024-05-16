@@ -33,7 +33,8 @@ VERSION=$(lsb_release -a | grep Release | awk -F ":" '{print $2}' | sed -E -e 's
 RELEASE=$(lsb_release -sc)
 DEF_ARCH="amd64" # We assume we are in an x86_64 system
 PLATFORM="$(uname -s)_${DEF_ARCH}"
-AWS_REGION="$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)"
+IMDSV2_TOKEN=$(curl --silent -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+AWS_REGION="$(curl --silent -H "X-aws-ec2-metadata-token: ${IMDSV2_TOKEN}" http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)"
 NICE_DCV_BASE="https://d1uj6qtbmh3dt5.cloudfront.net/2023.1/Servers"
 ROS_PKG_PREFIX="python3"
 PYTHON_VERSION="python3.11"
@@ -94,7 +95,7 @@ echo "Detected Ubuntu ${VERSION}"
 
 # Store user-data script
 echo "Saving user-data script in the ubuntu user's home directory"
-curl 169.254.169.254/latest/user-data > /home/ubuntu/user-data-copy.sh
+curl -H "X-aws-ec2-metadata-token: ${IMDSV2_TOKEN}" http://169.254.169.254/latest/user-data > /home/ubuntu/user-data-copy.sh
 
 # Install and update latest base packages
 apt-get update && apt-get -y upgrade
@@ -334,6 +335,10 @@ if [[ "${SERVICE_USER_SECRET_NAME}" != "PLACEHOLDER_SECRET" ]]; then
   NEW_PASSWORD=$(echo "${SECRET_VALUE}" | jq -r '.password')
   echo "ubuntu:${NEW_PASSWORD}" | chpasswd
 fi
+
+# Avoid initial setup that ask for upgrade
+[[ ! -d "/home/ubuntu/.config" ]] && mkdir -p /home/ubuntu/.config
+echo "yes" >> /home/ubuntu/.config/gnome-initial-setup-done
 
 # Last reboot
 if [[ ! -f "/home/ubuntu/.rebooted" ]]; then
