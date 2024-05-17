@@ -32,9 +32,9 @@ Any file you want staged on the running instance should be saved in the `scripts
 - `instance-count` - the number (INT) of identical instances to create with the same security group and same instance profile
   - defaults to 1
 - `s3-bucket-scripts` - a place to stage any scripts that will be put on the ubuntu users home directory
-  - This MUST be a bucket in the project (ex. `addf-`)
+  - This MUST be a bucket in the project (ex. `addf-artifacts-...`)
 - `s3-bucket-dataset` - any staged datasets that the server needs access to
-- `ami-id` - An AMI Id if there is a preferred Ubuntu 20.04 Server to use. It can be set to the values "focal" or "jammy" to use the selected distribution (Leaving it empty will select "focal" latest by default)
+- `ami-id` - An AMI ID if there is a preferred Ubuntu 20.04 Server to use. It can be set to the values "focal" or "jammy" to use the selected distribution (Leaving it empty will select "focal" latest by default)
 - `demo-password` - implement a defined password
   - ******  CAUTION  ****** this is to be used ONLY for demo purposes and not with sensitive data. DO NOT USE with any critical or in sensitive environments / infrastructures!!!!  You have been warned...
 
@@ -66,7 +66,7 @@ Nested in the instance indicator, there are two pertinent parameters output:
 - `DevInstanceURL` - the url with port to access the  NiceDCV endpoint
 - `AWSSecretName` - the name of the AWS SecretsManager entry that has the password 
 
-Thr structure is:
+The structure is:
 - dev-instance-name
   - `DevInstanceURL`
   - `AWSSecretName`
@@ -75,29 +75,32 @@ Thr structure is:
 #### Output Example
 ```json
   {
-    "dev-instance-0": {
-      "AWSSecretName": "addf-dataservice-visualization-dev-instance-0-ubuntu-password",
-      "DevInstanceURL": "https://ec2-3-90-103-67.compute-1.amazonaws.com:8443"
+    "analysis-dev-instance-foxbox-0": {
+      "AWSSecretName": "addf-workshop-demo-analysis-dev-instance-foxbox-0-ubuntu-password",
+      "DevInstanceURL": "https://ec2-0-0-0-0.compute-1.amazonaws.com:8443"
     },
-    "dev-instance-1": {
-      "AWSSecretName": "addf-dataservice-visualization-dev-instance-1-ubuntu-password",
-      "DevInstanceURL": "https://ec2-54-91-11-227.compute-1.amazonaws.com:8443"
+    "analysis-dev-instance-foxbox-1": {
+      "AWSSecretName": "addf-workshop-demo-analysis-dev-instance-foxbox-1-ubuntu-password",
+      "DevInstanceURL": "https://ec2-0-0-0-0.compute-1.amazonaws.com:8443"
     },
-    "dev-instance-2": {
-      "AWSSecretName": "addf-dataservice-visualization-dev-instance-2-ubuntu-password",
-      "DevInstanceURL": "https://ec2-54-221-109-36.compute-1.amazonaws.com:8443"
+    "analysis-dev-instance-foxbox-2": {
+      "AWSSecretName": "addf-workshop-demo-analysis-dev-instance-foxbox-2-ubuntu-password",
+      "DevInstanceURL": "https://ec2-0-0-0-0.compute-1.amazonaws.com:8443"
     }
   }
 ```
 
 ### Helpful commands
 
-`seedfarmer list moduledata -d dataservice -g visualization -m dev-instance`
+- List `seedfarmer` module information:
 
+`seedfarmer list moduledata -d dataservice -g visualization -m dev-instance-foxbox`
+
+- Verify SecretsManager ubuntu password
 ```bash
 aws secretsmanager get-secret-value \
     --secret-id <secretname> \ 
     --query SecretString \
     --output text \
-    --region "$AWS_REGION" | jq -r 
+    --region "${AWS_REGION}" | jq -r 
 ```
