@@ -135,7 +135,7 @@ add-apt-repository ppa:deadsnakes/ppa -y
 ## Chrome
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
 sh -c 'echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-wget -q -t0 -c "https://dl.google.com/linux/direct/google-chrome-${DEF_ARCH}.deb" -O ./google-chrome.deb
+wget -q -t0 -c "https://dl.google.com/linux/direct/google-chrome-stable_current_${DEF_ARCH}.deb" -O ./google-chrome.deb
 apt-get install -y ./google-chrome.deb
 
 ## NVIDIA Container Runtime
