@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Removed**
 
+- removed `sagemaker` group, as they have been moved to [AIOps](https://github.com/awslabs/aiops-modules/tree/main/modules/sagemaker) GitHub repo.
+
 =======
 
 ## [V3.2.0] - [04/02/2024]
