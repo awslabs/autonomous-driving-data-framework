@@ -40,7 +40,7 @@ class DcvEksStack(Stack):  # type: ignore
         eks_cluster_open_id_connect_issuer: str,
         eks_cluster_security_group_id: str,
         eks_node_role_arn: str,
-        dcv_node_port: str,
+        fsx_pvc_name: str,
         env: Environment,
         **kwargs: Any,
     ) -> None:
@@ -92,7 +92,7 @@ class DcvEksStack(Stack):  # type: ignore
         k8s_namespace = eks_cluster.add_manifest(manifest_id, namespace_manifest)
         loop_iteration += 1
 
-        t = Template(open(os.path.join(project_dir, "dcv-config/dcv-agent.yaml"), "r").read())
+        t = Template(open(os.path.join(project_dir, "k8s/dcv-deployment.yaml"), "r").read())
         dcv_agent_yaml_file = t.substitute(
             NAMESPACE=dcv_namespace,
             IMAGE=dcv_image_uri,
@@ -100,6 +100,7 @@ class DcvEksStack(Stack):  # type: ignore
             REGION=env.region,
             SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
             DISPLAY_PARAMETER_NAME=self.display_parameter_name,
+            FSX_PVC_NAME=fsx_pvc_name
         )
 
         dcv_agent_yaml = yaml.load(dcv_agent_yaml_file, Loader=yaml.FullLoader)
@@ -107,10 +108,9 @@ class DcvEksStack(Stack):  # type: ignore
         loop_iteration += 1
         dcv_agent_resource = eks_cluster.add_manifest(manifest_id, dcv_agent_yaml)
 
-        t = Template(open(os.path.join(project_dir, "dcv-config/dcv-agent-setup.yaml"), "r").read())
+        t = Template(open(os.path.join(project_dir, "k8s/dcv-permissions-setup.yaml"), "r").read())
         dcv_agent_yaml_file = t.substitute(
             NAMESPACE=dcv_namespace,
-            NODEPORT=dcv_node_port,
             RUNTIME_ROLE_ARN=self.eks_admin_role.role_arn,
             SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
         )
@@ -121,8 +121,6 @@ class DcvEksStack(Stack):  # type: ignore
             k8s_resource = eks_cluster.add_manifest(manifest_id, value)
             k8s_resource.node.add_dependency(k8s_namespace)
             dcv_agent_resource.node.add_dependency(k8s_resource)
-
-        self.add_security_group_permissions(eks_cluster_security_group_id, dcv_node_port)
 
         NagSuppressions.add_stack_suppressions(
             self,
@@ -202,17 +200,3 @@ class DcvEksStack(Stack):  # type: ignore
             )
         )
 
-    def add_security_group_permissions(self, eks_cluster_security_group_id: str, dcv_node_port: str) -> None:
-        security_group = ec2.SecurityGroup.from_security_group_id(
-            self, "SG", eks_cluster_security_group_id, mutable=True
-        )
-        security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(int(dcv_node_port)),
-            "allow dcv NodePort from the everywhere around the world",
-        )
-        security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.udp(int(dcv_node_port)),
-            "allow dcv NodePort from the everywhere around the world",
-        )

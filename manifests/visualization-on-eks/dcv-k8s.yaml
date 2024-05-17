@@ -1,10 +1,8 @@
-name: dcv-eks
-path: modules/visualization/dcv-eks
+name: dcv-k8s-deployment
+path: modules/visualization/dcv-k8s-deployment
 parameters:
   - name: dcv-namespace
     value: dcv
-  - name: dcv-nodeport
-    value: 31980
   - name: dcv-image-uri
     valueFrom:
       moduleMetadata:
@@ -59,3 +57,9 @@ parameters:
         group: core
         name: eks
         key: EksNodeRoleArn
+  - name: fsx-pvc-name
+    valueFrom:
+      moduleMetadata:
+        group: integration
+        name: lustre-on-eks
+        key: PersistentVolumeClaimName
