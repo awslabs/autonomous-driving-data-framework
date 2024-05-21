@@ -1,0 +1,104 @@
+{
+    "configById": {
+        "ImageViewPanel!3om21g0": {
+            "cameraTopic": "/flir_adk/thermal/image_raw",
+            "enabledMarkerTopics": [],
+            "mode": "fit",
+            "pan": {
+                "x": 0,
+                "y": 0
+            },
+            "rotation": 0,
+            "synchronize": false,
+            "transformMarkers": false,
+            "zoom": 1
+        },
+        "ImageViewPanel!2rdgok6": {
+            "cameraTopic": "/flir_adk/rgb_front_left/image_raw",
+            "enabledMarkerTopics": [],
+            "mode": "fit",
+            "pan": {
+                "x": 0,
+                "y": 0
+            },
+            "rotation": 0,
+            "synchronize": false,
+            "transformMarkers": false,
+            "zoom": 1
+        },
+        "ImageViewPanel!w01q7i": {
+            "cameraTopic": "/flir_adk/rgb_front_right/image_raw",
+            "enabledMarkerTopics": [],
+            "mode": "fit",
+            "pan": {
+                "x": 0,
+                "y": 0
+            },
+            "rotation": 0,
+            "synchronize": false,
+            "transformMarkers": false,
+            "zoom": 1
+        },
+        "ImageViewPanel!4h5b43p": {
+            "cameraTopic": "/post_process/lanes_mask/rgb_front_left",
+            "enabledMarkerTopics": [],
+            "mode": "fit",
+            "pan": {
+                "x": 0,
+                "y": 0
+            },
+            "rotation": 0,
+            "synchronize": false,
+            "transformMarkers": false,
+            "zoom": 1
+        },
+        "ImageViewPanel!spyayc": {
+            "cameraTopic": "/post_process/semantic_segmentation/rgb_front_right",
+            "enabledMarkerTopics": [],
+            "mode": "fit",
+            "pan": {
+                "x": 0,
+                "y": 0
+            },
+            "rotation": 0,
+            "synchronize": false,
+            "transformMarkers": false,
+            "zoom": 1
+        },
+        "RawMessages!78no5i": {
+            "diffEnabled": false,
+            "diffMethod": "custom",
+            "diffTopicPath": "",
+            "showFullMessageForDiff": false,
+            "topicPath": "/rgb_right_detections_only"
+        }
+    },
+    "globalVariables": {},
+    "userNodes": {},
+    "linkedGlobalVariables": [],
+    "playbackConfig": {
+        "speed": 1
+    },
+    "layout": {
+        "first": {
+            "first": "RawMessages!78no5i",
+            "second": "ImageViewPanel!3om21g0",
+            "direction": "column"
+        },
+        "second": {
+            "first": {
+                "first": "ImageViewPanel!2rdgok6",
+                "second": "ImageViewPanel!w01q7i",
+                "direction": "column"
+            },
+            "second": {
+                "first": "ImageViewPanel!4h5b43p",
+                "second": "ImageViewPanel!spyayc",
+                "direction": "column"
+            },
+            "direction": "row"
+        },
+        "direction": "row",
+        "splitPercentage": 35.09455499335975
+    }
+}
