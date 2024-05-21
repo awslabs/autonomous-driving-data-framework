@@ -4,4 +4,4 @@ opencv-python
 roslib
 rosbag
 rospy
-requests
+requests==2.32.0

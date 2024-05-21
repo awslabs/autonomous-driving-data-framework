@@ -21,11 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CDK and ending up in fatal error when installing `cdk@2.110.0` and then installing the same version through package.json (aws-cdk / aws-cdk-lib): `Cloud assembly schema version mismatch: Maximum schema version supported is 35.0.0, but found 36.0.0`. Needed to bump to version `2.117.0` which is the first version that states `36.0.0` as their cloud assembly version.
   - Updated `semver` due to security findings from npm audit
 - added a warning to `modules/visualization/dev-instance` module about foxglove is no longer opensource
+- regrouped mwaa and sfn related manifests of `rosbag-image-demo` manifests into a single directory
+- fixed `requests` and `pyroma` library versions as per depandabot
 
 ### **Removed**
 
 - removed `sagemaker` group, as they have been moved to [AIOps](https://github.com/awslabs/aiops-modules/tree/main/modules/sagemaker) GitHub repo.
 - removed `mlops` group which hosted `kubeflow-platform` and `kubeflow-users` modules and its relevant manifests
+- removed `rosbag-scene-detection` module as it was deprecated in earlier releases
 
 =======
 
