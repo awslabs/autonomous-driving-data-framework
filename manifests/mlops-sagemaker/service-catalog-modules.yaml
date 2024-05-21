@@ -1,9 +1,0 @@
-name: service-catalog
-path: modules/service-catalog
-parameters:
-  - name: portfolio-access-role-arn
-    valueFrom:
-      moduleMetadata:
-        group: sagemaker
-        name: sagemaker-studio
-        key: LeadDataScientistRoleArn
