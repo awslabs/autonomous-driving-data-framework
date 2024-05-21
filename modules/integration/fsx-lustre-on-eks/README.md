@@ -33,7 +33,6 @@ with an atttached Security Group in the same VPC as the EKS cluster.  We do not 
       "username": "user1"
     }
     ```
-  - this is to support secrets already defined in the [mlops/kf-users](../../mlops/kubeflow-users/README.md) module
 
 #### Optional
 - `fsx-storage-capacity`: the amount (in GB) of storage, **defaults to 1200**, with the following guidelines:
