@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - regrouped mwaa and sfn related manifests of `rosbag-image-demo` manifests into a single directory
 - fixed `requests` and `pyroma` library versions as per depandabot
 - fixed `black` and `boto3` library versions as per depandabot
+- refactored `fix.sh` script to use `ruff` instead of `black` and `isort`
 
 ### **Removed**
 

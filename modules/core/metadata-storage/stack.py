@@ -13,7 +13,7 @@ from constructs import Construct, IConstruct
 _logger: logging.Logger = logging.getLogger(__name__)
 
 
-class MetadataStorageStack(Stack):  # type: ignore
+class MetadataStorageStack(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -27,7 +27,6 @@ class MetadataStorageStack(Stack):  # type: ignore
         stack_description: str,
         **kwargs: Any,
     ) -> None:
-
         dep_mod = f"addf-{deployment}-{module}"
 
         super().__init__(scope, id, description=stack_description, **kwargs)

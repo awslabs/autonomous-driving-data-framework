@@ -34,9 +34,17 @@ def main():
     )
     parser.add_argument("--key", dest="object_key", required=False, help="the key of the object in s3")
     parser.add_argument(
-        "--record", dest="record_id", required=False, help="the partition key of the scene in the scenario db"
+        "--record",
+        dest="record_id",
+        required=False,
+        help="the partition key of the scene in the scenario db",
     )
-    parser.add_argument("--scene", dest="scene_id", required=False, help="the sort key of the scene in the scenario db")
+    parser.add_argument(
+        "--scene",
+        dest="scene_id",
+        required=False,
+        help="the sort key of the scene in the scenario db",
+    )
     args = parser.parse_args()
 
     if args.config_file is not None:
@@ -63,10 +71,18 @@ def main():
 
     client = boto3.client("lambda")
     print(f"Invoking: {function_name}")
-    payload = {"bucket": bucket_name, "key": args.object_key, "record_id": args.record_id, "scene_id": args.scene_id}
+    payload = {
+        "bucket": bucket_name,
+        "key": args.object_key,
+        "record_id": args.record_id,
+        "scene_id": args.scene_id,
+    }
     print("payload: " + json.dumps(payload))
     response = client.invoke(
-        FunctionName=str(function_name), InvocationType="RequestResponse", LogType="Tail", Payload=json.dumps(payload)
+        FunctionName=str(function_name),
+        InvocationType="RequestResponse",
+        LogType="Tail",
+        Payload=json.dumps(payload),
     )
 
     res = json.loads(response["Payload"].read())

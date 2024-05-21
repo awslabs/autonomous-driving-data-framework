@@ -20,7 +20,6 @@ if len(f"{project_name}-{deployment_name}") > 36:
 
 
 def get_arg_value(name: str, default: Optional[str] = None) -> str:
-
     value = (
         os.getenv(f"SEEDFARMER_PARAMETER_{name}", default) if default else os.getenv(f"SEEDFARMER_PARAMETER_{name}", "")
     )

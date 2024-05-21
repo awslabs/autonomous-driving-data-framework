@@ -56,7 +56,9 @@ def get_display_number() -> str:
 
 
 def verify_config_map(
-    client_v1: kubernetes.client.api.core_v1_api.CoreV1Api, namespace: str, config_map_name: str
+    client_v1: kubernetes.client.api.core_v1_api.CoreV1Api,
+    namespace: str,
+    config_map_name: str,
 ) -> bool:
     """
     Verify the existence of ConfigMap
@@ -89,7 +91,10 @@ def verify_config_map(
 
 
 def update_config_map(
-    client_v1: kubernetes.client.api.core_v1_api.CoreV1Api, namespace: str, config_map_name: str, display: str
+    client_v1: kubernetes.client.api.core_v1_api.CoreV1Api,
+    namespace: str,
+    config_map_name: str,
+    display: str,
 ) -> bool:
     """
     Update ConfigMap with display number
@@ -175,7 +180,10 @@ def update_parameter_store(display: str) -> bool:
     client = boto3.client("ssm", region_name=os.getenv("AWS_REGION"))
     try:
         response = client.put_parameter(
-            Name=os.getenv(ADDF_SSM_PARAMETER_STORE_ENV_NAME), Value=display, Type="String", Overwrite=True
+            Name=os.getenv(ADDF_SSM_PARAMETER_STORE_ENV_NAME),
+            Value=display,
+            Type="String",
+            Overwrite=True,
         )
         logging.info(response)
         return True

@@ -14,16 +14,16 @@ def stack_defaults():
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
     os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"] = "my-cluster"
-    os.environ[
-        "ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"
-    ] = "arn:aws:iam::123456789012:role/addf-eks-testing-XXXXXX"
-    os.environ[
-        "ADDF_PARAMETER_EKS_OIDC_ARN"
-    ] = "arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/XXXXXXXX"
+    os.environ["ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"] = (
+        "arn:aws:iam::123456789012:role/addf-eks-testing-XXXXXX"
+    )
+    os.environ["ADDF_PARAMETER_EKS_OIDC_ARN"] = (
+        "arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/XXXXXXXX"
+    )
     os.environ["ADDF_PARAMETER_TRAINING_NAMESPACE_NAME"] = "namespace"
-    os.environ[
-        "ADDF_PARAMETER_EKS_CLUSTER_ENDPOINT"
-    ] = "oidc.eks.us-west-2.amazonaws.com/id/XXXXXXXXXX"
+    os.environ["ADDF_PARAMETER_EKS_CLUSTER_ENDPOINT"] = (
+        "oidc.eks.us-west-2.amazonaws.com/id/XXXXXXXXXX"
+    )
     os.environ["ADDF_PARAMETER_EKS_CERT_AUTH_DATA"] = "BQTRJQkR3QXdnZ0VLCkFvSUJ"
     os.environ["ADDF_PARAMETER_TRAINING_IMAGE_URI"] = "mnist:latest"
 

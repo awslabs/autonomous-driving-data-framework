@@ -10,7 +10,6 @@ from pandas import concat
 
 
 def get_yolov5_prediction(model, image, input_data_path, _input_size=1280, confidence=0.25, iou=0.45):
-
     model.conf = confidence  # NMS confidence threshold
     model.iou = iou  # NMS IoU threshold
     model.agnostic = False  # NMS class-agnostic
@@ -120,7 +119,6 @@ def get_yolov5_prediction(model, image, input_data_path, _input_size=1280, confi
 
 
 if __name__ == "__main__":
-
     parser = ArgumentParser()
     parser.add_argument("--model", type=str, default="yolov5s")
 
@@ -137,7 +135,6 @@ if __name__ == "__main__":
     output = {}
     dfs = []
     for image in images_list:
-
         output_json, output_pandas = get_yolov5_prediction(model, image, input_data_path)
         image_file_name = image.replace(input_data_path, "")
         image_json_name = image_file_name.replace(".png", ".json")

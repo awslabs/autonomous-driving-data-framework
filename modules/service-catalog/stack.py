@@ -60,9 +60,7 @@ class ServiceCatalogStack(Stack):
             )
             self.portfolio.give_access_to_role(self.portfolio_access_role)
 
-        seed_code_dir = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "seed_code"
-        )
+        seed_code_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seed_code")
         for asset_dir_path in next(os.walk(seed_code_dir))[1]:
             asset_dir = os.path.basename(asset_dir_path)
             asset_name = "-" + asset_dir.replace("_", "-")

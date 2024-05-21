@@ -74,14 +74,14 @@ def get_img_paths(path):
 
 
 def _to_json_dict_with_strings(dictionary):
-    if type(dictionary) != dict:
+    if not isinstance(dictionary, dict):
         return str(dictionary)
     d = {k: _to_json_dict_with_strings(v) for k, v in dictionary.items()}
     return d
 
 
 def to_json(dic):
-    if type(dic) is dict:
+    if isinstance(dic, dict):
         dic = dict(dic)
     else:
         dic = dic.__dict__

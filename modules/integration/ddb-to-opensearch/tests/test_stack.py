@@ -10,7 +10,6 @@ import pytest
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
 

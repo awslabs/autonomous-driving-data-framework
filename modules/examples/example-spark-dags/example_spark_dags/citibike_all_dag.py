@@ -12,7 +12,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-import gzip
+
 import json
 import random
 import string
@@ -29,8 +29,8 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.providers.amazon.aws.operators.emr_containers import EMRContainerOperator
 from airflow.providers.amazon.aws.sensors.emr_containers import EMRContainerSensor
-from airflow.utils.dates import days_ago
 from boto3.session import Session
+
 from example_spark_dags import emr_eks_dag_config
 
 afbucket = f"{emr_eks_dag_config.DAG_BUCKET}/dags/example_spark_dags/"  # ADDF MWAA Dags bucket
@@ -157,7 +157,6 @@ with DAG(
     schedule_interval=None,
     tags=["S3", "Citibike", "EMR on EKS", "Spark"],
 ) as dag:
-
     start = DummyOperator(task_id="start", dag=dag)
 
     listBucket = PythonOperator(

@@ -111,7 +111,8 @@ class BatchDags(Stack):
             self,
             f"dag-role-{dep_mod}",
             assumed_by=iam.CompositePrincipal(
-                iam.ArnPrincipal(self.mwaa_exec_role), iam.ServicePrincipal("ecs-tasks.amazonaws.com")
+                iam.ArnPrincipal(self.mwaa_exec_role),
+                iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
@@ -132,7 +133,13 @@ class BatchDags(Stack):
 
         ec2IAMProfile = iam.CfnInstanceProfile(self, "BatchEC2RoleInstanceProfile", roles=[ec2Role.role_name])
 
-        batchSG = ec2.SecurityGroup(self, "BatchSG", vpc=self.vpc, allow_all_outbound=True, description="Batch SG")
+        batchSG = ec2.SecurityGroup(
+            self,
+            "BatchSG",
+            vpc=self.vpc,
+            allow_all_outbound=True,
+            description="Batch SG",
+        )
 
         batchSG.add_egress_rule(ec2.Peer.ipv4(self.vpc.vpc_cidr_block), ec2.Port.all_tcp())
 
@@ -157,7 +164,7 @@ class BatchDags(Stack):
                             instance_role=ec2IAMProfile.attr_arn,
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",  # type: ignore
+                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",
                             minv_cpus=0,
                             type=batch.ComputeResourceType.ON_DEMAND,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
@@ -184,7 +191,7 @@ class BatchDags(Stack):
                             instance_role=ec2IAMProfile.attr_arn,
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",  # type: ignore
+                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",
                             minv_cpus=0,
                             type=batch.ComputeResourceType.SPOT,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
@@ -211,7 +218,8 @@ class BatchDags(Stack):
 
                     fargate_compute_env_list.append(
                         batch.JobQueueComputeEnvironment(
-                            compute_environment=fargate_compute_env, order=int(batchenv.get("order"))
+                            compute_environment=fargate_compute_env,
+                            order=int(batchenv.get("order")),
                         )
                     )
 
