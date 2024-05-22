@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+### **Changed**
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.3.0] - [05/21/2024]
+
+### **Added**
+
 - 'fsx-lustre-on-eks' module - added genric env
 - `modules/visualization/dev-instance-foxbox` module - based on `dev-instance` but using Foxbox (1.0.0) and latest versions of OS and others (DCV, Python 3.11, ROS (noetic/humble), Google Chrome, etc ). Installation also compatible to use with Ubuntu Jammy (22.04)
 
