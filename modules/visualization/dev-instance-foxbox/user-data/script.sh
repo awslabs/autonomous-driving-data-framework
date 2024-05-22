@@ -49,6 +49,7 @@ ADDS_REPO="amazon-eks-autonomous-driving-data-service"
 KUBECTL_VERSION="1.29.3/2024-04-19"
 FOXBOX_VERSION="1.0.0"
 FOXBOX_FILE="foxbox-${FOXBOX_VERSION}-linux-${DEF_ARCH}.deb"
+NVIDIA_RECOMMENDED=$(ubuntu-drivers devices 2>/dev/null | grep nvidia-driver | grep recommended | awk -F " " '{print $3}')
 case "${VERSION}" in
   "20.04")
     NVIDIA_UBUNTU_BASE="ubuntu2004/x86_64"
@@ -65,7 +66,7 @@ case "${VERSION}" in
     NICE_DCV_VERSION="nice-dcv-2023.1-16388-ubuntu2204-x86_64.tgz"
   ;;
   "18.04")
-    echo "Ubuntu 18.04 is not supported. Please select another version" && exit 1
+    ( echo "Ubuntu 18.04 is not supported. Please select another version" | tee /etc/motd ) && exit 1
   ;;
   *)
     echo "Not recognized version: ${VERSION}" && exit 1
@@ -77,9 +78,10 @@ get_file() {
   wget -t0 -c "${1}"
 }
 
-detect_nvidia() {
+install_nvidia() {
+  NVIDIA_DRIVERS=$1
   [[ ! -x "$(command -v nvidia-smi)" ]] &&
-  [[ -n "$(ubuntu-drivers devices 2>/dev/null | grep nvidia-driver | grep recommended | awk -F " " '{print $3}')" ]] &&
+  [[ -n "${NVIDIA_DRIVERS}" ]] &&
   echo "true" || echo "false"
 }
 
@@ -87,6 +89,7 @@ install_nvidia_drivers() {
   # Install NVIDIA Repositories and latest drivers
   NVIDIA_UBUNTU_BASE=$1
   NVIDIA_PIN_FILE=$2
+  NVIDIA_DRIVERS=$3
   BASE_URL="https://developer.download.nvidia.com/compute/cuda/repos/${NVIDIA_UBUNTU_BASE}"
   get_file "${BASE_URL}/${NVIDIA_PIN_FILE}" &&
   mv "${NVIDIA_PIN_FILE}" /etc/apt/preferences.d/cuda-repository-pin-600 &&
@@ -94,7 +97,7 @@ install_nvidia_drivers() {
   add-apt-repository "deb ${BASE_URL}/ /" &&
   apt-get update && apt-get -y purge cuda && apt-get -y purge nvidia-* && apt-get -y autoremove &&
   ubuntu-drivers autoinstall &&
-  apt-get -y install cuda nvidia-cuda-toolkit libcudnn8 libcudnn8-dev;
+  apt-get -y install cuda nvidia-cuda-toolkit libcudnn8 libcudnn8-dev "${NVIDIA_RECOMMENDED}";
 }
 
 # Start execution 
@@ -105,8 +108,8 @@ echo "Saving user-data script in the ubuntu user's home directory"
 curl -H "X-aws-ec2-metadata-token: ${IMDSV2_TOKEN}" http://169.254.169.254/latest/user-data > /home/ubuntu/user-data-copy.sh
 
 # Install NVIDIA Drivers if needed
-if [[ $(detect_nvidia) == "true" ]]; then
-  install_nvidia_drivers "${NVIDIA_UBUNTU_BASE}" "${NVIDIA_PIN_FILE}"
+if [[ $(install_nvidia "${NVIDIA_RECOMMENDED}") == "true" ]]; then
+  install_nvidia_drivers "${NVIDIA_UBUNTU_BASE}" "${NVIDIA_PIN_FILE}" "${NVIDIA_RECOMMENDED}"
   echo "Rebooting instance for drivers to be loaded properly"
   reboot
 fi
@@ -340,6 +343,8 @@ fi
 # Avoid initial setup that ask for upgrade
 [[ ! -d "/home/ubuntu/.config" ]] && mkdir -p /home/ubuntu/.config
 echo "yes" >> /home/ubuntu/.config/gnome-initial-setup-done
+chown -R ubuntu:ubuntu /home/ubuntu/.config
+sed -i 's/lts$/never/g' /etc/update-manager/release-upgrades
 
 # Last reboot
 if [[ ! -f "/home/ubuntu/.rebooted" ]]; then
