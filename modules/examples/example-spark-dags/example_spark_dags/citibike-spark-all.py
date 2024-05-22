@@ -12,11 +12,18 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+
 import sys
 
-import pyspark
 from pyspark.sql import SparkSession
-from pyspark.sql.types import DateType, DoubleType, IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import (
+    DateType,
+    DoubleType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
 
 bucket = sys.argv[1]
 

@@ -18,7 +18,7 @@ import pandas as pd
 import torch
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
-from lib.config import cfg, update_config
+from lib.config import cfg
 from lib.core.function import AverageMeter
 from lib.core.general import non_max_suppression, scale_coords
 from lib.dataset import LoadImages, LoadStreams
@@ -49,7 +49,6 @@ name_lanes = []
 
 
 def detect(cfg, opt):
-
     logger, _, _ = create_logger(cfg, cfg.LOG_DIR, "demo")
 
     device = select_device(logger, opt.device)

@@ -72,7 +72,11 @@ class TemplateStack(cdk.Stack):
             vpc_id=vpc_id,
         )
         security_group = ec2.SecurityGroup(
-            self, "Sagemaker Jobs SG", vpc=vpc, allow_all_outbound=True, description="Sagemaker Processing Jobs SG"
+            self,
+            "Sagemaker Jobs SG",
+            vpc=vpc,
+            allow_all_outbound=True,
+            description="Sagemaker Processing Jobs SG",
         )
 
         security_group.add_ingress_rule(peer=security_group, connection=ec2.Port.all_traffic())
@@ -245,7 +249,8 @@ class TemplateStack(cdk.Stack):
                         "InputName": "data",
                         "S3Input": {
                             "S3Uri": sfn.JsonPath.format(
-                                f"s3://{target_bucket.bucket_name}/{{}}/", sfn.JsonPath.string_at("$")
+                                f"s3://{target_bucket.bucket_name}/{{}}/",
+                                sfn.JsonPath.string_at("$"),
                             ),
                             "S3DataType": "S3Prefix",
                             "S3InputMode": "File",
@@ -261,7 +266,8 @@ class TemplateStack(cdk.Stack):
                             "OutputName": "output",
                             "S3Output": {
                                 "S3Uri": sfn.JsonPath.format(
-                                    f"s3://{target_bucket.bucket_name}/{{}}_post_obj_dets/", sfn.JsonPath.string_at("$")
+                                    f"s3://{target_bucket.bucket_name}/{{}}_post_obj_dets/",
+                                    sfn.JsonPath.string_at("$"),
                                 ),
                                 "S3UploadMode": "EndOfJob",
                                 "LocalPath": "/opt/ml/processing/output/",
@@ -326,7 +332,8 @@ class TemplateStack(cdk.Stack):
                         "InputName": "data",
                         "S3Input": {
                             "S3Uri": sfn.JsonPath.format(
-                                f"s3://{target_bucket.bucket_name}/{{}}/", sfn.JsonPath.string_at("$")
+                                f"s3://{target_bucket.bucket_name}/{{}}/",
+                                sfn.JsonPath.string_at("$"),
                             ),
                             "S3DataType": "S3Prefix",
                             "S3InputMode": "File",
@@ -478,7 +485,10 @@ class TemplateStack(cdk.Stack):
 
         job_status_choice = (
             sfn.Choice(self, f"Did {id} finish?")
-            .when(sfn.Condition.string_equals("$.ProcessingJobStatus.ProcessingJobStatus", "Completed"), success_state)
+            .when(
+                sfn.Condition.string_equals("$.ProcessingJobStatus.ProcessingJobStatus", "Completed"),
+                success_state,
+            )
             .when(
                 sfn.Condition.or_(
                     sfn.Condition.string_equals("$.ProcessingJobStatus.ProcessingJobStatus", "Failed"),
@@ -593,7 +603,10 @@ class TemplateStack(cdk.Stack):
 
         job_status_choice = (
             sfn.Choice(self, "Did Scene Detection Finish?")
-            .when(sfn.Condition.string_equals("$.JobStatus.JobRun.State", "SUCCESS"), success_state)
+            .when(
+                sfn.Condition.string_equals("$.JobStatus.JobRun.State", "SUCCESS"),
+                success_state,
+            )
             .when(
                 sfn.Condition.or_(
                     sfn.Condition.string_equals("$.JobStatus.JobRun.State", "FAILED"),

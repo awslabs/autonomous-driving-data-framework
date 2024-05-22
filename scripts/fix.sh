@@ -34,9 +34,9 @@ FIX_PATH=`pwd`
 echo "Fixing: ${FIX_PATH}, Language: ${LANGUAGE}"
 
 if [[ $LANGUAGE == "python" ]]; then
-    echo "Running isort, black"
-    isort .
-    black .
+    echo "Running ruff"
+    ruff format ${FIX_PATH}
+    ruff check --fix ${FIX_PATH}
 elif [[ $LANGUAGE == "typescript" ]]; then
     echo "Running prettier"
     npx prettier --write .

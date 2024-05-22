@@ -25,9 +25,7 @@ model_package_group_name = f"{sagemaker_pipeline_name}-{env_name}-models"
 def get_account() -> str:
     if "CDK_DEFAULT_ACCOUNT" in os.environ:
         return os.environ["CDK_DEFAULT_ACCOUNT"]
-    return cast(
-        str, boto3.client(service_name="sts").get_caller_identity().get("Account")
-    )
+    return cast(str, boto3.client(service_name="sts").get_caller_identity().get("Account"))
 
 
 def get_region() -> str:

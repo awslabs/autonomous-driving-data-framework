@@ -11,7 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+### **Changed**
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.3.0] - [05/21/2024]
+
+### **Added**
+
 - 'fsx-lustre-on-eks' module - added genric env
+- `modules/visualization/dev-instance-foxbox` module - based on `dev-instance` but using Foxbox (1.0.0) and latest versions of OS and others (DCV, Python 3.11, ROS (noetic/humble), Google Chrome, etc ). Installation also compatible to use with Ubuntu Jammy (22.04)
 
 ### **Changed**
 
@@ -19,10 +32,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/demo-only/rosbag-webviz`:
   - CDK and ending up in fatal error when installing `cdk@2.110.0` and then installing the same version through package.json (aws-cdk / aws-cdk-lib): `Cloud assembly schema version mismatch: Maximum schema version supported is 35.0.0, but found 36.0.0`. Needed to bump to version `2.117.0` which is the first version that states `36.0.0` as their cloud assembly version.
   - Updated `semver` due to security findings from npm audit
+- added a warning to `modules/visualization/dev-instance` module about foxglove is no longer opensource
+- regrouped mwaa and sfn related manifests of `rosbag-image-demo` manifests into a single directory
+- fixed `requests` and `pyroma` library versions as per depandabot
+- fixed `black` and `boto3` library versions as per depandabot
+- refactored `fix.sh` script to use `ruff` instead of `black` and `isort`
 
 ### **Removed**
 
 - removed `sagemaker` group, as they have been moved to [AIOps](https://github.com/awslabs/aiops-modules/tree/main/modules/sagemaker) GitHub repo.
+- removed `mlops` group which hosted `kubeflow-platform` and `kubeflow-users` modules and its relevant manifests
+- removed `rosbag-scene-detection` module as it was deprecated in earlier releases
 
 =======
 

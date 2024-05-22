@@ -144,7 +144,6 @@ with DAG(
     start_date=days_ago(1),  # type: ignore
     schedule_interval="@once",
 ) as dag:
-
     total_simulations = 50
     parallelism = 10
 
@@ -229,4 +228,4 @@ with DAG(
         python_callable=deregister_job_definition,
     )
 
-    create_aws_conn >> register_batch_job_defintion >> submit_batch_job >> deregister_batch_job_defintion
+    (create_aws_conn >> register_batch_job_defintion >> submit_batch_job >> deregister_batch_job_defintion)

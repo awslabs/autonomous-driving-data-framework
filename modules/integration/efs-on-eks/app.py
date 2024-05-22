@@ -54,7 +54,10 @@ CfnOutput(
     scope=efs_stack,
     id="metadata",
     value=efs_stack.to_json_string(
-        {"EFSStorageClassName": efs_stack.storage_class_name, "EKSClusterName": eks_cluster_name}
+        {
+            "EFSStorageClassName": efs_stack.storage_class_name,
+            "EKSClusterName": eks_cluster_name,
+        }
     ),
 )
 

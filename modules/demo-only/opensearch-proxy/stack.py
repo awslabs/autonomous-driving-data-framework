@@ -32,7 +32,6 @@ class ProxyStack(Stack):
         password: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
             scope,
             id,

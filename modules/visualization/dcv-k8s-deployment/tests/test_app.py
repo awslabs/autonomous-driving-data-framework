@@ -20,9 +20,9 @@ def stack_defaults():
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"] = "arn:aws:iam:us-east-1:1234567890:role/test-role"
     os.environ["SEEDFARMER_PARAMETER_EKS_HANDLER_ROLE_ARN"] = "arn:aws:iam:us-east-1:1234567890:role/k8s-handler-role"
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME"] = "test_cluster"
-    os.environ[
-        "SEEDFARMER_PARAMETER_EKS_OIDC_ARN"
-    ] = "arn:aws:eks:us-east-1:1234567890:oidc-provider/oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/test-ocid"
+    os.environ["SEEDFARMER_PARAMETER_EKS_OIDC_ARN"] = (
+        "arn:aws:eks:us-east-1:1234567890:oidc-provider/oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/test-ocid"
+    )
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"] = "test_open_id_connect_issuer"
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_SECURITY_GROUP_ID"] = "sg-12345678"
     os.environ["SEEDFARMER_PARAMETER_EKS_NODE_ROLE_ARN"] = "arn:aws:iam:us-east-1:1234567890:role/test-role"

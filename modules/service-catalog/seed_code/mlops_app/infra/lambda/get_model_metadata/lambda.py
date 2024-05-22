@@ -30,9 +30,7 @@ def handler(event, context):
     response = {}
 
     if model_package_approval_status == "Approved":
-        print(
-            f"[New Model Approved] Publishing new information to topic {SNS_TOPIC_ARN}"
-        )
+        print(f"[New Model Approved] Publishing new information to topic {SNS_TOPIC_ARN}")
         subject = f"[SageMaker] New Model Approved in {model_package_group_name}"
         msg = f"Details: \n {json.dumps(event, indent=2)}"
         response = send_message(subject, msg)

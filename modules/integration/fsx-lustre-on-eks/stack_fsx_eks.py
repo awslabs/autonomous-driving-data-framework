@@ -41,7 +41,9 @@ class FSXFileStorageOnEKS(Stack):
         self.project_name = project_name
         self.deployment_name = deployment_name
         self.module_name = module_name
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{self.project_name}-{self.deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(
+            key="Deployment", value=f"{self.project_name}-{self.deployment_name}"
+        )
 
         dep_mod = f"{self.project_name}-{self.deployment_name}-{self.module_name}"
         dep_mod = dep_mod[:30]
@@ -58,7 +60,9 @@ class FSXFileStorageOnEKS(Stack):
             open_id_connect_provider=provider,
         )
 
-        fsx_security_group = ec2.SecurityGroup.from_security_group_id(self, "FSXSecurityGroup", fsx_security_group_id)
+        fsx_security_group = ec2.SecurityGroup.from_security_group_id(
+            self, "FSXSecurityGroup", fsx_security_group_id
+        )
         eks_security_group = ec2.SecurityGroup.from_security_group_id(
             self, "EKSSecurityGroup", eks_cluster_security_group_id
         )
@@ -135,7 +139,10 @@ class FSXFileStorageOnEKS(Stack):
                     "csi": {
                         "driver": "fsx.csi.aws.com",
                         "volumeHandle": fsx_file_system_id,
-                        "volumeAttributes": {"dnsname": fsx_dns_name, "mountname": fsx_mount_name},
+                        "volumeAttributes": {
+                            "dnsname": fsx_dns_name,
+                            "mountname": fsx_mount_name,
+                        },
                     },
                 },
             },
@@ -171,7 +178,9 @@ class FSXFileStorageOnEKS(Stack):
                 "spec": {
                     "ttlSecondsAfterFinished": 60,
                     "template": {
-                        "metadata": {"annotations": {"sidecar.istio.io/inject": "false"}},
+                        "metadata": {
+                            "annotations": {"sidecar.istio.io/inject": "false"}
+                        },
                         "spec": {
                             "restartPolicy": "Never",
                             "containers": [
@@ -179,12 +188,25 @@ class FSXFileStorageOnEKS(Stack):
                                     "name": "app",
                                     "image": "centos",
                                     "command": ["/bin/sh"],
-                                    "args": ["-c", "chmod 2775 /data && chown root:users /data"],
-                                    "volumeMounts": [{"name": "persistent-storage", "mountPath": "/data"}],
+                                    "args": [
+                                        "-c",
+                                        "chmod 2775 /data && chown root:users /data",
+                                    ],
+                                    "volumeMounts": [
+                                        {
+                                            "name": "persistent-storage",
+                                            "mountPath": "/data",
+                                        }
+                                    ],
                                 }
                             ],
                             "volumes": [
-                                {"name": "persistent-storage", "persistentVolumeClaim": {"claimName": self.pvc_name}}
+                                {
+                                    "name": "persistent-storage",
+                                    "persistentVolumeClaim": {
+                                        "claimName": self.pvc_name
+                                    },
+                                }
                             ],
                         },
                     },
@@ -215,7 +237,10 @@ class FSXFileStorageOnEKS(Stack):
                     }
                 ),
                 NagPackSuppression(
-                    **{"id": "AwsSolutions-L1", "reason": "Suppress error caused by python_3_12 release in December"}
+                    **{
+                        "id": "AwsSolutions-L1",
+                        "reason": "Suppress error caused by python_3_12 release in December",
+                    }
                 ),
             ],
         )

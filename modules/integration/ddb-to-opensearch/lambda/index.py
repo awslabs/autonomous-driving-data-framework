@@ -12,7 +12,13 @@ from requests_aws4auth import AWS4Auth
 region = os.getenv("REGION", "")
 service = "es"
 credentials = boto3.Session().get_credentials()
-awsauth = AWS4Auth(credentials.access_key, credentials.secret_key, region, service, session_token=credentials.token)
+awsauth = AWS4Auth(
+    credentials.access_key,
+    credentials.secret_key,
+    region,
+    service,
+    session_token=credentials.token,
+)
 
 host = os.getenv("DOMAIN_ENDPOINT", "")
 index = "rosbag-metadata-scene-search"

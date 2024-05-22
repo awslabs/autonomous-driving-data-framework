@@ -55,7 +55,11 @@ class DataServiceDevInstancesStack(Stack):
         **kwargs,
     ) -> None:
         super().__init__(
-            scope, id, description="(SO9154) Autonomous Driving Data Framework (ADDF) - dev-instance", env=env, **kwargs
+            scope,
+            id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - dev-instance",
+            env=env,
+            **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"addf-{deployment_name}")
 
@@ -123,7 +127,10 @@ class DataServiceDevInstancesStack(Stack):
             public_aev_dataset_policy_json = {
                 "Effect": "Allow",
                 "Action": ["s3:Get*", "s3:List*"],
-                "Resource": [f"arn:aws:s3:::{s3_dataset_bucket}", f"arn:aws:s3:::{s3_dataset_bucket}/*"],
+                "Resource": [
+                    f"arn:aws:s3:::{s3_dataset_bucket}",
+                    f"arn:aws:s3:::{s3_dataset_bucket}/*",
+                ],
             }
 
         # Add the policies to the role
@@ -148,7 +155,7 @@ class DataServiceDevInstancesStack(Stack):
                     generate_string_key="password",
                     exclude_punctuation=True,
                     include_space=False,
-                    exclude_characters="',. |<>=/\"\\\$#;@[]{}~:`",
+                    exclude_characters="',. |<>=/\"\\\\$#;@[]{}~:`",
                     password_length=24,
                 )
                 if not demo_password
