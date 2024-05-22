@@ -164,7 +164,7 @@ class BatchDags(Stack):
                             instance_role=ec2IAMProfile.attr_arn,
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",
+                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",  # type: ignore
                             minv_cpus=0,
                             type=batch.ComputeResourceType.ON_DEMAND,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
@@ -191,7 +191,7 @@ class BatchDags(Stack):
                             instance_role=ec2IAMProfile.attr_arn,
                             vpc=self.vpc,
                             instance_types=instance_types if instance_types else None,
-                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",
+                            maxv_cpus=batchenv.get("max_vcpus") if batchenv.get("max_vcpus") else "256",  # type: ignore
                             minv_cpus=0,
                             type=batch.ComputeResourceType.SPOT,
                             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),

@@ -7,7 +7,7 @@ from typing import Any, cast
 import cdk_nag
 from aws_cdk import Aspects, RemovalPolicy, Stack, Tags
 from aws_cdk import aws_dynamodb as dynamo
-from aws_cdk import aws_glue_alpha as glue_alpha  # type: ignore
+from aws_cdk import aws_glue_alpha as glue_alpha
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
