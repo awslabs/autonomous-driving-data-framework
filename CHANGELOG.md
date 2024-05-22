@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Changed**
 - fix: module manifest paths for `ros-image-demo-*` examples
 - update ecr module version for `ml-training` manifest
+- `modules/visualization/dev-instance-foxbox`: 
+  - Fixed permissions of the `.config` directory in the User Data script
+  - Simplified the way to decide to install the NVidia drivers
+  - Moved installation of base software to the beginning of the execution in the User Data script
+  - Set to enable the use of Instance Metadata V2 for the created instance
+  - Updated `sample-layout.json` to align with Foxbox configuration
 
 ### **Removed**
 
@@ -39,12 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fixed `requests` and `pyroma` library versions as per depandabot
 - fixed `black` and `boto3` library versions as per depandabot
 - refactored `fix.sh` script to use `ruff` instead of `black` and `isort`
-- `modules/visualization/dev-instance-foxbox`: 
-  - Fixed permissions of the `.config` directory in the User Data script
-  - Simplified the way to decide to install the NVidia drivers
-  - Moved installation of base software to the beginning of the execution in the User Data script
-  - Set to enable the use of Instance Metadata V2 for the created instance
-  - Updated `sample-layout.json` to align with Foxbox configuration
 
 ### **Removed**
 
