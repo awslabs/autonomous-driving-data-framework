@@ -22,7 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `semver` due to security findings from npm audit
 - added a warning to `modules/visualization/dev-instance` module about foxglove is no longer opensource
 - regrouped mwaa and sfn related manifests of `rosbag-image-demo` manifests into a single directory
-- fixed `requests` and `pyroma` library versions as per depandabot
+- fixed `requests` and `pyroma` library versions as per dependabot
+- `modules/visualization/dev-instance-foxbox`: 
+  - Fixed permissions of the `.config` directory in the User Data script
+  - Simplified the way to decide to install the NVidia drivers
+  - Moved installation of base software to the beginning of the execution in the User Data script
+  - Set to enable the use of Instance Metadata V2 for the created instance
+  - Updated `sample-layout.json` to align with Foxbox oconfiguration
 
 ### **Removed**
 
