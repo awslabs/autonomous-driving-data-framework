@@ -1,7 +1,5 @@
 import os
 
-from pyspark.sql.types import ArrayType, IntegerType
-
 from image_dags.detect_scenes import *
 
 

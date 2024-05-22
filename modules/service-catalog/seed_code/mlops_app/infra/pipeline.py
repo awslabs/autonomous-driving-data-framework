@@ -4,13 +4,12 @@
 from typing import Any, Dict, cast
 
 import yaml
-from aws_cdk import Aws, Stack, Stage
+from aws_cdk import Aws, Stack, Stage, pipelines
 from aws_cdk import aws_codebuild as codebuild
 from aws_cdk import aws_codecommit as codecommit
 from aws_cdk import aws_codepipeline as codepipeline
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_s3 as s3
-from aws_cdk import pipelines
 from constructs import Construct
 from notifications.notifications_stack import NotificationsStack
 

@@ -1,7 +1,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 # type: ignore
-""" Stack for DataServiceDevInstances """
+"""Stack for DataServiceDevInstances"""
+
 import json
 import os
 from typing import cast
@@ -105,7 +106,8 @@ class DataServiceDevInstancesStack(Stack):
             self,
             "dev-instance-role",
             assumed_by=aws_iam.CompositePrincipal(
-                aws_iam.ServicePrincipal("ec2.amazonaws.com"), aws_iam.ServicePrincipal("ssm.amazonaws.com")
+                aws_iam.ServicePrincipal("ec2.amazonaws.com"),
+                aws_iam.ServicePrincipal("ssm.amazonaws.com"),
             ),
             managed_policies=[
                 aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore"),
@@ -147,7 +149,10 @@ class DataServiceDevInstancesStack(Stack):
                 "sid": "AllowDatasetsS3Buckets",
                 "Effect": "Allow",
                 "Action": ["s3:Get*", "s3:List*"],
-                "Resource": [f"arn:aws:s3:::{s3_bucket_dataset}", f"arn:aws:s3:::{s3_bucket_dataset}/*"],
+                "Resource": [
+                    f"arn:aws:s3:::{s3_bucket_dataset}",
+                    f"arn:aws:s3:::{s3_bucket_dataset}/*",
+                ],
             }
 
         # Add the policies to the role
@@ -193,11 +198,13 @@ class DataServiceDevInstancesStack(Stack):
             # User Data
             user_data_script = self.get_user_data()
             user_data_script = user_data_script.replace(
-                'SERVICE_USER_SECRET_NAME="PLACEHOLDER_SECRET"', f'SERVICE_USER_SECRET_NAME="{secret.secret_name}"'
+                'SERVICE_USER_SECRET_NAME="PLACEHOLDER_SECRET"',
+                f'SERVICE_USER_SECRET_NAME="{secret.secret_name}"',
             )
             if s3_bucket_scripts:
                 user_data_script = user_data_script.replace(
-                    'S3_BUCKET_NAME="PLACEHOLDER_S3_BUCKET_NAME"', f'S3_BUCKET_NAME="{s3_bucket_scripts}"'
+                    'S3_BUCKET_NAME="PLACEHOLDER_S3_BUCKET_NAME"',
+                    f'S3_BUCKET_NAME="{s3_bucket_scripts}"',
                 )
                 user_data_script = user_data_script.replace(
                     'SCRIPTS_PATH="PLACEHOLDER_SCRIPTS_PATH"',

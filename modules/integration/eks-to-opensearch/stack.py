@@ -32,9 +32,11 @@ class EksOpenSearchIntegrationStack(Stack):
         eks_oidc_arn: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
-            scope, id, description="This stack integrates EKS Cluster with Opensearch cluster for ADDF", **kwargs
+            scope,
+            id,
+            description="This stack integrates EKS Cluster with Opensearch cluster for ADDF",
+            **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
@@ -72,7 +74,11 @@ class EksOpenSearchIntegrationStack(Stack):
             "fluentbit", name="fluentbit", namespace="kube-system"
         )
 
-        fluentbit_policy_statement_json_1 = {"Effect": "Allow", "Action": ["es:*"], "Resource": [os_domain.domain_arn]}
+        fluentbit_policy_statement_json_1 = {
+            "Effect": "Allow",
+            "Action": ["es:*"],
+            "Resource": [os_domain.domain_arn],
+        }
 
         # Add the policies to the service account
         fluentbit_service_account.add_to_principal_policy(

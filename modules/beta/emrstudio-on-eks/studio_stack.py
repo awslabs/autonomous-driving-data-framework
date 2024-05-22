@@ -100,7 +100,10 @@ class StudioLiveStack(Stack):
             on_update={
                 "service": "ACM",
                 "action": "importCertificate",
-                "parameters": {"Certificate": crt.decode("utf-8"), "PrivateKey": pkey.decode("utf-8")},
+                "parameters": {
+                    "Certificate": crt.decode("utf-8"),
+                    "PrivateKey": pkey.decode("utf-8"),
+                },
                 "physical_resource_id": custom.PhysicalResourceId.from_response("CertificateArn"),
             },
             policy=custom.AwsCustomResourcePolicy.from_sdk_calls(resources=custom.AwsCustomResourcePolicy.ANY_RESOURCE),
@@ -149,11 +152,19 @@ class StudioLiveStack(Stack):
 
         # Create security groups
         eng_sg = ec2.SecurityGroup(
-            self, "EngineSecurityGroup", vpc=self.vpc, description="EMR Studio Engine", allow_all_outbound=True
+            self,
+            "EngineSecurityGroup",
+            vpc=self.vpc,
+            description="EMR Studio Engine",
+            allow_all_outbound=True,
         )
         Tags.of(eng_sg).add("for-use-with-amazon-emr-managed-policies", "true")
         ws_sg = ec2.SecurityGroup(
-            self, "WorkspaceSecurityGroup", vpc=self.vpc, description="EMR Studio Workspace", allow_all_outbound=False
+            self,
+            "WorkspaceSecurityGroup",
+            vpc=self.vpc,
+            description="EMR Studio Workspace",
+            allow_all_outbound=False,
         )
         Tags.of(ws_sg).add("for-use-with-amazon-emr-managed-policies", "true")
         ws_sg.add_egress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(443), "allow egress on port 443")
@@ -198,7 +209,11 @@ class StudioLiveStack(Stack):
         )
 
         # Studio User Role
-        user_role = iam.Role(self, "StudioUserRole", assumed_by=iam.ServicePrincipal("elasticmapreduce.amazonaws.com"))
+        user_role = iam.Role(
+            self,
+            "StudioUserRole",
+            assumed_by=iam.ServicePrincipal("elasticmapreduce.amazonaws.com"),
+        )
         Tags.of(role).add("for-use-with-amazon-emr-managed-policies", "true")
         user_role.add_to_policy(
             iam.PolicyStatement(
@@ -264,7 +279,11 @@ class StudioLiveStack(Stack):
             )
         )
         user_role.add_to_policy(
-            iam.PolicyStatement(resources=["*"], actions=["elasticmapreduce:RunJobFlow"], effect=iam.Effect.ALLOW)
+            iam.PolicyStatement(
+                resources=["*"],
+                actions=["elasticmapreduce:RunJobFlow"],
+                effect=iam.Effect.ALLOW,
+            )
         )
         user_role.add_to_policy(
             iam.PolicyStatement(
@@ -280,7 +299,11 @@ class StudioLiveStack(Stack):
         user_role.add_to_policy(
             iam.PolicyStatement(
                 resources=["arn:aws:s3:::*"],
-                actions=["s3:ListAllMyBuckets", "s3:ListBucket", "s3:GetBucketLocation"],
+                actions=[
+                    "s3:ListAllMyBuckets",
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation",
+                ],
                 effect=iam.Effect.ALLOW,
             )
         )
@@ -372,7 +395,11 @@ class StudioLiveStack(Stack):
                     "Sid": "PassRolePermission",
                 },
                 {
-                    "Action": ["s3:ListAllMyBuckets", "s3:ListBucket", "s3:GetBucketLocation"],
+                    "Action": [
+                        "s3:ListAllMyBuckets",
+                        "s3:ListBucket",
+                        "s3:GetBucketLocation",
+                    ],
                     "Resource": "arn:aws:s3:::*",
                     "Effect": "Allow",
                     "Sid": "AllowS3ListAndLocationPermissions",
@@ -477,4 +504,7 @@ class StudioLiveStack(Stack):
         cert.set_issuer(cert.get_subject())
         cert.set_pubkey(k)
         cert.sign(k, "sha512")
-        return (crypto.dump_certificate(crypto.FILETYPE_PEM, cert), crypto.dump_privatekey(crypto.FILETYPE_PEM, k))
+        return (
+            crypto.dump_certificate(crypto.FILETYPE_PEM, cert),
+            crypto.dump_privatekey(crypto.FILETYPE_PEM, k),
+        )

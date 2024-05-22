@@ -68,9 +68,18 @@ def test_synthesize_stack(stack_defaults):
         type="AWS::Batch::JobDefinition",
         props={
             "ContainerProperties": {
-                "MountPoints": [{"ContainerPath": "/mnt/ebs", "ReadOnly": False, "SourceVolume": "scratch"}],
+                "MountPoints": [
+                    {
+                        "ContainerPath": "/mnt/ebs",
+                        "ReadOnly": False,
+                        "SourceVolume": "scratch",
+                    }
+                ],
                 "ReadonlyRootFilesystem": False,
-                "ResourceRequirements": [{"Type": "MEMORY", "Value": "8192"}, {"Type": "VCPU", "Value": "2"}],
+                "ResourceRequirements": [
+                    {"Type": "MEMORY", "Value": "8192"},
+                    {"Type": "VCPU", "Value": "2"},
+                ],
                 "Volumes": [{"Name": "scratch"}],
             }
         },

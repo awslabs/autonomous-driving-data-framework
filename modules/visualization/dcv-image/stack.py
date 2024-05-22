@@ -12,7 +12,7 @@ from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 
-class DcvImagePublishingStack(Stack):  # type: ignore
+class DcvImagePublishingStack(Stack):
     def __init__(
         self,
         scope: Construct,

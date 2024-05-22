@@ -14,9 +14,9 @@ def stack_defaults():
     os.environ["ADDF_MODULE_NAME"] = "test-module"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
-    os.environ[
-        "ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"
-    ] = "arn:aws:iam::123456789012:policy/addf-aws-solutions-wip-policy-full-access"
+    os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"] = (
+        "arn:aws:iam::123456789012:policy/addf-aws-solutions-wip-policy-full-access"
+    )
     os.environ["ADDF_PARAMETER_MEMORY_MIB"] = "8192"
     os.environ["ADDF_PARAMETER_PLATFORM"] = "FARGATE"
     os.environ["ADDF_PARAMETER_RETRIES"] = "1"

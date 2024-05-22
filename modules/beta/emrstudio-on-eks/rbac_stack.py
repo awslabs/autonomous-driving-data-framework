@@ -36,8 +36,12 @@ class EmrEksRbacStack(Stack):
         emr_namespace: str,
         **kwargs: Any,
     ) -> None:
-
-        super().__init__(scope, id, description="This stack deploys EMR Studio RBAC Configuration for ADDF", **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys EMR Studio RBAC Configuration for ADDF",
+            **kwargs,
+        )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         dep_mod = f"addf-{deployment}-{module}"
@@ -79,7 +83,14 @@ class EmrEksRbacStack(Stack):
                     {"apiGroups": [""], "resources": ["namespaces"], "verbs": ["get"]},
                     {
                         "apiGroups": [""],
-                        "resources": ["serviceaccounts", "services", "configmaps", "events", "pods", "pods/log"],
+                        "resources": [
+                            "serviceaccounts",
+                            "services",
+                            "configmaps",
+                            "events",
+                            "pods",
+                            "pods/log",
+                        ],
                         "verbs": [
                             "get",
                             "list",
@@ -94,7 +105,11 @@ class EmrEksRbacStack(Stack):
                             "label",
                         ],
                     },
-                    {"apiGroups": [""], "resources": ["secrets"], "verbs": ["create", "patch", "delete", "watch"]},
+                    {
+                        "apiGroups": [""],
+                        "resources": ["secrets"],
+                        "verbs": ["create", "patch", "delete", "watch"],
+                    },
                     {
                         "apiGroups": ["apps"],
                         "resources": ["statefulsets", "deployments"],
@@ -172,8 +187,18 @@ class EmrEksRbacStack(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "RoleBinding",
                 "metadata": {"name": "emr-containers", "namespace": self.emr_namespace},
-                "subjects": [{"kind": "User", "name": "emr-containers", "apiGroup": "rbac.authorization.k8s.io"}],
-                "roleRef": {"kind": "Role", "name": "emr-containers", "apiGroup": "rbac.authorization.k8s.io"},
+                "subjects": [
+                    {
+                        "kind": "User",
+                        "name": "emr-containers",
+                        "apiGroup": "rbac.authorization.k8s.io",
+                    }
+                ],
+                "roleRef": {
+                    "kind": "Role",
+                    "name": "emr-containers",
+                    "apiGroup": "rbac.authorization.k8s.io",
+                },
             },
         )
         emrrolebind.node.add_dependency(emrrole)
@@ -219,19 +244,25 @@ class EmrEksRbacStack(Stack):
                 actions=["sts:AssumeRoleWithWebIdentity"],
                 principals=[
                     iam.OpenIdConnectPrincipal(
-                        eks_cluster.open_id_connect_provider, conditions={"StringLike": string_like}
+                        eks_cluster.open_id_connect_provider,
+                        conditions={"StringLike": string_like},
                     )
                 ],
             )
         )
-        string_aud = CfnJson(self, "ConditionJsonAud", value={f"{eks_openid_issuer}:aud": "sts.amazon.com"})
+        string_aud = CfnJson(
+            self,
+            "ConditionJsonAud",
+            value={f"{eks_openid_issuer}:aud": "sts.amazon.com"},
+        )
         self.job_role.assume_role_policy.add_statements(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["sts:AssumeRoleWithWebIdentity"],
                 principals=[
                     iam.OpenIdConnectPrincipal(
-                        eks_cluster.open_id_connect_provider, conditions={"StringEquals": string_aud}
+                        eks_cluster.open_id_connect_provider,
+                        conditions={"StringEquals": string_aud},
                     )
                 ],
             )

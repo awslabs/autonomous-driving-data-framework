@@ -95,7 +95,9 @@ def get_drive_files(src_bucket: str, src_prefix: str, file_suffix: str, s3_clien
 
 
 def batch_write_files_to_dynamo(
-    table: "DynamoDBServiceResource", drives_and_files: typing.Dict[str, typing.List[str]], batch_id: str
+    table: "DynamoDBServiceResource",
+    drives_and_files: typing.Dict[str, typing.List[str]],
+    batch_id: str,
 ) -> None:
     with table.batch_writer() as writer:
         idx = 0

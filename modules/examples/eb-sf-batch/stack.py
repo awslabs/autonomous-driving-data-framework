@@ -12,7 +12,9 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_events as events
 from aws_cdk import aws_stepfunctions as stepfunctions
 from aws_cdk import aws_stepfunctions_tasks as step_functions_tasks
-from aws_solutions_constructs.aws_eventbridge_stepfunctions import EventbridgeToStepfunctions
+from aws_solutions_constructs.aws_eventbridge_stepfunctions import (
+    EventbridgeToStepfunctions,
+)
 
 # from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
@@ -115,7 +117,9 @@ class EventDrivenBatch(Stack):
         )
 
         wait_job = stepfunctions.Wait(
-            self, "Wait 30 Seconds", time=stepfunctions.WaitTime.duration(Duration.seconds(30))
+            self,
+            "Wait 30 Seconds",
+            time=stepfunctions.WaitTime.duration(Duration.seconds(30)),
         )
 
         # fail_job = stepfunctions.Fail(self, "Fail", cause="AWS Batch Job Failed", error="DescribeJob returned FAILED")
