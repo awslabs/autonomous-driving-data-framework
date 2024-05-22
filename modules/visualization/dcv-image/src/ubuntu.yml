@@ -1,10 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
-  name: dcv-agent
-  namespace: $NAMESPACE
+  name: x-dcv-agent
+  namespace: dcv
 spec:
-  replicas: 2
   selector:
     matchLabels:
       env: dcv
@@ -18,10 +17,11 @@ spec:
       nodeSelector:
         usage: visualization
       containers:
-        - name: nice-dcv-container
-          image: $IMAGE
-          command: [ "/usr/local/bin/run_script.sh" ]
+        - name: x-dcv-container
+          image: 663086445302.dkr.ecr.eu-central-1.amazonaws.com/addf-eks-viz-optionals-app-ecr:latest-x
           imagePullPolicy: "Always"
+          command: [ "/usr/local/bin/run_script.sh" ]
+          # args: [ "while true; do sleep 30; done;" ]
           env:
             - name: DCV_EKS_CONFIG_MAP_NAME
               value: "dcv-agent-config-map"
@@ -29,8 +29,8 @@ spec:
               value: $REGION
             - name: DCV_EKS_DISPLAY_PARAMETER_STORE
               value: $DISPLAY_PARAMETER_NAME
-            - name: XAUTHORITY
-              value: /run/user/1000/dcv/default-session.xauth
+            # - name: XAUTHORITY
+            #   value: /run/user/1000/dcv/default-session.xauth
           ports:
             - name: dcv-tcp
               protocol: TCP
@@ -40,30 +40,25 @@ spec:
               containerPort: 8443
           securityContext:
             privileged: true
+          resources:
+            limits:
+              cpu: 4
+              memory: 16Gi
+              nvidia.com/gpu: 1
+            requests:
+              cpu: "2"
+              memory: 14Gi
           volumeMounts:
             - name: addf-dcv-socket-volume
               mountPath: /tmp/.X11-unix
               readOnly: false
-            - name: addf-dcv-auth-volume
-              mountPath: /run/user/1000/dcv
-              readOnly: false
-          readinessProbe:
-            exec:
-              command:
-                - /usr/local/bin/check_healthy.sh
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 90
-          livenessProbe:
-            exec:
-              command:
-                - /usr/local/bin/check_healthy.sh
-            initialDelaySeconds: 120
-            periodSeconds: 10
+            # - name: addf-dcv-auth-volume
+            #   mountPath: /run/user/1000/dcv
+            #   readOnly: false
       volumes:
         - name: addf-dcv-socket-volume
           hostPath:
-            path: $SOCKET_PATH
-        - name: addf-dcv-auth-volume
-          hostPath:
-            path: /var/addf/dcv-eks/auth
+            path: /var/addf/dcv-eks/sockets
+        # - name: addf-dcv-auth-volume
+        #   hostPath:
+        #     path: /var/addf/dcv-eks/auth

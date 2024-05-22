@@ -34,7 +34,7 @@ then
     cp -r /var/run/secrets "${HOME}/.kube"
 fi
 
-rm /tmp/.X11-unix/*
+# rm /tmp/.X11-unix/*
 
 # Enable the DCV service
 res1=`systemctl enable dcvserver 2>&1`
@@ -56,6 +56,7 @@ echo
 echo "##########################################"
 echo "Your NICE DCV Session is ready to login to ... "
 echo "##########################################"
+DISPLAY=:0 XAUTHORITY=$(ps aux | grep "X.*\-auth" | grep -v grep | sed -n 's/.*-auth \([^ ]\+\).*/\1/p') glxinfo | grep -i "opengl.*version"
 
 echo
 echo "To connect to DCV you have 2 options: "
@@ -66,5 +67,6 @@ echo "DCV native client for best performance: Enter “External_IP_or_Server_Nam
 echo
 
 ) &
+
 
 exec /usr/sbin/init

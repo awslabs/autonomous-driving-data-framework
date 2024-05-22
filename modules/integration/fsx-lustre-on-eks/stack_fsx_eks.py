@@ -103,6 +103,7 @@ class FSXFileStorageOnEKS(Stack):
             ],
             overwrite=True,
         )
+        
 
         storage_class_manifest = eks_cluster.add_manifest(
             "FSXCSIStorageClass",
@@ -115,7 +116,7 @@ class FSXFileStorageOnEKS(Stack):
                 "volumeBindingMode": "Immediate",
             },
         )
-
+        
         storage_class_manifest.node.add_dependency(namespace_manifest)
 
         persistent_volume_manifest = eks_cluster.add_manifest(

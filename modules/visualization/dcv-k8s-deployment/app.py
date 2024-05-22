@@ -35,6 +35,7 @@ eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"), "")
 eks_cluster_open_id_connect_issuer = os.getenv(_param("EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"), "")
 eks_cluster_security_group_id = os.getenv(_param("EKS_CLUSTER_SECURITY_GROUP_ID"), "")
 eks_node_role_arn = os.getenv(_param("EKS_NODE_ROLE_ARN"), "")
+fsx_pvc_name = os.getenv(_param("FSX_PVC_NAME"), "")
 
 app = App()
 for name, value in os.environ.items():
@@ -56,7 +57,7 @@ dcv_eks_stack = DcvEksStack(
     eks_cluster_open_id_connect_issuer=eks_cluster_open_id_connect_issuer,
     eks_cluster_security_group_id=eks_cluster_security_group_id,
     eks_node_role_arn=eks_node_role_arn,
-    dcv_node_port=dcv_node_port,
+    fsx_pvc_name=fsx_pvc_name,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

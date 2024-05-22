@@ -1,0 +1,27 @@
+name: eks-viz
+toolchainRegion: eu-central-1
+forceDependencyRedeploy: true
+groups:
+  - name: optionals
+    path: manifests/visualization-on-eks/optional-modules.yaml
+  - name: core
+    path: manifests/visualization-on-eks/core-modules.yaml
+  - name: integration
+    path: manifests/visualization-on-eks/integration-modules.yaml  
+  - name: dcv-image
+    path: manifests/visualization-on-eks/dcv-image.yaml
+  - name: dcv-service
+    path: manifests/visualization-on-eks/dcv-k8s.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId:
+      valueFrom:
+        envVariable: PRIMARY_ACCOUNT
+    default: true
+    codebuildImage: aws/codebuild/standard:7.0
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+      vizualizationNamespace: dcv
+    regionMappings:
+      - region: eu-central-1
+        default: true

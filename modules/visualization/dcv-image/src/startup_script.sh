@@ -32,6 +32,7 @@ aws_secretsmanager_username_passwd="dcv-cred-passwd"
 
 export AWS_DEFAULT_REGION=${AWS_REGION}
 
+
 sleep 5
 mv "${HOME}/.kube/secrets" /var/run
 
@@ -41,6 +42,7 @@ _username="$(aws secretsmanager get-secret-value --secret-id \
 _passwd="$(aws secretsmanager get-secret-value --secret-id \
                "${aws_secretsmanager_username_passwd}" --query SecretString  --output text)"
 
+# TODO: Enable again
 adduser "${_username}"
 echo "${_username}:${_passwd}" | chpasswd
 sleep 5
@@ -51,6 +53,7 @@ session_name="default-session"
                             --owner "${_username}" \
                             --init /usr/local/bin/init_session.sh \
                             --user "${_username}" \
+                            --type "virtual" \
                             "${session_name}"
 
 # Wait for sessions to be created
@@ -66,12 +69,14 @@ echo "XAUTHORITY is ${xauth_path}; DISPLAY is ${display}"
 XAUTHORITY=${xauth_path} DISPLAY="${display}" xhost +
 
 
-if python3 /opt/dcv_server/scripts/update_parameters.py
-then
-    echo "ConfigMap and SSM Parameter Store updated"
-    mkdir -p /tmp/health-check
-    touch /tmp/health-check/ready
-else
-    echo "Unable to update ConfigMap and SSM Parameter Store"
-    exit 1
-fi
+# if python3 /opt/dcv_server/scripts/update_parameters.py
+# then
+#     echo "ConfigMap and SSM Parameter Store updated"
+#     mkdir -p /tmp/health-check
+#     touch /tmp/health-check/ready
+# else
+#     echo "Unable to update ConfigMap and SSM Parameter Store"
+#     exit 1
+# fi
+
+foxbox --no-sandbox &

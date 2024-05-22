@@ -1,47 +1,77 @@
-# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-# Copyright NI SP GmbH. All Rights Reserved.
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-# the Software, and to permit persons to whom the Software is furnished to do so.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-# Please see also https://github.com/aws-samples/aws-batch-using-nice-dcv/blob/master/aws-batch-using-nice-dcv.dockerfile
-
-FROM public.ecr.aws/amazonlinux/amazonlinux:2 as dcv
-
-# Prepare the container to run systemd inside
-ENV container docker
-
-# Install tools
-RUN yum -y install gcc make tar sudo less vim lsof firewalld net-tools pciutils \
-                   file wget kmod ca-certificates binutils kbd \
-                   python3-pip bind-utils jq bc xz-utils openssl-devel libffi-devel xdg-utils
-
-RUN yum -y install kernel-devel-5.10.210-201.852.amzn2.x86_64 || true
-
-# Install X server and GNOME desktop
-RUN yum -y install glx-utils mesa-dri-drivers xorg-x11-server-Xorg \
-                   xorg-x11-utils xorg-x11-xauth xorg-x11-xinit  \
-                   xorg*fonts* xterm libXvMC mesa-libxatracker freeglut \
-                   metacity xvattr mesa-libGLU unzip dbus-x11 
-
-# NEw GNOME
-RUN yum -y install gdm gnome-session gnome-classic-session gnome-session-xsession
-RUN yum -y install     xorg-x11-server-Xorg xorg-x11-fonts-Type1 xorg-x11-drivers \
-    gnome-terminal gnu-free-fonts-common gnu-free-mono-fonts gnu-free-sans-fonts gnu-free-serif-fonts \
-    glx-utils 
+FROM nvcr.io/nvidia-hpcvis/paraview:egl-py3-5.11.0
 
 
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    wget
+    # && rm -rf /var/lib/apt/lists/*
+
+
+# Install Ubuntu Desktop
+RUN DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends ubuntu-desktop gdm3 gpg-agent
+
+RUN dpkg-reconfigure gdm3
+
+# RUN systemctl isolate multi-user.target
+# RUN systemctl isolate multi-user.target
+# RUN dcvstartx &
+
+# ADD custom.conf /etc/gdm3/custom.conf
+
+# WORKDIR /app
+
+RUN apt upgrade -y
+
+# # Install NiceDCV
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y mesa-utils 
+RUN wget https://d1uj6qtbmh3dt5.cloudfront.net/NICE-GPG-KEY
+RUN gpg --import NICE-GPG-KEY
+RUN wget https://d1uj6qtbmh3dt5.cloudfront.net/2023.1/Servers/nice-dcv-2023.1-16388-ubuntu2204-x86_64.tgz
+RUN tar -xvzf nice-dcv-2023.1-16388-ubuntu2204-x86_64.tgz && cd nice-dcv-2023.1-16388-ubuntu2204-x86_64 && \
+    DEBIAN_FRONTEND=noninteractive apt install -y ./nice-dcv-server_2023.1.16388-1_amd64.ubuntu2204.deb  && \
+    DEBIAN_FRONTEND=noninteractive apt install -y ./nice-dcv-web-viewer_2023.1.16388-1_amd64.ubuntu2204.deb  && \
+    DEBIAN_FRONTEND=noninteractive  apt install -y ./nice-xdcv_2023.1.565-1_amd64.ubuntu2204.deb  && \
+    DEBIAN_FRONTEND=noninteractive apt install -y ./nice-dcv-gl_2023.1.1047-1_amd64.ubuntu2204.deb 
+
+RUN usermod -aG video dcv
+# RUN systemctl isolate multi-user.target
+# RUN systemctl isolate graphical.target
+# RUN dcvgladmin enable
+# RUN dcvgldiag
+
+
+ENV DISPLAY=:0 
+
+
+
+
+# # Install NVIDIA
+RUN apt install -y apt-utils pkg-config dconf-editor apt-utils gcc xserver-xorg-video-nvidia-535
+# RUN apt-get -y install cuda-toolkit-11-4
+
+# RUN wget -q http://us.download.nvidia.com/tesla/535.161/NVIDIA-Linux-x86_64-535.161.08.run -O /tmp/NVIDIA-installer.run \
+#  && bash /tmp/NVIDIA-installer.run --accept-license \
+#                               --no-runlevel-check \
+#                               --no-questions \
+#                               --no-backup \
+#                               --ui=none \
+#                               --no-kernel-module \
+#                               --no-nouveau-check \
+#                               --install-libglvnd \
+#                               --no-nvidia-modprobe \
+#                               --no-kernel-module-source \
+#  && rm -f /tmp/NVIDIA-installer.run
+
+# RUN apt-cache search nvidia | grep -P '^nvidia-(driver-)?[0-9]+\s' 
+
+ADD xorg.conf  /etc/X11/xorg.conf
+#RUN touch /etc/modprobe.d/nvidia.conf
+#RUN echo "options nvidia NVreg_EnableGpuFirmware=0" | tee --append /etc/modprobe.d/nvidia.conf
+#RUN rm -rf /etc/X11/XF86Config* || true
+
+
+RUN apt install -y x11-apps python3 python3-pip  firefox curl
 
 # Install awscliv2
 RUN mkdir -p /tmp/awscli-install \
@@ -51,36 +81,14 @@ RUN mkdir -p /tmp/awscli-install \
     && ./aws/install \
     && rm -rf /tmp/awscli-install
 
-# Install GPU driver
 
-RUN wget -q http://us.download.nvidia.com/tesla/418.87/NVIDIA-Linux-x86_64-418.87.00.run -O /tmp/NVIDIA-installer.run \
- && bash /tmp/NVIDIA-installer.run --accept-license \
-                              --no-runlevel-check \
-                              --no-questions \
-                              --no-backup \
-                              --ui=none \
-                              --no-kernel-module \
-                              --no-nouveau-check \
-                              --install-libglvnd \
-                              --no-nvidia-modprobe \
-                              --no-kernel-module-source \
- && rm -f /tmp/NVIDIA-installer.run
+# Install Foxbox
+RUN wget https://github.com/bmw-software-engineering/foxbox/releases/download/1.0.0/foxbox-1.0.0-linux-amd64.deb
+RUN apt install -y ./foxbox-1.0.0-linux-amd64.deb
 
-RUN nvidia-xconfig --preserve-busid --enable-all-gpus
-RUN touch /etc/modprobe.d/nvidia.conf
-RUN echo "options nvidia NVreg_EnableGpuFirmware=0" | sudo tee --append /etc/modprobe.d/nvidia.conf
-RUN rm -rf /etc/X11/XF86Config* || true
-
-RUN rpm --import https://d1uj6qtbmh3dt5.cloudfront.net/NICE-GPG-KEY \
-    && mkdir -p /tmp/dcv-inst \
-    && cd /tmp/dcv-inst \
-    && wget -qO- https://d1uj6qtbmh3dt5.cloudfront.net/nice-dcv-el7-x86_64.tgz |tar xfz - --strip-components=1 --no-same-owner \
-    && ls -al \
-    && for f in *.rpm ; do yum install -y "${f}" ; done \
-    && rm -rf /tmp/dcv-inst
-
-
-RUN amazon-linux-extras install firefox
+# Install Foxglove
+# RUN wget https://get.foxglove.dev/desktop/latest/foxglove-studio-2.3.0-linux-amd64.deb
+# RUN apt install ./foxglove-studio-*.deb
 
 RUN pip3 install kubernetes urllib3==1.26.6 boto3
 
@@ -109,6 +117,8 @@ RUN mkdir -p /opt/dcv_server/scripts
 
 COPY update_parameters.py /opt/dcv_server/scripts
 
+ADD Sample_Nuscenes.json Sample_Nuscenes.json
+
 # Fix permissions
 RUN chmod +x "/usr/local/bin/run_script.sh" \
              "/usr/local/bin/startup_script.sh" \
@@ -117,5 +127,11 @@ RUN chmod +x "/usr/local/bin/run_script.sh" \
 
 # Expose DCV server port
 EXPOSE 8443
+
+
+ENV GNOME_SHELL_SESSION_MODE=ubuntu
+ENV XDG_CURRENT_DESKTOP=ubuntu:GNOME
+ENV XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
+
 
 CMD ["/usr/local/bin/run_script.sh"]
