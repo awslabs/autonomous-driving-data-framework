@@ -20,9 +20,7 @@ def _param(name: str) -> str:
 
 DEFAULT_PORTFOLIO_ACCESS_ROLE_ARN = None
 
-portfolio_access_role_arn = os.getenv(
-    _param("PORTFOLIO_ACCESS_ROLE_ARN"), DEFAULT_PORTFOLIO_ACCESS_ROLE_ARN
-)
+portfolio_access_role_arn = os.getenv(_param("PORTFOLIO_ACCESS_ROLE_ARN"), DEFAULT_PORTFOLIO_ACCESS_ROLE_ARN)
 
 
 stack = ServiceCatalogStack(

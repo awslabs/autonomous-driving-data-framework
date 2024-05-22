@@ -41,7 +41,6 @@ class EmronEksRbacStack(Stack):
         logs_bucket_name: str,
         **kwargs: Any,
     ) -> None:
-
         # ADDF Env vars
         self.deployment_name = deployment_name
         self.module_name = module_name

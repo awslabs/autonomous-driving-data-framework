@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     raw_bucket_name = event["ResourceProperties"]["raw_bucket_name"]
     allowed_origin = event["ResourceProperties"]["allowed_origin"]
     cors_rule["AllowedOrigins"] = [allowed_origin]
-    if not "https" in allowed_origin:
+    if "https" not in allowed_origin:
         https_origin = allowed_origin.replace("http", "https")
         cors_rule["AllowedOrigins"].append(https_origin)
     cors_configuration = {"CORSRules": [cors_rule]}

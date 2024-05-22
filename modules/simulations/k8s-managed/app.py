@@ -4,6 +4,7 @@
 import os
 
 from aws_cdk import App, CfnOutput, Environment
+
 from stack import SimulationDags
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
@@ -34,7 +35,10 @@ CfnOutput(
     scope=stack,
     id="metadata",
     value=stack.to_json_string(
-        {"DagRoleArn": stack.dag_role.role_arn, "EksServiceAccountRoleArn": stack.eks_service_account_role.role_arn}
+        {
+            "DagRoleArn": stack.dag_role.role_arn,
+            "EksServiceAccountRoleArn": stack.eks_service_account_role.role_arn,
+        }
     ),
 )
 

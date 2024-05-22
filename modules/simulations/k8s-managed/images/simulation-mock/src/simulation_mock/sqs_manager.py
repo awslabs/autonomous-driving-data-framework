@@ -25,6 +25,7 @@ from platonic.sqs.queue import SQSReceiver
 from platonic.sqs.queue.message import SQSMessage
 from platonic.sqs.queue.types import ValueType
 from platonic.timeout import ConstantTimeout
+
 from simulation_mock import get_logger
 from simulation_mock.signal_handler import SignalHandler
 
@@ -52,7 +53,9 @@ class SQSHeartbeatReceiver(SQSReceiver[ValueType]):
             Number of seconds to extend the timeout
         """
         self.client.change_message_visibility(
-            QueueUrl=self.url, ReceiptHandle=message.receipt_handle, VisibilityTimeout=seconds
+            QueueUrl=self.url,
+            ReceiptHandle=message.receipt_handle,
+            VisibilityTimeout=seconds,
         )
 
     @contextmanager
@@ -89,7 +92,8 @@ def main(url: str, dir: str, single_message: bool) -> int:
     LOGGER.info("DIR: %s", dir)
     LOGGER.info("SINGLE_MESSAGE: %s", single_message)
     incoming_simulations = SQSHeartbeatReceiver[str](
-        url=url, timeout=ConstantTimeout(period=timedelta(seconds=MESSAGE_RECEIVE_TIMEOUT_SECONDS))
+        url=url,
+        timeout=ConstantTimeout(period=timedelta(seconds=MESSAGE_RECEIVE_TIMEOUT_SECONDS)),
     )
 
     signal_handler = SignalHandler(exit=Event())

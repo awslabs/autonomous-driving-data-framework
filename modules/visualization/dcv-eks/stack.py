@@ -22,7 +22,7 @@ ADDF_SSM_PARAMETER_STORE_DISPLAY_NAME = "dcv-display"
 ADDF_SSM_PARAMETER_STORE_MOUNT_PATH_NAME = "dcv-socket-mount-path"
 
 
-class DcvEksStack(Stack):  # type: ignore
+class DcvEksStack(Stack):
     def __init__(
         self,
         scope: Construct,
@@ -64,7 +64,10 @@ class DcvEksStack(Stack):  # type: ignore
 
         self.update_node_role_permissions(eks_node_role_arn, env.region)
         self.eks_admin_role = self.add_eks_dcv_role(
-            eks_cluster_open_id_connect_issuer, eks_oidc_arn, parameter_store_prefix, env
+            eks_cluster_open_id_connect_issuer,
+            eks_oidc_arn,
+            parameter_store_prefix,
+            env,
         )
 
         eks_cluster = eks.Cluster.from_cluster_attributes(
@@ -156,7 +159,11 @@ class DcvEksStack(Stack):  # type: ignore
         )
 
     def add_eks_dcv_role(
-        self, eks_cluster_open_id_connect_issuer: str, eks_oidc_arn: str, ssm_parameter_prefix: str, env: Environment
+        self,
+        eks_cluster_open_id_connect_issuer: str,
+        eks_oidc_arn: str,
+        ssm_parameter_prefix: str,
+        env: Environment,
     ) -> iam.Role:
         role = iam.Role(
             self,
@@ -171,7 +178,10 @@ class DcvEksStack(Stack):  # type: ignore
         role.add_to_principal_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
+                actions=[
+                    "secretsmanager:GetSecretValue",
+                    "secretsmanager:DescribeSecret",
+                ],
                 resources=[f"arn:aws:secretsmanager:{env.region}:{env.account}:secret:dcv-cred-*"],
             )
         )
@@ -179,7 +189,11 @@ class DcvEksStack(Stack):  # type: ignore
         role.add_to_principal_policy(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=["ssm:DescribeParameters", "ssm:PutParameter", "ssm:GetParameter"],
+                actions=[
+                    "ssm:DescribeParameters",
+                    "ssm:PutParameter",
+                    "ssm:GetParameter",
+                ],
                 resources=[f"arn:aws:ssm:{env.region}:{env.account}:parameter{ssm_parameter_prefix}/dcv-*"],
             )
         )

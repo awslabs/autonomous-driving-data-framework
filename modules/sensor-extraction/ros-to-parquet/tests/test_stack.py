@@ -65,7 +65,10 @@ def test_synthesize_stack(stack_defaults):
             "ContainerProperties": {
                 "Command": ["bash", "entrypoint.sh"],
                 "ReadonlyRootFilesystem": False,
-                "ResourceRequirements": [{"Type": "MEMORY", "Value": "8192"}, {"Type": "VCPU", "Value": "2"}],
+                "ResourceRequirements": [
+                    {"Type": "MEMORY", "Value": "8192"},
+                    {"Type": "VCPU", "Value": "2"},
+                ],
             },
             "PlatformCapabilities": ["FARGATE"],
             "RetryStrategy": {"Attempts": 1},

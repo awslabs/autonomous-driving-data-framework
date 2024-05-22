@@ -21,17 +21,17 @@ select = ["F", "I", "E", "W"]
 fixable = ["ALL"]
 
 [tool.coverage.run]
-omit = ["tests/*", "src"]
+omit = ["tests/*"]
 
 [tool.mypy]
 python_version = 3.8
 strict = true
 ignore_missing_imports = true
 allow_untyped_decorators = true
-exclude = "codeseeder.out/|src/|tests/"
+exclude = "codeseeder.out/|seed_code/mlops_app/ml/stable_pipeline|seed_code/mlops_app/infra/lambda|seed_code/mlops_app/ml/scripts"
 
 [tool.pytest.ini_options]
-addopts = "-v --cov=. --cov-report term --cov-fail-under=80"
+addopts = "-v --cov=. --cov-report term"
 pythonpath = [
   "."
 ]

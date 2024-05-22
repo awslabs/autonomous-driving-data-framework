@@ -19,7 +19,7 @@ from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
-from airflow.operators.python import PythonOperator, get_current_context, task
+from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.amazon.aws.operators.batch import BatchOperator
 from airflow.providers.amazon.aws.operators.emr import EmrServerlessStartJobOperator
 from airflow.providers.amazon.aws.sensors.emr import EmrServerlessJobSensor
@@ -34,14 +34,11 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from batch_creation_and_tracking import add_drives_to_batch
 from dag_config import (
     ADDF_MODULE_METADATA,
-    DEPLOYMENT_NAME,
     EMR_APPLICATION_ID,
     EMR_JOB_EXECUTION_ROLE,
-    MODULE_NAME,
     REGION,
     S3_SCRIPT_DIR,
     SOLUTION_ID,
-    SOLUTION_NAME,
     SOLUTION_VERSION,
 )
 
@@ -526,7 +523,7 @@ with DAG(
         start_job_run = PythonOperator(task_id="scene-detection", python_callable=emr_batch_operation)
 
         job_sensor = EmrServerlessJobSensor(
-            task_id=f"check-emr-job-status",
+            task_id="check-emr-job-status",
             application_id=EMR_APPLICATION_ID,
             job_run_id="{{ task_instance.xcom_pull(task_ids='scene-detection.scene-detection', key='return_value') }}",
             aws_conn_id="aws_default",

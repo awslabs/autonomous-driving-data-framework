@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+### **Changed**
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.3.0] - [05/21/2024]
+
+### **Added**
+
 - 'fsx-lustre-on-eks' module - added genric env
 - `modules/visualization/dev-instance-foxbox` module - based on `dev-instance` but using Foxbox (1.0.0) and latest versions of OS and others (DCV, Python 3.11, ROS (noetic/humble), Google Chrome, etc ). Installation also compatible to use with Ubuntu Jammy (22.04)
 
@@ -22,13 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `semver` due to security findings from npm audit
 - added a warning to `modules/visualization/dev-instance` module about foxglove is no longer opensource
 - regrouped mwaa and sfn related manifests of `rosbag-image-demo` manifests into a single directory
-- fixed `requests` and `pyroma` library versions as per dependabot
+- fixed `requests` and `pyroma` library versions as per depandabot
+- fixed `black` and `boto3` library versions as per depandabot
+- refactored `fix.sh` script to use `ruff` instead of `black` and `isort`
 - `modules/visualization/dev-instance-foxbox`: 
   - Fixed permissions of the `.config` directory in the User Data script
   - Simplified the way to decide to install the NVidia drivers
   - Moved installation of base software to the beginning of the execution in the User Data script
   - Set to enable the use of Instance Metadata V2 for the created instance
-  - Updated `sample-layout.json` to align with Foxbox oconfiguration
+  - Updated `sample-layout.json` to align with Foxbox configuration
 
 ### **Removed**
 
