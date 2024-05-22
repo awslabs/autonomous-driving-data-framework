@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 ### **Changed**
-- fix: module manifest paths for `ros-image-demo-&` examples
+- fix: module manifest paths for `ros-image-demo-*` examples
+- update ecr module version for `ml-training` manifest
 
 ### **Removed**
 
