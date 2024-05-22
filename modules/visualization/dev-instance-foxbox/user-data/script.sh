@@ -22,7 +22,14 @@ echo "Cloud init in progress. Machine will REBOOT after cloud init is complete!!
 export DEBIAN_FRONTEND=noninteractive
 export DEBCONF_NONINTERACTIVE_SEEN=true
 
-# External Variables
+# Install and update latest base packages
+apt-get update && apt-get -y upgrade
+apt-get -y install ubuntu-drivers-common \
+  "linux-headers-$(uname -r)" \
+  git tar apt-transport-https ca-certificates curl jq gnupg-agent software-properties-common \
+  tzdata gnupg2 lsb-core build-essential
+
+# External Variables (Will be set via CDK)
 SERVICE_USER_SECRET_NAME="PLACEHOLDER_SECRET"
 S3_BUCKET_NAME="PLACEHOLDER_S3_BUCKET_NAME"
 SCRIPTS_PATH="PLACEHOLDER_SCRIPTS_PATH"
@@ -96,13 +103,6 @@ echo "Detected Ubuntu ${VERSION}"
 # Store user-data script
 echo "Saving user-data script in the ubuntu user's home directory"
 curl -H "X-aws-ec2-metadata-token: ${IMDSV2_TOKEN}" http://169.254.169.254/latest/user-data > /home/ubuntu/user-data-copy.sh
-
-# Install and update latest base packages
-apt-get update && apt-get -y upgrade
-apt-get -y install ubuntu-drivers-common \
-  "linux-headers-$(uname -r)" \
-  git tar apt-transport-https ca-certificates curl jq gnupg-agent software-properties-common \
-  tzdata gnupg2 lsb-core build-essential
 
 # Install NVIDIA Drivers if needed
 if [[ $(detect_nvidia) == "true" ]]; then
@@ -188,8 +188,9 @@ esac
 if [[ -f "${NICE_DCV_VERSION}" ]]; then
   mkdir -p nice_dcv /opt/dcv-session-store
   tar -xf "${NICE_DCV_VERSION}" -C nice_dcv
-  NICE_DCV_DEB=$(find nice_dcv -name "nice-dcv-server*.deb")
-  apt-get install -y "./${NICE_DCV_DEB}"
+  NICE_DCV_SERVER_DEB=$(find nice_dcv -name "nice-dcv-server*.deb")
+  NICE_DCV_WEB_DEB=$(find nice_dcv -name "nice-dcv-web-viewer*.deb")
+  apt-get install -y "./${NICE_DCV_SERVER_DEB}" "./${NICE_DCV_WEB_DEB}"
   # Create configuration file
   mv /etc/dcv/dcv.conf "/etc/dcv/dcv.conf-$(date +%Y-%m-%d_%H-%M-%S).bak"
   printf '%s\n' \
