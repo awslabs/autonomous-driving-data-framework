@@ -22,7 +22,14 @@ echo "Cloud init in progress. Machine will REBOOT after cloud init is complete!!
 export DEBIAN_FRONTEND=noninteractive
 export DEBCONF_NONINTERACTIVE_SEEN=true
 
-# External Variables
+# Install and update latest base packages
+apt-get update && apt-get -y upgrade
+apt-get -y install ubuntu-drivers-common \
+  "linux-headers-$(uname -r)" \
+  git tar apt-transport-https ca-certificates curl jq gnupg-agent software-properties-common \
+  tzdata gnupg2 lsb-core build-essential
+
+# External Variables (Will be set via CDK)
 SERVICE_USER_SECRET_NAME="PLACEHOLDER_SECRET"
 S3_BUCKET_NAME="PLACEHOLDER_S3_BUCKET_NAME"
 SCRIPTS_PATH="PLACEHOLDER_SCRIPTS_PATH"
@@ -42,6 +49,7 @@ ADDS_REPO="amazon-eks-autonomous-driving-data-service"
 KUBECTL_VERSION="1.29.3/2024-04-19"
 FOXBOX_VERSION="1.0.0"
 FOXBOX_FILE="foxbox-${FOXBOX_VERSION}-linux-${DEF_ARCH}.deb"
+NVIDIA_RECOMMENDED=$(ubuntu-drivers devices 2>/dev/null | grep nvidia-driver | grep recommended | awk -F " " '{print $3}')
 case "${VERSION}" in
   "20.04")
     NVIDIA_UBUNTU_BASE="ubuntu2004/x86_64"
@@ -58,7 +66,7 @@ case "${VERSION}" in
     NICE_DCV_VERSION="nice-dcv-2023.1-16388-ubuntu2204-x86_64.tgz"
   ;;
   "18.04")
-    echo "Ubuntu 18.04 is not supported. Please select another version" && exit 1
+    ( echo "Ubuntu 18.04 is not supported. Please select another version" | tee /etc/motd ) && exit 1
   ;;
   *)
     echo "Not recognized version: ${VERSION}" && exit 1
@@ -70,9 +78,10 @@ get_file() {
   wget -t0 -c "${1}"
 }
 
-detect_nvidia() {
+install_nvidia() {
+  NVIDIA_DRIVERS=$1
   [[ ! -x "$(command -v nvidia-smi)" ]] &&
-  [[ -n "$(ubuntu-drivers devices 2>/dev/null | grep nvidia-driver | grep recommended | awk -F " " '{print $3}')" ]] &&
+  [[ -n "${NVIDIA_DRIVERS}" ]] &&
   echo "true" || echo "false"
 }
 
@@ -80,6 +89,7 @@ install_nvidia_drivers() {
   # Install NVIDIA Repositories and latest drivers
   NVIDIA_UBUNTU_BASE=$1
   NVIDIA_PIN_FILE=$2
+  NVIDIA_DRIVERS=$3
   BASE_URL="https://developer.download.nvidia.com/compute/cuda/repos/${NVIDIA_UBUNTU_BASE}"
   get_file "${BASE_URL}/${NVIDIA_PIN_FILE}" &&
   mv "${NVIDIA_PIN_FILE}" /etc/apt/preferences.d/cuda-repository-pin-600 &&
@@ -87,7 +97,7 @@ install_nvidia_drivers() {
   add-apt-repository "deb ${BASE_URL}/ /" &&
   apt-get update && apt-get -y purge cuda && apt-get -y purge nvidia-* && apt-get -y autoremove &&
   ubuntu-drivers autoinstall &&
-  apt-get -y install cuda nvidia-cuda-toolkit libcudnn8 libcudnn8-dev;
+  apt-get -y install cuda nvidia-cuda-toolkit libcudnn8 libcudnn8-dev "${NVIDIA_RECOMMENDED}";
 }
 
 # Start execution 
@@ -97,16 +107,9 @@ echo "Detected Ubuntu ${VERSION}"
 echo "Saving user-data script in the ubuntu user's home directory"
 curl -H "X-aws-ec2-metadata-token: ${IMDSV2_TOKEN}" http://169.254.169.254/latest/user-data > /home/ubuntu/user-data-copy.sh
 
-# Install and update latest base packages
-apt-get update && apt-get -y upgrade
-apt-get -y install ubuntu-drivers-common \
-  "linux-headers-$(uname -r)" \
-  git tar apt-transport-https ca-certificates curl jq gnupg-agent software-properties-common \
-  tzdata gnupg2 lsb-core build-essential
-
 # Install NVIDIA Drivers if needed
-if [[ $(detect_nvidia) == "true" ]]; then
-  install_nvidia_drivers "${NVIDIA_UBUNTU_BASE}" "${NVIDIA_PIN_FILE}"
+if [[ $(install_nvidia "${NVIDIA_RECOMMENDED}") == "true" ]]; then
+  install_nvidia_drivers "${NVIDIA_UBUNTU_BASE}" "${NVIDIA_PIN_FILE}" "${NVIDIA_RECOMMENDED}"
   echo "Rebooting instance for drivers to be loaded properly"
   reboot
 fi
@@ -188,8 +191,9 @@ esac
 if [[ -f "${NICE_DCV_VERSION}" ]]; then
   mkdir -p nice_dcv /opt/dcv-session-store
   tar -xf "${NICE_DCV_VERSION}" -C nice_dcv
-  NICE_DCV_DEB=$(find nice_dcv -name "nice-dcv-server*.deb")
-  apt-get install -y "./${NICE_DCV_DEB}"
+  NICE_DCV_SERVER_DEB=$(find nice_dcv -name "nice-dcv-server*.deb")
+  NICE_DCV_WEB_DEB=$(find nice_dcv -name "nice-dcv-web-viewer*.deb")
+  apt-get install -y "./${NICE_DCV_SERVER_DEB}" "./${NICE_DCV_WEB_DEB}"
   # Create configuration file
   mv /etc/dcv/dcv.conf "/etc/dcv/dcv.conf-$(date +%Y-%m-%d_%H-%M-%S).bak"
   printf '%s\n' \
@@ -339,6 +343,8 @@ fi
 # Avoid initial setup that ask for upgrade
 [[ ! -d "/home/ubuntu/.config" ]] && mkdir -p /home/ubuntu/.config
 echo "yes" >> /home/ubuntu/.config/gnome-initial-setup-done
+chown -R ubuntu:ubuntu /home/ubuntu/.config
+sed -i 's/lts$/never/g' /etc/update-manager/release-upgrades
 
 # Last reboot
 if [[ ! -f "/home/ubuntu/.rebooted" ]]; then
