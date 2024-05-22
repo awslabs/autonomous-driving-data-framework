@@ -15,17 +15,17 @@ def stack_defaults():
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
     os.environ["ADDF_PARAMETER_VPC_ID"] = "vpc-12345"
-    os.environ[
-        "ADDF_PARAMETER_PRIVATE_SUBNET_IDS"
-    ] = '["subnet-00ffc51481090f2d4", "subnet-061322cd815e741e9", "subnet-089eccb47c3d29bf8"]'
+    os.environ["ADDF_PARAMETER_PRIVATE_SUBNET_IDS"] = (
+        '["subnet-00ffc51481090f2d4", "subnet-061322cd815e741e9", "subnet-089eccb47c3d29bf8"]'
+    )
     os.environ["ADDF_PARAMETER_OPENSEARCH_SG_ID"] = "sg-084c0dd9dc65c6937"
     os.environ["ADDF_PARAMETER_OPENSEARCH_DOMAIN_NAME"] = "mydomain"
-    os.environ[
-        "ADDF_PARAMETER_OPENSEARCH_DOMAIN_ENDPOINT"
-    ] = "vpc-addf-aws-solutions--367e660c-k57drotm5ampt5nt7ftfnse4pi.us-west-2.es.amazonaws.com"
-    os.environ[
-        "ADDF_PARAMETER_ROSBAG_STREAM_ARN"
-    ] = "arn:aws:dynamodb:us-west-2:123456789012:table/addf-/stream/2023-08-15T03:16:51.909"
+    os.environ["ADDF_PARAMETER_OPENSEARCH_DOMAIN_ENDPOINT"] = (
+        "vpc-addf-aws-solutions--367e660c-k57drotm5ampt5nt7ftfnse4pi.us-west-2.es.amazonaws.com"
+    )
+    os.environ["ADDF_PARAMETER_ROSBAG_STREAM_ARN"] = (
+        "arn:aws:dynamodb:us-west-2:123456789012:table/addf-/stream/2023-08-15T03:16:51.909"
+    )
     # Unload the app import so that subsequent tests don't reuse
     if "app" in sys.modules:
         del sys.modules["app"]

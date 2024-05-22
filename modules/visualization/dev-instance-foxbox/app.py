@@ -1,11 +1,13 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 # type: ignore
-""" Seedfarmer Module for Data Service Dev Instances """
+"""Seedfarmer Module for Data Service Dev Instances"""
+
 import json
 import os
 
 from aws_cdk import App, CfnOutput, Environment
+
 from stack import DataServiceDevInstancesStack
 
 ###################

@@ -27,9 +27,7 @@ class NotificationsStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
         prefix = f"{sagemaker_project_name}-{sagemaker_project_id}"
         topic_name = f"{project_short_name}-sns-{env_name}"
-        new_model_topic = sns.Topic(
-            self, topic_name, display_name=topic_name, topic_name=topic_name
-        )
+        new_model_topic = sns.Topic(self, topic_name, display_name=topic_name, topic_name=topic_name)
 
         get_metadata_function = lambda_.Function(
             self,

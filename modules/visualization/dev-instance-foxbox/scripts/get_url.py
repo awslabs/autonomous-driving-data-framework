@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #!/usr/bin/env python3
 # type: ignore
-""" Script to Request Pre-signed URL from the generateUrlLambda """
+"""Script to Request Pre-signed URL from the generateUrlLambda"""
+
 import json
 import logging
 import sys
@@ -123,13 +124,22 @@ if __name__ == "__main__":
         help="The function to invoke, required if no --config-file is provided",
     )
     parser.add_argument(
-        "--key", dest="object_key", required=(CONFIG_FILE_OPT not in SYSARGV), help="The key of the object in S3"
+        "--key",
+        dest="object_key",
+        required=(CONFIG_FILE_OPT not in SYSARGV),
+        help="The key of the object in S3",
     )
     parser.add_argument(
-        "--record", dest="record_id", required=False, help="The partition key of the scene in the scenario DynamoDB"
+        "--record",
+        dest="record_id",
+        required=False,
+        help="The partition key of the scene in the scenario DynamoDB",
     )
     parser.add_argument(
-        "--scene", dest="scene_id", required=False, help="The sort key of the scene in the scenario DynamoDB"
+        "--scene",
+        dest="scene_id",
+        required=False,
+        help="The sort key of the scene in the scenario DynamoDB",
     )
     parser.add_argument("--debug", action="store_true", required=False, help="Enable Debug messages")
     arguments = parser.parse_args()

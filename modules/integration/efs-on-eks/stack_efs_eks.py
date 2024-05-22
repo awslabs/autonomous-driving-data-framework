@@ -29,7 +29,6 @@ class EFSFileStorageOnEKS(Stack):
         eks_cluster_security_group_id: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
             scope,
             id,

@@ -17,9 +17,9 @@ def stack_defaults():
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
     os.environ["SEEDFARMER_PARAMETER_VPC_ID"] = "vpc-12345"
-    os.environ[
-        "SEEDFARMER_PARAMETER_OPENSEARCH_DOMAIN_ENDPOINT"
-    ] = "vpc-addf-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com"
+    os.environ["SEEDFARMER_PARAMETER_OPENSEARCH_DOMAIN_ENDPOINT"] = (
+        "vpc-addf-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com"
+    )
     os.environ["SEEDFARMER_PARAMETER_OPENSEARCH_SG_ID"] = "sg-084c0dd9dc65c6937"
 
     if "stack" in sys.modules:

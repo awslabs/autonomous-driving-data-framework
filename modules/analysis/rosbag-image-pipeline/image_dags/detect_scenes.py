@@ -12,15 +12,12 @@ from pyspark.sql import SparkSession, Window
 from pyspark.sql.functions import (
     aggregate,
     col,
-    collect_list,
     concat,
-    concat_ws,
     count,
     first,
     from_json,
     lit,
     split,
-    sum,
 )
 from pyspark.sql.types import ArrayType, DoubleType, IntegerType, StringType, StructField, StructType
 
@@ -120,7 +117,7 @@ def load_obj_detection(spark, batch_metadata, image_topics):
 
     df = spark.read.schema(obj_schema).option("header", True).csv(path_list)
     df2 = df.withColumn("name", remove_space_udf(df.name))
-    print(f"Number of rows in Object Detection dataframe")
+    print("Number of rows in Object Detection dataframe")
     print(df2.count())
     return df2
 
@@ -289,7 +286,6 @@ def main(
 
 
 if __name__ == "__main__":
-
     spark = SparkSession.builder.appName("scene-detection").getOrCreate()
 
     sc = spark.sparkContext

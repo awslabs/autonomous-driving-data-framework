@@ -34,7 +34,6 @@ class TunnelStack(Stack):
         stack_description: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
             scope,
             id,
@@ -116,7 +115,10 @@ class TunnelStack(Stack):
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
             role=os_tunnel_role,
             block_devices=[
-                ec2.BlockDevice(device_name="/dev/xvda", volume=ec2.BlockDeviceVolume.ebs(10, encrypted=True))
+                ec2.BlockDevice(
+                    device_name="/dev/xvda",
+                    volume=ec2.BlockDeviceVolume.ebs(10, encrypted=True),
+                )
             ],
         )
 

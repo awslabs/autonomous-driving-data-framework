@@ -20,6 +20,7 @@ from datetime import timedelta
 from random import randint
 
 from platonic.timeout import ConstantTimeout
+
 from simulation_mock import get_logger
 
 FILE_CHECK_TIMEOUT_SECONDS = 120
@@ -76,8 +77,18 @@ def main(dir: str, max_seconds: int, failure_seed: int) -> int:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mock simulation")
     parser.add_argument("--dir", required=True, help="Directory to use/monitor for data files")
-    parser.add_argument("--max-seconds", required=True, type=int, help="Max runtime to execute mock simulation")
-    parser.add_argument("--failure-seed", required=True, type=int, help="Seed number to determine random failures")
+    parser.add_argument(
+        "--max-seconds",
+        required=True,
+        type=int,
+        help="Max runtime to execute mock simulation",
+    )
+    parser.add_argument(
+        "--failure-seed",
+        required=True,
+        type=int,
+        help="Seed number to determine random failures",
+    )
     args = parser.parse_args()
 
     LOGGER.debug("ARGS: %s", args)

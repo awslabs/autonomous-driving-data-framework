@@ -1,4 +1,5 @@
 """Feature engineers the abalone dataset."""
+
 import argparse
 import logging
 import os
@@ -108,9 +109,7 @@ if __name__ == "__main__":
 
     X = np.concatenate((y_pre, X_pre), axis=1)
 
-    logger.info(
-        "Splitting %d rows of data into train, validation, test datasets.", len(X)
-    )
+    logger.info("Splitting %d rows of data into train, validation, test datasets.", len(X))
     np.random.shuffle(X)
     train, validation, test = np.split(X, [int(0.7 * len(X)), int(0.85 * len(X))])
 

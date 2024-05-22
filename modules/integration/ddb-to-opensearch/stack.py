@@ -33,7 +33,6 @@ class DDBtoOpensearch(Stack):
         stack_description: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(scope, id, description=stack_description, **kwargs)
 
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
@@ -129,7 +128,11 @@ class DDBtoOpensearch(Stack):
             security_groups=[os_security_group],
             vpc=self.vpc,
             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
-            environment={"REGION": self.region, "ACCOUNT": self.account, "DOMAIN_ENDPOINT": opensearch_domain_endpoint},
+            environment={
+                "REGION": self.region,
+                "ACCOUNT": self.account,
+                "DOMAIN_ENDPOINT": opensearch_domain_endpoint,
+            },
             role=ddb_os_lambda_role,
             layers=[requests_awsauth_layer],
         )

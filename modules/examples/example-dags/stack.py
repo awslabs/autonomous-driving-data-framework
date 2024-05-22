@@ -31,7 +31,12 @@ class DagIamRole(Stack):
         self.module_name = module_name
         self.mwaa_exec_role = mwaa_exec_role
 
-        super().__init__(scope, id, description="This stack deploys Example DAGs resources for ADDF", **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys Example DAGs resources for ADDF",
+            **kwargs,
+        )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
 
         # Create Dag IAM Role and policy

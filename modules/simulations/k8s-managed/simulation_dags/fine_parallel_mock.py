@@ -97,7 +97,10 @@ def get_job_body(create_queue_task_id: str, parallelism: int) -> Dict[str, Any]:
                             "name": "sqs-manager",
                             "image": dag_config.SIMULATION_MOCK_IMAGE,
                             "volumeMounts": [{"name": "shared-data", "mountPath": "/shared-data"}],
-                            "command": ["python", "/var/simulation-mock/simulation_mock/sqs_manager.py"],
+                            "command": [
+                                "python",
+                                "/var/simulation-mock/simulation_mock/sqs_manager.py",
+                            ],
                             "args": ["--url", "$(URL)", "--dir", "$(DIR)"],
                             "env": [
                                 {
@@ -106,8 +109,14 @@ def get_job_body(create_queue_task_id: str, parallelism: int) -> Dict[str, Any]:
                                 },
                                 {"name": "DIR", "value": "/shared-data"},
                                 {"name": "DEBUG", "value": "true"},
-                                {"name": "AWS_DEFAULT_REGION", "value": dag_config.REGION},
-                                {"name": "AWS_ACCOUNT_ID", "value": dag_config.ACCOUNT_ID},
+                                {
+                                    "name": "AWS_DEFAULT_REGION",
+                                    "value": dag_config.REGION,
+                                },
+                                {
+                                    "name": "AWS_ACCOUNT_ID",
+                                    "value": dag_config.ACCOUNT_ID,
+                                },
                             ],
                             "livenessProbe": {
                                 "exec": {
@@ -121,7 +130,10 @@ def get_job_body(create_queue_task_id: str, parallelism: int) -> Dict[str, Any]:
                             "name": "simulator",
                             "image": dag_config.SIMULATION_MOCK_IMAGE,
                             "volumeMounts": [{"name": "shared-data", "mountPath": "/shared-data"}],
-                            "command": ["python", "/var/simulation-mock/simulation_mock/simulator.py"],
+                            "command": [
+                                "python",
+                                "/var/simulation-mock/simulation_mock/simulator.py",
+                            ],
                             "args": [
                                 "--dir",
                                 "$(DIR)",
@@ -136,8 +148,14 @@ def get_job_body(create_queue_task_id: str, parallelism: int) -> Dict[str, Any]:
                                 # probability of failure = 1/FAILURE_SEED if 1 <= FAILURE_SEED <= 32768 else 0
                                 {"name": "FAILURE_SEED", "value": "32769"},
                                 {"name": "DEBUG", "value": "true"},
-                                {"name": "AWS_DEFAULT_REGION", "value": dag_config.REGION},
-                                {"name": "AWS_ACCOUNT_ID", "value": dag_config.ACCOUNT_ID},
+                                {
+                                    "name": "AWS_DEFAULT_REGION",
+                                    "value": dag_config.REGION,
+                                },
+                                {
+                                    "name": "AWS_ACCOUNT_ID",
+                                    "value": dag_config.ACCOUNT_ID,
+                                },
                             ],
                             "livenessProbe": {
                                 "exec": {
@@ -161,7 +179,6 @@ with DAG(
     start_date=days_ago(1),  # type: ignore
     schedule_interval="@once",
 ) as dag:
-
     total_simulations = 50
     parallelism = 10
 

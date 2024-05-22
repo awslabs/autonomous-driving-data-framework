@@ -30,7 +30,6 @@ class VSCodeOnEKS(Stack):
         vscode_password: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
             scope,
             id,

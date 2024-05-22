@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict
 
-import boto3
+import boto3  # type: ignore
 
 eks = boto3.client("eks")
 as_client = boto3.client("autoscaling")
@@ -76,7 +76,6 @@ for nodegroup_name in nodegroup_names:
             else:
                 print(f"Error: {create_update_tags_response}")
         else:
-
             print(
                 f"All cluster-autoscaler tags exist on Node Group ({nodegroup_name}) ASG({asg_name}). Doing nothing..."
             )

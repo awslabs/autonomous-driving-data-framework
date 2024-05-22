@@ -161,7 +161,10 @@ def monitor_job(
 
     while not stopped and COMPLETIONS < memo.completions and FAILURES < memo.max_failures:
         running_pod_count = len(list(worker_pods_idx.get("Running"))) if "Running" in worker_pods_idx else 0
-        launch_count = min(memo.parallelism - running_pod_count, memo.completions - (COMPLETIONS + running_pod_count))
+        launch_count = min(
+            memo.parallelism - running_pod_count,
+            memo.completions - (COMPLETIONS + running_pod_count),
+        )
 
         logger.info(
             "RUNNING_POD_COUNT: %s  COMPLETIONS: %s  FAILURES: %s  LAUNCHING: %s",
