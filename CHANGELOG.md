@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 =======
 
-## UNRELEASED
+## [V3.4.0] - [05/22/2024]
 
 ### **Added**
 
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix: module manifest paths for `ros-image-demo-*` examples
 - update ecr module version for `ml-training` manifest
-- `modules/visualization/dev-instance-foxbox`: 
+- `modules/visualization/dev-instance-foxbox`:
   - Fixed permissions of the `.config` directory in the User Data script
   - Simplified the way to decide to install the NVidia drivers
   - Moved installation of base software to the beginning of the execution in the User Data script
