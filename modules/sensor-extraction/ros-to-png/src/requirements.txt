@@ -22,7 +22,7 @@ charset-normalizer==3.3.2
     # via requests
 distro==1.9.0
     # via rospkg
-docutils==0.21.2
+docutils==0.20.1
     # via catkin-pkg
 genmsg==0.5.12
     # via
@@ -42,7 +42,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-numpy==1.26.4
+numpy==1.24.4
     # via
     #   opencv-python
     #   rospy
@@ -93,7 +93,7 @@ six==1.16.0
     # via python-dateutil
 std-msgs==0.5.13.post0
     # via rospy
-urllib3==2.2.1
+urllib3==1.26.18
     # via
     #   botocore
     #   requests
