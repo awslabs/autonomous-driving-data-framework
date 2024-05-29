@@ -41,9 +41,7 @@ class FSXFileStorageOnEKS(Stack):
         self.project_name = project_name
         self.deployment_name = deployment_name
         self.module_name = module_name
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"{self.project_name}-{self.deployment_name}"
-        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{self.project_name}-{self.deployment_name}")
 
         dep_mod = f"{self.project_name}-{self.deployment_name}-{self.module_name}"
         dep_mod = dep_mod[:30]
@@ -60,9 +58,7 @@ class FSXFileStorageOnEKS(Stack):
             open_id_connect_provider=provider,
         )
 
-        fsx_security_group = ec2.SecurityGroup.from_security_group_id(
-            self, "FSXSecurityGroup", fsx_security_group_id
-        )
+        fsx_security_group = ec2.SecurityGroup.from_security_group_id(self, "FSXSecurityGroup", fsx_security_group_id)
         eks_security_group = ec2.SecurityGroup.from_security_group_id(
             self, "EKSSecurityGroup", eks_cluster_security_group_id
         )
@@ -108,20 +104,9 @@ class FSXFileStorageOnEKS(Stack):
             overwrite=True,
         )
 
-        storage_class_manifest = eks_cluster.add_manifest(
-            "FSXCSIStorageClass",
-            {
-                "apiVersion": "storage.k8s.io/v1",
-                "kind": "StorageClass",
-                "metadata": {"name": self.storage_class_name},
-                "provisioner": "fsx.csi.aws.com",
-                "reclaimPolicy": "Delete",
-                "volumeBindingMode": "Immediate",
-            },
-        )
+        # Static Provisioning for FSX
 
-        storage_class_manifest.node.add_dependency(namespace_manifest)
-
+        # Creates a PV
         persistent_volume_manifest = eks_cluster.add_manifest(
             "FSXCSIPersistentVolume",
             {
@@ -129,7 +114,6 @@ class FSXFileStorageOnEKS(Stack):
                 "kind": "PersistentVolume",
                 "metadata": {"name": self.pv_name},
                 "spec": {
-                    "storageClassName": self.storage_class_name,
                     "capacity": {"storage": fsx_storage_capacity},
                     "volumeMode": "Filesystem",
                     "accessModes": ["ReadWriteMany"],
@@ -149,6 +133,7 @@ class FSXFileStorageOnEKS(Stack):
 
         persistent_volume_manifest.node.add_dependency(namespace_manifest)
 
+        # Creates a PVC
         pvc_manifest = eks_cluster.add_manifest(
             "FSXCSIPersistentVolumeClaim",
             {
@@ -158,7 +143,7 @@ class FSXFileStorageOnEKS(Stack):
                 "spec": {
                     "accessModes": ["ReadWriteMany"],
                     "resources": {"requests": {"storage": "1200Gi"}},
-                    "storageClassName": self.storage_class_name,
+                    "storageClassName": "",
                     "volumeMode": "Filesystem",
                     "volumeName": self.pv_name,
                 },
@@ -177,9 +162,6 @@ class FSXFileStorageOnEKS(Stack):
                 "spec": {
                     "ttlSecondsAfterFinished": 60,
                     "template": {
-                        "metadata": {
-                            "annotations": {"sidecar.istio.io/inject": "false"}
-                        },
                         "spec": {
                             "restartPolicy": "Never",
                             "containers": [
@@ -202,9 +184,7 @@ class FSXFileStorageOnEKS(Stack):
                             "volumes": [
                                 {
                                     "name": "persistent-storage",
-                                    "persistentVolumeClaim": {
-                                        "claimName": self.pvc_name
-                                    },
+                                    "persistentVolumeClaim": {"claimName": self.pvc_name},
                                 }
                             ],
                         },

@@ -16,7 +16,8 @@ deploy:
             export EKS_NAMESPACE=${SEEDFARMER_PARAMETER_NAMESPACE} ;
         fi;
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      - export SEEDFARMER_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['${SEEDFARMER_PARAMETER_PROJECT_NAME}-${SEEDFARMER_PARAMETER_DEPLOYMENT_NAME}-${SEEDFARMER_PARAMETER_MODULE_NAME}']['metadata'])")
+        # Export metadata
+      - seedfarmer metadata convert -f cdk-exports.json || true
 destroy:
   phases:
     install:
