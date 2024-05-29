@@ -7,7 +7,6 @@ from typing import Any, Optional, cast
 
 import yaml
 from aws_cdk import Environment, Stack, Tags
-from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_ssm as ssm
@@ -81,20 +80,6 @@ class DcvEksStack(Stack):
             open_id_connect_provider=provider,
         )
 
-        namespace_manifest = {
-            "apiVersion": "v1",
-            "kind": "Namespace",
-            "metadata": {
-                "name": dcv_namespace,
-            },
-        }
-
-        # Create the KubernetesManifest resource
-        loop_iteration = 0
-        manifest_id = "DCVAgent" + str(loop_iteration)
-        k8s_namespace = eks_cluster.add_manifest(manifest_id, namespace_manifest)
-        loop_iteration += 1
-
         t = Template(open(os.path.join(project_dir, "k8s/dcv-deployment.yaml"), "r").read())
         dcv_agent_yaml_file = t.substitute(
             NAMESPACE=dcv_namespace,
@@ -103,10 +88,11 @@ class DcvEksStack(Stack):
             REGION=env.region,
             SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
             DISPLAY_PARAMETER_NAME=self.display_parameter_name,
-            FSX_PVC_NAME=fsx_pvc_name
+            FSX_PVC_NAME=fsx_pvc_name,
         )
 
         dcv_agent_yaml = yaml.load(dcv_agent_yaml_file, Loader=yaml.FullLoader)
+        loop_iteration = 0
         manifest_id = "DCVAgent" + str(loop_iteration)
         loop_iteration += 1
         dcv_agent_resource = eks_cluster.add_manifest(manifest_id, dcv_agent_yaml)
@@ -122,7 +108,6 @@ class DcvEksStack(Stack):
             loop_iteration = loop_iteration + 1
             manifest_id = "DCVAgent" + str(loop_iteration)
             k8s_resource = eks_cluster.add_manifest(manifest_id, value)
-            k8s_resource.node.add_dependency(k8s_namespace)
             dcv_agent_resource.node.add_dependency(k8s_resource)
 
         NagSuppressions.add_stack_suppressions(
@@ -213,4 +198,3 @@ class DcvEksStack(Stack):
                 resources=[f"arn:aws:s3:::dcv-license.{region}/*"],
             )
         )
-
