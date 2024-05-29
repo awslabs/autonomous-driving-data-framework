@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- updated to YOLOv8+
 - fix: module manifest paths for `ros-image-demo-*` examples
 - update ecr module version for `ml-training` manifest
 - `modules/visualization/dev-instance-foxbox`: 
