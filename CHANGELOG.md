@@ -13,6 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- fixed the `fsx-lustre-on-eks` integration module's metadata export
+- remedation to pass end-to-end integration testing of ADDF manifests
+- fixed the `fsx-lustre-on-eks` integration module's static provisioning failure
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.4.0] - [05/22/2024]
+
+### **Added**
+
+### **Changed**
+
 - fix: module manifest paths for `ros-image-demo-*` examples
 - update ecr module version for `ml-training` manifest
 - `modules/visualization/dev-instance-foxbox`: 

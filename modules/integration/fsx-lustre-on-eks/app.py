@@ -38,9 +38,7 @@ if not eks_namespace:
 
 
 if fsx_storage_capacity not in [1200, 2400] and (fsx_storage_capacity % 3600) != 0:
-    raise ValueError(
-        "Storage_capacity must be 1200, 2400 or an increment of 3600 - see README"
-    )
+    raise ValueError("Storage_capacity must be 1200, 2400 or an increment of 3600 - see README")
 
 app = App()
 
