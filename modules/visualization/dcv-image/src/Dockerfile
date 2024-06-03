@@ -44,7 +44,7 @@ RUN dpkg-reconfigure gdm3
 # RUN apt upgrade -y
 
 # Install NiceDCV
-RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         mesa-utils \
     && wget https://d1uj6qtbmh3dt5.cloudfront.net/NICE-GPG-KEY \
@@ -52,7 +52,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && wget https://d1uj6qtbmh3dt5.cloudfront.net/2023.1/Servers/nice-dcv-2023.1-16388-ubuntu2204-x86_64.tgz \
     && tar -xvzf nice-dcv-2023.1-16388-ubuntu2204-x86_64.tgz \
     && cd nice-dcv-2023.1-16388-ubuntu2204-x86_64 \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    && apt-get install -y \
         ./nice-dcv-server_2023.1.16388-1_amd64.ubuntu2204.deb \
         ./nice-dcv-web-viewer_2023.1.16388-1_amd64.ubuntu2204.deb \
         ./nice-xdcv_2023.1.565-1_amd64.ubuntu2204.deb \
