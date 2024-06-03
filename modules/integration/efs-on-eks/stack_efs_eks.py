@@ -8,6 +8,7 @@ import cdk_nag
 from aws_cdk import Aspects, Stack, Tags
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_eks as eks
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -53,6 +54,7 @@ class EFSFileStorageOnEKS(Stack):
             cluster_name=eks_cluster_name,
             kubectl_role_arn=eks_admin_role_arn,
             open_id_connect_provider=provider,
+            kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
 
         efs_security_group = ec2.SecurityGroup.from_security_group_id(self, "EKSSecurityGroup", efs_security_group_id)

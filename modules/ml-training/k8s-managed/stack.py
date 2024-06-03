@@ -9,6 +9,7 @@ import cdk_nag
 from aws_cdk import Aspects, Duration, Stack, Tags, aws_eks, aws_iam
 from aws_cdk import aws_logs as logs
 from aws_cdk import aws_stepfunctions as sfn
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -71,6 +72,7 @@ class TrainingPipeline(Stack):
             cluster_name=eks_cluster_name,
             open_id_connect_provider=provider,
             kubectl_role_arn=eks_admin_role_arn,
+            kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
 
         namespace = aws_eks.KubernetesManifest(

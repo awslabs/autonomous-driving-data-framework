@@ -6,10 +6,10 @@
 import logging
 from typing import Any, cast
 
-# import cdk_nag
 from aws_cdk import CfnJson, Stack, Tags
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 
 # from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
@@ -68,6 +68,7 @@ class EmronEksRbacStack(Stack):
             cluster_name=eks_cluster_name,
             kubectl_role_arn=eks_admin_role_arn,
             open_id_connect_provider=provider,
+            kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
 
         self.emrsvcrolearn = f"arn:aws:iam::{self.account}:role/AWSServiceRoleForAmazonEMRContainers"
