@@ -10,6 +10,7 @@ from aws_cdk import Environment, Stack, Tags
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_ssm as ssm
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -77,6 +78,7 @@ class DcvEksStack(Stack):
             cluster_name=eks_cluster_name,
             kubectl_role_arn=eks_cluster_admin_role_arn,
             kubectl_lambda_role=iam.Role.from_role_arn(self, "KubectlHandlerArn", eks_handler_role_arn),
+            kubectl_layer=KubectlV29Layer(self, "KubectlV29Layer"),
             open_id_connect_provider=provider,
         )
 

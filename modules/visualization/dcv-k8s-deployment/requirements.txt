@@ -14,16 +14,13 @@ aws-cdk-asset-kubectl-v20==2.1.2
     # via aws-cdk-lib
 aws-cdk-asset-node-proxy-agent-v6==2.0.3
     # via aws-cdk-lib
+aws-cdk-lambda-layer-kubectl-v29==2.0.0
+    # via -r requirements.in
 aws-cdk-lib==2.126.0
     # via
     #   -r requirements.in
+    #   aws-cdk-lambda-layer-kubectl-v29
     #   cdk-nag
-boto3==1.21.46
-    # via -r requirements.in
-botocore==1.24.46
-    # via
-    #   boto3
-    #   s3transfer
 cattrs==23.2.3
     # via jsii
 cdk-nag==2.12.29
@@ -31,21 +28,19 @@ cdk-nag==2.12.29
 constructs==10.0.91
     # via
     #   -r requirements.in
+    #   aws-cdk-lambda-layer-kubectl-v29
     #   aws-cdk-lib
     #   cdk-nag
 exceptiongroup==1.2.1
     # via cattrs
 importlib-resources==6.4.0
     # via jsii
-jmespath==1.0.1
-    # via
-    #   boto3
-    #   botocore
-jsii==1.98.0
+jsii==1.99.0
     # via
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-lambda-layer-kubectl-v29
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
@@ -54,18 +49,15 @@ publication==0.0.3
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-lambda-layer-kubectl-v29
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
     #   jsii
 python-dateutil==2.9.0.post0
-    # via
-    #   botocore
-    #   jsii
+    # via jsii
 pyyaml==6.0.1
     # via -r requirements.in
-s3transfer==0.5.2
-    # via boto3
 six==1.16.0
     # via python-dateutil
 typeguard==2.13.3
@@ -73,13 +65,12 @@ typeguard==2.13.3
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-lambda-layer-kubectl-v29
     #   aws-cdk-lib
     #   jsii
 types-pyyaml==6.0.12
     # via -r requirements.in
-typing-extensions==4.11.0
+typing-extensions==4.12.1
     # via
     #   cattrs
     #   jsii
-urllib3==1.26.18
-    # via botocore
