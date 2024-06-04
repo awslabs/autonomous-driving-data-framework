@@ -27,20 +27,42 @@ firewall-cmd --reload
 
 set -ex
 
-aws_secretsmanager_username_key="dcv-cred-user"
-aws_secretsmanager_username_passwd="dcv-cred-passwd"
-
 export AWS_DEFAULT_REGION=${AWS_REGION}
-
 
 sleep 5
 mv "${HOME}/.kube/secrets" /var/run
 
+# DCV User credentials are expected to be created in Secrets Manager
 # Get username and password from aws secretsmanager
-_username="$(aws secretsmanager get-secret-value --secret-id \
-               "${aws_secretsmanager_username_key}" --query SecretString  --output text)"
-_passwd="$(aws secretsmanager get-secret-value --secret-id \
-               "${aws_secretsmanager_username_passwd}" --query SecretString  --output text)"
+secret_value=$(aws secretsmanager get-secret-value --secret-id "$DCV_SM_NAME" 2>&1)
+
+# Error check
+if [[ $? -ne 0 ]]; then
+    # Check if error indicates that secret doesn't exist
+    if [[ $secret_value == *"ResourceNotFoundException"* ]]; then
+        echo "Error: Secret '$DCV_SM_NAME' does not exist."
+        exit 1
+    else
+        echo "Error retrieving secret value: $secret_value"
+        exit 1
+    fi
+fi
+
+
+# Extract UserName and Password
+_username=$(echo "$secret_value" | jq --raw-output '.SecretString' | jq -r .UserName)
+_passwd=$(echo "$secret_value" | jq --raw-output '.SecretString' | jq -r .Password)
+
+# Check if _username and _passwd are not null
+if [[ -z "$_username" ]]; then
+    echo "Error: UserName is null or empty."
+    exit 1
+fi
+
+if [[ -z "$_passwd" ]]; then
+    echo "Error: Password is null or empty."
+    exit 1
+fi
 
 # TODO: Enable again
 adduser "${_username}"
@@ -67,7 +89,6 @@ display=$(dcv describe-session "${session_name}" | grep "X display: ")
 display=$(echo "${display}" | cut -d' ' -f 3)
 echo "XAUTHORITY is ${xauth_path}; DISPLAY is ${display}"
 XAUTHORITY=${xauth_path} DISPLAY="${display}" xhost +
-
 
 # if python3 /opt/dcv_server/scripts/update_parameters.py
 # then

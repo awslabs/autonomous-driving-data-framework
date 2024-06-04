@@ -172,7 +172,7 @@ class DcvEksStack(Stack):
                     "secretsmanager:GetSecretValue",
                     "secretsmanager:DescribeSecret",
                 ],
-                resources=[f"arn:aws:secretsmanager:{env.region}:{env.account}:secret:dcv-cred-*"],
+                resources=[f"arn:aws:secretsmanager:{env.region}:{env.account}:secret:dcv-cred*"],
             )
         )
 

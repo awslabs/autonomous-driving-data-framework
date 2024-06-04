@@ -8,11 +8,11 @@
 
 ### Prerequisites
 
-- AWS SecretsManager entries for username `dcv-cred-user` and password `dcv-cred-passwd` already established
+- AWS SecretsManager secret `dcv-credentials` with UserName and Password already established (as described in the dcv-image module)
 
 #### Using AWS SecretsManager
 
-The key `dcv-cred-user` and `dcv-cred-passwd` need to exist in AWS SecretsManager.
+The secret `dcv-credentials` needs to exist with key `UserName` and `Password` keys.
 
 ## Inputs/Outputs
 

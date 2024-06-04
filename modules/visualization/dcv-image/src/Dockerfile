@@ -1,16 +1,19 @@
 FROM nvcr.io/nvidia-hpcvis/paraview:egl-py3-5.11.0
 
+ARG DCV_SM_NAME
 ENV DISPLAY=:0 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV GNOME_SHELL_SESSION_MODE=ubuntu
 ENV XDG_CURRENT_DESKTOP=ubuntu:GNOME
 ENV XDG_CONFIG_DIRS=/etc/xdg/xdg-ubuntu:/etc/xdg
+ENV DCV_SM_NAME=$DCV_SM_NAME
 
 # Update and install required packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         wget \
         curl \
+        jq \
         apt-utils \
         pkg-config \
         dconf-editor \
