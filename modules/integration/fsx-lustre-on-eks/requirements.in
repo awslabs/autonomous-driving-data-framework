@@ -1,3 +1,4 @@
 aws-cdk-lib==2.128.0
 cdk-nag==2.28.39
 constructs==10.3.0
+aws-cdk.lambda-layer-kubectl-v29==2.0.0

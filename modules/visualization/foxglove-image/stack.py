@@ -12,7 +12,7 @@ from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
 
-class DcvImagePublishingStack(Stack):
+class AppImagePublishingStack(Stack):  # type: ignore
     def __init__(
         self,
         scope: Construct,
@@ -21,7 +21,6 @@ class DcvImagePublishingStack(Stack):
         repository_name: str,
         deployment_name: str,
         module_name: str,
-        dcv_sm_name: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(scope, id, **kwargs)
@@ -40,12 +39,9 @@ class DcvImagePublishingStack(Stack):
             self,
             "ImageExtractionDockerImage",
             directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"),
-            build_args={
-                "DCV_SM_NAME": dcv_sm_name
-            },
         )
 
-        self.image_uri = f"{repo.repository_uri}:dcv-latest"
+        self.image_uri = f"{repo.repository_uri}:app-latest"
         ECRDeployment(
             self,
             "ImageURI",

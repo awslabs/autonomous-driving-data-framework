@@ -47,21 +47,23 @@ kind: Service
 metadata:
   name: dcv-svc
   namespace: $NAMESPACE
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: stickiness.enabled=true,stickiness.type=source_ip
   labels:
     env: dcv
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     env: dcv
-  externalTrafficPolicy: Local
   ports:
   - name: dcv-tcp
     protocol: TCP
     port: 8443
     targetPort: 8443
-    nodePort: $NODEPORT
   - name: dcv-udp
     protocol: UDP
     port: 8443
     targetPort: 8443
-    nodePort: $NODEPORT

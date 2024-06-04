@@ -6,7 +6,7 @@ from typing import cast
 
 from aws_cdk import App, CfnOutput, Environment
 
-from stack import DcvImagePublishingStack
+from stack import AppImagePublishingStack
 
 # Project specific
 project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
@@ -21,20 +21,19 @@ def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
 
-ecr_repo_name = os.getenv(_param("DCV_ECR_REPOSITORY_NAME"), "")
-dcv_sm_name = os.getenv(_param("DCV_SM_NAME"), "dcv-credentials")
+ecr_repo_name = os.getenv(_param("APP_ECR_REPOSITORY_NAME"), "")
+
 
 app = App()
 
 
-dcv_image_pushing_stack = DcvImagePublishingStack(
+app_image_pushing_stack = AppImagePublishingStack(
     scope=app,
     id=f"{project_name}-{deployment_name}-{module_name}",
     project_name=cast(str, project_name),
     deployment_name=cast(str, deployment_name),
     repository_name=ecr_repo_name,
     module_name=cast(str, module_name),
-    dcv_sm_name=cast(str,dcv_sm_name),
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
@@ -43,11 +42,11 @@ dcv_image_pushing_stack = DcvImagePublishingStack(
 
 
 CfnOutput(
-    scope=dcv_image_pushing_stack,
+    scope=app_image_pushing_stack,
     id="metadata",
-    value=dcv_image_pushing_stack.to_json_string(
+    value=app_image_pushing_stack.to_json_string(
         {
-            "DCVImageUri": dcv_image_pushing_stack.image_uri,
+            "AppImageUri": app_image_pushing_stack.image_uri,
         }
     ),
 )
