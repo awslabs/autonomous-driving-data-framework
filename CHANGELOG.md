@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- Added `modules/examples/eureka` examples
+- fix: module `modules/visualization/dcv-image` to update cdk version and cdk_ecr_deployment version
+- fix: module `modules/visualization/dcv-eks` to update cdk version
 - fixed the `fsx-lustre-on-eks` integration module's metadata export
 - remedation to pass end-to-end integration testing of ADDF manifests
 - fixed the `fsx-lustre-on-eks` integration module's static provisioning failure

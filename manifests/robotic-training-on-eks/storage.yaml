@@ -1,0 +1,43 @@
+name: fsx
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.6.0&depth=1
+parameters:
+  - name: vpc_id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private_subnet_ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PublicSubnetIds
+  - name: fs_deployment_type
+    value: PERSISTENT_2
+  - name: data_bucket_name
+    valueFrom:
+      moduleMetadata:
+        group: buckets
+        name: eureka-data-bucket
+        key: ArtifactsBucketName
+  - name: import_path
+    valueFrom:
+      moduleMetadata:
+        group: buckets
+        name: eureka-data-bucket
+        key: ArtifactsBucketName
+  - name: storage_throughput
+    value: 500
+---
+name: robotic-applications
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=release/1.6.0
+parameter:
+  - name: image-tag-mutability
+    value: "MUTABLE"
+---
+name: dcv
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=release/1.6.0
+parameter:
+  - name: image-tag-mutability
+    value: "MUTABLE"
