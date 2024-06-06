@@ -8,13 +8,13 @@ attrs==23.1.0
     # via
     #   cattrs
     #   jsii
-aws-cdk-asset-awscli-v1==2.2.200
+aws-cdk-asset-awscli-v1==2.2.202
     # via aws-cdk-lib
 aws-cdk-asset-kubectl-v20==2.1.2
     # via aws-cdk-lib
-aws-cdk-asset-node-proxy-agent-v5==2.0.166
+aws-cdk-asset-node-proxy-agent-v6==2.0.1
     # via aws-cdk-lib
-aws-cdk-lib==2.83.1
+aws-cdk-lib==2.128.0
     # via
     #   -r requirements.in
     #   cdk-nag
@@ -26,15 +26,16 @@ botocore==1.24.46
     #   s3transfer
 cattrs==23.1.2
     # via jsii
-cdk-ecr-deployment==2.5.30
+cdk_ecr_deployment==3.0.65
     # via -r requirements.in
 cdk-nag==2.12.29
     # via -r requirements.in
-constructs==10.0.91
+constructs==10.3.0
     # via
     #   -r requirements.in
+    #   aws-cdk-lambda-layer-kubectl-v29
     #   aws-cdk-lib
-    #   cdk-nag
+    #   cdk-nagcdk-lib
 exceptiongroup==1.1.3
     # via cattrs
 importlib-resources==6.1.0
@@ -43,14 +44,14 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-jsii==1.90.0
+jsii==1.99.0
     # via
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v5
     #   aws-cdk-lib
     #   cdk-nag
-    #   constructs
+    # via -r requirements.in
 publication==0.0.3
     # via
     #   aws-cdk-asset-awscli-v1
