@@ -8,13 +8,15 @@ attrs==23.1.0
     # via
     #   cattrs
     #   jsii
-aws-cdk-asset-awscli-v1==2.2.200
+aws-cdk-asset-awscli-v1==2.2.202
     # via aws-cdk-lib
 aws-cdk-asset-kubectl-v20==2.1.2
     # via aws-cdk-lib
 aws-cdk-asset-node-proxy-agent-v5==2.0.166
     # via aws-cdk-lib
-aws-cdk-lib==2.83.1
+aws-cdk-lambda-layer-kubectl-v23==2.0.8
+    # via -r requirements.in
+aws-cdk-lib==2.128.0
     # via
     #   -r requirements.in
     #   cdk-nag
@@ -41,7 +43,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-jsii==1.90.0
+jsii==1.94.0
     # via
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20

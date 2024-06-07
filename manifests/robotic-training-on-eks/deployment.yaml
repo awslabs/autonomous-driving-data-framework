@@ -1,0 +1,28 @@
+name: robotic-training-on-eks
+toolchainRegion: us-east-1
+groups:
+  - name: optionals
+    path: manifests/robotic-training-on-eks/optionals.yaml
+  - name: buckets
+    path: manifests/robotic-training-on-eks/buckets.yaml
+  - name: core
+    path: manifests/robotic-training-on-eks/core-modules.yaml
+  - name: storage
+    path: manifests/robotic-training-on-eks/storage.yaml
+  - name: dcv-image
+    path: manifests/robotic-training-on-eks/dcv-image.yaml
+  - name: dcv-eks
+    path: manifests/robotic-training-on-eks/dcv-eks.yaml
+  - name: eureka
+    path: manifests/robotic-training-on-eks/eureka.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId:
+      valueFrom:
+        envVariable: PRIMARY_ACCOUNT
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-east-1
+        default: true
