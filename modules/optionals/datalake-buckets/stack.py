@@ -1,6 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+import hashlib
 import logging
 from typing import Any, cast
 
@@ -20,6 +21,7 @@ class DataLakeBucketsStack(Stack):
         self,
         scope: Construct,
         id: str,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         hash: str,
@@ -33,13 +35,21 @@ class DataLakeBucketsStack(Stack):
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
 
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
+        # used to tag AWS resources. Tag Value length cant exceed 256 characters
+        full_dep_mod = dep_mod[:256] if len(dep_mod) > 256 else dep_mod
+
         super().__init__(scope, id, description=stack_description, **kwargs)
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=full_dep_mod)
+
+        logs_bucket_name = f"{project_name}-{deployment_name}-logs-bucket-{hash}"
+        hashlib.sha256()
+        unique_ab = (hashlib.sha256(module_name.encode("utf-8")).hexdigest())[: (60 - len(logs_bucket_name))]
 
         logs_bucket = aws_s3.Bucket(
             self,
             id="logs-bucket",
-            bucket_name=f"addf-{deployment_name}-logs-bucket-{hash}",
+            bucket_name=f"{logs_bucket_name}-{unique_ab}",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
@@ -59,12 +69,15 @@ class DataLakeBucketsStack(Stack):
             ],
         )
 
+        raw_bucket_name = f"{project_name}-{deployment_name}-raw-bucket-{hash}"
+        unique_ab = (hashlib.sha256(module_name.encode("utf-8")).hexdigest())[: (60 - len(raw_bucket_name))]
+
         raw_bucket = aws_s3.Bucket(
             self,
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
-            bucket_name=f"addf-{deployment_name}-raw-bucket-{hash}",
+            bucket_name=f"{raw_bucket_name}-{unique_ab}",
             versioned=True,
             server_access_logs_bucket=logs_bucket,
             server_access_logs_prefix="raw-bucket-logs/",
@@ -77,13 +90,16 @@ class DataLakeBucketsStack(Stack):
             enforce_ssl=True,
         )
 
+        intermediate_bucket_name = f"{project_name}-{deployment_name}-intermediate-bucket-{hash}"
+        unique_ab = (hashlib.sha256(module_name.encode("utf-8")).hexdigest())[: (60 - len(intermediate_bucket_name))]
+
         intermediate_bucket = aws_s3.Bucket(
             self,
             id="intermediate-bucket",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
-            bucket_name=f"addf-{deployment_name}-intermediate-bucket-{hash}",
+            bucket_name=f"{intermediate_bucket_name}-{unique_ab}",
             versioned=True,
             server_access_logs_bucket=logs_bucket,
             server_access_logs_prefix="intermediate-bucket-logs/",
@@ -95,13 +111,16 @@ class DataLakeBucketsStack(Stack):
             enforce_ssl=True,
         )
 
+        curated_bucket_name = f"{project_name}-{deployment_name}-curated-bucket-{hash}"
+        unique_ab = (hashlib.sha256(module_name.encode("utf-8")).hexdigest())[: (60 - len(curated_bucket_name))]
+
         curated_bucket = aws_s3.Bucket(
             self,
             id="curated-bucket",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
-            bucket_name=f"addf-{deployment_name}-curated-bucket-{hash}",
+            bucket_name=f"{curated_bucket_name}-{unique_ab}",
             versioned=True,
             server_access_logs_bucket=logs_bucket,
             server_access_logs_prefix="curated-bucket-logs/",
@@ -113,10 +132,13 @@ class DataLakeBucketsStack(Stack):
             enforce_ssl=True,
         )
 
+        artifacts_bucket_name = f"{project_name}-{deployment_name}-artifacts-bucket-{hash}"
+        unique_ab = (hashlib.sha256(module_name.encode("utf-8")).hexdigest())[: (60 - len(artifacts_bucket_name))]
+
         artifacts_bucket = aws_s3.Bucket(
             self,
             id="artifacts-bucket",
-            bucket_name=f"addf-{deployment_name}-artifacts-bucket-{hash}",
+            bucket_name=f"{artifacts_bucket_name}-{unique_ab}",
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if buckets_retention.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
@@ -135,7 +157,7 @@ class DataLakeBucketsStack(Stack):
         readonly_policy = aws_iam.ManagedPolicy(
             self,
             id="readonly_policy",
-            managed_policy_name=f"addf-{deployment_name}-{module_name}-{region}-{account}-readonly-access",
+            managed_policy_name=f"{project_name}-{deployment_name}-{module_name}-{region}-{account}-readonly-access",
             statements=[
                 aws_iam.PolicyStatement(
                     effect=aws_iam.Effect.ALLOW,
@@ -173,7 +195,7 @@ class DataLakeBucketsStack(Stack):
         fullaccess_policy = aws_iam.ManagedPolicy(
             self,
             id="fullaccess_policy",
-            managed_policy_name=f"addf-{deployment_name}-{module_name}-{region}-{account}-full-access",
+            managed_policy_name=f"{project_name}-{deployment_name}-{module_name}-{region}-{account}-full-access",
             statements=[
                 aws_iam.PolicyStatement(
                     effect=aws_iam.Effect.ALLOW,
@@ -240,7 +262,7 @@ class DataLakeBucketsStack(Stack):
             NagPackSuppression(
                 **{
                     "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
+                    "reason": "Resource access restriced for demo resources",
                 }
             ),
         ]
