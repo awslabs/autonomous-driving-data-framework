@@ -44,9 +44,7 @@ class TfPreReqs(Stack):  # type: ignore
             description="This stack deploys Storage resources",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"{project_name}-{deployment_name}"
-        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
         # S3 bucket for storing the remote state of Terraform
         self.tf_state_s3bucket = aws_s3.Bucket(
@@ -70,9 +68,7 @@ class TfPreReqs(Stack):  # type: ignore
             self,
             "tf_ddb_lock_table",
             table_name=f"{project_name}-{deployment_name}-tf-ddb-lock-table",
-            partition_key=aws_dynamodb.Attribute(
-                name=part_key, type=aws_dynamodb.AttributeType.STRING
-            ),
+            partition_key=aws_dynamodb.Attribute(name=part_key, type=aws_dynamodb.AttributeType.STRING),
             billing_mode=aws_dynamodb.BillingMode.PAY_PER_REQUEST,
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if tf_ddb_retention_type.upper() == "RETAIN"

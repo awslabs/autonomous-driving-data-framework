@@ -26,3 +26,12 @@ strict = true
 disallow_untyped_decorators = false
 exclude = "codeseeder.out/|example/"
 warn_unused_ignores = false
+
+[tool.pytest.ini_options]
+addopts = "-v --cov=. --cov-report term"
+pythonpath = [
+    "tests/"
+]
+
+[tool.coverage.run]
+omit = ["tests/*"]
