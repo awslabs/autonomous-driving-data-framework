@@ -1,0 +1,53 @@
+name: eureka
+path: modules/simulations/eureka
+parameters:
+  - name: eks-cluster-admin-role-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterAdminRoleArn
+  - name: eks-cluster-name
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: eks-oidc-arn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: eks-cluster-open-id-connect-issuer
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterOpenIdConnectIssuer
+  - name: application-ecr-name
+    valueFrom:
+      moduleMetadata:
+        group: storage
+        name: robotic-applications
+        key: EcrRepositoryName
+  - name: sqs-name
+    value: "training-queue"
+  - name: fsx-volume-handle
+    valueFrom:
+      moduleMetadata:
+        group: storage
+        name: fsx
+        key: FSxLustreFileSystemId
+  - name: fsx-mount-point
+    valueFrom:
+      moduleMetadata:
+        group: storage
+        name: fsx
+        key: FSxLustreMountName
+  - name: data-bucket-name
+    valueFrom:
+      moduleMetadata:
+        group: buckets
+        name: eureka-data-bucket
+        key: ArtifactsBucketName
