@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- updated object detection to YOLOv8+
 - fix the `modules/simulations/eureka` error due to missing requirement of aws-cdk.lambda-layer-kubectl-v29
 - Added `modules/simulations/eureka` examples
 - fix: module `modules/visualization/dcv-image` to update cdk version and cdk_ecr_deployment version
