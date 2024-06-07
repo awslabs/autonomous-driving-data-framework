@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Changed**
 
 - updated object detection to YOLOv8+
+- made `modules/optionals/datalake-buckets` module generic
 
 ### **Removed**
 
@@ -33,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - remedation to pass end-to-end integration testing of ADDF manifests
 - fixed the `fsx-lustre-on-eks` integration module's static provisioning failure
 - fixed the `restmappings prune` error caused to outdated kubectl handler used in imported cluster attributes
-- made `modules/optionals/datalake-buckets` module generic
 
 ### **Removed**
 
