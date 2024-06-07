@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Changed**
 
 - updated object detection to YOLOv8+
+- made the following module parameters generic:
+  - `examples/example-dags`
+  - `examples/example-tf`
+  - `examples/example-tf-prereqs`
 
 ### **Removed**
 

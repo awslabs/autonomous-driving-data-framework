@@ -5,20 +5,21 @@ from aws_cdk import App, CfnOutput
 
 from stack import TfPreReqs
 
-# ADDF vars
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
-hash = os.getenv("ADDF_HASH", "")
-tf_s3_backend_encryption_type = os.getenv("ADDF_PARAMETER_S3_ENCRYPTION_TYPE", "SSE")
-tf_s3_backend_retention_type = os.getenv("ADDF_PARAMETER_S3_RETENTION_TYPE", "DESTROY")
-tf_ddb_retention_type = os.getenv("ADDF_PARAMETER_DDB_RETENTION_TYPE", "DESTROY")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
+hash = os.getenv("SEEDFARMER_HASH", "")
+tf_s3_backend_encryption_type = os.getenv("SEEDFARMER_PARAMETER_S3_ENCRYPTION_TYPE", "SSE")
+tf_s3_backend_retention_type = os.getenv("SEEDFARMER_PARAMETER_S3_RETENTION_TYPE", "DESTROY")
+tf_ddb_retention_type = os.getenv("SEEDFARMER_PARAMETER_DDB_RETENTION_TYPE", "DESTROY")
 
 app = App()
 
 
 stack = TfPreReqs(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     hash=hash,

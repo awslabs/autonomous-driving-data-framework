@@ -8,7 +8,7 @@ This module demonstrates:
   - within the Stack, grant the MWAA Execution Role permission to assume the created DAG Execution Role
 - creating DAGs on a shared MWAA Environment by utilizing Input Parameters
   - within the DAG, demonstrate assuming the DAG Execution Role with service and data permissions specific to the DAG
-- exporting Metadata by setting the `ADDF_MODULE_METADATA` env var on completion
+- exporting Metadata by setting the `SEEDFARMER_MODULE_METADATA` env var on completion
 
 ## Inputs/Outputs
 
