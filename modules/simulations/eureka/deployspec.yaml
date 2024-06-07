@@ -14,7 +14,7 @@ deploy:
       - seedfarmer metadata convert -f cdk-exports.json || true
     post_build:
       commands:
-      - echo "Build successful"
+      - echo "Destroy successful"
 destroy:
   phases:
     install:
