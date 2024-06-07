@@ -1,5 +1,5 @@
-aws-cdk-lib==2.82.0
-aws-cdk.aws-glue-alpha==2.82.0-alpha.0
+aws-cdk-lib==2.128.0
+aws-cdk.aws-glue-alpha==2.128.0-alpha.0
 cdk-nag==2.12.29
 constructs==10.0.91
 boto3~=1.24.0
