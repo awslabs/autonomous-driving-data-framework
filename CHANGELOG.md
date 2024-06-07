@@ -13,6 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- updated object detection to YOLOv8+
+- made the following module parameters generic:
+  - `examples/example-dags`
+  - `examples/example-tf`
+  - `examples/example-tf-prereqs`
+
+### **Removed**
+
+=======
+
+## [V3.5.0] - [06/07/2024]
+
+### **Added**
+
+### **Changed**
+
 - fix the `modules/simulations/eureka` error due to missing requirement of aws-cdk.lambda-layer-kubectl-v29
 - Added `modules/simulations/eureka` examples
 - fix: module `modules/visualization/dcv-image` to update cdk version and cdk_ecr_deployment version
@@ -21,10 +37,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - remedation to pass end-to-end integration testing of ADDF manifests
 - fixed the `fsx-lustre-on-eks` integration module's static provisioning failure
 - fixed the `restmappings prune` error caused to outdated kubectl handler used in imported cluster attributes
-- made the following module parameters generic:
-  - `examples/example-dags`
-  - `examples/example-tf`
-  - `examples/example-tf-prereqs`
 
 ### **Removed**
 
