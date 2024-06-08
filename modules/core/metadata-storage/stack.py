@@ -18,26 +18,29 @@ class MetadataStorageStack(Stack):
         self,
         scope: Construct,
         id: str,
-        *,
-        deployment: str,
-        module: str,
+        project_name: str,
+        deployment_name: str,
+        module_name: str,
         scene_table_suffix: str,
         bagfile_table_suffix: str,
         glue_db_suffix: str,
         stack_description: str,
         **kwargs: Any,
     ) -> None:
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
+
+        # used to tag AWS resources. Tag Value length cant exceed 256 characters
+        full_dep_mod = dep_mod[:256] if len(dep_mod) > 256 else dep_mod
 
         super().__init__(scope, id, description=stack_description, **kwargs)
 
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=full_dep_mod)
 
         rosbag_bagfile_p_key = "bag_file_prefix"
         rosbag_bagfile_table = dynamo.Table(
             self,
             "dynamobagfiletable",
-            table_name=f"{dep_mod}-{bagfile_table_suffix}",
+            table_name=f"{full_dep_mod}-{bagfile_table_suffix}",
             partition_key=dynamo.Attribute(name=rosbag_bagfile_p_key, type=dynamo.AttributeType.STRING),
             billing_mode=dynamo.BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,
@@ -49,7 +52,7 @@ class MetadataStorageStack(Stack):
         rosbag_scene_table = dynamo.Table(
             self,
             "dynamotablescenes",
-            table_name=f"{dep_mod}-{scene_table_suffix}",
+            table_name=f"{full_dep_mod}-{scene_table_suffix}",
             partition_key=dynamo.Attribute(name=rosbag_scene_p_key, type=dynamo.AttributeType.STRING),
             sort_key=dynamo.Attribute(name=rosbag_scene_sort_key, type=dynamo.AttributeType.STRING),
             billing_mode=dynamo.BillingMode.PAY_PER_REQUEST,
@@ -61,7 +64,7 @@ class MetadataStorageStack(Stack):
         glue_db = glue_alpha.Database(
             self,
             "glue_db",
-            database_name=f"{dep_mod}-{glue_db_suffix}",
+            database_name=f"{full_dep_mod}-{glue_db_suffix}",
         )
 
         self.rosbag_bagfile_table = rosbag_bagfile_table

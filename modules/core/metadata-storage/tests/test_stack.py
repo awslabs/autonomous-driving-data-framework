@@ -25,14 +25,15 @@ def test_synthesize_stack(stack_defaults):
 
     app = cdk.App()
     project_name = "test-project"
-    dep_name = "test-deployment"
-    mod_name = "test-module"
+    deployment_name = "test-deployment"
+    module_name = "test-module"
 
     metadata_storage_stack = stack.MetadataStorageStack(
         scope=app,
-        id=f"{project_name}-{dep_name}-{mod_name}",
-        deployment=dep_name,
-        module=mod_name,
+        id=f"{project_name}-{deployment_name}-{module_name}",
+        project_name=project_name,
+        deployment_name=deployment_name,
+        module_name=module_name,
         scene_table_suffix="scene-suffix",
         bagfile_table_suffix="glue-db-suffix",
         glue_db_suffix="ros-table-suffix",
