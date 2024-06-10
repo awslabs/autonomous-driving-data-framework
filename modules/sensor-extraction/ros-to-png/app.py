@@ -3,7 +3,7 @@
 
 import os
 
-from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
+from aws_cdk import App, CfnOutput, Environment
 
 from stack import RosToPngBatchJob
 
@@ -16,6 +16,7 @@ def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
 
+ecr_repository_arn = os.getenv(_param("ECR_REPOSITORY_ARN"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 retries = int(os.getenv(_param("RETRIES"), 1))
 timeout_seconds = int(os.getenv(_param("TIMEOUT_SECONDS"), 60))
@@ -23,7 +24,6 @@ vcpus = int(os.getenv(_param("VCPUS"), 4))
 memory_limit_mib = int(os.getenv(_param("MEMORY_MIB"), 16384))
 resized_width = os.getenv(_param("RESIZED_WIDTH"))
 resized_height = os.getenv(_param("RESIZED_HEIGHT"))
-removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
 
 batch_config = {
     "retries": retries,
@@ -37,6 +37,9 @@ if resized_width:
 
 if resized_height:
     batch_config["resized_height"] = int(resized_height)
+
+if not ecr_repository_arn:
+    raise ValueError("ECR Repository ARN is missing.")
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
@@ -67,9 +70,9 @@ stack = RosToPngBatchJob(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    ecr_repository_arn=ecr_repository_arn,
     s3_access_policy=full_access_policy,
     batch_config=batch_config,
-    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
     stack_description=generate_description(),
 )
 

@@ -14,6 +14,9 @@ def stack_defaults():
     os.environ["SEEDFARMER_MODULE_NAME"] = "test-module"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
+    os.environ["SEEDFARMER_PARAMETER_ECR_REPOSITORY_ARN"] = (
+        "arn:aws:ecr:us-east-1:123456789012:repository/addf-docker-repository"
+    )
     os.environ["SEEDFARMER_PARAMETER_FULL_ACCESS_POLICY_ARN"] = (
         "arn:aws:iam::123456789012:policy/addf-aws-solutions-wip-policy-full-access"
     )
@@ -35,6 +38,12 @@ def test_app(stack_defaults):
 
 def test_missing_app_policy(stack_defaults):
     del os.environ["SEEDFARMER_PARAMETER_FULL_ACCESS_POLICY_ARN"]
+    with pytest.raises(ValueError):
+        import app  # noqa: F401
+
+
+def test_missing_app_ecr_arn(stack_defaults):
+    del os.environ["SEEDFARMER_PARAMETER_ECR_REPOSITORY_ARN"]
     with pytest.raises(ValueError):
         import app  # noqa: F401
 

@@ -35,6 +35,7 @@ def test_synthesize_stack(stack_defaults):
         deployment_name=dep_name,
         module_name=mod_name,
         s3_access_policy="arn:aws:policy:12345:XXX",
+        ecr_repository_arn="arn:aws:ecr:us-east-1:123456789012:repository/addf-docker-repository",
         stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],

@@ -3,7 +3,7 @@
 
 import os
 
-from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
+from aws_cdk import App, CfnOutput, Environment
 
 from stack import LaneDetection
 
@@ -16,8 +16,11 @@ def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
 
+ecr_repository_arn = os.getenv(_param("ECR_REPOSITORY_ARN"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
-removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
+
+if not ecr_repository_arn:
+    raise ValueError("ECR Repository ARN is missing.")
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
@@ -48,8 +51,8 @@ stack = LaneDetection(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    ecr_repository_arn=ecr_repository_arn,
     s3_access_policy=full_access_policy,
-    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
     stack_description=generate_description(),
 )
 

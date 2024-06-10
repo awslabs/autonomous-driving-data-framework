@@ -34,6 +34,7 @@ def test_synthesize_stack(stack_defaults):
         project_name=project_name,
         deployment_name=dep_name,
         module_name=mod_name,
+        ecr_repository_arn="arn:aws:ecr:us-east-1:123456789012:repository/addf-docker-repository",
         s3_access_policy="arn:aws:policy:12345:XXX",
         stack_description="Testing",
         env=cdk.Environment(

@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - made `modules/core/metadata-storage` module generic and bumped CDK version
 - fix code validation script
 - made `ml-training-on-eks` solution generic and organized the solution contents `training-image/mnist`, `ml-training/k8s-managed` into a single dir
+- refactor the following modules to use the ECR module instead of building their own ECR repository:
+  - `sensor-extraction/ros-to-parquet`
+  - `sensor-extraction/ros-to-png`
+  - `post-processing/yolo-object-detection`
+  - `post-processing/yolop-lane-detection`
 
 ### **Removed**
 

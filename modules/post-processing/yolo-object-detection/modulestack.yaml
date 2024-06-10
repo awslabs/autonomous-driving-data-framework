@@ -2,15 +2,9 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This template deploys a Module specific IAM permissions
 
 Parameters:
-  ProjectName:
+  EcrRepositoryArn:
     Type: String
-    Description: The name of the project
-  DeploymentName:
-    Type: String
-    Description: The name of the deployment
-  ModuleName:
-    Type: String
-    Description: The name of the Module
+    Description: The ARN of the ECR repository
   RoleName:
     Type: String
     Description: The name of the IAM Role
@@ -41,5 +35,5 @@ Resources:
               - "ecr:CompleteLayerUpload"
               - "ecr:PutImage"
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Ref EcrRepositoryArn
               - "arn:aws:ecr:*:*:repository/pytorch-inference*"

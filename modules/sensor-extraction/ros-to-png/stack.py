@@ -10,7 +10,7 @@ import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import Aspects, Duration, RemovalPolicy, Size, Stack, Tags
+from aws_cdk import Aspects, Duration, Size, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
 from cdk_nag import NagPackSuppression, NagSuppressions
@@ -28,10 +28,10 @@ class RosToPngBatchJob(Stack):
         project_name: str,
         deployment_name: str,
         module_name: str,
+        ecr_repository_arn: str,
         s3_access_policy: str,
         batch_config: Dict[str, Any],
         stack_description: str,
-        removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -48,14 +48,7 @@ class RosToPngBatchJob(Stack):
 
         dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
-        self.repository_name = dep_mod
-        repo = ecr.Repository(
-            self,
-            id=self.repository_name,
-            repository_name=self.repository_name,
-            removal_policy=removal_policy,
-            auto_delete_images=True if removal_policy == RemovalPolicy.DESTROY else False,
-        )
+        repo = ecr.Repository.from_repository_arn(self, "Repository", ecr_repository_arn)
 
         local_image = DockerImageAsset(
             self,
@@ -92,7 +85,7 @@ class RosToPngBatchJob(Stack):
 
         role = iam.Role(
             self,
-            f"{self.repository_name}-batch-role",
+            f"{repo.repository_name}-batch-role",
             assumed_by=iam.CompositePrincipal(
                 iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             ),
@@ -136,7 +129,7 @@ class RosToPngBatchJob(Stack):
                     ),
                 ],
             ),
-            job_definition_name=self.repository_name,
+            job_definition_name=repo.repository_name,
             retry_attempts=batch_config["retries"],
             timeout=Duration.seconds(batch_config["timeout_seconds"]),
         )

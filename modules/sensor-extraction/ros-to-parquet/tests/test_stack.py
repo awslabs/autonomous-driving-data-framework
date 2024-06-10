@@ -36,6 +36,7 @@ def test_synthesize_stack(stack_defaults):
         deployment_name=dep_name,
         module_name=mod_name,
         platform="FARGATE",
+        ecr_repository_arn="arn:aws:ecr:us-east-1:123456789012:repository/addf-docker-repository",
         s3_access_policy="'arn:aws:iam::123456789012:policy/addf-buckets-us-west-2-123-full-access",
         retries=1,
         timeout_seconds=1800,
