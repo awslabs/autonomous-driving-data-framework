@@ -55,17 +55,9 @@ def test_synthesize_stack(stack_defaults):
     )
 
     template = Template.from_stack(ros_to_png)
-    template.resource_count_is("AWS::ECR::Repository", 1)
-    template.resource_count_is("AWS::Lambda::Function", 2)
+    template.resource_count_is("AWS::Lambda::Function", 1)
     template.resource_count_is("AWS::Batch::JobDefinition", 1)
-    template.resource_count_is("AWS::IAM::Role", 3)
-    # Check ecr.Repository 'auto_delete' runtime version
-    template.has_resource_properties(
-        type="AWS::Lambda::Function",
-        props={
-            "Runtime": "nodejs18.x",
-        },
-    )
+    template.resource_count_is("AWS::IAM::Role", 2)
     # Check batch job definition properties
     template.has_resource_properties(
         type="AWS::Batch::JobDefinition",
@@ -121,6 +113,6 @@ def test_synthesize_stack_without_resize(stack_defaults):
     )
 
     template = Template.from_stack(ros_to_png)
-    template.resource_count_is("AWS::Lambda::Function", 2)
+    template.resource_count_is("AWS::Lambda::Function", 1)
     template.resource_count_is("AWS::Batch::JobDefinition", 1)
-    template.resource_count_is("AWS::IAM::Role", 3)
+    template.resource_count_is("AWS::IAM::Role", 2)

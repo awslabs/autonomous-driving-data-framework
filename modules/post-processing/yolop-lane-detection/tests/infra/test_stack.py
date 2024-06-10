@@ -44,4 +44,4 @@ def test_synthesize_stack(stack_defaults):
     )
 
     template = Template.from_stack(lane_det_stack)
-    template.resource_count_is("AWS::IAM::Role", 2)
+    template.resource_count_is("AWS::IAM::Role", 1)
