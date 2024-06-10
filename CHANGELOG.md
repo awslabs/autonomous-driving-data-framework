@@ -31,8 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `sensor-extraction/ros-to-png`
   - `post-processing/yolo-object-detection`
   - `post-processing/yolop-lane-detection`
+- updating `visualization/dev-instance` to use generic parameters
 
 ### **Removed**
+- moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
 
 =======
 

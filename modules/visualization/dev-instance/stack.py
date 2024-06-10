@@ -39,6 +39,7 @@ class DataServiceDevInstancesStack(Stack):
         id: str,
         *,
         env: Environment,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         vpc_id: str,
@@ -61,10 +62,10 @@ class DataServiceDevInstancesStack(Stack):
             env=env,
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"{project_name}-{deployment_name}")
 
         region = Stack.of(self).region
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
         ####################################################################################################
         # VPC
@@ -114,13 +115,13 @@ class DataServiceDevInstancesStack(Stack):
         s3_policy_json = {
             "Effect": "Allow",
             "Action": ["s3:Get*", "s3:List*", "s3:PutObject*", "s3:DeleteObject*"],
-            "Resource": ["arn:aws:s3:::addf*", "arn:aws:s3:::addf*/*"],
+            "Resource": [f"arn:aws:s3:::{project_name}*", f"arn:aws:s3:::{project_name}*/*"],
         }
 
         lambda_policy_json = {
             "Effect": "Allow",
             "Action": ["lambda:Invoke*"],
-            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:addf-*"],
+            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:{project_name}-*"],
         }
 
         if s3_dataset_bucket:
