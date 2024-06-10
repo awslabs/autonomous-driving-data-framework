@@ -1,4 +1,5 @@
 publishGenericEnvVariables: true
+build_type: BUILD_GENERAL1_LARGE
 deploy:
   phases:
     install:
@@ -9,7 +10,7 @@ deploy:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # Here we export some env vars
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}']['metadata'])")
       - export ECR_REPO_NAME=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EcrRepoName")
       - export IMAGE_URI=$(echo ${ADDF_MODULE_METADATA} | jq -r ".ImageUri")
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
@@ -32,5 +33,3 @@ destroy:
     build:
       commands:
       - cdk destroy --force --app "python app.py"
-build_type: BUILD_GENERAL1_LARGE
-
