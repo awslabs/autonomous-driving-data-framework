@@ -7,12 +7,13 @@ from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
 
 from stack import RosToParquetBatchJob
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
@@ -32,9 +33,9 @@ if platform not in ["FARGATE", "EC2"]:
 
 
 def generate_description() -> str:
-    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
-    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
-    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+    soln_id = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_VERSION", None)
 
     desc = "(SO9154) Autonomous Driving Data Framework (ADDF) - ros-to-parquet"
     if soln_id and soln_name and soln_version:
@@ -48,7 +49,8 @@ app = App()
 
 stack = RosToParquetBatchJob(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     env=Environment(

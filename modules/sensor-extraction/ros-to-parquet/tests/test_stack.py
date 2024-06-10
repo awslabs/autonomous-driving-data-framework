@@ -11,9 +11,9 @@ from aws_cdk.assertions import Template
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-    os.environ["ADDF_PROJECT_NAME"] = "test-project"
-    os.environ["ADDF_DEPLOYMENT_NAME"] = "test-deployment"
-    os.environ["ADDF_MODULE_NAME"] = "test-module"
+    os.environ["SEEDFARMER_PROJECT_NAME"] = "test-project"
+    os.environ["SEEDFARMER_DEPLOYMENT_NAME"] = "test-deployment"
+    os.environ["SEEDFARMER_MODULE_NAME"] = "test-module"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
 
@@ -25,12 +25,14 @@ def test_synthesize_stack(stack_defaults):
     import stack
 
     app = cdk.App()
+    project_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
     ros_to_parquet = stack.RosToParquetBatchJob(
         scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
+        id=f"{project_name}-{dep_name}-{mod_name}",
+        project_name=project_name,
         deployment_name=dep_name,
         module_name=mod_name,
         platform="FARGATE",
