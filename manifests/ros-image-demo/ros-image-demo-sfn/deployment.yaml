@@ -14,7 +14,7 @@ groups:
     path: manifests/ros-image-demo/ros-image-demo-sfn/aws-analysis-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 992382747788
+    accountId: 1234567890
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
