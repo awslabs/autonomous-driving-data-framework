@@ -6,12 +6,11 @@ from string import Template
 from typing import Any, cast
 
 import yaml
-from aws_cdk import Duration
-from aws_cdk import aws_iam as iam
+from aws_cdk import Duration, Environment, Stack, Tags
 from aws_cdk import aws_ecr as ecr
 from aws_cdk import aws_eks as eks
+from aws_cdk import aws_iam as iam
 from aws_cdk import aws_sqs as sqs
-from aws_cdk import Environment, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
@@ -66,9 +65,7 @@ class EurekaStack(Stack):
             open_id_connect_provider=provider,
             kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
-        manifest = self.get_fsx_static_provisioning_manifest(
-            fsx_volume_handle, fsx_mount_point, env
-        )
+        manifest = self.get_fsx_static_provisioning_manifest(fsx_volume_handle, fsx_mount_point, env)
         manifest_file = list(yaml.load_all(manifest, Loader=yaml.FullLoader))
         loop_iteration = 0
         for value in manifest_file:
@@ -113,11 +110,7 @@ class EurekaStack(Stack):
             ROLE_NAME,
             assumed_by=iam.FederatedPrincipal(
                 eks_oidc_arn,
-                {
-                    "StringLike": {
-                        f"{eks_cluster_open_id_connect_issuer}:sub": "system:serviceaccount:*"
-                    }
-                },
+                {"StringLike": {f"{eks_cluster_open_id_connect_issuer}:sub": "system:serviceaccount:*"}},
                 "sts:AssumeRoleWithWebIdentity",
             ),
         )
@@ -173,9 +166,7 @@ class EurekaStack(Stack):
                     "iam:AttachRolePolicy",
                     "iam:PutRolePolicy",
                 ],
-                resources=[
-                    "arn:aws:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"
-                ],
+                resources=["arn:aws:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"],
             )
         )
         fsx_policy = iam.PolicyStatement(
@@ -185,9 +176,7 @@ class EurekaStack(Stack):
             ],
             resources=["*"],
         )
-        fsx_policy.add_conditions(
-            {"StringLike": {"iam:AWSServiceName": ["fsx.amazonaws.com"]}}
-        )
+        fsx_policy.add_conditions({"StringLike": {"iam:AWSServiceName": ["fsx.amazonaws.com"]}})
         role.add_to_principal_policy(fsx_policy)
         return role.role_arn
 
@@ -219,14 +208,9 @@ class EurekaStack(Stack):
         mount_point: str,
         env: Environment,
     ) -> str:
-        t = Template(
-            open(
-                os.path.join(project_dir, "manifests/fsx_static_provisioning.yaml"), "r"
-            ).read()
-        )
+        t = Template(open(os.path.join(project_dir, "manifests/fsx_static_provisioning.yaml"), "r").read())
         return t.substitute(
             VOLUME_HANDLE=volume_handle,
             MOUNT_NAME=mount_point,
             REGION=env.region,
         )
-

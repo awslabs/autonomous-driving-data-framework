@@ -234,7 +234,7 @@ class DataServiceDevInstancesStack(Stack):
                 role=dev_instance_role,
                 vpc_subnets=SubnetSelection(subnet_type=SubnetType.PUBLIC),
                 security_group=instance_sg,
-                require_imdsv2=True
+                require_imdsv2=True,
             )
 
             self.instance = instance
