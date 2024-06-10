@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `examples/example-dags`
   - `examples/example-tf`
   - `examples/example-tf-prereqs`
+  - `sensor-extraction/ros-to-parquet`
+  - `sensor-extraction/ros-to-png`
+  - `post-processing/yolo-object-detection`
+  - `post-processing/yolop-lane-detection`
 - made `modules/core/metadata-storage` module generic and bumped CDK version
 
 ### **Removed**
