@@ -24,12 +24,13 @@ def test_synthesize_stack(stack_defaults):
     import stack
 
     app = cdk.App()
+    project_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
     lane_det_stack = stack.LaneDetection(
         scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
+        id=f"{project_name}-{dep_name}-{mod_name}",
         deployment_name=dep_name,
         module_name=mod_name,
         s3_access_policy="arn:aws:policy:12345:XXX",

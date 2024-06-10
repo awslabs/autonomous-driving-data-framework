@@ -20,6 +20,7 @@ class ObjectDetection(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         s3_access_policy: str,
@@ -39,7 +40,7 @@ class ObjectDetection(Stack):
             value="aws",
         )
 
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
         self.repository_name = dep_mod
 
@@ -57,7 +58,7 @@ class ObjectDetection(Stack):
             iam.PolicyStatement(
                 actions=["dynamodb:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf*"],
+                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/{project_name}*"],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
@@ -67,7 +68,7 @@ class ObjectDetection(Stack):
             iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
                 effect=iam.Effect.ALLOW,
-                resources=["arn:aws:s3:::addf-*", "arn:aws:s3:::addf-*/*"],
+                resources=[f"arn:aws:s3:::{project_name}-*", f"arn:aws:s3:::{project_name}-*/*"],
             ),
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
