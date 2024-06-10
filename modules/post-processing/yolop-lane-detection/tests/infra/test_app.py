@@ -9,8 +9,9 @@ import pytest
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-    os.environ["SEEDFARMER_DEPLOYMENT_NAME"] = "test-proj"
-    os.environ["SEEDFARMER_MODULE_NAME"] = "test-dep"
+    os.environ["SEEDFARMER_PROJECT_NAME"] = "test-proj"
+    os.environ["SEEDFARMER_DEPLOYMENT_NAME"] = "test-dep"
+    os.environ["SEEDFARMER_MODULE_NAME"] = "test-mod
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
     os.environ["SEEDFARMER_PARAMETER_FULL_ACCESS_POLICY_ARN"] = "arn:aws:policy:12345:XXX"
