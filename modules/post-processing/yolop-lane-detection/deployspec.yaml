@@ -9,10 +9,9 @@ deploy:
     build:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      # Here we export some env vars
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}']['metadata'])")
-      - export ECR_REPO_NAME=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EcrRepoName")
-      - export IMAGE_URI=$(echo ${ADDF_MODULE_METADATA} | jq -r ".ImageUri")
+      - seedfarmer metadata convert -f cdk-exports.json || true
+      - export ECR_REPO_NAME=$(cat SEEDFARMER_MODULE_METADATA | jq -r ".EcrRepoName")
+      - export IMAGE_URI=$(cat SEEDFARMER_MODULE_METADATA | jq -r ".ImageUri")
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
       - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - export BASE_IMAGE=763104351884.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/pytorch-inference:1.10.2-cpu-py38-ubuntu20.04-e3
