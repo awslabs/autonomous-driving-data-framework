@@ -41,8 +41,8 @@ echo "Validating: ${VALIDATE_PATH}, Language: ${LANGUAGE}"
 echo "Validating Formatting"
 if [[ $LANGUAGE == "python" ]]; then
     echo "Running ruff"
-    ruff format ${FIX_PATH}
-    ruff check --fix ${FIX_PATH}
+    ruff format --check ${VALIDATE_PATH}
+    ruff check ${VALIDATE_PATH}
 elif [[ $LANGUAGE == "typescript" ]]; then
     echo "Checking prettier"
     npx prettier -c .

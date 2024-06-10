@@ -3,11 +3,11 @@ name: Module Checks
 on:
   push:
     branches: ["main"]
-    paths: ['modules/**']
+    paths: ['modules/**', 'scripts/validate.sh']
 
   pull_request:
     branches: ["main", "release/*", "stable"]
-    paths: ['modules/**']
+    paths: ['modules/**', 'scripts/validate.sh']
 
   workflow_dispatch:
 

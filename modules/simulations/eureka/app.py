@@ -14,9 +14,7 @@ deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
 module_name = os.getenv("SEEDFARMER_MODULE_NAME")
 
 if len(f"{project_name}-{deployment_name}") > 36:
-    raise ValueError(
-        "This module cannot support a project+deployment name character length greater than 35"
-    )
+    raise ValueError("This module cannot support a project+deployment name character length greater than 35")
 
 
 def _param(name: str) -> str:
@@ -26,9 +24,7 @@ def _param(name: str) -> str:
 eks_cluster_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"), "")
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"), "")
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"), "")
-eks_cluster_open_id_connect_issuer = os.getenv(
-    _param("EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"), ""
-)
+eks_cluster_open_id_connect_issuer = os.getenv(_param("EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"), "")
 application_ecr_name = os.getenv(_param("APPLICATION_ECR_NAME"), "")
 sqs_name = os.getenv(_param("SQS_NAME"), "")
 fsx_volume_handle = os.getenv(_param("FSX_VOLUME_HANDLE"), "")
