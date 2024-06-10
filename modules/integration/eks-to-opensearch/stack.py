@@ -8,9 +8,9 @@ import cdk_nag
 from aws_cdk import Aspects, Stack, Tags
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_eks as eks
-from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_opensearchservice as opensearch
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 

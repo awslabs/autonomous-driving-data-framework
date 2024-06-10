@@ -10,16 +10,16 @@ from ultralytics import YOLO
 
 
 def get_pandas(result):
-  # translate boxes data from a Tensor to the List of boxes info lists
-  boxes_list = result.boxes.data.tolist()
-  columns = ["xmin", "ymin", "xmax", "ymax", "confidence", "class", "name"]
+    # translate boxes data from a Tensor to the List of boxes info lists
+    boxes_list = result.boxes.data.tolist()
+    columns = ["xmin", "ymin", "xmax", "ymax", "confidence", "class", "name"]
 
-  # iterate through the list of boxes info and make some formatting
-  for i in boxes_list:
-    # add a class name as a last element
-    i.append(result.names[i[5]])
+    # iterate through the list of boxes info and make some formatting
+    for i in boxes_list:
+        # add a class name as a last element
+        i.append(result.names[i[5]])
 
-  return pd.DataFrame(boxes_list, columns=columns)
+    return pd.DataFrame(boxes_list, columns=columns)
 
 
 def get_yolo_prediction(model, image, input_data_path, _input_size=1280, confidence=0.25, iou=0.45, max_det=1000):
