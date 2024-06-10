@@ -21,7 +21,7 @@ class TrainingPipeline(Stack):
         self,
         scope: Construct,
         id: str,
-        *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         eks_cluster_name: str,
@@ -33,32 +33,24 @@ class TrainingPipeline(Stack):
         training_image_uri: str,
         **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
-        self.deployment_name = deployment_name
-        self.module_name = module_name
-
         super().__init__(
             scope,
             id,
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment", value=f"addf-{deployment_name}"
-        )
+
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
+        dep_mod = dep_mod[0:19]
+        # used to tag AWS resources. Tag Value length cant exceed 256 characters
+        full_dep_mod = dep_mod[:256] if len(dep_mod) > 256 else dep_mod
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=full_dep_mod)
 
         policy_statements = [
-            aws_iam.PolicyStatement(
-                actions=["sqs:*"],
-                effect=aws_iam.Effect.ALLOW,
-                resources=[
-                    f"arn:aws:sqs:{self.region}:{self.account}:addf-{deployment_name}-{module_name}*"
-                ],
-            ),
             aws_iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=aws_iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:ecr:{self.region}:{self.account}:repository/addf-{deployment_name}-{module_name}*"
+                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{project_name}-{deployment_name}-{module_name}*"
                 ],
             ),
         ]
@@ -68,7 +60,7 @@ class TrainingPipeline(Stack):
         )
         cluster = aws_eks.Cluster.from_cluster_attributes(
             self,
-            f"eks-{self.deployment_name}-{self.module_name}",
+            f"eks-{deployment_name}-{module_name}",
             cluster_name=eks_cluster_name,
             open_id_connect_provider=provider,
             kubectl_role_arn=eks_admin_role_arn,
@@ -131,7 +123,7 @@ class TrainingPipeline(Stack):
                     "name": "module-owner",
                 },
                 "subjects": [
-                    {"kind": "User", "name": f"addf-{module_name}"},
+                    {"kind": "User", "name": f"{project_name}-{module_name}"},
                     {
                         "kind": "ServiceAccount",
                         "name": module_name,
@@ -171,7 +163,7 @@ class TrainingPipeline(Stack):
                     "name": "default-access",
                 },
                 "subjects": [
-                    {"kind": "User", "name": f"addf-{module_name}"},
+                    {"kind": "User", "name": f"{project_name}-{module_name}"},
                     {
                         "kind": "ServiceAccount",
                         "name": module_name,
@@ -194,7 +186,7 @@ class TrainingPipeline(Stack):
                     "name": "system-access",
                 },
                 "subjects": [
-                    {"kind": "User", "name": f"addf-{module_name}"},
+                    {"kind": "User", "name": f"{project_name}-{module_name}"},
                     {
                         "kind": "ServiceAccount",
                         "name": module_name,
@@ -207,7 +199,7 @@ class TrainingPipeline(Stack):
 
         self.eks_service_account_role = service_account.role
 
-        final_status = sfn.Pass(self, "final step")  # noqa: F841
+        _final_status = sfn.Pass(self, "final step")  # noqa: F841
 
         # States language JSON to put an item into DynamoDB
         # snippet generated from
@@ -256,7 +248,9 @@ class TrainingPipeline(Stack):
                             {
                                 "name": "persistent-storage",
                                 "persistentVolumeClaim": {
-                                    "claimName": os.getenv("ADDF_PARAMETER_PVC_NAME")
+                                    "claimName": os.getenv(
+                                        "SEEDFARMER_PARAMETER_PVC_NAME"
+                                    )
                                 },
                             }
                         ],
@@ -307,7 +301,7 @@ class TrainingPipeline(Stack):
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-IAM5",
-                        "reason": "Resource access restriced to ADDF resources",
+                        "reason": "Resource access restriced to project resources",
                     }
                 ),
                 NagPackSuppression(

@@ -5,6 +5,6 @@ dataFiles:
   - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=v1.1.0&depth=1
 parameters:
   - name: eks-version
-    value: "1.25"
+    value: "1.29"
     # valueFrom:
     #   envVariable: GLOBAL_EKS_VERSION
