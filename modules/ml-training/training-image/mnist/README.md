@@ -13,4 +13,3 @@ The module requires the following parameters:
 
 The module outputs:
 - `ImageUri` - Image URI (including tag) to use in downstream training pipelines
-

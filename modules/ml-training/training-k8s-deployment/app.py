@@ -8,12 +8,13 @@ from aws_cdk import App, CfnOutput, Environment
 from stack import TrainingPipeline
 
 # Project specific
-deployment_name = os.environ["ADDF_DEPLOYMENT_NAME"]
-module_name = os.environ["ADDF_MODULE_NAME"]
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.environ["SEEDFARMER_DEPLOYMENT_NAME"]
+module_name = os.environ["SEEDFARMER_MODULE_NAME"]
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"))
@@ -28,7 +29,8 @@ app = App()
 
 stack = TrainingPipeline(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     eks_cluster_name=cast(str, eks_cluster_name),

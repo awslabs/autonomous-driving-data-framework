@@ -23,12 +23,14 @@ def test_synthesize_stack(stack_defaults):
     import stack
 
     app = cdk.App()
+    project_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
     _step_function = stack.TrainingPipeline(
         scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
+        id=f"{project_name}-{dep_name}-{mod_name}",
+        project_name=project_name,
         deployment_name=dep_name,
         module_name=mod_name,
         eks_cluster_name=mod_name,
