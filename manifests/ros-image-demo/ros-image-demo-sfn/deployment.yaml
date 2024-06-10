@@ -6,13 +6,15 @@ groups:
     path: manifests/ros-image-demo/ros-image-demo-sfn/optional-modules.yaml
   - name: core
     path: manifests/ros-image-demo/ros-image-demo-sfn/core-modules.yaml
+  - name: docker-repositories
+    path: manifests/ros-image-demo/ros-image-demo-sfn/docker-repository-modules.yaml
   - name: docker-images
     path: manifests/ros-image-demo/ros-image-demo-sfn/docker-image-modules.yaml
   - name: analysis
     path: manifests/ros-image-demo/ros-image-demo-sfn/aws-analysis-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 123456789101
+    accountId: 1234567890
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials

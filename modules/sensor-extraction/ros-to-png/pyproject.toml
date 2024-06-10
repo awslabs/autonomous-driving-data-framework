@@ -20,14 +20,11 @@ exclude = [
 select = ["F", "I", "E", "W"]
 fixable = ["ALL"]
 
-[tool.coverage.run]
-omit = ["tests/*"]
-
 [tool.mypy]
-python_version = 3.8
+python_version = "3.8"
 strict = true
 ignore_missing_imports = true
-allow_untyped_decorators = true
+disallow_untyped_decorators = false
 exclude = "codeseeder.out/|src/|tests/"
 
 [tool.pytest.ini_options]
@@ -35,3 +32,6 @@ addopts = "-v --cov=. --cov-report term"
 pythonpath = [
   "."
 ]
+
+[tool.coverage.run]
+omit = ["tests/*", "setup.py"]

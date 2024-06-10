@@ -10,7 +10,7 @@ import aws_cdk.aws_ecr as ecr
 import aws_cdk.aws_ecs as ecs
 import aws_cdk.aws_iam as iam
 import cdk_nag
-from aws_cdk import Aspects, Duration, RemovalPolicy, Size, Stack, Tags
+from aws_cdk import Aspects, Duration, Size, Stack, Tags
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from cdk_ecr_deployment import DockerImageName, ECRDeployment
 from cdk_nag import NagPackSuppression, NagSuppressions
@@ -25,15 +25,16 @@ class RosToParquetBatchJob(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
+        ecr_repository_arn: str,
         s3_access_policy: str,
         platform: str,  # FARGATE or EC2
         retries: int,
         timeout_seconds: int,
         vcpus: int,
         memory_limit_mib: int,
-        removal_policy: RemovalPolicy = RemovalPolicy.DESTROY,
         stack_description: str,
         **kwargs: Any,
     ) -> None:
@@ -49,16 +50,9 @@ class RosToParquetBatchJob(Stack):
             value="aws",
         )
 
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
-        self.repository_name = dep_mod
-        repo = ecr.Repository(
-            self,
-            id=self.repository_name,
-            repository_name=self.repository_name,
-            removal_policy=removal_policy,
-            auto_delete_images=True if removal_policy == RemovalPolicy.DESTROY else False,
-        )
+        repo = ecr.Repository.from_repository_arn(self, "Repository", ecr_repository_arn)
 
         local_image = DockerImageAsset(
             self,
@@ -78,7 +72,7 @@ class RosToParquetBatchJob(Stack):
             iam.PolicyStatement(
                 actions=["dynamodb:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/addf*"],
+                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/{project_name}*"],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
@@ -88,14 +82,14 @@ class RosToParquetBatchJob(Stack):
             iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
                 effect=iam.Effect.ALLOW,
-                resources=["arn:aws:s3:::addf-*", "arn:aws:s3:::addf-*/*"],
+                resources=[f"arn:aws:s3:::{project_name}-*", f"arn:aws:s3:::{project_name}-*/*"],
             ),
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 
         role = iam.Role(
             self,
-            f"{self.repository_name}-batch-role",
+            f"{repo.repository_name}-batch-role",
             assumed_by=iam.CompositePrincipal(
                 iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             ),
@@ -141,7 +135,7 @@ class RosToParquetBatchJob(Stack):
                 memory=Size.mebibytes(memory_limit_mib),
                 cpu=vcpus,
             ),
-            job_definition_name=self.repository_name,
+            job_definition_name=repo.repository_name,
             retry_attempts=retries,
             timeout=Duration.seconds(timeout_seconds),
         )
