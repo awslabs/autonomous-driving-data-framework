@@ -91,6 +91,7 @@ def test_synthesize_stack_without_resize(stack_defaults):
     import stack
 
     app = cdk.App()
+    project_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
@@ -104,6 +105,7 @@ def test_synthesize_stack_without_resize(stack_defaults):
     ros_to_png = stack.RosToPngBatchJob(
         scope=app,
         id=f"addf-{dep_name}-{mod_name}",
+        project_name=project_name,
         deployment_name=dep_name,
         module_name=mod_name,
         s3_access_policy="arn:aws:iam::123456789012:policy/addf-buckets-us-west-2-123-full-access",
