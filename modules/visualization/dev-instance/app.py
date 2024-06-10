@@ -10,22 +10,29 @@ from aws_cdk import App, CfnOutput, Environment
 
 from stack import DataServiceDevInstancesStack
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
-module_name = os.getenv("ADDF_MODULE_NAME")
+# Project vars
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
-vpc_id = os.getenv("ADDF_PARAMETER_VPC_ID")
-instance_type = os.getenv("ADDF_PARAMETER_INSTANCE_TYPE", "g4dn.xlarge")
-instance_count = int(os.getenv("ADDF_PARAMETER_INSTANCE_COUNT", "1"))
 
-ami_id = os.getenv("ADDF_PARAMETER_AMI_ID", None)
-s3_dataset_bucket = os.getenv("ADDF_PARAMETER_S3_DATASET_BUCKET", None)
-s3_script_bucket = os.getenv("ADDF_PARAMETER_S3_SCRIPT_BUCKET", None)
+def _param(name: str) -> str:
+    return f"SEEDFARMER_PARAMETER_{name}"
 
-demo_password = os.getenv("ADDF_PARAMETER_DEMO_PASSWORD", None)
+
+vpc_id = os.getenv(_param("VPC_ID"))
+instance_type = os.getenv(_param("INSTANCE_TYPE"), "g4dn.xlarge")
+instance_count = int(os.getenv(_param("INSTANCE_COUNT"), "1"))
+
+ami_id = os.getenv(_param("AMI_ID"), None)
+s3_dataset_bucket = os.getenv(_param("S3_DATASET_BUCKET"), None)
+s3_script_bucket = os.getenv(_param("S3_SCRIPT_BUCKET"), None)
+
+demo_password = os.getenv(_param("DEMO_PASSWORD"), None)
 
 stack_id = "data-src-dev-instances"
 if deployment_name and module_name:
-    stack_id = f"addf-{deployment_name}-{module_name}"
+    stack_id = f"{project_name}-{deployment_name}-{module_name}"
 
 app = App()
 
@@ -38,6 +45,7 @@ stack = DataServiceDevInstancesStack(
     scope=app,
     id=stack_id,
     env=env,
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     vpc_id=vpc_id,
