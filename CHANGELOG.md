@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `examples/example-tf`
   - `examples/example-tf-prereqs`
 - made `modules/core/metadata-storage` module generic and bumped CDK version
+- fix code validation script
 
 ### **Removed**
 
