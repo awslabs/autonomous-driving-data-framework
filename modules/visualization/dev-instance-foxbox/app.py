@@ -14,6 +14,7 @@ from stack import DataServiceDevInstancesStack
 def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
+
 ###################
 # General Environment Variables
 PROJECT_NAME = os.getenv("SEEDFARMER_PROJECT_NAME", None)
