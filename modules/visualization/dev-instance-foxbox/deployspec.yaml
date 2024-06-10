@@ -1,3 +1,4 @@
+publishGenericEnvVariables: true
 deploy:
   phases:
     install:
@@ -6,9 +7,9 @@ deploy:
         - pip install -r requirements.txt
     build:
       commands:
-        - aws s3 cp --recursive scripts/ s3://$ADDF_PARAMETER_S3_BUCKET_SCRIPTS/$ADDF_DEPLOYMENT_NAME-$ADDF_MODULE_NAME/scripts/ || true
+        - aws s3 cp --recursive scripts/ s3://$SEEDFARMER_PARAMETER_S3_BUCKET_SCRIPTS/$SEEDFARMER_DEPLOYMENT_NAME-$SEEDFARMER_MODULE_NAME/scripts/ || true
         - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-        - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+        - seedfarmer metadata convert -f cdk-exports.json || true
 destroy:
   phases:
     install:
@@ -17,6 +18,6 @@ destroy:
       - pip install -r requirements.txt
     build:
       commands:
-      - aws s3 rm --recursive s3://$ADDF_PARAMETER_S3_BUCKET_SCRIPTS/$ADDF_DEPLOYMENT_NAME-$ADDF_MODULE_NAME/scripts/ || true
+      - aws s3 rm --recursive s3://$SEEDFARMER_PARAMETER_S3_BUCKET_SCRIPTS/$SEEDFARMER_DEPLOYMENT_NAME-$SEEDFARMER_MODULE_NAME/scripts/ || true
       - cdk destroy --force --app "python app.py"
 build_type: BUILD_GENERAL1_SMALL

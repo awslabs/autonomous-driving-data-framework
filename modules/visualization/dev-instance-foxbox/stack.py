@@ -47,6 +47,7 @@ class DataServiceDevInstancesStack(Stack):
         stack_id: str,
         *,
         env: Environment,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         vpc_id: str,
@@ -71,7 +72,7 @@ class DataServiceDevInstancesStack(Stack):
 
         ###################
         # Tags
-        Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"{project_name}-{deployment_name}")
 
         ###################
         # AMI Selection
@@ -134,14 +135,14 @@ class DataServiceDevInstancesStack(Stack):
             "sid": "AllowADDFS3Buckets",
             "Effect": "Allow",
             "Action": ["s3:Get*", "s3:List*", "s3:PutObject*", "s3:DeleteObject*"],
-            "Resource": ["arn:aws:s3:::addf*", "arn:aws:s3:::addf*/*"],
+            "Resource": [f"arn:aws:s3:::{project_name}*", f"arn:aws:s3:::{project_name}*/*"],
         }
 
         custom_policies["lambda"] = {
             "sid": "AllowADDFLambdas",
             "Effect": "Allow",
             "Action": ["lambda:Invoke*"],
-            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:addf-*"],
+            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:{project_name}-*"],
         }
 
         if s3_bucket_dataset:
