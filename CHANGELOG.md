@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix code validation script
 - made `ml-training-on-eks` solution generic and organized the solution contents `training-image/mnist`, `ml-training/k8s-managed` into a single dir
 - updating `visualization/dev-instance` to use generic parameters
+- updating `visualization/dev-instance-foxbox` to use generic parameters
 
 ### **Removed**
 - moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
