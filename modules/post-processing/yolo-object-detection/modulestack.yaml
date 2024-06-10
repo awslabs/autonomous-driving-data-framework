@@ -19,18 +19,11 @@ Resources:
   Policy:
     Type: "AWS::IAM::Policy"
     Properties:
+      Roles: [!Ref RoleName]
+      PolicyName: modulespecific-policy
       PolicyDocument:
+        Version: 2012-10-17
         Statement:
-          - Action:
-              - "s3:Create*"
-              - "s3:Put*"
-              - "s3:Delete*"
-              - "s3:Get*"
-              - "s3:List*"
-            Effect: Allow
-            Resource:
-              - "arn:aws:s3:::cdk*"
-              - !Sub "arn:aws:s3:::${ProjectName}*"
           - Effect: Allow
             Action:
               - "ecr:GetAuthorizationToken"
@@ -50,11 +43,3 @@ Resources:
             Resource:
               - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
               - "arn:aws:ecr:*:*:repository/pytorch-inference*"
-          - Action:
-              - "iam:CreateServiceLinkedRole"
-            Effect: Allow
-            Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
-        Version: 2012-10-17
-      PolicyName: modulespecific-policy
-      Roles: [!Ref RoleName]
