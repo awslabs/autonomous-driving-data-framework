@@ -12,7 +12,7 @@ as_client = boto3.client("autoscaling")
 # issue: https://github.com/aws/aws-cdk/issues/29280
 # container-roadmap: https://github.com/aws/containers-roadmap/issues/1541
 
-CLUSTER_NAME = os.environ["ADDF_PARAMETER_EKS_CLUSTER_NAME"]
+CLUSTER_NAME = os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME"]
 LABEL_TAG_PREFIX = "k8s.io/cluster-autoscaler/node-template/label"
 
 nodegroup_names = eks.list_nodegroups(clusterName=CLUSTER_NAME)["nodegroups"]

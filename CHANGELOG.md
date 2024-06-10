@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `post-processing/yolo-object-detection`
   - `post-processing/yolop-lane-detection`
 - made `modules/core/metadata-storage` module generic and bumped CDK version
+- made `ml-training-on-eks` solution generic and organized the solution contents `training-image/mnist`, `ml-training/k8s-managed` into a single dir
 
 ### **Removed**
 
