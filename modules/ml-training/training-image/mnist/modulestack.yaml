@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This template deploys a Module specific IAM permissions
 
 Parameters:
+
+  ProjectName:
+    Type: String
+    Description: The name of the project
   DeploymentName:
     Type: String
     Description: The name of the deployment
@@ -11,6 +15,9 @@ Parameters:
   RoleName:
     Type: String
     Description: The name of the IAM Role
+  EcrRepositoryName:
+    Type: String
+    Description: The name of the ECR Repository
 
 Resources:
   Policy:
@@ -18,14 +25,6 @@ Resources:
     Properties:
       PolicyDocument:
         Statement:
-          - Action:
-              - "s3:Create*"
-              - "s3:Put*"
-              - "s3:Delete*"
-              - "s3:Get*"
-              - "s3:List*"
-            Effect: Allow
-            Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
           - Effect: Allow
             Action:
               - "ecr:DescribeRepositories"
@@ -43,12 +42,7 @@ Resources:
             Action:
               - ecr:*
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/*"
-          - Action:
-              - "iam:CreateServiceLinkedRole"
-            Effect: Allow
-            Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryName}"
         Version: 2012-10-17
-      PolicyName: addf-modulespecific-policy
+      PolicyName: modulespecific-policy
       Roles: [!Ref RoleName]
