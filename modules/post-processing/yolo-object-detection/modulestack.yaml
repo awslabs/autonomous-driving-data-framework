@@ -2,6 +2,9 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This template deploys a Module specific IAM permissions
 
 Parameters:
+  ProjectName:
+    Type: String
+    Description: The name of the project
   DeploymentName:
     Type: String
     Description: The name of the deployment
@@ -25,7 +28,9 @@ Resources:
               - "s3:Get*"
               - "s3:List*"
             Effect: Allow
-            Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
+            Resource:
+              - "arn:aws:s3:::cdk*"
+              - !Sub "arn:aws:s3:::${ProjectName}*"
           - Effect: Allow
             Action:
               - "ecr:GetAuthorizationToken"
@@ -43,7 +48,7 @@ Resources:
               - "ecr:CompleteLayerUpload"
               - "ecr:PutImage"
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
               - "arn:aws:ecr:*:*:repository/pytorch-inference*"
           - Action:
               - "iam:CreateServiceLinkedRole"
@@ -51,5 +56,5 @@ Resources:
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
         Version: 2012-10-17
-      PolicyName: addf-modulespecific-policy
+      PolicyName: modulespecific-policy
       Roles: [!Ref RoleName]
