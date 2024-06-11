@@ -68,11 +68,12 @@ def create_access_role(role_name: str) -> None:
             Path="/service-role/",
             RoleName=role_name,
             Tags=[
+                {"Key": "SEEDFARMER_PROJECT_NAME", "Value": os.getenv("SEEDFARMER_PROJECT_NAME")},
                 {
-                    "Key": "ADDF_DEPLOYMENT_NAME",
-                    "Value": os.getenv("ADDF_DEPLOYMENT_NAME"),
+                    "Key": "SEEDFARMER_DEPLOYMENT_NAME",
+                    "Value": os.getenv("SEEDFARMER_DEPLOYMENT_NAME"),
                 },
-                {"Key": "ADDF_MODULE_NAME", "Value": os.getenv("ADDF_MODULE_NAME")},
+                {"Key": "SEEDFARMER_MODULE_NAME", "Value": os.getenv("SEEDFARMER_MODULE_NAME")},
             ],
         )
     except Exception as err:
@@ -101,7 +102,7 @@ def create_instance_profile(instance_profile_name: str) -> None:
         _logger.warning(f"The role {role_name} does not exist")
 
 
-if os.getenv("ADDF_PARAMETER_CONNECTION_TYPE") == "CONNECT_SSM":
+if os.getenv("SEEDFARMER_PARAMETER_CONNECTION_TYPE", "CONNECT_SSM") == "CONNECT_SSM":
     if not check_access_role_exist(role_name=role_name):
         create_access_role(role_name=role_name)
 
