@@ -7,6 +7,8 @@ YOLOP (https://github.com/hustvl/YOLOP).  It is designed to incorporate the weig
 
 NOTE: this image can run on CPU and GPU compute resources
 
+NOTE: if you would like a GPU-specific version, one can be found [HERE](https://github.com/awslabs/autonomous-driving-data-framework/tree/release/3.5.0/modules/post-processing/lane-detection)
+
 ### Full list of parameters for processing code
 The `tools/detect_lanes.py` entry point has several parameters that can be overridden.  Please see `tools/detect_lanes.py` for a reference as to the parameters you can override as necessary.  
 
