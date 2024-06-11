@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `post-processing/yolop-lane-detection`
 - updating `visualization/dev-instance` to use generic parameters
 - updating `visualization/dev-instance-foxbox` to use generic parameters
+- updating `post-processing/lane-detection` to use generic parameters
 
 ### **Removed**
 - moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
