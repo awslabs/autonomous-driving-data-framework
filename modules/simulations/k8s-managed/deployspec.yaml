@@ -3,7 +3,7 @@ deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.82.0
+      - npm install -g aws-cdk@2.145.0
       - pip install -r requirements.txt
     build:
       commands:
@@ -47,7 +47,7 @@ destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.82.0
+      - npm install -g aws-cdk@2.145.0
       - pip install -r requirements.txt
     build:
       commands:
@@ -62,4 +62,3 @@ destroy:
       # Remove DAG files
       - aws s3 rm --recursive s3://$SEEDFARMER_PARAMETER_DAG_BUCKET_NAME/$SEEDFARMER_PARAMETER_DAG_PATH/simulation_dags
       - cdk destroy --force --app "python app.py"
-

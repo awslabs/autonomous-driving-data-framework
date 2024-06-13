@@ -221,5 +221,11 @@ class SimulationDags(Stack):
                         "reason": "Resource access restriced to ADDF resources",
                     }
                 ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-L1",
+                        "reason": "Using latest kubectl v1.29",
+                    }
+                ),
             ],
         )
