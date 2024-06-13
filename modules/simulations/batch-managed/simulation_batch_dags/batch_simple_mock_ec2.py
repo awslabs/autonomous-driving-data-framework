@@ -79,13 +79,30 @@ def get_job_queue_name() -> str:
 
 def get_job_name() -> str:
     v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
-    return f"{batch_dag_config.PROJECT_NAME}-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-simplemock-job-{v}"
+    return "-".join([
+        batch_dag_config.PROJECT_NAME,
+        batch_dag_config.DEPLOYMENT_NAME,
+        batch_dag_config.MODULE_NAME,
+        "simplemock-job",
+        v,
+    ])
 
 
 def get_job_def_name() -> str:
     # v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
-    # return f"{batch_dag_config.PROJECT_NAME}-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-jobdef-{v}"
-    return f"{batch_dag_config.PROJECT_NAME}-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-simplemock-jobdef"
+    # return "-".join([
+    #     batch_dag_config.PROJECT_NAME,
+    #     batch_dag_config.DEPLOYMENT_NAME,
+    #     batch_dag_config.MODULE_NAME,
+    #     "jobdef",
+    #     v,
+    # ])
+    return "-".join([
+        batch_dag_config.PROJECT_NAME,
+        batch_dag_config.DEPLOYMENT_NAME,
+        batch_dag_config.MODULE_NAME,
+        "simplemock-jobdef",
+    ])
 
 
 def get_batch_client() -> BatchClient:
