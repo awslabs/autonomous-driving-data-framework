@@ -54,7 +54,7 @@ def create_and_populate_queue(num_items: int) -> str:
     client = get_client()
     response = client.create_queue(
         QueueName=(
-            f"addf-{dag_config.DEPLOYMENT_NAME}-{dag_config.MODULE_NAME}-"
+            f"{dag_config.PROJECT_NAME}-{dag_config.DEPLOYMENT_NAME}-{dag_config.MODULE_NAME}-"
             f"{''.join(random.choices(string.ascii_letters + string.digits, k=6))}"
         )
     )
