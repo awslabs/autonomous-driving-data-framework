@@ -7,18 +7,20 @@ from aws_cdk import App, CfnOutput, Environment
 
 from stack import SimulationDags
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
-mwaa_exec_role = os.getenv("ADDF_PARAMETER_MWAA_EXEC_ROLE", "")
-eks_cluster_name = os.getenv("ADDF_PARAMETER_EKS_CLUSTER_NAME", "")
-eks_admin_role_arn = os.getenv("ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN", "")
-eks_oidc_provider_arn = os.getenv("ADDF_PARAMETER_EKS_OIDC_ARN", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
+mwaa_exec_role = os.getenv("SEEDFARMER_PARAMETER_MWAA_EXEC_ROLE", "")
+eks_cluster_name = os.getenv("SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME", "")
+eks_admin_role_arn = os.getenv("SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN", "")
+eks_oidc_provider_arn = os.getenv("SEEDFARMER_PARAMETER_EKS_OIDC_ARN", "")
 
 app = App()
 
 stack = SimulationDags(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     mwaa_exec_role=mwaa_exec_role,

@@ -2,12 +2,21 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This stack deploys a Module specific IAM permissions
 
 Parameters:
+  ProjectName:
+    Type: String
+    Description: The name of the project
   DeploymentName:
     Type: String
     Description: The name of the deployment
   ModuleName:
     Type: String
     Description: The name of the Module
+  DagBucketName:
+    Type: String
+    Description: The name of the bucket where the DAG are stored
+  DagPath:
+    Type: String
+    Description: The path of the DAG in the bucket
   RoleName:
     Type: String
     Description: The name of the IAM Role
@@ -16,33 +25,27 @@ Resources:
   Policy:
     Type: "AWS::IAM::Policy"
     Properties:
+      Roles:
+        - !Ref RoleName
+      PolicyName: modulespecific-policy
       PolicyDocument:
+        Version: "2012-10-17"
         Statement:
           - Action:
-              - "s3:Create*"
               - "s3:Put*"
               - "s3:Delete*"
               - "s3:Get*"
               - "s3:List*"
             Effect: Allow
-            Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
-
-          - Effect: Allow
-            Action:
-              - "ecr:Describe*"
-              - "ecr:Get*"
-              - "ecr:List*"
-            Resource: '*'
-          - Effect: Allow
-            Action:
-              - ecr:*
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:s3:::${DagBucketName}/${DagPath}/*"
+          - Effect: Allow
+            Action:
+              - "ecr:*"
+            Resource:
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Action:
               - "iam:CreateServiceLinkedRole"
             Effect: Allow
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
-        Version: 2012-10-17
-      PolicyName: addf-modulespecific-policy
-      Roles: [!Ref RoleName]
