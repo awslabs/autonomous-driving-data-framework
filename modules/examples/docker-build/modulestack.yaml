@@ -11,6 +11,9 @@ Parameters:
   RoleName:
     Type: String
     Description: The name of the IAM Role
+  ECRRepoName:
+    Type: String
+    Description: The name of the ECR repository
 
 Resources:
   Policy:
@@ -33,7 +36,7 @@ Resources:
               - "ecr:Put*"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-*"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ECRRepoName}"
         Version: 2012-10-17
-      PolicyName: "addf-modulespecific-policy"
+      PolicyName: "modulespecific-policy"
       Roles: [!Ref RoleName]
