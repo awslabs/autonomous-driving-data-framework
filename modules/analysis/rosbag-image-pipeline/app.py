@@ -8,9 +8,9 @@ from aws_cdk import App, CfnOutput, Environment
 
 from stack import AwsBatchPipeline
 
-project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
-deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
-module_name = os.getenv("SEEDFARMER_MODULE_NAME")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
