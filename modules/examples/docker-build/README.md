@@ -6,4 +6,4 @@ This module demonstrates an example on how to build Docker Images from a given s
 
 ### Required Parameters
 
-- `ecr-repo-name`: ECR Repository name to be used/created if it doesnt exist.
+- `ecr-repo-name`: ECR Repository name to be used/created if it doesn't exist.
