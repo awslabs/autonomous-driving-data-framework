@@ -101,6 +101,7 @@ app = App()
 stack = AwsBatchPipeline(
     scope=app,
     id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     vpc_id=vpc_id,
