@@ -2,12 +2,15 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This template deploys a Module specific IAM permissions
 
 Parameters:
+  ProjectName:
+    Type: String
+    Description: The name of the project
   DeploymentName:
     Type: String
     Description: The name of the deployment
   ModuleName:
     Type: String
-    Description: The name of the Module
+    Description: The name of the module
   RoleName:
     Type: String
     Description: The name of the IAM Role
@@ -25,7 +28,7 @@ Resources:
               - "s3:Get*"
               - "s3:List*"
             Effect: Allow
-            Resource: ["arn:aws:s3:::addf*", "arn:aws:s3:::cdk*"]
+            Resource: ["arn:aws:s3:::${ProjectName}*", "arn:aws:s3:::cdk*"]
           - Effect: Allow
             Action:
               - "ecr:Describe*"
@@ -33,17 +36,17 @@ Resources:
               - "ecr:List*"
               - "ecr:BatchGetImage"
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - ecr:*
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/addf-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Action:
               - "iam:CreateServiceLinkedRole"
             Effect: Allow
             Resource:
               - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
         Version: 2012-10-17
-      PolicyName: addf-modulespecific-policy
+      PolicyName: ${ProjectName}-modulespecific-policy
       Roles: [!Ref RoleName]
