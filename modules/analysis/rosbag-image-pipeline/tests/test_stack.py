@@ -29,12 +29,12 @@ def iam_policy() -> dict:
                         {
                             "Action": "dynamodb:*",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:dynamodb:us-east-1:111111111111:table/addf-test-deployment-test-module*",
+                            "Resource": "arn:aws:dynamodb:us-east-1:111111111111:table/test-project-test-deployment-test-module*",
                         },
                         {
                             "Action": "ecr:*",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:ecr:us-east-1:111111111111:repository/addf-test-deployment-test-module*",
+                            "Resource": "arn:aws:ecr:us-east-1:111111111111:repository/test-project-test-deployment-test-module*",
                         },
                         {
                             "Action": [
@@ -76,8 +76,8 @@ def iam_policy() -> dict:
                             ],
                             "Effect": "Allow",
                             "Resource": [
-                                "arn:aws:s3:::addf-*",
-                                "arn:aws:s3:::addf-*/*",
+                                "arn:aws:s3:::test-project-*",
+                                "arn:aws:s3:::test-project-*/*",
                             ],
                         },
                     ]
