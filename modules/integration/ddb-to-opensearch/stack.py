@@ -22,6 +22,7 @@ class DDBtoOpensearch(Stack):
         scope: Construct,
         id: str,
         *,
+        project: str,
         deployment: str,
         module: str,
         vpc_id: str,
@@ -35,9 +36,9 @@ class DDBtoOpensearch(Stack):
     ) -> None:
         super().__init__(scope, id, description=stack_description, **kwargs)
 
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project}-{deployment}-{module}"
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(
             self,
@@ -162,7 +163,7 @@ class DDBtoOpensearch(Stack):
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-IAM5",
-                        "reason": "Resource access restriced to ADDF resources",
+                        "reason": "Resource access restriced to the resources",
                     }
                 ),
             ],
