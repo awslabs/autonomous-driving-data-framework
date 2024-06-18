@@ -98,6 +98,7 @@ def test_stack(stack_defaults):
     rosbag_stack = stack.AwsBatchPipeline(
         scope=app,
         id=f"{project_name}-{dep_name}-{mod_name}",
+        project_name=project_name,
         deployment_name=dep_name,
         module_name=mod_name,
         vpc_id="vpc-id",
