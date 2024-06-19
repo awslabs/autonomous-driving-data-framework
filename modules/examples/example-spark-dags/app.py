@@ -18,6 +18,7 @@ app = App()
 stack = DagIamRole(
     scope=app,
     id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     mwaa_exec_role=mwaa_exec_role,
