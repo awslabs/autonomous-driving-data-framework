@@ -8,12 +8,13 @@ from aws_cdk import App, CfnOutput, Environment
 
 from stack import AwsBatchPipeline
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 dag_id = os.getenv(_param("DAG_ID"))
@@ -83,9 +84,9 @@ if not on_demand_job_queue and not spot_job_queue and not fargate_job_queue:
 
 
 def generate_description() -> str:
-    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
-    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
-    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+    soln_id = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_VERSION", None)
 
     desc = "(SO9154) Autonomous Driving Data Framework (ADDF) - rosbag-image-pipeline"
     if soln_id and soln_name and soln_version:
@@ -99,7 +100,8 @@ app = App()
 
 stack = AwsBatchPipeline(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     vpc_id=vpc_id,
