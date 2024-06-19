@@ -28,7 +28,11 @@ Resources:
               - "s3:Get*"
               - "s3:List*"
             Effect: Allow
-            Resource: !Sub ["arn:aws:s3:::${ProjectName}*", "arn:aws:s3:::cdk*"]
+            Resource: 
+              - !Sub 
+                - "arn:aws:s3:::${ProjectName}*"
+                - ProjectName: !Ref ProjectName
+              - "arn:aws:s3:::cdk*"
           - Effect: Allow
             Action:
               - "ecr:Describe*"
