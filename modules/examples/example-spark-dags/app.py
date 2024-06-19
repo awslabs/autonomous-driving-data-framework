@@ -8,15 +8,16 @@ from aws_cdk import App, CfnOutput
 
 from stack import DagIamRole
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
-mwaa_exec_role = os.getenv("ADDF_PARAMETER_MWAA_EXEC_ROLE_ARN", "")
-raw_bucket_name = os.getenv("ADDF_PARAMETER_RAW_BUCKET_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
+mwaa_exec_role = os.getenv("SEEDFARMER_PARAMETER_MWAA_EXEC_ROLE_ARN", "")
+raw_bucket_name = os.getenv("SEEDFARMER_PARAMETER_RAW_BUCKET_NAME", "")
 app = App()
 
 stack = DagIamRole(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     deployment_name=deployment_name,
     module_name=module_name,
     mwaa_exec_role=mwaa_exec_role,

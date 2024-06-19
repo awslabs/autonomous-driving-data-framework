@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - removing `post-processing/lane-detection` due to inactivity/usage
 - made `rosbag-image-pipeline` module generic and bumped CDK version
 - made `eb-sf-batch` module generic and bumped CDK version
+- made `example-spark-dags` module generic and bumped CDK version
 
 ### **Removed**
 - moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
