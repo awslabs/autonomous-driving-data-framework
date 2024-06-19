@@ -32,7 +32,7 @@ app = App()
 
 stack = EventDrivenBatch(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
