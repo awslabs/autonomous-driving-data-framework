@@ -26,6 +26,8 @@ constructs==10.1.37
     # via
     #   aws-cdk-lib
     #   cdk-nag
+exceptiongroup==1.2.1
+    # via cattrs
 jmespath==1.0.0
     # via
     #   boto3
@@ -50,5 +52,5 @@ six==1.16.0
     # via python-dateutil
 typing-extensions==4.7.1
     # via jsii
-urllib3==1.26.18
+urllib3==1.26.19
     # via botocore
