@@ -79,4 +79,6 @@ typing-extensions==4.7.1
     #   cattrs
     #   jsii
 urllib3==1.26.19
-    # via botocore
+    # via
+    #   -r requirements.in
+    #   botocore
