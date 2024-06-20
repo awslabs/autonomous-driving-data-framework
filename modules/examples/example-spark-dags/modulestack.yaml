@@ -35,5 +35,5 @@ Resources:
               - 'arn:aws:s3:::cdk*'
               - !Sub "arn:aws:s3:::${DagBucketName}/${DagPath}/*"
         Version: 2012-10-17
-      PolicyName: "addf-modulespecific-policy"
+      PolicyName: "modulespecific-policy"
       Roles: [!Ref RoleName]

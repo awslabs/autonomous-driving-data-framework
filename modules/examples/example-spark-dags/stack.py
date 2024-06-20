@@ -19,13 +19,15 @@ class DagIamRole(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         mwaa_exec_role: str,
         raw_bucket_name: str,
         **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
+        # Env vars
+        self.project_name = project_name
         self.deployment_name = deployment_name
         self.module_name = module_name
         self.mwaa_exec_role = mwaa_exec_role
@@ -33,10 +35,10 @@ class DagIamRole(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack deploys Example Spark DAGs resources for ADDF",
+            description="This stack deploys Example Spark DAGs resources",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
         # The below permissions is to deploy the `citibike` usecase declared in the below blogpost
         # https://aws.amazon.com/blogs/big-data/manage-and-process-your-big-data-workflows-with-amazon-mwaa-and-amazon-emr-on-amazon-eks/
@@ -72,7 +74,7 @@ class DagIamRole(Stack):
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
 
-        r_name = f"addf-{self.deployment_name}-{self.module_name}-dag-role"
+        r_name = f"{self.project_name}-{self.deployment_name}-{self.module_name}-dag-role"
         self.dag_role = iam.Role(
             self,
             f"dag-role-{self.deployment_name}-{self.module_name}",

@@ -29,7 +29,7 @@ destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.44.0
+      - npm install -g aws-cdk@2.146.0
       - pip install -r requirements.txt
     build:
       commands:
