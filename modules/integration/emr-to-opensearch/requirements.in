@@ -3,3 +3,4 @@ cdk-nag==2.12.29
 constructs==10.0.91
 aws-cdk.aws-lambda-python-alpha==2.20.0a0
 boto3~=1.27.0
+urllib3>=1.26.19
