@@ -43,9 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - made `example-spark-dags` module generic and bumped CDK version
 - update `urllib3` dependency per CVE-2024-37891
 
-
 ### **Removed**
+
 - moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
+- moved module `core/emr-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules) and made it generic
 
 =======
 
