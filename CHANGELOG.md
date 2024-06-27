@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Changed**
 
 - updated object detection to YOLOv8+
+- updated object detection to YOLOv10
 - made `modules/optionals/datalake-buckets` module generic and bumped CDK version
 - made the following module parameters generic:
   - `examples/example-dags`

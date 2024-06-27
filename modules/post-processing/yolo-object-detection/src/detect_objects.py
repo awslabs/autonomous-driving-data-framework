@@ -45,7 +45,7 @@ def get_yolo_prediction(model, image, input_data_path, _input_size=1280, confide
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model", type=str, default="yolov8s")
+    parser.add_argument("--model", type=str, default="yolov10s")
 
     args, _ = parser.parse_known_args()
 

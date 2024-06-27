@@ -2,7 +2,7 @@
 
 ## Description
 
-This module contains a Docker container for labelling images with a YOLOv8 Object Detection model.
+This module contains a Docker container for labelling images with a YOLOv10 Object Detection model.
 The container is designed to run at scale with a Sagemaker Processing job.
 
 This module deploys:
