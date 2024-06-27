@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
 - moved module `core/emr-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules) and made it generic
+- removed `example-prod` manifests
 
 =======
 
