@@ -1,0 +1,60 @@
+name: Check Modules for Integration Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */3 * * *"
+
+jobs:
+  get-modules:
+    name: Get Modules
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get-modules.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get modules
+        id: get-modules
+        run: |
+          MODULES=()
+          MODULES_WITHOUT_INTEG=()
+          for d in modules/*/* ; do
+              MODULES+=("$d")
+          done
+          for m in "${MODULES[@]}" ; do
+              if [ ! -d "${m}"/integ/ ]; then
+                echo "No Integration tests for ${m}"
+                MODULES_WITHOUT_INTEG+=("$m")
+              fi
+          done
+          echo "${MODULES_WITHOUT_INTEG[@]}"
+          # Create our json structure [{"module_path": "..."}]
+          MODULES_JSON=$(echo "${MODULES_WITHOUT_INTEG[@]}" | jq -R -s 'split(" ")' | jq '[ .[] | select(length > 0) ]' | jq 'map({"module_path": .})')
+          # Export the modules as json to the outputs
+          echo 'matrix<<EOF' >> $GITHUB_OUTPUT
+          echo $MODULES_JSON >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+
+  create-issues:
+    name: Create issue for ${{ matrix.modules.module_path }}
+    needs: get-modules
+    permissions:
+      contents: read
+      issues: write
+    strategy:
+      fail-fast: false
+      matrix:
+        modules: ${{ fromJson(needs.get-modules.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: JasonEtco/create-an-issue@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODULE_PATH: ${{ matrix.modules.module_path }}
+        with:
+          filename: .github/ISSUE_TEMPLATE/missing_integ_tests_issue.md
+          update_existing: false
