@@ -21,7 +21,8 @@ The module requires the following parameters:
 
 - `eks-cluster-name` - Name of the EKS cluster to deploy to 
 - `eks-admin-role-arn` - ARN of EKS admin role to authenticate kubectl
-- `eks-oidc-provider-arn` - ARN of EKS OIDC provider for IAM roles
+- `eks-handler-rolearn` - ARN of EKS handler role to authenticate kubectl
+- `eks-oidc-arn` - ARN of EKS OIDC provider for IAM roles
 - `training-namespace-name` - Kubernetes namespace to create for training
 - `training-image-uri` - Docker Image URI to use for training
 
