@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - made `eb-sf-batch` module generic and bumped CDK version
 - made `example-spark-dags` module generic and bumped CDK version
 - update `urllib3` dependency per CVE-2024-37891
-- module `compute/eks` ref to 1.8.0 version
+- module `compute/eks` ref to 1.8.0 version for `ml-training-on-eks` manifest
 - added `eks-handler-rolearn` within `ml-training/training-k8s-deployment`
 - module `training` within `ml-training-on-eks` manifest ref to `3.5.0` release
 - modification of README.md contains proper string for `eks-oidc-arn` and `added eks-handler-rolearn`
