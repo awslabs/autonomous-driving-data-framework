@@ -18,6 +18,9 @@ def stack_defaults():
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"] = (
         "arn:aws:iam::123456789012:role/eks-testing-XXXXXX"
     )
+    os.environ["SEEDFARMER_PARAMETER_EKS_HANDLER_ROLEARN"] = (
+        "arn:aws:iam::123456789012:role/eks-testing-XXXXXX"
+    )
     os.environ["SEEDFARMER_PARAMETER_EKS_OIDC_ARN"] = (
         "arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/XXXXXXXX"
     )
