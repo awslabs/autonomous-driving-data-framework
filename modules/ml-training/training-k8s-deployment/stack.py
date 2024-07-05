@@ -56,6 +56,10 @@ class TrainingPipeline(Stack):
             ),
         ]
 
+        handler_role = aws_iam.Role.from_role_arn(
+            self, "HandlerRole", eks_handler_rolearn
+        )
+
         provider = aws_eks.OpenIdConnectProvider.from_open_id_connect_provider_arn(
             self, "Provider", eks_openid_connect_provider_arn
         )

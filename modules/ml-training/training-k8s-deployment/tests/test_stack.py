@@ -35,6 +35,7 @@ def test_synthesize_stack(stack_defaults):
         module_name=mod_name,
         eks_cluster_name=mod_name,
         eks_admin_role_arn="arn:aws:iam::123456789012:role/addf-eks-testing-XXXXXX",
+        eks_handler_rolearn="arn:aws:iam::123456789012:role/addf-eks-testing-XXXXXX",
         eks_openid_connect_provider_arn="arn:aws:iam::123456789012:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/XXXXXXXX",
         eks_cluster_endpoint="oidc.eks.us-west-2.amazonaws.com/id/XXXXXXXXXX",
         eks_cert_auth_data="BQTRJQkR3QXdnZ0VLCkFvSUJ",
