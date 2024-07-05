@@ -19,6 +19,7 @@ def _param(name: str) -> str:
 
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"))
 eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"))
+eks_handler_rolearn = os.getenv(_param("EKS_HANDLER_ROLEARN"))
 eks_oidc_provider_arn = os.getenv(_param("EKS_OIDC_ARN"))
 eks_cluster_endpoint = os.getenv(_param("EKS_CLUSTER_ENDPOINT"))
 eks_cert_auth_data = os.getenv(_param("EKS_CERT_AUTH_DATA"))
@@ -35,6 +36,7 @@ stack = TrainingPipeline(
     module_name=module_name,
     eks_cluster_name=cast(str, eks_cluster_name),
     eks_admin_role_arn=cast(str, eks_admin_role_arn),
+    eks_handler_rolearn=cast(str, eks_handler_rolearn),
     eks_openid_connect_provider_arn=cast(str, eks_oidc_provider_arn),
     eks_cluster_endpoint=cast(str, eks_cluster_endpoint),
     eks_cert_auth_data=cast(str, eks_cert_auth_data),

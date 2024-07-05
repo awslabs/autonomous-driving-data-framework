@@ -26,6 +26,7 @@ class TrainingPipeline(Stack):
         module_name: str,
         eks_cluster_name: str,
         eks_admin_role_arn: str,
+        eks_handler_rolearn: str,
         eks_openid_connect_provider_arn: str,
         eks_cluster_endpoint: str,
         eks_cert_auth_data: str,
@@ -55,6 +56,10 @@ class TrainingPipeline(Stack):
             ),
         ]
 
+        handler_role = aws_iam.Role.from_role_arn(
+            self, "HandlerRole", eks_handler_rolearn
+        )
+
         provider = aws_eks.OpenIdConnectProvider.from_open_id_connect_provider_arn(
             self, "Provider", eks_openid_connect_provider_arn
         )
@@ -64,6 +69,7 @@ class TrainingPipeline(Stack):
             cluster_name=eks_cluster_name,
             open_id_connect_provider=provider,
             kubectl_role_arn=eks_admin_role_arn,
+            kubectl_lambda_role=handler_role,
             kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
 
