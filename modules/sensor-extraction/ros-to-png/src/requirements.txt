@@ -16,7 +16,7 @@ catkin==0.7.18
     # via roslib
 catkin-pkg==0.5.2
     # via rospkg
-certifi==2023.7.22
+certifi==2024.7.4
     # via requests
 charset-normalizer==2.1.0
     # via requests
@@ -63,7 +63,7 @@ python-dateutil==2.8.2
     #   catkin-pkg
 pyyaml==6.0
     # via rospkg
-requests==2.31.0
+requests==2.32.0
     # via -r requirements.in
 rosbag==1.15.11
     # via -r requirements.in
