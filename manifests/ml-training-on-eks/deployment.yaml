@@ -1,5 +1,5 @@
 name: ml-eks
-toolchainRegion: us-east-1
+toolchainRegion: eu-central-1
 forceDependencyRedeploy: True
 groups:
   - name: optionals
@@ -25,5 +25,5 @@ targetAccountMappings:
       dockerCredentialsSecret: aws-addf-docker-credentials
       trainingNamespaceName: training
     regionMappings:
-      - region: us-east-1
+      - region: eu-central-1
         default: true

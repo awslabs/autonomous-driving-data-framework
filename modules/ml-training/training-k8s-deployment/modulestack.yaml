@@ -2,6 +2,9 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: This stack deploys a Module specific IAM permissions
 
 Parameters:
+  ProjectName:
+    Type: String
+    Description: The name of the Project
   DeploymentName:
     Type: String
     Description: The name of the deployment
@@ -32,15 +35,6 @@ Resources:
             Resource:
               - "*"
           - Action:
-              - "s3:Create*"
-              - "s3:Put*"
-              - "s3:Delete*"
-              - "s3:Get*"
-              - "s3:List*"
-            Effect: Allow
-            Resource:
-              - "arn:aws:s3:::cdk*"
-          - Action:
               - "iam:CreatePolicy"
               - "iam:DetachRolePolicy"
               - "iam:DeletePolicy"
@@ -57,8 +51,8 @@ Resources:
               - "iam:PassRole"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/addf-${DeploymentName}-${ModuleName}*"
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/addf-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "logs:CreateLogGroup"
@@ -71,22 +65,12 @@ Resources:
               - "iam:Get*"
               - "iam:List*"
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/addf-${DeploymentName}*"
-          - Effect: Allow
-            Action:
-              - ssm:GetParameter
-            Resource:
-              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/cdk-bootstrap*"
+              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-${DeploymentName}*"
           - Effect: Allow
             Action:
               - cloudformation:*
             Resource:
-              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/addf-${DeploymentName}-${ModuleName}*"
-          - Effect: Allow
-            Action:
-              - "iam:PassRole"
-            Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/cdk*"
+              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "sts:AssumeRole"
@@ -96,24 +80,14 @@ Resources:
             Action:
               - "eks:ListNodegroups"
               - "eks:DescribeCluster"
-            Resource:
-              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/addf-${DeploymentName}*"
-          - Effect: Allow
-            Action:
               - "eks:DescribeNodegroup"
             Resource:
-              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/addf-${DeploymentName}*"
+              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/${ProjectName}-${DeploymentName}*"
           - Effect: Allow
             Action:
               - "autoscaling:CreateOrUpdateTags"
             Resource:
               - !Sub "arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
-          - Effect: Allow
-            Action:
-              - "ssm:PutParameter"
-              - "ssm:GetParameter"
-            Resource:
-              - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/addf*"
         Version: 2012-10-17
-      PolicyName: "addf-modulespecific-policy"
+      PolicyName: "modulespecific-policy"
       Roles: [!Ref RoleName]

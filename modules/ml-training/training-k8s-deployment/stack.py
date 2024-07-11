@@ -63,6 +63,7 @@ class TrainingPipeline(Stack):
         provider = aws_eks.OpenIdConnectProvider.from_open_id_connect_provider_arn(
             self, "Provider", eks_openid_connect_provider_arn
         )
+
         cluster = aws_eks.Cluster.from_cluster_attributes(
             self,
             f"eks-{deployment_name}-{module_name}",
