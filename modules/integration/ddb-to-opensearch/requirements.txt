@@ -31,7 +31,7 @@ cattrs==23.2.3
     # via jsii
 cdk-nag==2.12.29
     # via -r requirements.in
-certifi==2024.6.2
+certifi==2024.7.4
     # via requests
 charset-normalizer==3.3.2
     # via requests
