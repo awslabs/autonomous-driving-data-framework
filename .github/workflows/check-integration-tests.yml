@@ -3,7 +3,7 @@ name: Check Modules for Integration Tests
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 1 * * *"
 
 jobs:
   get-modules:
