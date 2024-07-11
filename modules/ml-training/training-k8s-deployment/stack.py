@@ -64,10 +64,6 @@ class TrainingPipeline(Stack):
             self, "Provider", eks_openid_connect_provider_arn
         )
 
-        handler_role = aws_iam.Role.from_role_arn(
-            self, "HandlerRole", eks_handler_rolearn
-        )
-
         cluster = aws_eks.Cluster.from_cluster_attributes(
             self,
             f"eks-{deployment_name}-{module_name}",

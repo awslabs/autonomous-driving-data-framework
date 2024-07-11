@@ -1,37 +1,38 @@
 [tool.ruff]
-line-length = 120
-target-version = "py38"
 exclude = [
     ".eggs",
     ".git",
     ".hg",
     ".mypy_cache",
+    ".ruff_cache",
     ".tox",
     ".venv",
-    ".env",
     "_build",
     "buck-out",
     "build",
     "dist",
     "codeseeder",
 ]
+line-length = 120
+target-version = "py37"
 
 [tool.ruff.lint]
 select = ["F", "I", "E", "W"]
 fixable = ["ALL"]
 
-[tool.coverage.run]
-omit = ["tests/*"]
-
 [tool.mypy]
-python_version = 3.8
+python_version = "3.7"
 strict = true
 ignore_missing_imports = true
-allow_untyped_decorators = true
-exclude = "codeseeder.out/|example/|tests/"
+disallow_untyped_decorators = false
+exclude = "codeseeder.out/*|example/|tests/"
+warn_unused_ignores = false
 
 [tool.pytest.ini_options]
 addopts = "-v --cov=. --cov-report term"
 pythonpath = [
   "."
 ]
+
+[tool.coverage.run]
+omit = ["tests/*"]
