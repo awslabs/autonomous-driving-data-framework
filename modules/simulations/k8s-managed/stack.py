@@ -6,6 +6,7 @@ from typing import Any, cast
 
 import cdk_nag
 from aws_cdk import Aspects, Stack, Tags, aws_eks, aws_iam
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -18,6 +19,7 @@ class SimulationDags(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         mwaa_exec_role: str,
@@ -26,7 +28,8 @@ class SimulationDags(Stack):
         eks_openid_connect_provider_arn: str,
         **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
+        # Env vars
+        self.project_name = project_name
         self.deployment_name = deployment_name
         self.module_name = module_name
         self.mwaa_exec_role = mwaa_exec_role
@@ -37,26 +40,26 @@ class SimulationDags(Stack):
             description="(SO9154) Autonomous Driving Data Framework (ADDF) - k8s-managed",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
         # Create Dag IAM Role and policy
         policy_statements = [
             aws_iam.PolicyStatement(
                 actions=["sqs:*"],
                 effect=aws_iam.Effect.ALLOW,
-                resources=[f"arn:aws:sqs:{self.region}:{self.account}:addf-{deployment_name}-{module_name}*"],
+                resources=[f"arn:aws:sqs:{self.region}:{self.account}:{project_name}-{deployment_name}-{module_name}*"],
             ),
             aws_iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=aws_iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:ecr:{self.region}:{self.account}:repository/addf-{deployment_name}-{module_name}*"
+                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{project_name}-{deployment_name}-{module_name}*"
                 ],
             ),
         ]
         dag_document = aws_iam.PolicyDocument(statements=policy_statements)
 
-        r_name = f"addf-{self.deployment_name}-{self.module_name}-dag-role"
+        r_name = f"{self.project_name}-{self.deployment_name}-{self.module_name}-dag-role"
         self.dag_role = aws_iam.Role(
             self,
             f"dag-role-{self.deployment_name}-{self.module_name}",
@@ -75,10 +78,16 @@ class SimulationDags(Stack):
             cluster_name=eks_cluster_name,
             open_id_connect_provider=provider,
             kubectl_role_arn=eks_admin_role_arn,
+            kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
 
         namespace = cluster.add_manifest(
-            "namespace", {"apiVersion": "v1", "kind": "Namespace", "metadata": {"name": module_name}}
+            "namespace",
+            {
+                "apiVersion": "v1",
+                "kind": "Namespace",
+                "metadata": {"name": module_name},
+            },
         )
 
         service_account = cluster.add_service_account("service-account", name=module_name, namespace=module_name)
@@ -112,10 +121,18 @@ class SimulationDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "RoleBinding",
                 "metadata": {"name": module_name, "namespace": module_name},
-                "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "Role", "name": "module-owner"},
+                "roleRef": {
+                    "apiGroup": "rbac.authorization.k8s.io",
+                    "kind": "Role",
+                    "name": "module-owner",
+                },
                 "subjects": [
-                    {"kind": "User", "name": f"addf-{module_name}"},
-                    {"kind": "ServiceAccount", "name": module_name, "namespace": module_name},
+                    {"kind": "User", "name": f"{project_name}-{module_name}"},
+                    {
+                        "kind": "ServiceAccount",
+                        "name": module_name,
+                        "namespace": module_name,
+                    },
                 ],
             },
         )
@@ -127,7 +144,13 @@ class SimulationDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "Role",
                 "metadata": {"name": "default-access", "namespace": "default"},
-                "rules": [{"apiGroups": ["*"], "resources": ["*"], "verbs": ["get", "list", "watch"]}],
+                "rules": [
+                    {
+                        "apiGroups": ["*"],
+                        "resources": ["*"],
+                        "verbs": ["get", "list", "watch"],
+                    }
+                ],
             },
         )
         rbac_role.node.add_dependency(namespace)
@@ -138,10 +161,18 @@ class SimulationDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "RoleBinding",
                 "metadata": {"name": "default-access", "namespace": "default"},
-                "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "Role", "name": "default-access"},
+                "roleRef": {
+                    "apiGroup": "rbac.authorization.k8s.io",
+                    "kind": "Role",
+                    "name": "default-access",
+                },
                 "subjects": [
-                    {"kind": "User", "name": f"addf-{module_name}"},
-                    {"kind": "ServiceAccount", "name": module_name, "namespace": module_name},
+                    {"kind": "User", "name": f"{project_name}-{module_name}"},
+                    {
+                        "kind": "ServiceAccount",
+                        "name": module_name,
+                        "namespace": module_name,
+                    },
                 ],
             },
         )
@@ -153,10 +184,18 @@ class SimulationDags(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "ClusterRoleBinding",
                 "metadata": {"name": f"system-access-{module_name}"},
-                "roleRef": {"apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "system-access"},
+                "roleRef": {
+                    "apiGroup": "rbac.authorization.k8s.io",
+                    "kind": "ClusterRole",
+                    "name": "system-access",
+                },
                 "subjects": [
-                    {"kind": "User", "name": f"addf-{module_name}"},
-                    {"kind": "ServiceAccount", "name": module_name, "namespace": module_name},
+                    {"kind": "User", "name": f"{project_name}-{module_name}"},
+                    {
+                        "kind": "ServiceAccount",
+                        "name": module_name,
+                        "namespace": module_name,
+                    },
                 ],
             },
         )
@@ -180,6 +219,12 @@ class SimulationDags(Stack):
                     **{
                         "id": "AwsSolutions-IAM5",
                         "reason": "Resource access restriced to ADDF resources",
+                    }
+                ),
+                NagPackSuppression(
+                    **{
+                        "id": "AwsSolutions-L1",
+                        "reason": "Using latest kubectl v1.29",
                     }
                 ),
             ],

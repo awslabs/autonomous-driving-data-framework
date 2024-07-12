@@ -56,7 +56,7 @@ def create_and_populate_queue(num_items: int) -> str:
     client = get_client()
     response = client.create_queue(
         QueueName=(
-            f"addf-{dag_config.DEPLOYMENT_NAME}-{dag_config.MODULE_NAME}-"
+            f"{dag_config.PROJECT_NAME}-{dag_config.DEPLOYMENT_NAME}-{dag_config.MODULE_NAME}-"
             f"{''.join(random.choices(string.ascii_letters + string.digits, k=6))}"
         )
     )
@@ -102,8 +102,17 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int, 
                         "name": "sqs-manager",
                         "image": dag_config.SIMULATION_MOCK_IMAGE,
                         "volumeMounts": [{"name": "shared-data", "mountPath": "/shared-data"}],
-                        "command": ["python", "/var/simulation-mock/simulation_mock/sqs_manager.py"],
-                        "args": ["--url", "$(QUEUE_URL)", "--dir", "$(DIR)", "--single-message"],
+                        "command": [
+                            "python",
+                            "/var/simulation-mock/simulation_mock/sqs_manager.py",
+                        ],
+                        "args": [
+                            "--url",
+                            "$(QUEUE_URL)",
+                            "--dir",
+                            "$(DIR)",
+                            "--single-message",
+                        ],
                         "env": [
                             {"name": "DIR", "value": "/shared-data"},
                             {"name": "DEBUG", "value": "true"},
@@ -122,7 +131,10 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int, 
                         "name": "simulator",
                         "image": dag_config.SIMULATION_MOCK_IMAGE,
                         "volumeMounts": [{"name": "shared-data", "mountPath": "/shared-data"}],
-                        "command": ["python", "/var/simulation-mock/simulation_mock/simulator.py"],
+                        "command": [
+                            "python",
+                            "/var/simulation-mock/simulation_mock/simulator.py",
+                        ],
                         "args": [
                             "--dir",
                             "$(DIR)",
@@ -187,12 +199,18 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int, 
                                 "limits": {"memory": "1Gi", "cpu": "1"},
                             },
                             "env": [
-                                {"name": "NAMESPACE", "value": dag_config.EKS_NAMESPACE},
+                                {
+                                    "name": "NAMESPACE",
+                                    "value": dag_config.EKS_NAMESPACE,
+                                },
                                 {
                                     "name": "POD_LAUNCHER_NAME",
                                     "valueFrom": {"fieldRef": {"fieldPath": "metadata.name"}},
                                 },
-                                {"name": "POD_LAUNCHER_UID", "valueFrom": {"fieldRef": {"fieldPath": "metadata.uid"}}},
+                                {
+                                    "name": "POD_LAUNCHER_UID",
+                                    "valueFrom": {"fieldRef": {"fieldPath": "metadata.uid"}},
+                                },
                                 {
                                     "name": "JOB_NAME",
                                     "valueFrom": {"fieldRef": {"fieldPath": "metadata.labels['job-name']"}},
@@ -204,8 +222,14 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int, 
                                 {"name": "PARALLELISM", "value": f"{parallelism}"},
                                 {"name": "COMPLETIONS", "value": f"{completions}"},
                                 {"name": "MAX_FAILURES", "value": f"{max_failures}"},
-                                {"name": "AWS_DEFAULT_REGION", "value": dag_config.REGION},
-                                {"name": "AWS_ACCOUNT_ID", "value": dag_config.ACCOUNT_ID},
+                                {
+                                    "name": "AWS_DEFAULT_REGION",
+                                    "value": dag_config.REGION,
+                                },
+                                {
+                                    "name": "AWS_ACCOUNT_ID",
+                                    "value": dag_config.ACCOUNT_ID,
+                                },
                                 {
                                     "name": "QUEUE_URL",
                                     "value": f"{{{{ ti.xcom_pull(task_ids='{create_queue_task_id}') }}}}",
@@ -227,7 +251,6 @@ with DAG(
     start_date=days_ago(1),  # type: ignore
     schedule_interval="@once",
 ) as dag:
-
     total_simulations = 50
     parallelism = 10
     max_failures = 5

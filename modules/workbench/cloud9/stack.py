@@ -8,7 +8,7 @@ from aws_cdk import Stack
 from constructs import Construct
 
 
-class Cloud9Stack(Stack):  # type: ignore
+class Cloud9Stack(Stack):
     """
     Creates a Cloud9 instance
 
@@ -21,8 +21,8 @@ class Cloud9Stack(Stack):  # type: ignore
         self,
         scope: Construct,
         id: str,
+        image_id: str,
         connection_type: Optional[str],
-        image_id: Optional[str],
         instance_stop_time_minutes: Optional[int],
         instance_type: str,
         name: Optional[str],
@@ -63,7 +63,12 @@ class Cloud9Stack(Stack):  # type: ignore
             Cloud9 will use to communicate with the Amazon Elastic Compute Cloud
             (Amazon EC2) instance
         """
-        super().__init__(scope, id, description="This stack deploys Networking resources for ADDF", **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys Networking resources for ADDF",
+            **kwargs,
+        )
 
         self.cloud9_instance = cloud9.CfnEnvironmentEC2(
             self,

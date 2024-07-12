@@ -54,7 +54,7 @@ def create_and_populate_queue(num_items: int) -> str:
     client = get_client()
     response = client.create_queue(
         QueueName=(
-            f"addf-{dag_config.DEPLOYMENT_NAME}-{dag_config.MODULE_NAME}-"
+            f"{dag_config.PROJECT_NAME}-{dag_config.DEPLOYMENT_NAME}-{dag_config.MODULE_NAME}-"
             f"{''.join(random.choices(string.ascii_letters + string.digits, k=6))}"
         )
     )
@@ -97,8 +97,17 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int) 
                             "name": "sqs-manager",
                             "image": dag_config.SIMULATION_MOCK_IMAGE,
                             "volumeMounts": [{"name": "shared-data", "mountPath": "/shared-data"}],
-                            "command": ["python", "/var/simulation-mock/simulation_mock/sqs_manager.py"],
-                            "args": ["--url", "$(URL)", "--dir", "$(DIR)", "--single-message"],
+                            "command": [
+                                "python",
+                                "/var/simulation-mock/simulation_mock/sqs_manager.py",
+                            ],
+                            "args": [
+                                "--url",
+                                "$(URL)",
+                                "--dir",
+                                "$(DIR)",
+                                "--single-message",
+                            ],
                             "env": [
                                 {
                                     "name": "URL",
@@ -106,8 +115,14 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int) 
                                 },
                                 {"name": "DIR", "value": "/shared-data"},
                                 {"name": "DEBUG", "value": "true"},
-                                {"name": "AWS_DEFAULT_REGION", "value": dag_config.REGION},
-                                {"name": "AWS_ACCOUNT_ID", "value": dag_config.ACCOUNT_ID},
+                                {
+                                    "name": "AWS_DEFAULT_REGION",
+                                    "value": dag_config.REGION,
+                                },
+                                {
+                                    "name": "AWS_ACCOUNT_ID",
+                                    "value": dag_config.ACCOUNT_ID,
+                                },
                             ],
                             "livenessProbe": {
                                 "exec": {
@@ -121,7 +136,10 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int) 
                             "name": "simulator",
                             "image": dag_config.SIMULATION_MOCK_IMAGE,
                             "volumeMounts": [{"name": "shared-data", "mountPath": "/shared-data"}],
-                            "command": ["python", "/var/simulation-mock/simulation_mock/simulator.py"],
+                            "command": [
+                                "python",
+                                "/var/simulation-mock/simulation_mock/simulator.py",
+                            ],
                             "args": [
                                 "--dir",
                                 "$(DIR)",
@@ -136,8 +154,14 @@ def get_job_body(create_queue_task_id: str, parallelism: int, completions: int) 
                                 # probability of failure = 1/FAILURE_SEED if 1 <= FAILURE_SEED <= 32768 else 0
                                 {"name": "FAILURE_SEED", "value": "32769"},
                                 {"name": "DEBUG", "value": "true"},
-                                {"name": "AWS_DEFAULT_REGION", "value": dag_config.REGION},
-                                {"name": "AWS_ACCOUNT_ID", "value": dag_config.ACCOUNT_ID},
+                                {
+                                    "name": "AWS_DEFAULT_REGION",
+                                    "value": dag_config.REGION,
+                                },
+                                {
+                                    "name": "AWS_ACCOUNT_ID",
+                                    "value": dag_config.ACCOUNT_ID,
+                                },
                             ],
                             "livenessProbe": {
                                 "exec": {
@@ -161,7 +185,6 @@ with DAG(
     start_date=days_ago(1),  # type: ignore
     schedule_interval="@once",
 ) as dag:
-
     total_simulations = 50
     parallelism = 10
 
@@ -178,7 +201,9 @@ with DAG(
         dag=dag,
         namespace=dag_config.EKS_NAMESPACE,  # type: ignore
         body=get_job_body(
-            create_queue_task_id=create_queue_task.task_id, parallelism=parallelism, completions=total_simulations
+            create_queue_task_id=create_queue_task.task_id,
+            parallelism=parallelism,
+            completions=total_simulations,
         ),
         delete_policy="IfSucceeded",
         cluster_name=dag_config.EKS_CLUSTER_NAME,  # type: ignore

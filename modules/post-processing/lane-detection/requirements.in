@@ -1,6 +1,0 @@
-aws-cdk-lib==2.20.0
-cdk-ecr-deployment==3.0.42
-cdk-nag==2.12.29
-constructs==10.0.91
-boto3~=1.21.0
-typing-extensions==4.7.1

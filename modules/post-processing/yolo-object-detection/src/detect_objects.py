@@ -5,124 +5,47 @@ from argparse import ArgumentParser
 from glob import glob as get_files
 from json import dump as dump_json
 
-import torch
-from pandas import concat
+import pandas as pd
+from ultralytics import YOLO
 
 
-def get_yolov5_prediction(model, image, input_data_path, _input_size=1280, confidence=0.25, iou=0.45):
+def get_pandas(result):
+    # translate boxes data from a Tensor to the List of boxes info lists
+    boxes_list = result.boxes.data.tolist()
+    columns = ["xmin", "ymin", "xmax", "ymax", "confidence", "class", "name"]
 
+    # iterate through the list of boxes info and make some formatting
+    for i in boxes_list:
+        # add a class name as a last element
+        i.append(result.names[i[5]])
+
+    return pd.DataFrame(boxes_list, columns=columns)
+
+
+def get_yolo_prediction(model, image, input_data_path, _input_size=1280, confidence=0.25, iou=0.45, max_det=1000):
     model.conf = confidence  # NMS confidence threshold
     model.iou = iou  # NMS IoU threshold
     model.agnostic = False  # NMS class-agnostic
     model.multi_label = True  # NMS multiple labels per box
-    model.max_det = 1000  # maximum number of detections per image
+    model.max_det = max_det  # maximum number of detections per image
 
     # inference with test time augmentation
-    results = model(image, augment=True)
+    results = model.predict(image, augment=True)[0]
 
     output = {}
 
     output["image_filename"] = image.replace(input_data_path, "")
-    output["boxe"] = results.pred[0][:, :4].tolist()  # x1, y1, x2, y2
-    output["score"] = results.pred[0][:, 4].tolist()
-    output["category_index"] = results.pred[0][:, 5].tolist()
+    output["boxes"] = results.numpy().boxes.xyxy.tolist()
+    output["score"] = results.numpy().boxes.conf.tolist()
+    output["category_index"] = results.numpy().boxes.cls.tolist()
+    output["category"] = [results.names[x] for x in output["category_index"]]
 
-    category_list = [
-        "person",
-        "bicycle",
-        "car",
-        "motorcycle",
-        "airplane",
-        "bus",
-        "train",
-        "truck",
-        "boat",
-        "traffic light",
-        "fire hydrant",
-        "stop sign",
-        "parking meter",
-        "bench",
-        "bird",
-        "cat",
-        "dog",
-        "horse",
-        "sheep",
-        "cow",
-        "elephant",
-        "bear",
-        "zebra",
-        "giraffe",
-        "backpack",
-        "umbrella",
-        "handbag",
-        "tie",
-        "suitcase",
-        "frisbee",
-        "skis",
-        "snowboard",
-        "sports ball",
-        "kite",
-        "baseball bat",
-        "baseball glove",
-        "skateboard",
-        "surfboard",
-        "tennis racket",
-        "bottle",
-        "wine glass",
-        "cup",
-        "fork",
-        "knife",
-        "spoon",
-        "bowl",
-        "banana",
-        "apple",
-        "sandwich",
-        "orange",
-        "broccoli",
-        "carrot",
-        "hot dog",
-        "pizza",
-        "donut",
-        "cake",
-        "chair",
-        "couch",
-        "potted plant",
-        "bed",
-        "dining table",
-        "toilet",
-        "tv",
-        "laptop",
-        "mouse",
-        "remote",
-        "keyboard",
-        "cell phone",
-        "microwave",
-        "oven",
-        "toaster",
-        "sink",
-        "refrigerator",
-        "book",
-        "clock",
-        "vase",
-        "scissors",
-        "teddy bear",
-        "hair drier",
-        "toothbrush",
-    ]
-
-    output["category"] = [category_list[int(x)] for x in output["category_index"]]
-
-    model_predictions = results.pandas().xyxy[0]
-
-    print(model_predictions.head(1))
-
-    return output, model_predictions
+    return output, get_pandas(results)
 
 
 if __name__ == "__main__":
-
     parser = ArgumentParser()
-    parser.add_argument("--model", type=str, default="yolov5s")
+    parser.add_argument("--model", type=str, default="yolov10s")
 
     args, _ = parser.parse_known_args()
 
@@ -130,15 +53,14 @@ if __name__ == "__main__":
     output_data_path = "/opt/ml/processing/output/"
     model_name = args.model
 
-    model = torch.hub.load("ultralytics/yolov5", model_name)  # or yolov5n - yolov5x6, custom
+    model = YOLO(model_name)
 
     images_list = [file for file in get_files(input_data_path + "*.png")]
 
     output = {}
     dfs = []
     for image in images_list:
-
-        output_json, output_pandas = get_yolov5_prediction(model, image, input_data_path)
+        output_json, output_pandas = get_yolo_prediction(model, image, input_data_path)
         image_file_name = image.replace(input_data_path, "")
         image_json_name = image_file_name.replace(".png", ".json")
         image_csv_name = image_file_name.replace(".png", ".csv")
@@ -150,4 +72,4 @@ if __name__ == "__main__":
         output_pandas["source_image"] = image_file_name
         dfs.append(output_pandas)
 
-    concat(dfs).to_csv(f"{output_data_path}all_predictions.csv", encoding="utf-8")
+    pd.concat(dfs).to_csv(f"{output_data_path}all_predictions.csv", encoding="utf-8")

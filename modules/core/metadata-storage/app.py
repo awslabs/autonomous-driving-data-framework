@@ -8,30 +8,36 @@ from aws_cdk import App, CfnOutput
 
 from stack import MetadataStorageStack
 
-# ADDF vars
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+# Project vars
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
-scene_suffix = os.getenv("ADDF_PARAMETER_ROSBAG_SCENE_TABLE_SUFFIX")
+def _param(name: str) -> str:
+    return f"SEEDFARMER_PARAMETER_{name}"
+
+
+# App Env vars
+scene_suffix = os.getenv(_param("ROSBAG_SCENE_TABLE_SUFFIX"))
 if not scene_suffix:
-    raise ValueError("ADDF_PARAMETER_ROSBAG_SCENE_TABLE_SUFFIX not populated ")
+    raise ValueError("ROSBAG_SCENE_TABLE_SUFFIX is not populated ")
 
-glue_db_suffix = os.getenv("ADDF_PARAMETER_GLUE_DB_SUFFIX")
+glue_db_suffix = os.getenv(_param("GLUE_DB_SUFFIX"))
 if not glue_db_suffix:
-    raise ValueError("ADDF_PARAMETER_GLUE_DB_SUFFIX not populated")
+    raise ValueError("GLUE_DB_SUFFIX is not populated")
 
-bagfile_suffix = os.getenv("ADDF_PARAMETER_ROSBAG_BAGFILE_TABLE_SUFFIX")
+bagfile_suffix = os.getenv(_param("ROSBAG_BAGFILE_TABLE_SUFFIX"))
 if not bagfile_suffix:
-    raise ValueError("ADDF_PARAMETER_ROSBAG_BAGFILE_TABLE_SUFFIX not populated")
+    raise ValueError("ROSBAG_BAGFILE_TABLE_SUFFIX is not populated")
 
 
 def generate_description() -> str:
-    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
-    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
-    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+    soln_id = os.getenv(_param("SOLUTION_ID"), None)
+    soln_name = os.getenv(_param("SOLUTION_NAME"), None)
+    soln_version = os.getenv(_param("SOLUTION_VERSION"), None)
 
-    desc = "ADDF - Metadata Storage Module"
+    desc = f"{project_name} - Metadata Storage Module"
     if soln_id and soln_name and soln_version:
         desc = f"({soln_id}) {soln_name}. Version {soln_version}"
     elif soln_id and soln_name:
@@ -43,13 +49,14 @@ app = App()
 
 stack = MetadataStorageStack(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
-    deployment=deployment_name,
-    module=module_name,
+    project_name=project_name,
+    deployment_name=deployment_name,
+    module_name=module_name,
     scene_table_suffix=scene_suffix,
     bagfile_table_suffix=bagfile_suffix,
     glue_db_suffix=glue_db_suffix,

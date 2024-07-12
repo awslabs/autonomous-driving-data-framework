@@ -3,11 +3,11 @@ name: Module Checks
 on:
   push:
     branches: ["main"]
-    paths: ['modules/**']
+    paths: ['modules/**', 'scripts/validate.sh']
 
   pull_request:
     branches: ["main", "release/*", "stable"]
-    paths: ['modules/**']
+    paths: ['modules/**', 'scripts/validate.sh']
 
   workflow_dispatch:
 
@@ -61,7 +61,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           pip install -r $MODULE_PATH/requirements.txt
-      - name: Static checks and linting (mypy, flake8, black, isort)
+      - name: Static checks and linting (mypy, ruff)
         run: scripts/validate.sh --language python --path $MODULE_PATH/
       - name: Pytest
         run: |

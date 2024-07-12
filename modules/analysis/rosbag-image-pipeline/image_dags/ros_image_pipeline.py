@@ -19,7 +19,7 @@ from airflow import DAG, settings
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.exceptions import AirflowException
 from airflow.models import Connection
-from airflow.operators.python import PythonOperator, get_current_context, task
+from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.amazon.aws.operators.batch import BatchOperator
 from airflow.providers.amazon.aws.operators.emr import EmrServerlessStartJobOperator
 from airflow.providers.amazon.aws.sensors.emr import EmrServerlessJobSensor
@@ -33,56 +33,53 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from batch_creation_and_tracking import add_drives_to_batch
 from dag_config import (
-    ADDF_MODULE_METADATA,
-    DEPLOYMENT_NAME,
     EMR_APPLICATION_ID,
     EMR_JOB_EXECUTION_ROLE,
-    MODULE_NAME,
     REGION,
     S3_SCRIPT_DIR,
+    SEEDFARMER_MODULE_METADATA,
     SOLUTION_ID,
-    SOLUTION_NAME,
     SOLUTION_VERSION,
 )
 
 # GET MODULE VARIABLES FROM APP.PY AND DEPLOYSPEC
-addf_module_metadata = json.loads(ADDF_MODULE_METADATA)
-DAG_ID = addf_module_metadata["DagId"]
-DAG_ROLE = addf_module_metadata["DagRoleArn"]
-DYNAMODB_TABLE = addf_module_metadata["DynamoDbTableName"]
-FARGATE_JOB_QUEUE_ARN = addf_module_metadata["FargateJobQueueArn"]
-ON_DEMAND_JOB_QUEUE_ARN = addf_module_metadata["OnDemandJobQueueArn"]
-SPOT_JOB_QUEUE_ARN = addf_module_metadata["SpotJobQueueArn"]
-TARGET_BUCKET = addf_module_metadata["TargetBucketName"]
-FILE_SUFFIX = addf_module_metadata["FileSuffix"]
+module_metadata = json.loads(SEEDFARMER_MODULE_METADATA)
+DAG_ID = module_metadata["DagId"]
+DAG_ROLE = module_metadata["DagRoleArn"]
+DYNAMODB_TABLE = module_metadata["DynamoDbTableName"]
+FARGATE_JOB_QUEUE_ARN = module_metadata["FargateJobQueueArn"]
+ON_DEMAND_JOB_QUEUE_ARN = module_metadata["OnDemandJobQueueArn"]
+SPOT_JOB_QUEUE_ARN = module_metadata["SpotJobQueueArn"]
+TARGET_BUCKET = module_metadata["TargetBucketName"]
+FILE_SUFFIX = module_metadata["FileSuffix"]
 
-PRIVATE_SUBNETS_IDS = addf_module_metadata["PrivateSubnetIds"]
-SM_SECURITY_GROUP_ID = addf_module_metadata["SecurityGroupId"]
-PNG_JOB_DEFINITION_ARN = addf_module_metadata["PngBatchJobDefArn"]
-DESIRED_ENCODING = addf_module_metadata["DesiredEncoding"]
-IMAGE_TOPICS = addf_module_metadata["ImageTopics"]
+PRIVATE_SUBNETS_IDS = module_metadata["PrivateSubnetIds"]
+SM_SECURITY_GROUP_ID = module_metadata["SecurityGroupId"]
+PNG_JOB_DEFINITION_ARN = module_metadata["PngBatchJobDefArn"]
+DESIRED_ENCODING = module_metadata["DesiredEncoding"]
+IMAGE_TOPICS = module_metadata["ImageTopics"]
 
-PARQUET_JOB_DEFINITION_ARN = addf_module_metadata["ParquetBatchJobDefArn"]
-SENSOR_TOPICS = addf_module_metadata["SensorTopics"]
+PARQUET_JOB_DEFINITION_ARN = module_metadata["ParquetBatchJobDefArn"]
+SENSOR_TOPICS = module_metadata["SensorTopics"]
 
-YOLO_IMAGE_URI = addf_module_metadata["ObjectDetectionImageUri"]
-YOLO_ROLE = addf_module_metadata["ObjectDetectionRole"]
-YOLO_CONCURRENCY = addf_module_metadata["ObjectDetectionJobConcurrency"]
-YOLO_INSTANCE_TYPE = addf_module_metadata["ObjectDetectionInstanceType"]
-YOLO_MODEL = addf_module_metadata["YoloModel"]
+YOLO_IMAGE_URI = module_metadata["ObjectDetectionImageUri"]
+YOLO_ROLE = module_metadata["ObjectDetectionRole"]
+YOLO_CONCURRENCY = module_metadata["ObjectDetectionJobConcurrency"]
+YOLO_INSTANCE_TYPE = module_metadata["ObjectDetectionInstanceType"]
+YOLO_MODEL = module_metadata["YoloModel"]
 
-LANEDET_IMAGE_URI = addf_module_metadata["LaneDetectionImageUri"]
-LANEDET_ROLE = addf_module_metadata["LaneDetectionRole"]
-LANEDET_CONCURRENCY = addf_module_metadata["LaneDetectionJobConcurrency"]
-LANEDET_INSTANCE_TYPE = addf_module_metadata["LaneDetectionInstanceType"]
+LANEDET_IMAGE_URI = module_metadata["LaneDetectionImageUri"]
+LANEDET_ROLE = module_metadata["LaneDetectionRole"]
+LANEDET_CONCURRENCY = module_metadata["LaneDetectionJobConcurrency"]
+LANEDET_INSTANCE_TYPE = module_metadata["LaneDetectionInstanceType"]
 
 # EMR Config
-# spark_app_dir = f"s3://{addf_module_metadata['DagBucketName']}/spark_jobs/"
-# EMR_VIRTUAL_CLUSTER_ID = addf_module_metadata['EmrVirtualClusterId']
-# EMR_JOB_ROLE_ARN = addf_module_metadata['EmrJobRoleArn']
-# ARTIFACT_BUCKET = addf_module_metadata["DagBucketName"]
-LOGS_BUCKET = addf_module_metadata["LogsBucketName"]
-SCENE_TABLE = addf_module_metadata["DetectionsDynamoDBName"]
+# spark_app_dir = f"s3://{module_metadata['DagBucketName']}/spark_jobs/"
+# EMR_VIRTUAL_CLUSTER_ID = module_metadata['EmrVirtualClusterId']
+# EMR_JOB_ROLE_ARN = module_metadata['EmrJobRoleArn']
+# ARTIFACT_BUCKET = module_metadata["DagBucketName"]
+LOGS_BUCKET = module_metadata["LogsBucketName"]
+SCENE_TABLE = module_metadata["DetectionsDynamoDBName"]
 
 CONFIGURATION_OVERRIDES = {
     "monitoringConfiguration": {
@@ -526,7 +523,7 @@ with DAG(
         start_job_run = PythonOperator(task_id="scene-detection", python_callable=emr_batch_operation)
 
         job_sensor = EmrServerlessJobSensor(
-            task_id=f"check-emr-job-status",
+            task_id="check-emr-job-status",
             application_id=EMR_APPLICATION_ID,
             job_run_id="{{ task_instance.xcom_pull(task_ids='scene-detection.scene-detection', key='return_value') }}",
             aws_conn_id="aws_default",

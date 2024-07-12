@@ -36,7 +36,9 @@ def check_access_role_exist(role_name: str) -> bool:
         return False
 
 
-def check_instance_profile_exist(instance_profile_name: str) -> Tuple[bool, Dict[str, Any]]:
+def check_instance_profile_exist(
+    instance_profile_name: str,
+) -> Tuple[bool, Dict[str, Any]]:
     try:
         instance_profile_data = iam_client.get_instance_profile(InstanceProfileName=instance_profile_name)
         _logger.info(f"Using existing instance profile {instance_profile_name}.")
@@ -66,8 +68,12 @@ def create_access_role(role_name: str) -> None:
             Path="/service-role/",
             RoleName=role_name,
             Tags=[
-                {"Key": "ADDF_DEPLOYMENT_NAME", "Value": os.getenv("ADDF_DEPLOYMENT_NAME")},
-                {"Key": "ADDF_MODULE_NAME", "Value": os.getenv("ADDF_MODULE_NAME")},
+                {"Key": "SEEDFARMER_PROJECT_NAME", "Value": os.getenv("SEEDFARMER_PROJECT_NAME")},
+                {
+                    "Key": "SEEDFARMER_DEPLOYMENT_NAME",
+                    "Value": os.getenv("SEEDFARMER_DEPLOYMENT_NAME"),
+                },
+                {"Key": "SEEDFARMER_MODULE_NAME", "Value": os.getenv("SEEDFARMER_MODULE_NAME")},
             ],
         )
     except Exception as err:
@@ -78,7 +84,8 @@ def create_access_role(role_name: str) -> None:
     try:
         _logger.info(f"Attaching policy/AWSCloud9SSMInstanceProfile to {role_name}")
         iam_client.attach_role_policy(
-            RoleName=role_name, PolicyArn="arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile"
+            RoleName=role_name,
+            PolicyArn="arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile",
         )
     except Exception as err:
         raise err
@@ -95,7 +102,7 @@ def create_instance_profile(instance_profile_name: str) -> None:
         _logger.warning(f"The role {role_name} does not exist")
 
 
-if os.getenv("ADDF_PARAMETER_CONNECTION_TYPE") == "CONNECT_SSM":
+if os.getenv("SEEDFARMER_PARAMETER_CONNECTION_TYPE", "CONNECT_SSM") == "CONNECT_SSM":
     if not check_access_role_exist(role_name=role_name):
         create_access_role(role_name=role_name)
 

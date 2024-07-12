@@ -35,7 +35,6 @@ class JupyterHubStack(Stack):
         jh_image_tag: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
             scope,
             id,

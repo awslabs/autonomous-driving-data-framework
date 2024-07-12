@@ -192,7 +192,6 @@ def main(table_name, index, batch_id, topics, target_bucket) -> int:
 
 
 if __name__ == "__main__":
-
     # Arguments passed from DAG Code
     parser = argparse.ArgumentParser(description="Process Files")
     parser.add_argument("--tablename", required=True)

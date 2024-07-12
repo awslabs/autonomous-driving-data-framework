@@ -31,7 +31,6 @@ with DAG(
     start_date=days_ago(1),  # type: ignore
     schedule_interval="@once",
 ) as dag:
-
     # caller_identity = PythonOperator(task_id="log_caller_identity", dag=dag, python_callable=log_caller_identity)
     envs = {"JOB_NAME": "Simple Mock", "MAX_SECONDS": "120", "FAILURE_SEED": "20"}
 

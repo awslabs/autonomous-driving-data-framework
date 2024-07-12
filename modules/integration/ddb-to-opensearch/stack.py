@@ -22,6 +22,7 @@ class DDBtoOpensearch(Stack):
         scope: Construct,
         id: str,
         *,
+        project: str,
         deployment: str,
         module: str,
         vpc_id: str,
@@ -33,12 +34,11 @@ class DDBtoOpensearch(Stack):
         stack_description: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(scope, id, description=stack_description, **kwargs)
 
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project}-{deployment}-{module}"
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(
             self,
@@ -53,6 +53,8 @@ class DDBtoOpensearch(Stack):
         os_security_group = ec2.SecurityGroup.from_security_group_id(
             self, f"{dep_mod}-os-sg", opensearch_sg_id, allow_all_outbound=True
         )
+        # Allow ingress
+        os_security_group.add_ingress_rule(peer=os_security_group, connection=ec2.Port.all_traffic())
 
         ddb_os_lambda_policy = iam.PolicyDocument(
             statements=[
@@ -129,7 +131,11 @@ class DDBtoOpensearch(Stack):
             security_groups=[os_security_group],
             vpc=self.vpc,
             vpc_subnets=ec2.SubnetSelection(subnets=self.private_subnets),
-            environment={"REGION": self.region, "ACCOUNT": self.account, "DOMAIN_ENDPOINT": opensearch_domain_endpoint},
+            environment={
+                "REGION": self.region,
+                "ACCOUNT": self.account,
+                "DOMAIN_ENDPOINT": opensearch_domain_endpoint,
+            },
             role=ddb_os_lambda_role,
             layers=[requests_awsauth_layer],
         )
@@ -159,7 +165,7 @@ class DDBtoOpensearch(Stack):
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-IAM5",
-                        "reason": "Resource access restriced to ADDF resources",
+                        "reason": "Resource access restriced to the resources",
                     }
                 ),
             ],

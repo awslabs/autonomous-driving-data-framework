@@ -21,6 +21,7 @@ class BatchDags(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         mwaa_exec_role: str,
@@ -29,7 +30,7 @@ class BatchDags(Stack):
         batch_compute: Dict[str, Any],
         **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
+        # Env vars
         self.deployment_name = deployment_name
         self.module_name = module_name
         self.mwaa_exec_role = mwaa_exec_role
@@ -40,9 +41,9 @@ class BatchDags(Stack):
             description="(SO9154) Autonomous Driving Data Framework (ADDF) - batch-managed",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(
@@ -111,7 +112,8 @@ class BatchDags(Stack):
             self,
             f"dag-role-{dep_mod}",
             assumed_by=iam.CompositePrincipal(
-                iam.ArnPrincipal(self.mwaa_exec_role), iam.ServicePrincipal("ecs-tasks.amazonaws.com")
+                iam.ArnPrincipal(self.mwaa_exec_role),
+                iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
             ),
             inline_policies={"DagPolicyDocument": dag_document},
             managed_policies=[
@@ -132,7 +134,13 @@ class BatchDags(Stack):
 
         ec2IAMProfile = iam.CfnInstanceProfile(self, "BatchEC2RoleInstanceProfile", roles=[ec2Role.role_name])
 
-        batchSG = ec2.SecurityGroup(self, "BatchSG", vpc=self.vpc, allow_all_outbound=True, description="Batch SG")
+        batchSG = ec2.SecurityGroup(
+            self,
+            "BatchSG",
+            vpc=self.vpc,
+            allow_all_outbound=True,
+            description="Batch SG",
+        )
 
         batchSG.add_egress_rule(ec2.Peer.ipv4(self.vpc.vpc_cidr_block), ec2.Port.all_tcp())
 
@@ -211,7 +219,8 @@ class BatchDags(Stack):
 
                     fargate_compute_env_list.append(
                         batch.JobQueueComputeEnvironment(
-                            compute_environment=fargate_compute_env, order=int(batchenv.get("order"))
+                            compute_environment=fargate_compute_env,
+                            order=int(batchenv.get("order")),
                         )
                     )
 

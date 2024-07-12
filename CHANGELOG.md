@@ -15,9 +15,116 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
-- updated the modules which uses CDK to build and push images to ECR to use the cdk-ecr lib `3.0.42`
+- updated object detection to YOLOv8+
+- updated object detection to YOLOv10
+- made `modules/optionals/datalake-buckets` module generic and bumped CDK version
+- made the following module parameters generic:
+  - `examples/example-dags`
+  - `examples/example-tf`
+  - `examples/example-tf-prereqs`
+  - `examples/docker-build`
+  - `sensor-extraction/ros-to-parquet`
+  - `sensor-extraction/ros-to-png`
+  - `post-processing/yolo-object-detection`
+  - `post-processing/yolop-lane-detection`
+  - `simulations/batch-managed`
+  - `simulations/k8s-managed`
+  - `integration/ddb-to-opensearch`
+- made `modules/core/metadata-storage` module generic and bumped CDK version
+- fix code validation script
+- made `ml-training-on-eks` solution generic and organized the solution contents `training-image/mnist`, `ml-training/k8s-managed` into a single dir
+- refactor the following modules to use the ECR module instead of building their own ECR repository:
+  - `sensor-extraction/ros-to-parquet`
+  - `sensor-extraction/ros-to-png`
+  - `post-processing/yolo-object-detection`
+  - `post-processing/yolop-lane-detection`
+- updating `visualization/dev-instance` to use generic parameters
+- updating `visualization/dev-instance-foxbox` to use generic parameters
+- removing `post-processing/lane-detection` due to inactivity/usage
+- made `rosbag-image-pipeline` module generic and bumped CDK version
+- made `eb-sf-batch` module generic and bumped CDK version
+- made `example-spark-dags` module generic and bumped CDK version
+- update `urllib3` dependency per CVE-2024-37891
+- module `compute/eks` ref to 1.8.0 version for `ml-training-on-eks` manifest
+- added `eks-handler-rolearn` within `ml-training/training-k8s-deployment`
+- module `training` within `ml-training-on-eks` manifest ref to `3.5.0` release
+- modification of README.md contains proper string for `eks-oidc-arn` and `added eks-handler-rolearn`
+- refactored `ml-training-on-eks` to use IDF 1.9.0 eks release to use the handler role for running kubectl commands
 
 ### **Removed**
+
+- moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
+- moved module `core/emr-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules) and made it generic
+- removed `example-prod` manifests
+
+=======
+
+## [V3.5.0] - [06/07/2024]
+
+### **Added**
+
+### **Changed**
+
+- fix the `modules/simulations/eureka` error due to missing requirement of aws-cdk.lambda-layer-kubectl-v29
+- Added `modules/simulations/eureka` examples
+- fix: module `modules/visualization/dcv-image` to update cdk version and cdk_ecr_deployment version
+- fix: module `modules/visualization/dcv-eks` to update cdk version
+- fixed the `fsx-lustre-on-eks` integration module's metadata export
+- remedation to pass end-to-end integration testing of ADDF manifests
+- fixed the `fsx-lustre-on-eks` integration module's static provisioning failure
+- fixed the `restmappings prune` error caused to outdated kubectl handler used in imported cluster attributes
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.4.0] - [05/22/2024]
+
+### **Added**
+
+### **Changed**
+
+- fix: module manifest paths for `ros-image-demo-*` examples
+- update ecr module version for `ml-training` manifest
+- `modules/visualization/dev-instance-foxbox`: 
+  - Fixed permissions of the `.config` directory in the User Data script
+  - Simplified the way to decide to install the NVidia drivers
+  - Moved installation of base software to the beginning of the execution in the User Data script
+  - Set to enable the use of Instance Metadata V2 for the created instance
+  - Updated `sample-layout.json` to align with Foxbox configuration
+- fixed `black` and `boto3` library versions as per depandabot
+- refactored `fix.sh` script to use `ruff` instead of `black` and `isort`
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.3.0] - [05/21/2024]
+
+### **Added**
+
+- 'fsx-lustre-on-eks' module - added genric env
+- `modules/visualization/dev-instance-foxbox` module - based on `dev-instance` but using Foxbox (1.0.0) and latest versions of OS and others (DCV, Python 3.11, ROS (noetic/humble), Google Chrome, etc ). Installation also compatible to use with Ubuntu Jammy (22.04)
+
+### **Changed**
+
+- `modules/visualization/dev-instance`: Fixed incorrect SSM Parameter for Ubuntu AMI ID
+- `modules/demo-only/rosbag-webviz`:
+  - CDK and ending up in fatal error when installing `cdk@2.110.0` and then installing the same version through package.json (aws-cdk / aws-cdk-lib): `Cloud assembly schema version mismatch: Maximum schema version supported is 35.0.0, but found 36.0.0`. Needed to bump to version `2.117.0` which is the first version that states `36.0.0` as their cloud assembly version.
+  - Updated `semver` due to security findings from npm audit
+- added a warning to `modules/visualization/dev-instance` module about foxglove is no longer opensource
+- regrouped mwaa and sfn related manifests of `rosbag-image-demo` manifests into a single directory
+- fixed `requests` and `pyroma` library versions as per depandabot
+
+### **Removed**
+
+- removed `sagemaker` group, as they have been moved to [AIOps](https://github.com/awslabs/aiops-modules/tree/main/modules/sagemaker) GitHub repo.
+- removed `mlops` group which hosted `kubeflow-platform` and `kubeflow-users` modules and its relevant manifests
+- removed `rosbag-scene-detection` module as it was deprecated in earlier releases
 
 =======
 

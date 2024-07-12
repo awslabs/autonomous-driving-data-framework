@@ -10,6 +10,7 @@ import cdk_nag
 from aws_cdk import Aspects, CfnJson, Stack, Tags
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -36,8 +37,12 @@ class EmrEksRbacStack(Stack):
         emr_namespace: str,
         **kwargs: Any,
     ) -> None:
-
-        super().__init__(scope, id, description="This stack deploys EMR Studio RBAC Configuration for ADDF", **kwargs)
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys EMR Studio RBAC Configuration for ADDF",
+            **kwargs,
+        )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
         dep_mod = f"addf-{deployment}-{module}"
@@ -53,6 +58,7 @@ class EmrEksRbacStack(Stack):
             cluster_name=eks_cluster_name,
             kubectl_role_arn=eks_admin_role_arn,
             open_id_connect_provider=provider,
+            kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
 
         self.emr_namespace = emr_namespace
@@ -79,7 +85,14 @@ class EmrEksRbacStack(Stack):
                     {"apiGroups": [""], "resources": ["namespaces"], "verbs": ["get"]},
                     {
                         "apiGroups": [""],
-                        "resources": ["serviceaccounts", "services", "configmaps", "events", "pods", "pods/log"],
+                        "resources": [
+                            "serviceaccounts",
+                            "services",
+                            "configmaps",
+                            "events",
+                            "pods",
+                            "pods/log",
+                        ],
                         "verbs": [
                             "get",
                             "list",
@@ -94,7 +107,11 @@ class EmrEksRbacStack(Stack):
                             "label",
                         ],
                     },
-                    {"apiGroups": [""], "resources": ["secrets"], "verbs": ["create", "patch", "delete", "watch"]},
+                    {
+                        "apiGroups": [""],
+                        "resources": ["secrets"],
+                        "verbs": ["create", "patch", "delete", "watch"],
+                    },
                     {
                         "apiGroups": ["apps"],
                         "resources": ["statefulsets", "deployments"],
@@ -172,8 +189,18 @@ class EmrEksRbacStack(Stack):
                 "apiVersion": "rbac.authorization.k8s.io/v1",
                 "kind": "RoleBinding",
                 "metadata": {"name": "emr-containers", "namespace": self.emr_namespace},
-                "subjects": [{"kind": "User", "name": "emr-containers", "apiGroup": "rbac.authorization.k8s.io"}],
-                "roleRef": {"kind": "Role", "name": "emr-containers", "apiGroup": "rbac.authorization.k8s.io"},
+                "subjects": [
+                    {
+                        "kind": "User",
+                        "name": "emr-containers",
+                        "apiGroup": "rbac.authorization.k8s.io",
+                    }
+                ],
+                "roleRef": {
+                    "kind": "Role",
+                    "name": "emr-containers",
+                    "apiGroup": "rbac.authorization.k8s.io",
+                },
             },
         )
         emrrolebind.node.add_dependency(emrrole)
@@ -219,19 +246,25 @@ class EmrEksRbacStack(Stack):
                 actions=["sts:AssumeRoleWithWebIdentity"],
                 principals=[
                     iam.OpenIdConnectPrincipal(
-                        eks_cluster.open_id_connect_provider, conditions={"StringLike": string_like}
+                        eks_cluster.open_id_connect_provider,
+                        conditions={"StringLike": string_like},
                     )
                 ],
             )
         )
-        string_aud = CfnJson(self, "ConditionJsonAud", value={f"{eks_openid_issuer}:aud": "sts.amazon.com"})
+        string_aud = CfnJson(
+            self,
+            "ConditionJsonAud",
+            value={f"{eks_openid_issuer}:aud": "sts.amazon.com"},
+        )
         self.job_role.assume_role_policy.add_statements(
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
                 actions=["sts:AssumeRoleWithWebIdentity"],
                 principals=[
                     iam.OpenIdConnectPrincipal(
-                        eks_cluster.open_id_connect_provider, conditions={"StringEquals": string_aud}
+                        eks_cluster.open_id_connect_provider,
+                        conditions={"StringEquals": string_aud},
                     )
                 ],
             )

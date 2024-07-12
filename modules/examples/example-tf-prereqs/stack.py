@@ -13,7 +13,6 @@
 #    limitations under the License.
 
 import logging
-import os
 from typing import Any, cast
 
 import aws_cdk
@@ -30,6 +29,7 @@ class TfPreReqs(Stack):  # type: ignore
         self,
         scope: Construct,
         id: str,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         hash: str,
@@ -38,8 +38,13 @@ class TfPreReqs(Stack):  # type: ignore
         tf_ddb_retention_type: str,
         **kwargs: Any,
     ) -> None:
-        super().__init__(scope, id, description="This stack deploys Storage resources for ADDF", **kwargs)
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys Storage resources",
+            **kwargs,
+        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
         # S3 bucket for storing the remote state of Terraform
         self.tf_state_s3bucket = aws_s3.Bucket(
@@ -47,7 +52,7 @@ class TfPreReqs(Stack):  # type: ignore
             removal_policy=aws_cdk.RemovalPolicy.RETAIN
             if tf_s3_backend_retention_type.upper() == "RETAIN"
             else aws_cdk.RemovalPolicy.DESTROY,
-            bucket_name=f"addf-{deployment_name}-tfstate-bucket-{hash}",
+            bucket_name=f"{project_name}-{deployment_name}-tfstate-bucket-{hash}",
             id="tf-state-bucket",
             encryption=aws_s3.BucketEncryption.KMS_MANAGED
             if tf_s3_backend_encryption_type.upper() == "KMS"
@@ -62,7 +67,7 @@ class TfPreReqs(Stack):  # type: ignore
         self.tf_ddb_lock_table = aws_dynamodb.Table(
             self,
             "tf_ddb_lock_table",
-            table_name=f"addf-{deployment_name}-tf-ddb-lock-table",
+            table_name=f"{project_name}-{deployment_name}-tf-ddb-lock-table",
             partition_key=aws_dynamodb.Attribute(name=part_key, type=aws_dynamodb.AttributeType.STRING),
             billing_mode=aws_dynamodb.BillingMode.PAY_PER_REQUEST,
             removal_policy=aws_cdk.RemovalPolicy.RETAIN

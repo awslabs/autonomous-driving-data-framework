@@ -9,11 +9,15 @@ import pytest
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-    os.environ["ADDF_DEPLOYMENT_NAME"] = "test-proj"
-    os.environ["ADDF_MODULE_NAME"] = "test-dep"
+    os.environ["SEEDFARMER_PROJECT_NAME"] = "test-proj"
+    os.environ["SEEDFARMER_DEPLOYMENT_NAME"] = "test-dep"
+    os.environ["SEEDFARMER_MODULE_NAME"] = "test-mod"
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
-    os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"] = "arn:aws:policy:12345:XXX"
+    os.environ["SEEDFARMER_PARAMETER_ECR_REPOSITORY_ARN"] = (
+        "arn:aws:ecr:us-east-1:123456789012:repository/addf-docker-repository"
+    )
+    os.environ["SEEDFARMER_PARAMETER_FULL_ACCESS_POLICY_ARN"] = "arn:aws:policy:12345:XXX"
 
     # Unload the app import so that subsequent tests don't reuse
     if "app" in sys.modules:
@@ -25,18 +29,24 @@ def test_app(stack_defaults):
 
 
 def test_full_access_policy(stack_defaults):
-    del os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"]
+    del os.environ["SEEDFARMER_PARAMETER_FULL_ACCESS_POLICY_ARN"]
 
     with pytest.raises(Exception):
         import app  # noqa: F401
 
-        assert os.environ["ADDF_PARAMETER_FULL_ACCESS_POLICY_ARN"] == "arn:aws:policy:12345:XXX"
+        assert os.environ["SEEDFARMER_PARAMETER_FULL_ACCESS_POLICY_ARN"] == "arn:aws:policy:12345:XXX"
+
+
+def test_missing_app_ecr_arn(stack_defaults):
+    del os.environ["SEEDFARMER_PARAMETER_ECR_REPOSITORY_ARN"]
+    with pytest.raises(ValueError):
+        import app  # noqa: F401
 
 
 def test_solution_description(stack_defaults):
-    os.environ["ADDF_PARAMETER_SOLUTION_ID"] = "SO123456"
-    os.environ["ADDF_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
-    os.environ["ADDF_PARAMETER_SOLUTION_VERSION"] = "v1.0.0"
+    os.environ["SEEDFARMER_PARAMETER_SOLUTION_ID"] = "SO123456"
+    os.environ["SEEDFARMER_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
+    os.environ["SEEDFARMER_PARAMETER_SOLUTION_VERSION"] = "v1.0.0"
 
     import app
 
@@ -45,9 +55,9 @@ def test_solution_description(stack_defaults):
 
 
 def test_solution_description_no_version(stack_defaults):
-    os.environ["ADDF_PARAMETER_SOLUTION_ID"] = "SO123456"
-    os.environ["ADDF_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
-    del os.environ["ADDF_PARAMETER_SOLUTION_VERSION"]
+    os.environ["SEEDFARMER_PARAMETER_SOLUTION_ID"] = "SO123456"
+    os.environ["SEEDFARMER_PARAMETER_SOLUTION_NAME"] = "MY GREAT TEST"
+    del os.environ["SEEDFARMER_PARAMETER_SOLUTION_VERSION"]
 
     import app
 

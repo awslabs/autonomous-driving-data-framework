@@ -12,7 +12,9 @@ from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_events as events
 from aws_cdk import aws_stepfunctions as stepfunctions
 from aws_cdk import aws_stepfunctions_tasks as step_functions_tasks
-from aws_solutions_constructs.aws_eventbridge_stepfunctions import EventbridgeToStepfunctions
+from aws_solutions_constructs.aws_eventbridge_stepfunctions import (
+    EventbridgeToStepfunctions,
+)
 
 # from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
@@ -29,6 +31,7 @@ class EventDrivenBatch(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         fargate_job_queue_arn: str,
@@ -37,7 +40,7 @@ class EventDrivenBatch(Stack):
         memory_limit_mib: int,
         **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
+        # Env vars
         self.deployment_name = deployment_name
         self.module_name = module_name
 
@@ -47,9 +50,9 @@ class EventDrivenBatch(Stack):
             description="This stack deploys Cron Based Eventbridge which triggers Stepfunctions further triggering AWS Batch",  # noqa: E501
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
         # Batch Resources
 
@@ -89,7 +92,7 @@ class EventDrivenBatch(Stack):
         definition = batch.EcsJobDefinition(
             self,
             f"{dep_mod}-JobDefinition",
-            job_definition_name=f"addf-{deployment_name}-Job-Definition",
+            job_definition_name=f"{project_name}-{deployment_name}-Job-Definition",
             retry_attempts=1,
             container=batch.EcsFargateContainerDefinition(
                 self,
@@ -109,13 +112,15 @@ class EventDrivenBatch(Stack):
         submit_metrics_job = step_functions_tasks.BatchSubmitJob(
             self,
             f"{dep_mod}-Batchjob",
-            job_name=f"addf-{deployment_name}-Job",
+            job_name=f"{project_name}-{deployment_name}-Job",
             job_queue_arn=fargate_job_queue_arn,
             job_definition_arn=definition.job_definition_arn,
         )
 
         wait_job = stepfunctions.Wait(
-            self, "Wait 30 Seconds", time=stepfunctions.WaitTime.duration(Duration.seconds(30))
+            self,
+            "Wait 30 Seconds",
+            time=stepfunctions.WaitTime.duration(Duration.seconds(30)),
         )
 
         # fail_job = stepfunctions.Fail(self, "Fail", cause="AWS Batch Job Failed", error="DescribeJob returned FAILED")
@@ -128,7 +133,7 @@ class EventDrivenBatch(Stack):
 
         self.eventbridge_sfn = EventbridgeToStepfunctions(
             self,
-            f"addf-{deployment_name}-eb-sf-batch",
+            f"{project_name}-{deployment_name}-eb-sf-batch",
             state_machine_props=stepfunctions.StateMachineProps(definition=definition),  # type: ignore
             event_rule_props=events.RuleProps(schedule=events.Schedule.rate(Duration.minutes(1))),
         )

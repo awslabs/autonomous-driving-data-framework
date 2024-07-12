@@ -40,9 +40,9 @@ echo "Validating: ${VALIDATE_PATH}, Language: ${LANGUAGE}"
 
 echo "Validating Formatting"
 if [[ $LANGUAGE == "python" ]]; then
-    echo "Checking isort, black"
-    isort --check .
-    black --check .
+    echo "Running ruff"
+    ruff format --check ${VALIDATE_PATH}
+    ruff check ${VALIDATE_PATH}
 elif [[ $LANGUAGE == "typescript" ]]; then
     echo "Checking prettier"
     npx prettier -c .
@@ -54,8 +54,7 @@ fi
 if [[ $SKIP_STATIC_CHECKS == "false" ]]; then
     echo "Validating Static Checks"
     if [[ $LANGUAGE == "python" ]]; then
-        echo "Checking flake8, mypy"
-        flake8 .
+        echo "Checking mypy"
         mypy .
     else
         echo "ERROR Language: ${LANGUAGE}"

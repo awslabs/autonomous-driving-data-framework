@@ -3,17 +3,20 @@
 
 import os
 
-from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
+from aws_cdk import App, CfnOutput, Environment
+
 from stack import RosToPngBatchJob
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
+ecr_repository_arn = os.getenv(_param("ECR_REPOSITORY_ARN"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
 retries = int(os.getenv(_param("RETRIES"), 1))
 timeout_seconds = int(os.getenv(_param("TIMEOUT_SECONDS"), 60))
@@ -21,7 +24,6 @@ vcpus = int(os.getenv(_param("VCPUS"), 4))
 memory_limit_mib = int(os.getenv(_param("MEMORY_MIB"), 16384))
 resized_width = os.getenv(_param("RESIZED_WIDTH"))
 resized_height = os.getenv(_param("RESIZED_HEIGHT"))
-removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
 
 batch_config = {
     "retries": retries,
@@ -36,14 +38,17 @@ if resized_width:
 if resized_height:
     batch_config["resized_height"] = int(resized_height)
 
+if not ecr_repository_arn:
+    raise ValueError("ECR Repository ARN is missing.")
+
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
 
 
 def generate_description() -> str:
-    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
-    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
-    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+    soln_id = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_VERSION", None)
 
     desc = "(SO9154) Autonomous Driving Data Framework (ADDF) - ros-to-png"
     if soln_id and soln_name and soln_version:
@@ -57,16 +62,17 @@ app = App()
 
 stack = RosToPngBatchJob(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    ecr_repository_arn=ecr_repository_arn,
     s3_access_policy=full_access_policy,
     batch_config=batch_config,
-    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
     stack_description=generate_description(),
 )
 

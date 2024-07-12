@@ -12,7 +12,9 @@ import boto3
 
 
 def main():
-    parser = ArgumentParser(description="Request a Presigned URL from the generateUrlLambda")
+    parser = ArgumentParser(
+        description="Request a Presigned URL from the generateUrlLambda"
+    )
     parser.add_argument(
         "--config-file",
         dest="config_file",
@@ -31,11 +33,21 @@ def main():
         required=False,
         help="The generateUrlFunctionName, required if no --config-file is provided",
     )
-    parser.add_argument("--key", dest="object_key", required=False, help="the key of the object in s3")
     parser.add_argument(
-        "--record", dest="record_id", required=False, help="the partition key of the scene in the scenario db"
+        "--key", dest="object_key", required=False, help="the key of the object in s3"
     )
-    parser.add_argument("--scene", dest="scene_id", required=False, help="the sort key of the scene in the scenario db")
+    parser.add_argument(
+        "--record",
+        dest="record_id",
+        required=False,
+        help="the partition key of the scene in the scenario db",
+    )
+    parser.add_argument(
+        "--scene",
+        dest="scene_id",
+        required=False,
+        help="the sort key of the scene in the scenario db",
+    )
     args = parser.parse_args()
 
     if args.config_file is not None:
@@ -47,25 +59,43 @@ def main():
     else:
         metadata = {}
 
-    bucket_name = args.bucket_name if args.bucket_name is not None else metadata.get("TargetBucketName", None)
+    bucket_name = (
+        args.bucket_name
+        if args.bucket_name is not None
+        else metadata.get("TargetBucketName", None)
+    )
     if bucket_name is None:
-        raise Exception('One of JSON config file key "TargetBucketName" or --bucket-name must be provided')
+        raise Exception(
+            'One of JSON config file key "TargetBucketName" or --bucket-name must be provided'
+        )
 
     function_name = (
-        args.function_name if args.function_name is not None else metadata.get("GenerateUrlLambdaName", None)
+        args.function_name
+        if args.function_name is not None
+        else metadata.get("GenerateUrlLambdaName", None)
     )
     if function_name is None:
-        raise Exception('One of JSON config file key "GenerateUrlLambdaName" or --function-name must be provided')
+        raise Exception(
+            'One of JSON config file key "GenerateUrlLambdaName" or --function-name must be provided'
+        )
 
     if args.object_key is None and (args.record_id is None or args.scene_id is None):
         raise Exception("You need to either specify --key or --record and --scene")
 
     client = boto3.client("lambda")
     print(f"Invoking: {function_name}")
-    payload = {"bucket": bucket_name, "key": args.object_key, "record_id": args.record_id, "scene_id": args.scene_id}
+    payload = {
+        "bucket": bucket_name,
+        "key": args.object_key,
+        "record_id": args.record_id,
+        "scene_id": args.scene_id,
+    }
     print("payload: " + json.dumps(payload))
     response = client.invoke(
-        FunctionName=str(function_name), InvocationType="RequestResponse", LogType="Tail", Payload=json.dumps(payload)
+        FunctionName=str(function_name),
+        InvocationType="RequestResponse",
+        LogType="Tail",
+        Payload=json.dumps(payload),
     )
 
     res = json.loads(response["Payload"].read())

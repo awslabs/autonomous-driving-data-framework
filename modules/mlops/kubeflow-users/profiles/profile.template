@@ -1,9 +1,0 @@
-apiVersion: kubeflow.org/v1
-kind: Profile
-metadata:
-  name: user
-  namespace: user
-spec:
-  owner:
-    kind: User
-    name: user@amazon.com

@@ -14,11 +14,11 @@ _logger: logging.Logger = logging.getLogger(__name__)
 
 ec2_client = boto3.client("ec2")
 
-ADDF_METADATA = json.loads(os.getenv("ADDF_MODULE_METADATA"))  # type: ignore
+SEEDFARMER_METADATA = json.loads(os.getenv("SEEDFARMER_MODULE_METADATA"))  # type: ignore
 
-cloud9_arn = ADDF_METADATA.get("Cloud9EnvArn")
+cloud9_arn = SEEDFARMER_METADATA.get("Cloud9EnvArn")
 cloud9_env_id = cloud9_arn.split(":")[-1]
-volume_size = int(ADDF_METADATA.get("InstanceStorageSize"))
+volume_size = int(SEEDFARMER_METADATA.get("InstanceStorageSize"))
 
 res = ec2_client.describe_instances(Filters=[{"Name": "tag:aws:cloud9:environment", "Values": [cloud9_env_id]}])
 
@@ -32,8 +32,9 @@ try:
     ec2_client.create_tags(
         Resources=[instance_id, volume_id],
         Tags=[
-            {"Key": "ADDF_DEPLOYMENT_NAME", "Value": os.getenv("ADDF_DEPLOYMENT_NAME")},
-            {"Key": "ADDF_MODULE_NAME", "Value": os.getenv("ADDF_MODULE_NAME")},
+            {"Key": "SEEDFARMER_PROJECT_NAME", "Value": os.getenv("SEEDFARMER_PROJECT_NAME")},
+            {"Key": "SEEDFARMER_DEPLOYMENT_NAME", "Value": os.getenv("SEEDFARMER_DEPLOYMENT_NAME")},
+            {"Key": "SEEDFARMER_MODULE_NAME", "Value": os.getenv("SEEDFARMER_MODULE_NAME")},
             {"Key": "Name", "Value": full_cloud9_instance_name},
         ],
     )

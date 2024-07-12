@@ -79,13 +79,26 @@ def get_job_queue_name() -> str:
 
 def get_job_name() -> str:
     v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
-    return f"addf-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-simplemock-job-{v}"
+    return "-".join(
+        [
+            batch_dag_config.PROJECT_NAME,
+            batch_dag_config.DEPLOYMENT_NAME,
+            batch_dag_config.MODULE_NAME,
+            "simplemock-job",
+            v,
+        ]
+    )
 
 
 def get_job_def_name() -> str:
-    # v = "".join(random.choice(string.ascii_lowercase) for i in range(6))
-    # return f"addf-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-jobdef-{v}"
-    return f"addf-{batch_dag_config.DEPLOYMENT_NAME}-{batch_dag_config.MODULE_NAME}-simplemock-jobdef"
+    return "-".join(
+        [
+            batch_dag_config.PROJECT_NAME,
+            batch_dag_config.DEPLOYMENT_NAME,
+            batch_dag_config.MODULE_NAME,
+            "simplemock-jobdef",
+        ]
+    )
 
 
 def get_batch_client() -> BatchClient:
@@ -143,7 +156,6 @@ with DAG(
     start_date=days_ago(1),  # type: ignore
     schedule_interval="@once",
 ) as dag:
-
     total_simulations = 50
     parallelism = 10
 
@@ -171,7 +183,7 @@ with DAG(
         job_queue=queue_name,
         aws_conn_id="aws_batch",
         # job_definition="{{ task_instance.xcom_pull(task_ids='register_batch_job_defintion', key='job_definition_name') }}", # noqa: E501
-        job_definition="addf-local-simulations-batch-managed-simplemock-jobdef",  # TODO
+        job_definition=f"{batch_dag_config.PROJECT_NAME}-local-simulations-batch-managed-simplemock-jobdef",  # TODO
         overrides={
             "command": [
                 "bash",
@@ -223,9 +235,9 @@ with DAG(
         provide_context=True,
         op_kwargs={
             # "job_def_arn": "{{ task_instance.xcom_pull(task_ids='deregister_batch_job_defintion', key='job_definition_arn') }}" # noqa: E501
-            "job_def_arn": "addf-local-simulations-batch-managed-simplemock-jobdef"
+            "job_def_arn": f"{batch_dag_config.PROJECT_NAME}-local-simulations-batch-managed-simplemock-jobdef"
         },
         python_callable=deregister_job_definition,
     )
 
-    create_aws_conn >> register_batch_job_defintion >> submit_batch_job >> deregister_batch_job_defintion
+    (create_aws_conn >> register_batch_job_defintion >> submit_batch_job >> deregister_batch_job_defintion)

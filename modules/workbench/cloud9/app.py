@@ -11,7 +11,7 @@ from stack import Cloud9Stack
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 def is_ami_valid(image_id: str) -> None:
@@ -33,8 +33,9 @@ def is_ami_valid(image_id: str) -> None:
             )
 
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME")
-module_name = os.getenv("ADDF_MODULE_NAME")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME")
 connection_type = os.getenv(_param("CONNECTION_TYPE"), "CONNECT_SSM")
 image_id = os.getenv(_param("IMAGE_ID"), "ubuntu-18.04-x86_64")
 instance_stop_time_minutes = int(os.getenv(_param("INSTANCE_STOP_TIME_MINUTES"), 60))
@@ -59,7 +60,7 @@ app = App()
 
 stack = Cloud9Stack(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     connection_type=connection_type,
     image_id=image_id,
     instance_stop_time_minutes=instance_stop_time_minutes,

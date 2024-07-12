@@ -1,8 +1,9 @@
+publishGenericEnvVariables: true
 deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.44.0
+      - npm install -g aws-cdk@2.146.0
       - pip install -r requirements.txt
     build:
       commands:
@@ -11,7 +12,7 @@ deploy:
       - aws iam create-service-linked-role --aws-service-name spot.amazonaws.com || true
       - aws iam create-service-linked-role --aws-service-name spotfleet.amazonaws.com || true
       # - echo Building the Docker image...
-      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${ADDF_PARAMETER_ECR_REPO_NAME}"
+      - export ECR_REPO_NAME="${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-${SEEDFARMER_PARAMETER_ECR_REPO_NAME}"
       - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
@@ -23,15 +24,15 @@ deploy:
       - cd ../
       - cdk deploy --all --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # # Here we export some env vars and the write values into the batch_dag_config.py file for use by the DAGs
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - seedfarmer metadata convert -f cdk-exports.json || true
 destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.44.0
+      - npm install -g aws-cdk@2.146.0
       - pip install -r requirements.txt
     build:
       commands:
       - cdk destroy --force --app "python app.py"
-      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-${ADDF_PARAMETER_ECR_REPO_NAME}"
+      - export ECR_REPO_NAME="${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-${SEEDFARMER_PARAMETER_ECR_REPO_NAME}"
       - aws ecr delete-repository --repository-name ${ECR_REPO_NAME} --force

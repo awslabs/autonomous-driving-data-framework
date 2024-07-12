@@ -2,4 +2,5 @@ aws-cdk-lib==2.82.0
 constructs==10.0.91
 cdk-nag==2.12.29
 boto3~=1.21.0
-typing-extensions~=4.6.3
+typing-extensions>=4.6.3
+urllib3>=1.26.19

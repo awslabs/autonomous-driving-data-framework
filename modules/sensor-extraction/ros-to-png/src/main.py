@@ -47,7 +47,15 @@ class VideoFromBag:
 
 
 class ImageFromBag:
-    def __init__(self, topic, encoding, bag_path, output_path, resized_width=None, resized_height=None):
+    def __init__(
+        self,
+        topic,
+        encoding,
+        bag_path,
+        output_path,
+        resized_width=None,
+        resized_height=None,
+    ):
         self.bridge = CvBridge()
         output_dir = os.path.join(output_path, topic.replace("/", "_"))
 
@@ -288,7 +296,6 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
 
 
 if __name__ == "__main__":
-
     # Arguments passed from DAG Code
     parser = argparse.ArgumentParser(description="Process Files")
     parser.add_argument("--tablename", required=True)

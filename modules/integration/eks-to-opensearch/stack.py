@@ -10,6 +10,7 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_opensearchservice as opensearch
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -32,9 +33,11 @@ class EksOpenSearchIntegrationStack(Stack):
         eks_oidc_arn: str,
         **kwargs: Any,
     ) -> None:
-
         super().__init__(
-            scope, id, description="This stack integrates EKS Cluster with Opensearch cluster for ADDF", **kwargs
+            scope,
+            id,
+            description="This stack integrates EKS Cluster with Opensearch cluster for ADDF",
+            **kwargs,
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
 
@@ -57,6 +60,7 @@ class EksOpenSearchIntegrationStack(Stack):
             cluster_name=eks_cluster_name,
             kubectl_role_arn=eks_admin_role_arn,
             open_id_connect_provider=provider,
+            kubectl_layer=KubectlV29Layer(self, "Kubectlv29Layer"),
         )
         eks_cluster_security_group = ec2.SecurityGroup.from_security_group_id(
             self, f"{dep_mod}-eks-sg", eks_cluster_sg_id
@@ -72,7 +76,11 @@ class EksOpenSearchIntegrationStack(Stack):
             "fluentbit", name="fluentbit", namespace="kube-system"
         )
 
-        fluentbit_policy_statement_json_1 = {"Effect": "Allow", "Action": ["es:*"], "Resource": [os_domain.domain_arn]}
+        fluentbit_policy_statement_json_1 = {
+            "Effect": "Allow",
+            "Action": ["es:*"],
+            "Resource": [os_domain.domain_arn],
+        }
 
         # Add the policies to the service account
         fluentbit_service_account.add_to_principal_policy(

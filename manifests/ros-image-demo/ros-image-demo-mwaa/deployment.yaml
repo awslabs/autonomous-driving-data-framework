@@ -1,0 +1,24 @@
+name: ros-image-demo
+toolchainRegion: us-west-2
+groups:
+  - name: optionals
+    path: manifests/ros-image-demo/ros-image-demo-mwaa/optional-modules.yaml
+  - name: core
+    path: manifests/ros-image-demo/ros-image-demo-mwaa/core-modules.yaml
+  - name: docker-repositories
+    path: manifests/ros-image-demo/ros-image-demo-mwaa/docker-repository-modules.yaml
+  - name: docker-images
+    path: manifests/ros-image-demo/ros-image-demo-mwaa/docker-image-modules.yaml
+  - name: dags
+    path: manifests/ros-image-demo/ros-image-demo-mwaa/image-pipeline-modules.yaml
+  - name: viz
+    path: manifests/ros-image-demo/ros-image-demo-mwaa/visualization-modules.yaml
+targetAccountMappings:
+  - alias: primary
+    accountId: 1234567890
+    default: true
+    parametersGlobal:
+      dockerCredentialsSecret: aws-addf-docker-credentials
+    regionMappings:
+      - region: us-west-2
+        default: true

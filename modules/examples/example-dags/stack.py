@@ -19,6 +19,7 @@ class DagIamRole(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         mwaa_exec_role: str,
@@ -26,13 +27,19 @@ class DagIamRole(Stack):
         permission_boundary_arn: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
+        # Env vars
+        self.project_name = project_name
         self.deployment_name = deployment_name
         self.module_name = module_name
         self.mwaa_exec_role = mwaa_exec_role
 
-        super().__init__(scope, id, description="This stack deploys Example DAGs resources for ADDF", **kwargs)
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        super().__init__(
+            scope,
+            id,
+            description="This stack deploys Example DAGs resources",
+            **kwargs,
+        )
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
         # Create Dag IAM Role and policy
         dag_statement = aws_iam.PolicyDocument(
@@ -52,7 +59,7 @@ class DagIamRole(Stack):
         )
 
         # Role with Permission Boundary
-        r_name = f"addf-{self.deployment_name}-{self.module_name}-dag-role"
+        r_name = f"{self.project_name}-{self.deployment_name}-{self.module_name}-dag-role"
         self.dag_role = aws_iam.Role(
             self,
             f"dag-role-{self.deployment_name}-{self.module_name}",

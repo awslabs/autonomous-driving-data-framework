@@ -10,7 +10,6 @@ import pytest
 
 @pytest.fixture(scope="function")
 def stack_defaults():
-
     os.environ["CDK_DEFAULT_ACCOUNT"] = "111111111111"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-1"
 
@@ -22,6 +21,7 @@ def test_synthesize_stack(stack_defaults, mocker):
     import stack
 
     app = cdk.App()
+    proj_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
@@ -30,16 +30,17 @@ def test_synthesize_stack(stack_defaults, mocker):
     try:
         _ = stack.DDBtoOpensearch(
             scope=app,
-            id=f"addf-{dep_name}-{mod_name}",
+            id=f"{proj_name}-{dep_name}-{mod_name}",
+            project=proj_name,
             deployment=dep_name,
             module=mod_name,
             vpc_id="vpc-12345",
             private_subnet_ids='["subnet-00ffc51481090f2d4", "subnet-061322cd815e741e9", "subnet-089eccb47c3d29bf8"]',
             opensearch_sg_id="sg-084c0dd9dc65c6937",
-            opensearch_domain_endpoint="vpc-addf-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com",
+            opensearch_domain_endpoint="vpc-aws-solutions--367e660c-something.us-west-2.es.amazonaws.com",
             opensearch_domain_name="mydomain",
             ddb_stream_arn=(
-                "arn:aws:dynamodb:us-west-2:123456789012:table/addf-aws-solutions-metadata-storage-"
+                "arn:aws:dynamodb:us-west-2:123456789012:table/aws-solutions-metadata-storage-"
                 "Rosbag-Scene-Metadata/stream/2023-08-15T03:16:51.909"
             ),
             stack_description="Testing",

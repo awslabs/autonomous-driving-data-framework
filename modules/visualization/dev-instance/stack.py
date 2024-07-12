@@ -27,7 +27,9 @@ from aws_cdk.aws_ec2 import (
 )
 from constructs import Construct, IConstruct
 
-default_ami_ssm_parameter_name: str = "/aws/src/canonical/ubuntu/server/focal/stable/current/amd64/hvm/ebs-gp2/ami-id"
+default_ami_ssm_parameter_name: str = (
+    "/aws/service/canonical/ubuntu/server/focal/stable/current/amd64/hvm/ebs-gp2/ami-id"
+)
 
 
 class DataServiceDevInstancesStack(Stack):
@@ -37,6 +39,7 @@ class DataServiceDevInstancesStack(Stack):
         id: str,
         *,
         env: Environment,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         vpc_id: str,
@@ -53,12 +56,16 @@ class DataServiceDevInstancesStack(Stack):
         **kwargs,
     ) -> None:
         super().__init__(
-            scope, id, description="(SO9154) Autonomous Driving Data Framework (ADDF) - dev-instance", env=env, **kwargs
+            scope,
+            id,
+            description="(SO9154) Autonomous Driving Data Framework (ADDF) - dev-instance",
+            env=env,
+            **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"{project_name}-{deployment_name}")
 
         region = Stack.of(self).region
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
         ####################################################################################################
         # VPC
@@ -108,20 +115,23 @@ class DataServiceDevInstancesStack(Stack):
         s3_policy_json = {
             "Effect": "Allow",
             "Action": ["s3:Get*", "s3:List*", "s3:PutObject*", "s3:DeleteObject*"],
-            "Resource": ["arn:aws:s3:::addf*", "arn:aws:s3:::addf*/*"],
+            "Resource": [f"arn:aws:s3:::{project_name}*", f"arn:aws:s3:::{project_name}*/*"],
         }
 
         lambda_policy_json = {
             "Effect": "Allow",
             "Action": ["lambda:Invoke*"],
-            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:addf-*"],
+            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:{project_name}-*"],
         }
 
         if s3_dataset_bucket:
             public_aev_dataset_policy_json = {
                 "Effect": "Allow",
                 "Action": ["s3:Get*", "s3:List*"],
-                "Resource": [f"arn:aws:s3:::{s3_dataset_bucket}", f"arn:aws:s3:::{s3_dataset_bucket}/*"],
+                "Resource": [
+                    f"arn:aws:s3:::{s3_dataset_bucket}",
+                    f"arn:aws:s3:::{s3_dataset_bucket}/*",
+                ],
             }
 
         # Add the policies to the role
@@ -146,7 +156,7 @@ class DataServiceDevInstancesStack(Stack):
                     generate_string_key="password",
                     exclude_punctuation=True,
                     include_space=False,
-                    exclude_characters="',. |<>=/\"\\\$#;@[]{}~:`",
+                    exclude_characters="',. |<>=/\"\\\\$#;@[]{}~:`",
                     password_length=24,
                 )
                 if not demo_password

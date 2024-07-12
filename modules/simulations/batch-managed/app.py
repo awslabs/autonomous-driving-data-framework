@@ -5,14 +5,16 @@ import json
 import os
 
 from aws_cdk import App, CfnOutput, Environment
+
 from stack import BatchDags
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
@@ -36,7 +38,8 @@ app = App()
 
 stack = BatchDags(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     mwaa_exec_role=mwaa_exec_role,

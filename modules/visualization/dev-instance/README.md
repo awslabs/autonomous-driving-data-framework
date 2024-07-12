@@ -1,9 +1,14 @@
 # Dev-Intance
 
+> [!WARNING]  
+> Foxglove is no longer [opensource](https://foxglove.dev/blog/foxglove-2-0-unifying-robotics-observability). This module uses [v1.29.0](https://github.com/foxglove/studio/releases/tag/v1.29.0). There will be NO further upgrades made to this module.
+
 ## Description
+
 This module will deploy an EC2 instance with an Ubuntu Desktop reachable via NiceDCV.  It is intended for GPU compute, but can run on CPU compute (with limitations)
 
 It has installed:
+
  - Ubuntu 20.04 Server Desktop
  - NiceDCV
  - Chrome
@@ -19,6 +24,7 @@ It leveages AWS SecretsManager to store the username and password to acces the i
 The user is ALWAYS `ubuntu`.
 
 ### Custom File Support
+
 Any file you want staged on the running instance should be saved in the `scripts/` directory of this code module.  All files placed in this directory will be copied to the running EC2 instance located at the `/home/ubuntu/scripts` directory and accessible by the `ubuntu` user.
 
 ## Inputs/Outputs
@@ -28,10 +34,12 @@ Any file you want staged on the running instance should be saved in the `scripts
 
 
 #### Required
+
 - `vpc-id` - the VPC this instance will reside in --- MUST have public subnets
 
 
 #### Optional
+
 - `instance-type` - the type of EC2 compute to use - defaults to `g4dn.xlarge`
 - `instance-count` - the number (INT) of identical instances to create with the same security group and same instance profile
   - defaults to 1
@@ -43,6 +51,7 @@ Any file you want staged on the running instance should be saved in the `scripts
   - ******  CAUTION  ****** this is to be used ONLY for demo purposes and not with sensitive data.  DO NOT USE with any critical or in sensitive environments / infrastructures!!!!  You have been warned...
 
 #### Input Example
+
 ```yaml
 parameters:
   - name: vpc-id
@@ -64,17 +73,20 @@ parameters:
 ```
 
 ### Module Metadata Outputs
+
 Nested in the instance indicator, there are two pertinent parameters output:
 - `DevInstanceURL` - the url with port to access the  NiceDCV endpoint
 - `AWSSecretName` - the name of the AWS SecretsManager entry that has the password 
 
 Thr structure is:
+
 - dev-instance-name
   - `DevInstanceURL`
   - `AWSSecretName`
 
 
 #### Output Example
+
 ```json
   {
     "dev-instance-0": {

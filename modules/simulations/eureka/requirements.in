@@ -1,0 +1,9 @@
+aws-cdk-lib==2.128.0
+aws-cdk.lambda-layer-kubectl-v29==2.0.0
+constructs==10.3.0
+cdk-nag==2.12.29
+boto3~=1.21.0
+pytest==7.4.3
+pytest-cov==4.1.0
+cdk_ecr_deployment==3.0.65
+urllib3>=1.26.19
