@@ -1,17 +1,17 @@
 name: datalake-buckets
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/optionals/datalake-buckets?ref=release/3.5.0
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/optionals/datalake-buckets?ref=release/3.6.0
 parameters:
   - name: encryption-type
     value: SSE
 ---
 name: networking
-path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk?ref=release/1.9.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk?ref=release/1.10.0
 parameters:
   - name: internet-accessible
     value: True
 ---
 name: ecr-ml-images
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=release/1.9.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=release/1.10.0
 parameters:
   - name: repository-name
     value: ml-mnist-images

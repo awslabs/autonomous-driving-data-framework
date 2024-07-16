@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - module `training` within `ml-training-on-eks` manifest ref to `3.5.0` release
 - modification of README.md contains proper string for `eks-oidc-arn` and `added eks-handler-rolearn`
 - refactored `ml-training-on-eks` to use IDF 1.9.0 eks release to use the handler role for running kubectl commands
+- updated `example-dev` and `ml-training-on-eks` manifests to reflect latest IDF versions
 
 ### **Removed**
 
