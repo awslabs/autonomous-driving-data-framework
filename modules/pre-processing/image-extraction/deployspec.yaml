@@ -7,8 +7,7 @@ deploy:
     build:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      # Here we export some env vars
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - seedfarmer metadata convert -f cdk-exports.json || true
 destroy:
   phases:
     install:
@@ -19,4 +18,5 @@ destroy:
       commands:
       - cdk destroy --force --app "python app.py"
 build_type: BUILD_GENERAL1_LARGE
+publishGenericEnvVariables: True
 

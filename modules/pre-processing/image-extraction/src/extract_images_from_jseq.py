@@ -3,6 +3,7 @@ This python script will extract images from a pair of JSEQ + IDX file
 Assumption: Input .jsq + .idx file with the same name
 Please note we default to save as .jpg extension as it's the raw picture
 """
+
 import os
 import sys
 import time

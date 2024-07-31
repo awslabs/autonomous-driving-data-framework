@@ -7,12 +7,13 @@ from aws_cdk import App, CfnOutput, Environment
 
 from stack import ImageExtraction
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 retries = int(os.getenv(_param("RETRIES"), 1))
@@ -42,7 +43,8 @@ app = App()
 
 stack = ImageExtraction(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     retries=retries,
@@ -66,7 +68,10 @@ CfnOutput(
     scope=stack,
     id="metadata",
     value=stack.to_json_string(
-        {"BatchExecutionRoleArn": stack.role.role_arn, "ImageExtractionDkrImageUri": stack.image_uri}
+        {
+            "BatchExecutionRoleArn": stack.role.role_arn,
+            "ImageExtractionDkrImageUri": stack.image_uri,
+        }
     ),
 )
 

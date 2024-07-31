@@ -3,7 +3,7 @@
 
 import logging
 import os
-from typing import Any, cast
+from typing import Any, Optional, cast
 
 import aws_cdk.aws_batch_alpha as batch
 import aws_cdk.aws_ecr as ecr
@@ -28,7 +28,7 @@ class ImageExtraction(Stack):
         self,
         scope: Construct,
         id: str,
-        *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         repository_name: str,
@@ -39,9 +39,9 @@ class ImageExtraction(Stack):
         vcpus: int,
         memory_limit_mib: int,
         on_demand_job_queue_arn: str,
-        # start_range: Optional[str],  # optional
-        # end_range: Optional[str],  # optional
-        **kwargs: Any,
+        start_range: Optional[str] = None,
+        end_range: Optional[str] = None,
+        **kwargs: Any,  # type: ignore
     ) -> None:
         super().__init__(
             scope,
@@ -49,15 +49,15 @@ class ImageExtraction(Stack):
             **kwargs,
         )
 
-        Tags.of(scope=cast(IConstruct, self)).add(
-            key="Deployment",
-            value="aws",
-        )
-
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
+        # used to tag AWS resources. Tag Value length cant exceed 256 characters
+        full_dep_mod = dep_mod[:256] if len(dep_mod) > 256 else dep_mod
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=full_dep_mod)
 
         # Build ImageExtraction Docker Image
-        repo = ecr.Repository.from_repository_name(self, id=dep_mod + repository_name, repository_name=repository_name)
+        repo = ecr.Repository.from_repository_name(
+            self, id=full_dep_mod + repository_name, repository_name=repository_name
+        )
 
         local_image = DockerImageAsset(
             self,
@@ -87,12 +87,18 @@ class ImageExtraction(Stack):
             iam.PolicyStatement(
                 actions=["s3:ListBucket", "s3:GetBucketLocation"],
                 effect=iam.Effect.ALLOW,
-                resources=["arn:aws:s3:::addf-*"],
+                resources=[f"arn:aws:s3:::{project_name}-*"],
             ),
             iam.PolicyStatement(
-                actions=["s3:GetObject", "s3:GetObjectAcl", "s3:PutObject", "s3:PutObjectAcl", "s3:DeleteObject"],
+                actions=[
+                    "s3:GetObject",
+                    "s3:GetObjectAcl",
+                    "s3:PutObject",
+                    "s3:PutObjectAcl",
+                    "s3:DeleteObject",
+                ],
                 effect=iam.Effect.ALLOW,
-                resources=["arn:aws:s3:::addf-*/*"],
+                resources=[f"arn:aws:s3:::{project_name}-*/*"],
             ),
         ]
         policy_document = iam.PolicyDocument(statements=policy_statements)
@@ -139,7 +145,7 @@ class ImageExtraction(Stack):
         submit_image_extraction_job = step_functions_tasks.BatchSubmitJob(
             self,
             f"{dep_mod}-Batchjob",
-            job_name="addf-image-extraction-job",
+            job_name=f"{project_name}-image-extraction-job",
             job_queue_arn=on_demand_job_queue_arn,
             job_definition_arn=self.batch_job.job_definition_arn,
             container_overrides=step_functions_tasks.BatchContainerOverrides(
@@ -167,11 +173,15 @@ class ImageExtraction(Stack):
                 event_pattern=events.EventPattern(
                     source=["aws.s3"],
                     detail_type=["Object Created"],
-                    detail={"bucket": {"name": [artifacts_bucket_name]}, "object": {"key": [{"suffix": ".jsq"}]}},
+                    detail={
+                        "bucket": {"name": [artifacts_bucket_name]},
+                        "object": {"key": [{"suffix": ".jsq"}]},
+                    },
                 )
             ),
             state_machine_props=stepfunctions.StateMachineProps(
-                definition=definition, state_machine_name=f"{deployment_name}-{module_name}-S3FileProcessing"
+                definition=definition,
+                state_machine_name=f"{deployment_name}-{module_name}-S3FileProcessing",
             ),
         )
 
@@ -193,7 +203,7 @@ class ImageExtraction(Stack):
                 NagPackSuppression(
                     **{
                         "id": "AwsSolutions-IAM5",
-                        "reason": "Resource access restriced to ADDF resources",
+                        "reason": f"Resource access restriced to {project_name} resources",
                     }
                 ),
                 NagPackSuppression(
