@@ -12,6 +12,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 - added image extraction module for pre-processing use-cases
+- adds workflow specific to changes for `requirements-dev.txt` so all static checks are run
+
+### **Changed**
+
+- updated `get-modules` workflow to only run tests against changed files in `modules/**`
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.6.0] - [07/16/2024]
+
+### **Added**
 
 ### **Changed**
 
@@ -50,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - module `training` within `ml-training-on-eks` manifest ref to `3.5.0` release
 - modification of README.md contains proper string for `eks-oidc-arn` and `added eks-handler-rolearn`
 - refactored `ml-training-on-eks` to use IDF 1.9.0 eks release to use the handler role for running kubectl commands
+- updated `example-dev` and `ml-training-on-eks` manifests to reflect latest IDF versions
 
 ### **Removed**
 

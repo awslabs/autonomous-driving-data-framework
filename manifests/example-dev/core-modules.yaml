@@ -1,5 +1,5 @@
 name: mwaa
-path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.10.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -35,7 +35,7 @@ parameters:
     value: Rosbag-Scene-Metadata
 ---
 name: opensearch
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch?ref=release/1.10.0&depth=1
 parameters:
   - name: opensearch_data_nodes
     value: 1
@@ -65,10 +65,10 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.6.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.10.0
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.6.0
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.6.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.10.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.10.0
 parameters:
   - name: replicated-ecr-images-metadata-s3-path
     valueFrom:
@@ -113,6 +113,8 @@ parameters:
           eks_node_min_quantity: 1
           eks_node_disk_size: 20
           eks_node_instance_type: "m5.large"
+          eks_node_labels:
+            usage: general
         - eks_ng_name: ng-gpu # GPU Workloads example
           eks_node_quantity: 0
           eks_node_max_quantity: 2
@@ -122,22 +124,31 @@ parameters:
           use_gpu_ami: True
           eks_node_labels:
             usage: gpu
+          # eks_node_taints:
+          #   - key: "nvidia.com/gpu"
+          #     value: "true"
+          #     # operator: "Equal"
+          #     effect: "NoSchedule"
+          # install_nvidia_device_plugin: True
       eks_node_spot: False
       eks_secrets_envelope_encryption: False
       eks_api_endpoint_private: False
+      # ips_to_whitelist_from_ssm: ${IPS_TO_WHITELIST_FROM_SSM} #load from .env
+      # ips_to_whitelist_adhoc: ${IPS_TO_WHITELIST_ADHOC} #load from .env
   - name: eks-addons
     value:
       deploy_aws_lb_controller: True # We deploy it unless set to False
-      deploy_external_dns: True # We deploy it unless set to False
-      deploy_aws_ebs_csi: True # We deploy it unless set to False
-      deploy_aws_efs_csi: True # We deploy it unless set to False
-      deploy_aws_fsx_csi: False # We deploy it unless set to False
-      deploy_cluster_autoscaler: True # We deploy it unless set to False
-      deploy_metrics_server: True # We deploy it unless set to False
-      deploy_secretsmanager_csi: True # We deploy it unless set to False
+      deploy_external_dns: True 
+      deploy_aws_ebs_csi: True 
+      deploy_aws_efs_csi: True 
+      deploy_aws_s3_csi: False
+      deploy_aws_fsx_csi: False 
+      deploy_cluster_autoscaler: True 
+      deploy_metrics_server: True 
+      deploy_secretsmanager_csi: True 
       deploy_external_secrets: False
-      deploy_cloudwatch_observability_addon: True # managed addon for observability
-      deploy_cloudwatch_container_insights_metrics: False # We deploy it unless set to False
+      deploy_cloudwatch_observability_addon: True 
+      deploy_cloudwatch_container_insights_metrics: False 
       deploy_cloudwatch_container_insights_logs: False
       cloudwatch_container_insights_logs_retention_days: 7
       deploy_adot: False
@@ -194,7 +205,7 @@ parameters:
           #   - mitigate-log4shell
 ---
 name: batch-compute
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch?ref=release/1.10.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -250,7 +261,7 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: fsx-lustre
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.10.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -270,7 +281,7 @@ parameters:
     value: 50
 ---
 name: efs
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs?ref=release/1.10.0&depth=1
 parameters:
   - name: retention-type
     value: RETAIN
