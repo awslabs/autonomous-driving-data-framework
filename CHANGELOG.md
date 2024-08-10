@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+- added image extraction module for pre-processing use-cases
 - adds workflow specific to changes for `requirements-dev.txt` so all static checks are run
 
 ### **Changed**

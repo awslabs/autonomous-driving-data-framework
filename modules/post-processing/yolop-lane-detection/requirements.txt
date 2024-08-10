@@ -27,7 +27,7 @@ botocore==1.24.46
     #   s3transfer
 cattrs==23.2.3
     # via jsii
-cdk-ecr-deployment==2.5.5
+cdk-ecr-deployment==3.0.42
     # via -r requirements.in
 cdk-nag==2.12.29
     # via -r requirements.in
@@ -78,6 +78,11 @@ typeguard==2.13.3
     #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v5
     #   aws-cdk-lib
+    #   cdk-ecr-deployment
+    #   jsii
+typing-extensions==4.11.0
+    # via
+    #   cattrs
     #   jsii
 typing-extensions==4.12.2
     # via
