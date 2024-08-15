@@ -99,6 +99,9 @@ jobs:
           set -x
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          if [ -f "$MODULE_PATH/requirements-dev.txt" ]; then \
+            pip install -r $MODULE_PATH/requirements-dev.txt \
+          fi
           pip install -r $MODULE_PATH/requirements.txt
       - name: Install Requirements (Typescript)
         if: ${{ steps.determine-language.outputs.language == 'typescript' }}
