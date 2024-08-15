@@ -46,8 +46,8 @@ jobs:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           set -x
-          # Get all the modules that have the file "deployspec.yaml"
-          MODULES=$(echo $ALL_CHANGED_FILES | cut -d/ -f 2-3 | uniq)
+          # Get all the modules that have files which have changed.
+          MODULES=$(echo $ALL_CHANGED_FILES | tr ' ' '\n' | cut -d/ -f 2-3 | uniq)
           # Create our json structure [{"module_name": "..."}]
           MODULES_JSON=$(echo "$MODULES" | jq -R -s 'split("\n")' | jq '[ .[] | select(length > 0) ]' | jq 'map({"module_name": .})')
           # Export the modules as json to the outputs
