@@ -47,7 +47,9 @@ jobs:
         run: |
           set -x
           # Get all the modules that have files which have changed.
-          MODULES=$(echo $ALL_CHANGED_FILES | tr ' ' '\n' | cut -d/ -f 2-3 | uniq)
+          # XXX TEMP TO REVERT
+          MODULES=$(find modules -type d -name "tests" | cut -d/ -f 2-3 | uniq)
+          # XXX END TEMP TO REVERT
           # Create our json structure [{"module_name": "..."}]
           MODULES_JSON=$(echo "$MODULES" | jq -R -s 'split("\n")' | jq '[ .[] | select(length > 0) ]' | jq 'map({"module_name": .})')
           # Export the modules as json to the outputs
