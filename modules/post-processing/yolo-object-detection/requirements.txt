@@ -37,15 +37,15 @@ constructs==10.0.91
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   cdk-nag
-exceptiongroup==1.2.1
+exceptiongroup==1.2.2
     # via cattrs
-importlib-resources==6.4.0
+importlib-resources==6.4.2
     # via jsii
 jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-jsii==1.100.0
+jsii==1.102.0
     # via
     #   aws-cdk-asset-awscli-v1
     #   aws-cdk-asset-kubectl-v20
@@ -79,10 +79,6 @@ typeguard==2.13.3
     #   aws-cdk-asset-node-proxy-agent-v5
     #   aws-cdk-lib
     #   cdk-ecr-deployment
-    #   jsii
-typing-extensions==4.11.0
-    # via
-    #   cattrs
     #   jsii
 typing-extensions==4.12.2
     # via
