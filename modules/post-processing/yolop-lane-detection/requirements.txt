@@ -80,10 +80,6 @@ typeguard==2.13.3
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   jsii
-typing-extensions==4.11.0
-    # via
-    #   cattrs
-    #   jsii
 typing-extensions==4.12.2
     # via
     #   cattrs
