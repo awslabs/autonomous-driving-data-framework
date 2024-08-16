@@ -51,5 +51,5 @@ Resources:
             Effect: Allow
             Resource: ["arn:aws:s3:::example-tf*"]
         Version: 2012-10-17
-      PolicyName: addf-modulespecific-policy
+      PolicyName: modulespecific-policy
       Roles: [!Ref RoleName]

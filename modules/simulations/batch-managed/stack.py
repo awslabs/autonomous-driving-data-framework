@@ -21,6 +21,7 @@ class BatchDags(Stack):
         scope: Construct,
         id: str,
         *,
+        project_name: str,
         deployment_name: str,
         module_name: str,
         mwaa_exec_role: str,
@@ -29,7 +30,7 @@ class BatchDags(Stack):
         batch_compute: Dict[str, Any],
         **kwargs: Any,
     ) -> None:
-        # ADDF Env vars
+        # Env vars
         self.deployment_name = deployment_name
         self.module_name = module_name
         self.mwaa_exec_role = mwaa_exec_role
@@ -40,9 +41,9 @@ class BatchDags(Stack):
             description="(SO9154) Autonomous Driving Data Framework (ADDF) - batch-managed",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment_name}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project_name}-{deployment_name}")
 
-        dep_mod = f"addf-{deployment_name}-{module_name}"
+        dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(

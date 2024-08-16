@@ -24,15 +24,18 @@ def test_synthesize_stack(stack_defaults):
     import stack
 
     app = cdk.App()
+    project_name = "test-project"
     dep_name = "test-deployment"
     mod_name = "test-module"
 
     lane_det_stack = stack.LaneDetection(
         scope=app,
-        id=f"addf-{dep_name}-{mod_name}",
+        id=f"{project_name}-{dep_name}-{mod_name}",
+        project_name=project_name,
         deployment_name=dep_name,
         module_name=mod_name,
         s3_access_policy="arn:aws:policy:12345:XXX",
+        ecr_repository_arn="arn:aws:ecr:us-east-1:123456789012:repository/addf-docker-repository",
         stack_description="Testing",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
@@ -41,5 +44,4 @@ def test_synthesize_stack(stack_defaults):
     )
 
     template = Template.from_stack(lane_det_stack)
-    template.resource_count_is("AWS::ECR::Repository", 1)
-    template.resource_count_is("AWS::IAM::Role", 2)
+    template.resource_count_is("AWS::IAM::Role", 1)

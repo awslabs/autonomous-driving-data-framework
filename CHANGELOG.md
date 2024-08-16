@@ -11,8 +11,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Added**
 
+- added image extraction module for pre-processing use-cases
+- adds workflow specific to changes for `requirements-dev.txt` so all static checks are run
+
 ### **Changed**
 
+- updated `get-modules` workflow to only run tests against changed files in `modules/**`
+
+### **Removed**
+
+=======
+
+=======
+
+## [V3.6.0] - [07/16/2024]
+
+### **Added**
+
+### **Changed**
+
+- updated object detection to YOLOv8+
+- updated object detection to YOLOv10
+- made `modules/optionals/datalake-buckets` module generic and bumped CDK version
+- made the following module parameters generic:
+  - `examples/example-dags`
+  - `examples/example-tf`
+  - `examples/example-tf-prereqs`
+  - `examples/docker-build`
+  - `sensor-extraction/ros-to-parquet`
+  - `sensor-extraction/ros-to-png`
+  - `post-processing/yolo-object-detection`
+  - `post-processing/yolop-lane-detection`
+  - `simulations/batch-managed`
+  - `simulations/k8s-managed`
+  - `integration/ddb-to-opensearch`
+- made `modules/core/metadata-storage` module generic and bumped CDK version
+- fix code validation script
+- made `ml-training-on-eks` solution generic and organized the solution contents `training-image/mnist`, `ml-training/k8s-managed` into a single dir
+- refactor the following modules to use the ECR module instead of building their own ECR repository:
+  - `sensor-extraction/ros-to-parquet`
+  - `sensor-extraction/ros-to-png`
+  - `post-processing/yolo-object-detection`
+  - `post-processing/yolop-lane-detection`
+- updating `visualization/dev-instance` to use generic parameters
+- updating `visualization/dev-instance-foxbox` to use generic parameters
+- removing `post-processing/lane-detection` due to inactivity/usage
+- made `rosbag-image-pipeline` module generic and bumped CDK version
+- made `eb-sf-batch` module generic and bumped CDK version
+- made `example-spark-dags` module generic and bumped CDK version
+- update `urllib3` dependency per CVE-2024-37891
+- module `compute/eks` ref to 1.8.0 version for `ml-training-on-eks` manifest
+- added `eks-handler-rolearn` within `ml-training/training-k8s-deployment`
+- module `training` within `ml-training-on-eks` manifest ref to `3.5.0` release
+- modification of README.md contains proper string for `eks-oidc-arn` and `added eks-handler-rolearn`
+- refactored `ml-training-on-eks` to use IDF 1.9.0 eks release to use the handler role for running kubectl commands
+- updated `example-dev` and `ml-training-on-eks` manifests to reflect latest IDF versions
+
+### **Removed**
+
+- moved module `integration/fsx-lustre-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules)
+- moved module `core/emr-on-eks` to [IDF-Modules repo](https://github.com/awslabs/idf-modules) and made it generic
+- removed `example-prod` manifests
+
+=======
+
+## [V3.5.0] - [06/07/2024]
+
+### **Added**
+
+### **Changed**
+
+- fix the `modules/simulations/eureka` error due to missing requirement of aws-cdk.lambda-layer-kubectl-v29
+- Added `modules/simulations/eureka` examples
+- fix: module `modules/visualization/dcv-image` to update cdk version and cdk_ecr_deployment version
+- fix: module `modules/visualization/dcv-eks` to update cdk version
 - fixed the `fsx-lustre-on-eks` integration module's metadata export
 - remedation to pass end-to-end integration testing of ADDF manifests
 - fixed the `fsx-lustre-on-eks` integration module's static provisioning failure

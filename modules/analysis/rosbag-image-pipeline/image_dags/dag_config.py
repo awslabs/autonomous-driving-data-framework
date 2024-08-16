@@ -8,4 +8,4 @@
 #  SOME_PARAMETER = 'some value'
 
 # DUMPS PARAMETERS FROM app.py IN ../deployspec.yaml like:
-# - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> image_dags/dag_config.py
+# - echo "DEPLOYMENT_NAME = '${SEEDFARMER_DEPLOYMENT_NAME}'" >> image_dags/dag_config.py

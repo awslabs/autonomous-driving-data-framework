@@ -2,7 +2,7 @@
 
 ## Description
 
-This module contains a Docker container for labelling images with a Yolov5 Object Detection model.
+This module contains a Docker container for labelling images with a YOLOv10 Object Detection model.
 The container is designed to run at scale with a Sagemaker Processing job.
 
 This module deploys:
@@ -33,9 +33,9 @@ where files exist in:
 #### Required
 
 - `full-access-policy-arn`: Access policy from Datalake Bucket Core Module
+- `ecr-repository-arn`: ARN of the ECR Repository
 
 #### Optional
-- `removal-policy`: Elect to retain ECR repositories when deleting stacks
 - `solution-id`: a unique identifier for this deployment (must be used with `solution-description`)
 - `solution-name`: a unique name for this deployment (must be used with `solution-id`)
 - `solution-version`: a unique version for this deployment
@@ -54,6 +54,12 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: FullAccessPolicyArn
+  - name: ecr-repository-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-repositories
+        name: lane-detection
+        key: EcrRepositoryArn
 ```
 
 ### Module Metadata Outputs

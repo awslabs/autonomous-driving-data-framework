@@ -1,5 +1,5 @@
 name: training
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/ml-training/k8s-managed?ref=release/3.1.0
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/ml-training/training-k8s-deployment?ref=release/3.6.0
 parameters:
   - name: eks-cluster-name
     valueFrom:
@@ -19,6 +19,12 @@ parameters:
         group: core
         name: eks
         key: EksClusterMasterRoleArn
+  - name: eks-handler-rolearn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksHandlerRoleArn
   - name: eks-cluster-endpoint
     valueFrom:
       moduleMetadata:

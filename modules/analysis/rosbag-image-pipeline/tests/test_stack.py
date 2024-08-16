@@ -29,12 +29,12 @@ def iam_policy() -> dict:
                         {
                             "Action": "dynamodb:*",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:dynamodb:us-east-1:111111111111:table/addf-test-deployment-test-module*",
+                            "Resource": "arn:aws:dynamodb:us-east-1:111111111111:table/test-project-test-deployment-test-module*",
                         },
                         {
                             "Action": "ecr:*",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:ecr:us-east-1:111111111111:repository/addf-test-deployment-test-module*",
+                            "Resource": "arn:aws:ecr:us-east-1:111111111111:repository/test-project-test-deployment-test-module*",
                         },
                         {
                             "Action": [
@@ -76,8 +76,8 @@ def iam_policy() -> dict:
                             ],
                             "Effect": "Allow",
                             "Resource": [
-                                "arn:aws:s3:::addf-*",
-                                "arn:aws:s3:::addf-*/*",
+                                "arn:aws:s3:::test-project-*",
+                                "arn:aws:s3:::test-project-*/*",
                             ],
                         },
                     ]
@@ -98,6 +98,7 @@ def test_stack(stack_defaults):
     rosbag_stack = stack.AwsBatchPipeline(
         scope=app,
         id=f"{project_name}-{dep_name}-{mod_name}",
+        project_name=project_name,
         deployment_name=dep_name,
         module_name=mod_name,
         vpc_id="vpc-id",

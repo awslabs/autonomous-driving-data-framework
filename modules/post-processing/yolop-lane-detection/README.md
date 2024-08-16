@@ -7,6 +7,8 @@ YOLOP (https://github.com/hustvl/YOLOP).  It is designed to incorporate the weig
 
 NOTE: this image can run on CPU and GPU compute resources
 
+NOTE: if you would like a GPU-specific version, one can be found [HERE](https://github.com/awslabs/autonomous-driving-data-framework/tree/release/3.5.0/modules/post-processing/lane-detection)
+
 ### Full list of parameters for processing code
 The `tools/detect_lanes.py` entry point has several parameters that can be overridden.  Please see `tools/detect_lanes.py` for a reference as to the parameters you can override as necessary.  
 
@@ -24,9 +26,9 @@ A sample piece of code that leverages this image as a Sagemaker Processing job i
 #### Required
 
 - `full-access-policy-arn`: Access policy from Datalake Bucket Core Module
+- `ecr-repository-arn`: ARN of the ECR Repository
 
 #### Optional
-- `removal-policy`: Elect to retain ECR repositories when deleting stacks
 - `solution-id`: a unique identifier for this deployment (must be used with `solution-description`)
 - `solution-name`: a unique name for this deployment (must be used with `solution-id`)
 - `solution-version`: a unique version for this deployment
@@ -45,6 +47,12 @@ parameters:
         group: optionals
         name: datalake-buckets
         key: FullAccessPolicyArn
+  - name: ecr-repository-arn
+    valueFrom:
+      moduleMetadata:
+        group: docker-repositories
+        name: lane-detection
+        key: EcrRepositoryArn
 ```
 
 ### Module Metadata Outputs

@@ -1,27 +1,30 @@
+publishGenericEnvVariables: true
 deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.20.0
+      - npm install -g aws-cdk@2.146.0
       - pip install -r requirements.txt
     build:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
-      - export DAG_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".DagRoleArn")
+      - seedfarmer metadata convert -f cdk-exports.json || true
+      - export SEEDFARMER_MODULE_METADATA=$(cat SEEDFARMER_MODULE_METADATA)
+      - echo $SEEDFARMER_MODULE_METADATA 
+      - export DAG_ROLE=$(echo ${SEEDFARMER_MODULE_METADATA} | jq -r ".DagRoleArn")
       - echo "DAG_ROLE = '${DAG_ROLE}'" >> example_spark_dags/emr_eks_dag_config.py
-      - echo "RAW_BUCKET = '${ADDF_PARAMETER_RAW_BUCKET_NAME}'" >> example_spark_dags/emr_eks_dag_config.py
-      - echo "DAG_BUCKET = '${ADDF_PARAMETER_DAG_BUCKET_NAME}'" >> example_spark_dags/emr_eks_dag_config.py
-      - echo "VIRTUAL_CLUSTER_ID = '${ADDF_PARAMETER_VIRTUAL_CLUSTER_ID}'" >> example_spark_dags/emr_eks_dag_config.py
-      - echo "EMR_JOB_EXECUTION_ROLE = '${ADDF_PARAMETER_EMR_JOB_EXECUTION_ROLE_ARN}'" >> example_spark_dags/emr_eks_dag_config.py
-      - aws s3 cp --recursive example_spark_dags/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/example_spark_dags/
+      - echo "RAW_BUCKET = '${SEEDFARMER_PARAMETER_RAW_BUCKET_NAME}'" >> example_spark_dags/emr_eks_dag_config.py
+      - echo "DAG_BUCKET = '${SEEDFARMER_PARAMETER_DAG_BUCKET_NAME}'" >> example_spark_dags/emr_eks_dag_config.py
+      - echo "VIRTUAL_CLUSTER_ID = '${SEEDFARMER_PARAMETER_VIRTUAL_CLUSTER_ID}'" >> example_spark_dags/emr_eks_dag_config.py
+      - echo "EMR_JOB_EXECUTION_ROLE = '${SEEDFARMER_PARAMETER_EMR_JOB_EXECUTION_ROLE_ARN}'" >> example_spark_dags/emr_eks_dag_config.py
+      - aws s3 cp --recursive example_spark_dags/ s3://$SEEDFARMER_PARAMETER_DAG_BUCKET_NAME/$SEEDFARMER_PARAMETER_DAG_PATH/example_spark_dags/
 destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.20.0
+      - npm install -g aws-cdk@2.146.0
       - pip install -r requirements.txt
     build:
       commands:
-      - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/example_spark_dags
+      - aws s3 rm --recursive s3://$SEEDFARMER_PARAMETER_DAG_BUCKET_NAME/$SEEDFARMER_PARAMETER_DAG_PATH/example_spark_dags
       - cdk destroy --force --app "python app.py"

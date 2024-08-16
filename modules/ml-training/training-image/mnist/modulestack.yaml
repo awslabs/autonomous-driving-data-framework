@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys a Module specific IAM permissions
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Description: The name of the project
+  DeploymentName:
+    Type: String
+    Description: The name of the deployment
+  ModuleName:
+    Type: String
+    Description: The name of the Module
+  RoleName:
+    Type: String
+    Description: The name of the IAM Role
+  EcrRepositoryName:
+    Type: String
+    Description: The name of the ECR Repository
+
+Resources:
+  Policy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - "ecr:DescribeRepositories"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:BatchGetImage"
+              - "ecr:GetAuthorizationToken"
+              - "ecr:CompleteLayerUpload"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:InitiateLayerUpload"
+              - "ecr:PutImage"
+              - "ecr:UploadLayerPart"
+              - "ecr:CreateRepository"
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - ecr:*
+            Resource:
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryName}"
+        Version: 2012-10-17
+      PolicyName: modulespecific-policy
+      Roles: [!Ref RoleName]

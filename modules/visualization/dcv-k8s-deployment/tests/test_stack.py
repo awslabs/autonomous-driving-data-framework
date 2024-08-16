@@ -40,6 +40,8 @@ def test_app(stack_defaults):
         eks_cluster_open_id_connect_issuer="test_open_id_connect_issuer",
         eks_cluster_security_group_id="sg-1234567890",
         eks_node_role_arn="arn:aws:iam:us-east-1:1234567890:role/test-role",
+        fsx_pvc_name="test-fsx-pvc",
+        app_image_uri="test-dcv-image",
         dcv_node_port=31888,
         env=Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],

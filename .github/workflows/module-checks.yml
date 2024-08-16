@@ -2,14 +2,20 @@ name: Module Checks
 
 on:
   push:
-    branches: ["main"]
-    paths: ['modules/**']
+    branches: 
+      - "main"
+    paths:
+      - "modules/**"
+      - ".github/workflows/module-checks.yml"
 
   pull_request:
-    branches: ["main", "release/*", "stable"]
-    paths: ['modules/**']
-
-  workflow_dispatch:
+    branches:
+      - "main"
+      - "release/*"
+      - "stable"
+    paths:
+      - "modules/**"
+      - ".github/workflows/module-checks.yml"
 
 jobs:
   get-modules:
@@ -19,15 +25,29 @@ jobs:
       matrix: ${{ steps.get-modules.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: modules/**
+      - name: List all changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
       - name: Get modules
         id: get-modules
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           set -x
-          # Get all the modules that have the directory "tests"
-          MODULES=$(find modules/ -type d -name "tests" | cut -d/ -f 2-3 | uniq)
+          # Get all the modules that have files which have changed.
+          MODULES=$(echo $ALL_CHANGED_FILES | tr ' ' '\n' | cut -d/ -f 2-3 | uniq)
           # Create our json structure [{"module_name": "..."}]
           MODULES_JSON=$(echo "$MODULES" | jq -R -s 'split("\n")' | jq '[ .[] | select(length > 0) ]' | jq 'map({"module_name": .})')
           # Export the modules as json to the outputs
@@ -36,13 +56,14 @@ jobs:
           echo 'EOF' >> $GITHUB_OUTPUT
 
   test:
-    name: (${{ matrix.python-version }}) Run unit tests for module ${{ matrix.modules.module_name }}
+    name: Run unit tests for module ${{ matrix.modules.module_name }}
     needs: get-modules
     strategy:
       fail-fast: false
       matrix:
         modules: ${{ fromJson(needs.get-modules.outputs.matrix) }}
-        python-version: ['3.9', '3.10']
+        python-version: [3.9]
+        node-version: [18.x]
     runs-on: ubuntu-latest
     env:
       MODULE_PATH: 'modules/${{ matrix.modules.module_name }}'
@@ -51,19 +72,46 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - id: determine-language
+        name: Determine Language
+        run: |
+          set -x
+          if [ -f $MODULE_PATH/package.json ]; then \
+            echo "language=typescript" >> "$GITHUB_OUTPUT"; \
+          elif [ -f $MODULE_PATH/requirements.txt ]; then \
+            echo "language=python" >> "$GITHUB_OUTPUT"; \
+          elif [ -f $MODULE_PATH/pyproject.toml ]; then \
+            echo "language=python" >> "$GITHUB_OUTPUT"; \
+          fi
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Requirements
+      - name: Set up Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Requirements (Python)
+        if: ${{ steps.determine-language.outputs.language == 'python' }}
         run: |
           set -x
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
+          if [ -f "$MODULE_PATH/requirements-dev.txt" ]; then \
+            pip install -r $MODULE_PATH/requirements-dev.txt; \
+          fi
           pip install -r $MODULE_PATH/requirements.txt
-      - name: Static checks and linting (mypy, ruff)
-        run: scripts/validate.sh --language python --path $MODULE_PATH/
-      - name: Pytest
+      - name: Install Requirements (Typescript)
+        if: ${{ steps.determine-language.outputs.language == 'typescript' }}
         run: |
-          pip install -r $MODULE_PATH/requirements-dev.txt || true
-          cd $MODULE_PATH/ && pytest
+          set -x
+          cd $MODULE_PATH
+          npm install
+      - name: Static checks and linting
+        run: scripts/validate.sh --language ${{ steps.determine-language.outputs.language }} --path $MODULE_PATH/
+      - name: Pytest
+        if: ${{ steps.determine-language.outputs.language == 'python' }}
+        run: cd $MODULE_PATH/ && pytest
+      - name: NPM Test
+        if: ${{ steps.determine-language.outputs.language == 'typescript' }}
+        run: cd $MODULE_PATH/ && npm test

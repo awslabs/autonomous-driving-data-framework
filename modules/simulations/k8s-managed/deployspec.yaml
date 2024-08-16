@@ -1,37 +1,39 @@
+publishGenericEnvVariables: true
 deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.82.0
+      - npm install -g aws-cdk@2.145.0
       - pip install -r requirements.txt
     build:
       commands:
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
       # Here we export some env vars and the write values into the dag_config.py file for use by the DAGs
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
-      - export DAG_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".DagRoleArn")
-      - export EKS_SERVICE_ACCOUNT_ROLE=$(echo ${ADDF_MODULE_METADATA} | jq -r ".EksServiceAccountRoleArn")
-      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}"
+      - seedfarmer metadata convert -f cdk-exports.json || true
+      - export DAG_ROLE=$(cat SEEDFARMER_MODULE_METADATA | jq -r ".DagRoleArn")
+      - export EKS_SERVICE_ACCOUNT_ROLE=$(cat SEEDFARMER_MODULE_METADATA | jq -r ".EksServiceAccountRoleArn")
+      - export ECR_REPO_NAME="${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}"
       - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
-      - echo "DEPLOYMENT_NAME = '${ADDF_DEPLOYMENT_NAME}'" >> simulation_dags/dag_config.py
-      - echo "MODULE_NAME = '${ADDF_MODULE_NAME}'" >> simulation_dags/dag_config.py
+      - echo "PROJECT_NAME = '${SEEDFARMER_PROJECT_NAME}'" >> simulation_dags/dag_config.py
+      - echo "DEPLOYMENT_NAME = '${SEEDFARMER_DEPLOYMENT_NAME}'" >> simulation_dags/dag_config.py
+      - echo "MODULE_NAME = '${SEEDFARMER_MODULE_NAME}'" >> simulation_dags/dag_config.py
       - echo "DAG_ROLE = '${DAG_ROLE}'" >> simulation_dags/dag_config.py
-      - echo "EKS_CLUSTER_NAME = '${ADDF_PARAMETER_EKS_CLUSTER_NAME}'" >> simulation_dags/dag_config.py
+      - echo "EKS_CLUSTER_NAME = '${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME}'" >> simulation_dags/dag_config.py
       - echo "EKS_SERVICE_ACCOUNT_ROLE = '${EKS_SERVICE_ACCOUNT_ROLE}'" >> simulation_dags/dag_config.py
-      - echo "EKS_NAMESPACE = '${ADDF_MODULE_NAME}'" >> simulation_dags/dag_config.py
+      - echo "EKS_NAMESPACE = '${SEEDFARMER_MODULE_NAME}'" >> simulation_dags/dag_config.py
       - echo "SIMULATION_MOCK_IMAGE = '${REPOSITORY_URI}:${IMAGE_TAG}'" >> simulation_dags/dag_config.py
       - echo "REGION = '${AWS_DEFAULT_REGION}'" >> simulation_dags/dag_config.py
       - echo "ACCOUNT_ID = '${AWS_ACCOUNT_ID}'" >> simulation_dags/dag_config.py
       # Copy DAG files to S3
-      - aws s3 cp --recursive simulation_dags/ s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/simulation_dags/
+      - aws s3 cp --recursive simulation_dags/ s3://$SEEDFARMER_PARAMETER_DAG_BUCKET_NAME/$SEEDFARMER_PARAMETER_DAG_PATH/simulation_dags/
       # Assume the EKS_CLUSTER_ADMIN_ROLE and add our new service account role as a user in the aws_auth ConfigMap
-      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - eval $(aws sts assume-role --role-arn ${SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - |
-        eksctl get iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
+        eksctl get iamidentitymapping --cluster ${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
         && echo "IAM Identity Mapping already found" \
-        || eksctl create iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} --username addf-${ADDF_MODULE_NAME}
+        || eksctl create iamidentitymapping --cluster ${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} --username ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_MODULE_NAME}
       # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will faile
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       - aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || aws ecr create-repository --repository-name ${ECR_REPO_NAME}
@@ -45,19 +47,18 @@ destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.82.0
+      - npm install -g aws-cdk@2.145.0
       - pip install -r requirements.txt
     build:
       commands:
       # Assume the EKS_CLUSTER_ADMIN_ROLE and delete our service account role from the aws_auth ConfigMap
-      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+      - eval $(aws sts assume-role --role-arn ${SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
       - |
-        eksctl get iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
-        && eksctl delete iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
+        eksctl get iamidentitymapping --cluster ${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
+        && eksctl delete iamidentitymapping --cluster ${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME} --arn ${EKS_SERVICE_ACCOUNT_ROLE} \
         || echo "IAM Identity Mapping not found"
       # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will faile
       - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
       # Remove DAG files
-      - aws s3 rm --recursive s3://$ADDF_PARAMETER_DAG_BUCKET_NAME/$ADDF_PARAMETER_DAG_PATH/simulation_dags
+      - aws s3 rm --recursive s3://$SEEDFARMER_PARAMETER_DAG_BUCKET_NAME/$SEEDFARMER_PARAMETER_DAG_PATH/simulation_dags
       - cdk destroy --force --app "python app.py"
-

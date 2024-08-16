@@ -3,29 +3,33 @@
 
 import os
 
-from aws_cdk import App, CfnOutput, Environment, RemovalPolicy
+from aws_cdk import App, CfnOutput, Environment
 
 from stack import ObjectDetection
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
+ecr_repository_arn = os.getenv(_param("ECR_REPOSITORY_ARN"))
 full_access_policy = os.getenv(_param("FULL_ACCESS_POLICY_ARN"))
-removal_policy = os.getenv(_param("REMOVAL_POLICY"), "")
+
+if not ecr_repository_arn:
+    raise ValueError("ECR Repository ARN is missing.")
 
 if not full_access_policy:
     raise ValueError("S3 Full Access Policy ARN is missing.")
 
 
 def generate_description() -> str:
-    soln_id = os.getenv("ADDF_PARAMETER_SOLUTION_ID", None)
-    soln_name = os.getenv("ADDF_PARAMETER_SOLUTION_NAME", None)
-    soln_version = os.getenv("ADDF_PARAMETER_SOLUTION_VERSION", None)
+    soln_id = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_ID", None)
+    soln_name = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_NAME", None)
+    soln_version = os.getenv("SEEDFARMER_PARAMETER_SOLUTION_VERSION", None)
 
     desc = "(SO9154) Autonomous Driving Data Framework (ADDF) - yolop-lane-det"
     if soln_id and soln_name and soln_version:
@@ -39,7 +43,8 @@ app = App()
 
 stack = ObjectDetection(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
+    project_name=project_name,
     deployment_name=deployment_name,
     module_name=module_name,
     env=Environment(
@@ -47,7 +52,7 @@ stack = ObjectDetection(
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
     s3_access_policy=full_access_policy,
-    removal_policy=RemovalPolicy.RETAIN if removal_policy.upper() == "RETAIN" else RemovalPolicy.DESTROY,
+    ecr_repository_arn=ecr_repository_arn,
     stack_description=generate_description(),
 )
 

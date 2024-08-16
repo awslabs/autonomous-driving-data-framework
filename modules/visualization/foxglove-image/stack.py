@@ -33,7 +33,9 @@ class AppImagePublishingStack(Stack):  # type: ignore
         dep_mod = dep_mod[:64]
         Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=dep_mod)
 
-        repo = ecr.Repository.from_repository_name(self, id=dep_mod + repository_name, repository_name=repository_name)
+        repo = ecr.Repository.from_repository_name(
+            self, id=dep_mod + repository_name, repository_name=repository_name
+        )
 
         local_image = DockerImageAsset(
             self,

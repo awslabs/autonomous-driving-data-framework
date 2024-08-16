@@ -1,0 +1,5 @@
+name: networking
+path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk
+parameters:
+  - name: internet-accessible
+    value: true

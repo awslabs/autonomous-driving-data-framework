@@ -40,9 +40,7 @@ class DcvImagePublishingStack(Stack):
             self,
             "ImageExtractionDockerImage",
             directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"),
-            build_args={
-                "DCV_SM_NAME": dcv_sm_name
-            },
+            build_args={"DCV_SM_NAME": dcv_sm_name},
         )
 
         self.image_uri = f"{repo.repository_uri}:dcv-latest"
