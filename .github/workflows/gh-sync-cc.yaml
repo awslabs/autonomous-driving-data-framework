@@ -60,6 +60,7 @@ jobs:
           cp CHANGELOG.md scene-intelligence-with-rosbag-on-aws/
           cp NOTICE.txt scene-intelligence-with-rosbag-on-aws/
           cp LICENSE.txt scene-intelligence-with-rosbag-on-aws/
+          cp SECURITY.md scene-intelligence-with-rosbag-on-aws/
           cp .viperlightignore scene-intelligence-with-rosbag-on-aws/
           cp .cfnnag_global_disable scene-intelligence-with-rosbag-on-aws/
           cp .bandit scene-intelligence-with-rosbag-on-aws/
