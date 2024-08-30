@@ -1,5 +1,5 @@
 name: mwaa
-path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.10.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/orchestration/mwaa?ref=release/1.11.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -35,7 +35,7 @@ parameters:
     value: Rosbag-Scene-Metadata
 ---
 name: opensearch
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch?ref=release/1.10.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch?ref=release/1.11.0&depth=1
 parameters:
   - name: opensearch_data_nodes
     value: 1
@@ -65,10 +65,10 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.10.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.11.0
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.10.0
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.10.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.11.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.11.0
 parameters:
   - name: replicated-ecr-images-metadata-s3-path
     valueFrom:
@@ -205,7 +205,7 @@ parameters:
           #   - mitigate-log4shell
 ---
 name: batch-compute
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch?ref=release/1.10.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch?ref=release/1.11.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -243,7 +243,7 @@ parameters:
           order: 1
 ---
 name: neptune
-path: git::https://github.com/awslabs/idf-modules.git//modules/database/neptune?ref=release/1.1.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/database/neptune?ref=release/1.11.0&depth=1
 parameters:
   - name: number-instances
     value: 1
@@ -261,7 +261,7 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: fsx-lustre
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.10.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.11.0&depth=1
 parameters:
   - name: vpc-id
     valueFrom:
@@ -281,7 +281,7 @@ parameters:
     value: 50
 ---
 name: efs
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs?ref=release/1.10.0&depth=1
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/efs?ref=release/1.11.0&depth=1
 parameters:
   - name: retention-type
     value: RETAIN

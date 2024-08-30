@@ -1,5 +1,5 @@
 name: example-dev
-toolchainRegion: us-west-2
+toolchainRegion: us-east-1
 groups:
   - name: optionals
     path: manifests/example-dev/optional-modules.yaml
@@ -21,10 +21,10 @@ groups:
   #   path: manifests/example-dev/ide-modules.yaml
 targetAccountMappings:
   - alias: primary
-    accountId: 1234567890
+    accountId: 500369900939
     default: true
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
     regionMappings:
-      - region: us-west-2
+      - region: us-east-1
         default: true
