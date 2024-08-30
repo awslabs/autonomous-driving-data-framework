@@ -1,8 +1,8 @@
 name: replication
-path: git::https://github.com/awslabs/idf-modules.git//modules/replication/dockerimage-replication?ref=release/1.9.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/replication/dockerimage-replication?ref=release/1.11.0
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.9.0
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.9.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.11.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.11.0
 parameters:
   - name: eks-version
     # value: "1.29"
