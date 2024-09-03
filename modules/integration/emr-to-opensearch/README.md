@@ -22,13 +22,13 @@ an existing OpenSearch Domain
 ### Module Metadata Outputs
 
 - `LambdaName`: The Lambda Function name which loads the logs from EMR to OpenSearch
-- `LambdaName`: The Lambda Function Arn which loads the logs from EMR to OpenSearch
+- `LambdaArn`: The Lambda Function Arn which loads the logs from EMR to OpenSearch
 
 #### Output Example
 
 ```json
 {
     "LambdaName":"addf-local-integration-XXXXXXXXX",
-    "LambdaName":"arn:aws:lambda:us-west-2:XXXXXXXXX:function:addf-local-integration-XXXXXXXXX"
+    "LambdaArn":"arn:aws:lambda:us-west-2:XXXXXXXXX:function:addf-local-integration-XXXXXXXXX"
 }
 ```

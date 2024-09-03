@@ -9,16 +9,17 @@ from aws_cdk import App, CfnOutput
 
 from stack import EMRtoOpensearch
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv("ADDF_PARAMETER_PRIVATE_SUBNET_IDS", ""))  # required
+private_subnet_ids = json.loads(os.getenv("SEEDFARMER_PARAMETER_PRIVATE_SUBNET_IDS", ""))  # required
 opensearch_sg_id = os.getenv(_param("OPENSEARCH_SG_ID"), "")
 opensearch_domain_name = os.getenv(_param("OPENSEARCH_DOMAIN_NAME"), "")
 opensearch_domain_endpoint = os.getenv(_param("OPENSEARCH_DOMAIN_ENDPOINT"), "")
@@ -35,11 +36,12 @@ app = App()
 
 stack = EMRtoOpensearch(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    project=project_name,
     deployment=deployment_name,
     module=module_name,
     vpc_id=vpc_id,

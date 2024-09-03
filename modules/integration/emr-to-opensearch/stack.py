@@ -24,6 +24,7 @@ class EMRtoOpensearch(Stack):
         scope: Construct,
         id: str,
         *,
+        project: str,
         deployment: str,
         module: str,
         vpc_id: str,
@@ -41,9 +42,9 @@ class EMRtoOpensearch(Stack):
             description="This stack integrates EMR Cluster with Opensearch cluster for ADDF",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project}-{deployment}-{module}"
 
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(
@@ -160,7 +161,7 @@ class EMRtoOpensearch(Stack):
         self.lambda_name = lambda_trigger.function_name
         self.lambda_arn = lambda_trigger.function_arn
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
+        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
 
         NagSuppressions.add_stack_suppressions(
             self,
