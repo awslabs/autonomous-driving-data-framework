@@ -5,14 +5,13 @@ import logging
 from typing import Any, List, cast
 
 import cdk_nag
-from aws_cdk import Aspects, Duration, Stack, Tags
+from aws_cdk import Duration, Stack, Tags
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as lambda_
 from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_s3_notifications as s3n
 from aws_cdk.aws_lambda_python_alpha import PythonFunction, PythonLayerVersion
-from cdk_nag import NagSuppressions
 from constructs import Construct, IConstruct
 
 _logger: logging.Logger = logging.getLogger(__name__)
@@ -161,19 +160,27 @@ class EMRtoOpensearch(Stack):
         self.lambda_name = lambda_trigger.function_name
         self.lambda_arn = lambda_trigger.function_arn
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
-
-        NagSuppressions.add_stack_suppressions(
+        cdk_nag.NagSuppressions.add_stack_suppressions(
             self,
             apply_to_nested_stacks=True,
             suppressions=[
-                {  # type: ignore
-                    "id": "AwsSolutions-IAM4",
-                    "reason": "Managed Policies are for service account roles only",
-                },
-                {  # type: ignore
-                    "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
-                },
+                cdk_nag.NagPackSuppression(
+                    id="AwsSolutions-IAM4",
+                    reason="Managed Policies are for service account roles only",
+                ),
+                cdk_nag.NagPackSuppression(
+                    id="AwsSolutions-IAM5",
+                    reason="Resource access restriced to ADDF resources",
+                ),
             ],
+        )
+        cdk_nag.NagSuppressions.add_resource_suppressions(
+            lambda_trigger,
+            suppressions=[
+                cdk_nag.NagPackSuppression(
+                    id="AwsSolutions-L1",
+                    reason="We don't want this to start failing as soon as a new version is released",
+                ),
+            ],
+            apply_to_children=True,
         )

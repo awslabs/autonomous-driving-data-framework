@@ -5,7 +5,7 @@ import json
 import os
 
 import aws_cdk
-from aws_cdk import App, CfnOutput
+import cdk_nag
 
 from stack import EMRtoOpensearch
 
@@ -33,7 +33,7 @@ if not vpc_id:
 if not private_subnet_ids:
     raise Exception("missing input parameter private-subnet-ids")
 
-app = App()
+app = aws_cdk.App()
 
 stack = EMRtoOpensearch(
     scope=app,
@@ -54,7 +54,7 @@ stack = EMRtoOpensearch(
     emr_logs_prefix=emr_logs_prefix,
 )
 
-CfnOutput(
+aws_cdk.CfnOutput(
     scope=stack,
     id="metadata",
     value=stack.to_json_string(
@@ -65,5 +65,6 @@ CfnOutput(
     ),
 )
 
+aws_cdk.Aspects.of(app).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
 
 app.synth(force=True)
