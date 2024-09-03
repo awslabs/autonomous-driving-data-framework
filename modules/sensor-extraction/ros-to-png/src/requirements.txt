@@ -47,7 +47,7 @@ numpy==1.23.1
     # via
     #   opencv-python
     #   rospy
-opencv-python==4.6.0.66
+opencv-python==4.8.1.78
     # via -r requirements.in
 psutil==5.9.1
     # via gnupg
