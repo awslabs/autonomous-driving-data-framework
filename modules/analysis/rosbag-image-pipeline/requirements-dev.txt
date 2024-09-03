@@ -5,7 +5,7 @@
 
 apache-airflow==2.10.0
 apache-airflow-providers-amazon~=8.5.1
-Flask-Cors~=4.0.0
+Flask-Cors~=5.0.0
 moto==4.2.9
 mypy-boto3-sqs
 mypy-boto3-batch
