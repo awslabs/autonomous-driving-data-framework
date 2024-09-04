@@ -28,7 +28,7 @@ python_version = "3.8"
 strict = true
 ignore_missing_imports = true
 disallow_untyped_decorators = false
-exclude = "codeseeder.out/|example"
+exclude = "codeseeder.out/|example|tests"
 
 [tool.pytest.ini_options]
 addopts = "-v --cov=. --cov-report term"
