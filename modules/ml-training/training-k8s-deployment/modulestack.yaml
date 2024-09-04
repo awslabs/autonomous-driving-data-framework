@@ -83,6 +83,7 @@ Resources:
               - "eks:DescribeNodegroup"
             Resource:
               - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/${ProjectName}-${DeploymentName}*"
+              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/${ProjectName}-${DeploymentName}*"
           - Effect: Allow
             Action:
               - "autoscaling:CreateOrUpdateTags"

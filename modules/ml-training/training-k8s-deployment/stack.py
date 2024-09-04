@@ -247,7 +247,6 @@ class TrainingPipeline(Stack):
                                         "value.$": "States.Format('pytorch-training-{}', $$.Execution.Name)",
                                     }
                                 ],
-                                # "resources": {"limits": {"nvidia.com/gpu": 1}},
                             }
                         ],
                         "nodeSelector": {"usage": "gpu"},

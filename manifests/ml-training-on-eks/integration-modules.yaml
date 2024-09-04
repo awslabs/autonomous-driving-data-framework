@@ -7,6 +7,12 @@ parameters:
         group: core
         name: eks
         key: EksClusterMasterRoleArn
+  - name: EksHandlerRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksHandlerRoleArn
   - name: EksClusterName
     valueFrom:
       moduleMetadata:
@@ -52,3 +58,6 @@ parameters:
         group: core
         name: fsx-lustre
         key: FSxLustreAttrDnsName
+  - name: DraExportPath
+    valueFrom:
+      parameterValue: draExportPath
