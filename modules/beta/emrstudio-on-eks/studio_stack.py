@@ -30,6 +30,7 @@ class StudioLiveStack(Stack):
         self,
         scope: Construct,
         id: str,
+        project: str,
         deployment: str,
         module: str,
         vpc_id: str,
@@ -41,11 +42,11 @@ class StudioLiveStack(Stack):
         sso_username: str,
         **kwargs,
     ) -> None:
-        super().__init__(scope, id, description="This stack deploys EMR Studio for ADDF", **kwargs)
-        dep_mod = f"addf-{deployment}-{module}"
+        super().__init__(scope, id, description="This stack deploys EMR Studio", **kwargs)
+        dep_mod = f"{project}-{deployment}-{module}"
         dep_mod = dep_mod[:27]
 
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
         # EMR virtual cluster
         self.emr_vc = emrc.CfnVirtualCluster(

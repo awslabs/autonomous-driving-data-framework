@@ -28,6 +28,7 @@ class EmrEksRbacStack(Stack):
         scope: Construct,
         id: str,
         *,
+        project: str,
         deployment: str,
         module: str,
         eks_cluster_name: str,
@@ -40,12 +41,12 @@ class EmrEksRbacStack(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack deploys EMR Studio RBAC Configuration for ADDF",
+            description="This stack deploys EMR Studio RBAC Configuration",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project}-{deployment}-{module}"
         dep_mod = dep_mod[:27]
 
         # Import EKS Cluster

@@ -1,33 +1,33 @@
+publishGenericEnvVariables: true
 deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.82.0
-      - pip install -r requirements.txt
+        - npm install -g aws-cdk@2.155.0
+        - pip install -r requirements.txt
     build:
       commands:
-      - aws iam create-service-linked-role --aws-service-name emr-containers.amazonaws.com || true
-      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-rbac
-      - export EMR_SERVICE_ACCOUNT_ROLE=arn:aws:iam::${AWS_ACCOUNT_ID}:role/AWSServiceRoleForAmazonEMRContainers
-      # Assume the EKS_CLUSTER_ADMIN_ROLE and add our new service account role as a user in the aws_auth ConfigMap
-      - eval $(aws sts assume-role --role-arn ${ADDF_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
-      - |
-        eksctl get iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EMR_SERVICE_ACCOUNT_ROLE} \
-        && echo "IAM Identity Mapping already found" \
-        || eksctl create iamidentitymapping --cluster ${ADDF_PARAMETER_EKS_CLUSTER_NAME} --arn ${EMR_SERVICE_ACCOUNT_ROLE} --username emr-containers
-      # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will faile
-      - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-      - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+        - aws iam create-service-linked-role --aws-service-name emr-containers.amazonaws.com || true
+        - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-rbac
+        - export EMR_SERVICE_ACCOUNT_ROLE=arn:aws:iam::${AWS_ACCOUNT_ID}:role/AWSServiceRoleForAmazonEMRContainers
+        # Assume the EKS_CLUSTER_ADMIN_ROLE and add our new service account role as a user in the aws_auth ConfigMap
+        - eval $(aws sts assume-role --role-arn ${SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
+        - |
+          eksctl get iamidentitymapping --cluster ${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME} --arn ${EMR_SERVICE_ACCOUNT_ROLE} \
+          && echo "IAM Identity Mapping already found" \
+          || eksctl create iamidentitymapping --cluster ${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME} --arn ${EMR_SERVICE_ACCOUNT_ROLE} --username emr-containers
+        # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will faile
+        - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+        - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json {SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}
+        - seedfarmer metadata convert -f cdk-exports.json || true
 destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.82.0
-      - pip install -r requirements.txt
+        - npm install -g aws-cdk@2.155.0
+        - pip install -r requirements.txt
     build:
       commands:
-      - python cleanup.py ${ADDF_DEPLOYMENT_NAME} ${ADDF_MODULE_NAME}
-      - cdk destroy --force --app "python app.py" addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}
-      - cdk destroy --force --app "python app.py" addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}-rbac
-
+        - python cleanup.py ${SEEDFARMER_DEPLOYMENT_NAME} ${SEEDFARMER_MODULE_NAME}
+        - cdk destroy --force --app "python app.py" ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}
+        - cdk destroy --force --app "python app.py" ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-rbac

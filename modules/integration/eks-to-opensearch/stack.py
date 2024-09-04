@@ -23,6 +23,7 @@ class EksOpenSearchIntegrationStack(Stack):
         scope: Construct,
         id: str,
         *,
+        project: str,
         deployment: str,
         module: str,
         opensearch_sg_id: str,
@@ -36,12 +37,12 @@ class EksOpenSearchIntegrationStack(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack integrates EKS Cluster with Opensearch cluster for ADDF",
+            description="This stack integrates EKS Cluster with Opensearch cluster",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project}-{deployment}-{module}"
         dep_mod = dep_mod[:27]
 
         # Import OpenSearch Domain

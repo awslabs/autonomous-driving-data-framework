@@ -12,12 +12,13 @@ from aws_cdk import App
 from rbac_stack import EmrEksRbacStack
 from studio_stack import StudioLiveStack
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
@@ -41,11 +42,12 @@ app = App()
 
 eks_stack = EmrEksRbacStack(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}-rbac",
+    id=f"{project_name}-{deployment_name}-{module_name}-rbac",
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    project=project_name,
     deployment=deployment_name,
     module=module_name,
     eks_cluster_name=eks_cluster_name,
@@ -57,11 +59,12 @@ eks_stack = EmrEksRbacStack(
 
 emr_studio = StudioLiveStack(
     app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    project=project_name,
     deployment=deployment_name,
     module=module_name,
     vpc_id=vpc_id,
