@@ -18,7 +18,7 @@ deploy:
           || eksctl create iamidentitymapping --cluster ${SEEDFARMER_PARAMETER_EKS_CLUSTER_NAME} --arn ${EMR_SERVICE_ACCOUNT_ROLE} --username emr-containers
         # Un-Assume the EKS_CLUSTER_ADMIN_ROLE or the rest of the deploy will faile
         - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
-        - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json {SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}
+        - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}
         - seedfarmer metadata convert -f cdk-exports.json || true
 destroy:
   phases:
