@@ -109,23 +109,24 @@ class EksOpenSearchIntegrationStack(Stack):
         )
         fluentbit_chart.node.add_dependency(fluentbit_service_account)
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
+        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
 
         NagSuppressions.add_stack_suppressions(
             self,
             apply_to_nested_stacks=True,
             suppressions=[
                 NagPackSuppression(
-                    **{
-                        "id": "AwsSolutions-IAM4",
-                        "reason": "Managed Policies are for service account roles only",
-                    }
+                    id="AwsSolutions-IAM4",
+                    reason="Managed Policies are for service account roles only",
                 ),
                 NagPackSuppression(
-                    **{
-                        "id": "AwsSolutions-IAM5",
-                        "reason": "Resource access restriced to ADDF resources",
-                    }
+                    id="AwsSolutions-IAM5",
+                    reason="Resource access restriced to ADDF resources",
+                ),
+                NagPackSuppression(
+                    id="AwsSolutions-L1",
+                    reason="We don't want this to start failing as soon as a new version is released",
                 ),
             ],
         )
+
