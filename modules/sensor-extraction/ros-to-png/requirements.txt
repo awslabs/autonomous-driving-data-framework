@@ -54,9 +54,11 @@ jsii==1.100.0
     #   cdk-ecr-deployment
     #   cdk-nag
     #   constructs
-numpy==2.1.1
-    # via opencv-python
-opencv-python==4.10.0.84
+numpy==2.0.2
+    # via
+    #   -r requirements.in
+    #   opencv-python
+opencv-python==4.8.1.78
     # via -r requirements.in
 publication==0.0.3
     # via
