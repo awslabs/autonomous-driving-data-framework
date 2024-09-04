@@ -23,6 +23,7 @@ class EksOpenSearchIntegrationStack(Stack):
         scope: Construct,
         id: str,
         *,
+        project: str,
         deployment: str,
         module: str,
         opensearch_sg_id: str,
@@ -36,12 +37,12 @@ class EksOpenSearchIntegrationStack(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack integrates EKS Cluster with Opensearch cluster for ADDF",
+            description="This stack integrates EKS Cluster with Opensearch cluster",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project}-{deployment}-{module}"
         dep_mod = dep_mod[:27]
 
         # Import OpenSearch Domain
@@ -108,23 +109,23 @@ class EksOpenSearchIntegrationStack(Stack):
         )
         fluentbit_chart.node.add_dependency(fluentbit_service_account)
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
+        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
 
         NagSuppressions.add_stack_suppressions(
             self,
             apply_to_nested_stacks=True,
             suppressions=[
                 NagPackSuppression(
-                    **{
-                        "id": "AwsSolutions-IAM4",
-                        "reason": "Managed Policies are for service account roles only",
-                    }
+                    id="AwsSolutions-IAM4",
+                    reason="Managed Policies are for service account roles only",
                 ),
                 NagPackSuppression(
-                    **{
-                        "id": "AwsSolutions-IAM5",
-                        "reason": "Resource access restriced to ADDF resources",
-                    }
+                    id="AwsSolutions-IAM5",
+                    reason="Resource access restriced to ADDF resources",
+                ),
+                NagPackSuppression(
+                    id="AwsSolutions-L1",
+                    reason="Not creating the Lambda directly",
                 ),
             ],
         )
