@@ -24,6 +24,7 @@ targetAccountMappings:
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
       trainingNamespaceName: training
+      draExportPath: /data
     regionMappings:
       - region: eu-central-1
         default: true
