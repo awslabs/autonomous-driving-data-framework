@@ -125,8 +125,7 @@ class EksOpenSearchIntegrationStack(Stack):
                 ),
                 NagPackSuppression(
                     id="AwsSolutions-L1",
-                    reason="We don't want this to start failing as soon as a new version is released",
+                    reason="Not creating the Lambda directly",
                 ),
             ],
         )
-

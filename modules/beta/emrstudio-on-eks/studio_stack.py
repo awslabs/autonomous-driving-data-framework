@@ -469,6 +469,10 @@ class StudioLiveStack(Stack):
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
                 },
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": "Not creating the Lambda directly",
+                },
             ],
         )
 
