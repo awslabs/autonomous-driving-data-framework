@@ -76,6 +76,6 @@ emr_studio = StudioLiveStack(
     sso_username=sso_username,
 )
 
-aws_cdk.cdk.Aspects.of(app).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
+aws_cdk.Aspects.of(app).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
 
 app.synth(force=True)
