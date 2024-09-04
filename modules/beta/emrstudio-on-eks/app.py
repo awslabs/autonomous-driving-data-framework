@@ -1,16 +1,14 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-# type: ignore
-
 import json
 import os
 
 import aws_cdk
 import cdk_nag
 
-from rbac_stack import EmrEksRbacStack
-from studio_stack import StudioLiveStack
+from rbac_stack import EmrEksRbacStack  # type: ignore[attr-defined]
+from studio_stack import StudioLiveStack  # type: ignore[attr-defined]
 
 project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
 deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
@@ -22,7 +20,7 @@ def _param(name: str) -> str:
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # type: ignore[arg-type]  # required
 
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
