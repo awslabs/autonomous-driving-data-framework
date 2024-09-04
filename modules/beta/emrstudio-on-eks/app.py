@@ -7,7 +7,7 @@ import json
 import os
 
 import aws_cdk
-from aws_cdk import App
+import cdk_nag
 
 from rbac_stack import EmrEksRbacStack
 from studio_stack import StudioLiveStack
@@ -38,7 +38,7 @@ artifact_bucket_name = os.getenv(_param("ARTIFACT_BUCKET_NAME"))  # required
 sso_username = os.getenv(_param("SSO_USERNAME"))  # required
 emr_eks_namespace = os.getenv(_param("EMR_EKS_NAMESPACE"), "emr-studio")
 
-app = App()
+app = aws_cdk.App()
 
 eks_stack = EmrEksRbacStack(
     scope=app,
@@ -75,5 +75,7 @@ emr_studio = StudioLiveStack(
     emr_namespace=emr_eks_namespace,
     sso_username=sso_username,
 )
+
+aws_cdk.cdk.Aspects.of(app).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
 
 app.synth(force=True)

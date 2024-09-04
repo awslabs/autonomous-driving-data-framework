@@ -6,8 +6,7 @@
 import random
 from typing import List, cast
 
-import cdk_nag
-from aws_cdk import Aspects, CfnOutput, Stack, Tags
+from aws_cdk import CfnOutput, Stack, Tags
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_emr as emr
 from aws_cdk import aws_emrcontainers as emrc
@@ -454,8 +453,6 @@ class StudioLiveStack(Stack):
             session_policy_arn=studio_user_session_policy.managed_policy_arn,
             studio_id=self.studio.attr_studio_id,
         )
-
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
 
         NagSuppressions.add_stack_suppressions(
             self,

@@ -6,8 +6,7 @@
 import logging
 from typing import Any, cast
 
-import cdk_nag
-from aws_cdk import Aspects, CfnJson, Stack, Tags
+from aws_cdk import CfnJson, Stack, Tags
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
 from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
@@ -271,8 +270,6 @@ class EmrEksRbacStack(Stack):
             )
         )
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
-
         NagSuppressions.add_stack_suppressions(
             self,
             apply_to_nested_stacks=True,
@@ -284,6 +281,10 @@ class EmrEksRbacStack(Stack):
                 {
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
+                },
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": "Not creating the Lambda directly",
                 },
             ],
         )
