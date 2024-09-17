@@ -1,17 +1,18 @@
+publishGenericEnvVariables: true
 deploy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.20.0
+      - npm install -g aws-cdk@2.155.0
       - pip install -r requirements.txt
     build:
       commands:
-      - export ECR_REPO_NAME="addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}"
+      - export ECR_REPO_NAME="${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}"
       - export COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - export IMAGE_TAG=${COMMIT_HASH:=latest}
       - export REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPO_NAME
-      - export ADDF_PARAMETER_JH_IMAGE_NAME=$REPOSITORY_URI
-      - export ADDF_PARAMETER_JH_IMAGE_TAG=$IMAGE_TAG
+      - export SEEDFARMER_PARAMETER_JH_IMAGE_NAME=$REPOSITORY_URI
+      - export SEEDFARMER_PARAMETER_JH_IMAGE_TAG=$IMAGE_TAG
       - aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} || aws ecr create-repository --repository-name ${ECR_REPO_NAME}
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
       - echo Building the Docker image...
@@ -20,12 +21,12 @@ deploy:
       - docker push $REPOSITORY_URI:latest && docker push $REPOSITORY_URI:$IMAGE_TAG
       - cd ..
       - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json
-      - export ADDF_MODULE_METADATA=$(python -c "import json; file=open('cdk-exports.json'); print(json.load(file)['addf-${ADDF_DEPLOYMENT_NAME}-${ADDF_MODULE_NAME}']['metadata'])")
+      - seedfarmer metadata convert -f cdk-exports.json || true
 destroy:
   phases:
     install:
       commands:
-      - npm install -g aws-cdk@2.20.0
+      - npm install -g aws-cdk@2.155.0
       - pip install -r requirements.txt
     build:
       commands:

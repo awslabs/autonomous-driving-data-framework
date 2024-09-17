@@ -24,6 +24,7 @@ class JupyterHubStack(Stack):
         scope: Construct,
         id: str,
         *,
+        project: str,
         deployment: str,
         module: str,
         eks_cluster_name: str,
@@ -38,12 +39,12 @@ class JupyterHubStack(Stack):
         super().__init__(
             scope,
             id,
-            description="This stack deploys Self managed JupyterHub environment for ADDF",
+            description="This stack deploys a Self managed JupyterHub environment",
             **kwargs,
         )
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
-        dep_mod = f"addf-{deployment}-{module}"
+        dep_mod = f"{project}-{deployment}-{module}"
 
         # Import EKS Cluster
         provider = eks.OpenIdConnectProvider.from_open_id_connect_provider_arn(
@@ -145,7 +146,7 @@ class JupyterHubStack(Stack):
                 },
                 {  # type: ignore
                     "id": "AwsSolutions-IAM5",
-                    "reason": "Resource access restriced to ADDF resources",
+                    "reason": "Resource access restriced to explicit resources",
                 },
             ],
         )

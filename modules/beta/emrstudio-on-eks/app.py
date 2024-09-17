@@ -1,27 +1,26 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-# type: ignore
-
 import json
 import os
 
 import aws_cdk
-from aws_cdk import App
+import cdk_nag
 
-from rbac_stack import EmrEksRbacStack
-from studio_stack import StudioLiveStack
+from rbac_stack import EmrEksRbacStack  # type: ignore[attr-defined]
+from studio_stack import StudioLiveStack  # type: ignore[attr-defined]
 
-deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")
-module_name = os.getenv("ADDF_MODULE_NAME", "")
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"ADDF_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
 
 vpc_id = os.getenv(_param("VPC_ID"))  # required
-private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # required
+private_subnet_ids = json.loads(os.getenv(_param("PRIVATE_SUBNET_IDS")))  # type: ignore[arg-type]  # required
 
 if not vpc_id:
     raise ValueError("missing input parameter vpc-id")
@@ -37,15 +36,16 @@ artifact_bucket_name = os.getenv(_param("ARTIFACT_BUCKET_NAME"))  # required
 sso_username = os.getenv(_param("SSO_USERNAME"))  # required
 emr_eks_namespace = os.getenv(_param("EMR_EKS_NAMESPACE"), "emr-studio")
 
-app = App()
+app = aws_cdk.App()
 
 eks_stack = EmrEksRbacStack(
     scope=app,
-    id=f"addf-{deployment_name}-{module_name}-rbac",
+    id=f"{project_name}-{deployment_name}-{module_name}-rbac",
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    project=project_name,
     deployment=deployment_name,
     module=module_name,
     eks_cluster_name=eks_cluster_name,
@@ -57,11 +57,12 @@ eks_stack = EmrEksRbacStack(
 
 emr_studio = StudioLiveStack(
     app,
-    id=f"addf-{deployment_name}-{module_name}",
+    id=f"{project_name}-{deployment_name}-{module_name}",
     env=aws_cdk.Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
     ),
+    project=project_name,
     deployment=deployment_name,
     module=module_name,
     vpc_id=vpc_id,
@@ -72,5 +73,7 @@ emr_studio = StudioLiveStack(
     emr_namespace=emr_eks_namespace,
     sso_username=sso_username,
 )
+
+aws_cdk.Aspects.of(app).add(cdk_nag.AwsSolutionsChecks(log_ignores=True))
 
 app.synth(force=True)

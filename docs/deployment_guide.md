@@ -20,7 +20,7 @@ The AWS Lambda service no longer supports older versions (aka. node 12.x).  We n
 You will need to clone the ADDF repository and checkout a release branch using the below command:
 
 ```bash
-git clone --origin upstream --branch release/1.2.1 https://github.com/awslabs/autonomous-driving-data-framework
+git clone --origin upstream --branch release/3.6.0 https://github.com/awslabs/autonomous-driving-data-framework
 ```
 
 > The release version can be replaced with the version of interest

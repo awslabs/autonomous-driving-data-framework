@@ -1,8 +1,8 @@
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.10.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.11.0
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.10.0
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.10.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.11.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.11.0
 parameters:
   # - name: replicated-ecr-images-metadata-s3-path
   #   valueFrom:
@@ -49,7 +49,7 @@ parameters:
           eks_node_instance_type: "m5.large"
           eks_node_labels:
             usage: system
-          #eks_self_managed: True # Uncomment this if you want to deploy Self Managed NGS (For ex: LocalZones)
+          # eks_self_managed: True # Uncomment this if you want to deploy Self Managed NGS (For ex: LocalZones)
         - eks_ng_name: ng-gpu
           eks_node_quantity: 1
           eks_node_max_quantity: 2
@@ -59,12 +59,12 @@ parameters:
           eks_node_labels:
             usage: gpu
           use_gpu_ami: True
-          #eks_self_managed: True # Uncomment this if you want to deploy Self Managed NGS (For ex: LocalZones)
-          eks_node_taints:
-            - key: "nvidia.com/gpu"
-              value: "true"
-              # operator: "Equal"
-              effect: "NoSchedule"
+          # eks_self_managed: True # Uncomment this if you want to deploy Self Managed NGS (For ex: LocalZones)
+          # eks_node_taints:
+          #   - key: "nvidia.com/gpu"
+          #     value: "true"
+          #     # operator: "Equal"
+          #     effect: "NoSchedule"
           install_nvidia_device_plugin: True
       eks_node_spot: False
       eks_api_endpoint_private: False
@@ -83,9 +83,11 @@ parameters:
       deploy_secretsmanager_csi: False 
       # Monitoring/Logging/Tracing
       deploy_cloudwatch_observability_addon: False
+      # Storage
+      deploy_aws_fsx_csi: True
 ---
 name: fsx-lustre
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.9.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.11.0
 parameters:
   - name: vpc-id
     valueFrom:

@@ -6,8 +6,7 @@
 import random
 from typing import List, cast
 
-import cdk_nag
-from aws_cdk import Aspects, CfnOutput, Stack, Tags
+from aws_cdk import CfnOutput, Stack, Tags
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_emr as emr
 from aws_cdk import aws_emrcontainers as emrc
@@ -30,6 +29,7 @@ class StudioLiveStack(Stack):
         self,
         scope: Construct,
         id: str,
+        project: str,
         deployment: str,
         module: str,
         vpc_id: str,
@@ -41,11 +41,11 @@ class StudioLiveStack(Stack):
         sso_username: str,
         **kwargs,
     ) -> None:
-        super().__init__(scope, id, description="This stack deploys EMR Studio for ADDF", **kwargs)
-        dep_mod = f"addf-{deployment}-{module}"
+        super().__init__(scope, id, description="This stack deploys EMR Studio", **kwargs)
+        dep_mod = f"{project}-{deployment}-{module}"
         dep_mod = dep_mod[:27]
 
-        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"addf-{deployment}")
+        Tags.of(scope=cast(IConstruct, self)).add(key="Deployment", value=f"{project}-{deployment}")
 
         # EMR virtual cluster
         self.emr_vc = emrc.CfnVirtualCluster(
@@ -454,8 +454,6 @@ class StudioLiveStack(Stack):
             studio_id=self.studio.attr_studio_id,
         )
 
-        Aspects.of(self).add(cdk_nag.AwsSolutionsChecks())
-
         NagSuppressions.add_stack_suppressions(
             self,
             apply_to_nested_stacks=True,
@@ -467,6 +465,10 @@ class StudioLiveStack(Stack):
                 {
                     "id": "AwsSolutions-IAM5",
                     "reason": "Resource access restriced to ADDF resources",
+                },
+                {
+                    "id": "AwsSolutions-L1",
+                    "reason": "Not creating the Lambda directly",
                 },
             ],
         )
