@@ -16,7 +16,12 @@ spec:
       restartPolicy: Always
       serviceAccountName: dcv-agent-src-account
       nodeSelector:
-        usage: visualization
+        usage: gpu
+        nvidia.com/gpu.present: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          value: 'true'
+          effect: NoSchedule
       containers:
         - name: viz-container
           image: $IMAGE

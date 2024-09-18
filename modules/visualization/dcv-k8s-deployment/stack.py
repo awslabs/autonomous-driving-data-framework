@@ -32,7 +32,6 @@ class DcvEksStack(Stack):
         module_name: str,
         dcv_namespace: str,
         dcv_image_uri: str,
-        app_image_uri: str,
         eks_cluster_name: str,
         eks_cluster_admin_role_arn: str,
         eks_handler_role_arn: str,
@@ -86,10 +85,9 @@ class DcvEksStack(Stack):
         dcv_agent_yaml_file = t.substitute(
             NAMESPACE=dcv_namespace,
             IMAGE=dcv_image_uri,
-            APP_IMAGE=app_image_uri,
             REGION=env.region,
-            SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
-            DISPLAY_PARAMETER_NAME=self.display_parameter_name,
+            # SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
+            # DISPLAY_PARAMETER_NAME=self.display_parameter_name,
             FSX_PVC_NAME=fsx_pvc_name,
         )
 

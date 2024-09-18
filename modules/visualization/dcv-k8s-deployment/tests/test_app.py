@@ -15,7 +15,6 @@ def stack_defaults():
     os.environ["CDK_DEFAULT_ACCOUNT"] = "12345678"
     os.environ["CDK_DEFAULT_REGION"] = "us-east-2"
     os.environ["SEEDFARMER_PARAMETER_DCV_NAMESPACE"] = "dcv"
-    os.environ["SEEDFARMER_PARAMETER_DCV_NODE_PORT"] = "31919"
     os.environ["SEEDFARMER_PARAMETER_DCV_IMAGE_REPO_URI"] = "1234567890.dkr.ecr.us-east-1.amazonaws.com/test-repo"
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN"] = "arn:aws:iam:us-east-1:1234567890:role/test-role"
     os.environ["SEEDFARMER_PARAMETER_EKS_HANDLER_ROLE_ARN"] = "arn:aws:iam:us-east-1:1234567890:role/k8s-handler-role"

@@ -13,7 +13,6 @@ project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
 deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
 module_name = os.getenv("SEEDFARMER_MODULE_NAME")
 DEFAULT_DCV_NAMESPACE = "dcv"
-DEFAULT_DCV_NODEPORT = "31980"
 
 
 if len(f"{project_name}-{deployment_name}") > 36:
@@ -25,9 +24,7 @@ def _param(name: str) -> str:
 
 
 dcv_namespace = os.getenv(_param("DCV_NAMESPACE"), DEFAULT_DCV_NAMESPACE)
-dcv_node_port = os.getenv(_param("DCV_NODEPORT"), DEFAULT_DCV_NODEPORT)
 dcv_image_uri = os.getenv(_param("DCV_IMAGE_URI"), "")
-app_image_uri = os.getenv(_param("APP_IMAGE_URI"), "")
 eks_cluster_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"), "")
 eks_handler_role_arn = os.getenv(_param("EKS_HANDLER_ROLE_ARN"), "")
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"), "")
@@ -38,8 +35,6 @@ eks_node_role_arn = os.getenv(_param("EKS_NODE_ROLE_ARN"), "")
 fsx_pvc_name = os.getenv(_param("FSX_PVC_NAME"), "")
 
 app = App()
-for name, value in os.environ.items():
-    print("{0}: {1}".format(name, value))
 
 dcv_eks_stack = DcvEksStack(
     scope=app,
@@ -49,7 +44,6 @@ dcv_eks_stack = DcvEksStack(
     module_name=cast(str, module_name),
     dcv_namespace=dcv_namespace,
     dcv_image_uri=dcv_image_uri,
-    app_image_uri=app_image_uri,
     eks_cluster_name=eks_cluster_name,
     eks_cluster_admin_role_arn=eks_cluster_admin_role_arn,
     eks_handler_role_arn=eks_handler_role_arn,
@@ -72,7 +66,6 @@ CfnOutput(
         {
             "DcvEksRoleArn": dcv_eks_stack.eks_admin_role.role_arn,
             "DcvNamespace": dcv_namespace,
-            "DcvNodeport": dcv_node_port,
             "DcvDisplayParameterName": dcv_eks_stack.display_parameter_name,
             "DcvSocketMountPathParameterName": dcv_eks_stack.socket_mount_path_parameter_name,
         }

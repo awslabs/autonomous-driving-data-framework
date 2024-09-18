@@ -9,13 +9,3 @@ parameters:
         key: EcrRepositoryName
   - name: dcv-sm-name
     value: dcv-credentials
----
-name: app-image
-path: modules/visualization/foxglove-image
-parameters:
-  - name: app-ecr-repository-name
-    valueFrom:
-      moduleMetadata:
-        group: optionals
-        name: app
-        key: EcrRepositoryName

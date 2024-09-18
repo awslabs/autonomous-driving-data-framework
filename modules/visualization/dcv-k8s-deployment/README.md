@@ -2,7 +2,15 @@
 
 ## Description
 
-<TODO: Rewrite this to be up to date>
+This module helps running the `visualization/dcv-image` module ECR image. It runs as a k8s deployment on GPU nodes using the k8s concepts of taints/toleration and node labels.
+
+Once the deployment is completed, the app is exposed using a k8s Service of type NLB and you can accept it using the below address:
+
+```text
+https://<<NLB-DNS>>:8443
+```
+
+Today, the DCV sessions are not created automatically. Pls reach out to `Aubrey` from AWS Proserv and he can help setup the DCV sessions
 
 ## Deployment
 
@@ -50,11 +58,9 @@ The secret `dcv-credentials` needs to exist with key `UserName` and `Password` k
     "DcvDisplayParameterName": "/addf/mlops/dcv-eks-dcv-eks/dcv-display",
     "DcvSocketMountPathParameterName": "/addf/mlops/dcv-eks-dcv-eks/dcv-socket-mount-path"
 }
-
+```
 
 ## Additional Resources
 
 - https://docs.aws.amazon.com/dcv/latest/adminguide/setting-up-installing-linux-prereq.html
 - https://github.com/cazlo/aws-batch-using-nice-dcv/blob/el9/README.md
-
-

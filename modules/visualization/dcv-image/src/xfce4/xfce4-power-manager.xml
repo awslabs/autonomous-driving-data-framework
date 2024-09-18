@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-power-manager" version="1.0">
+  <property name="blank-on-ac" type="int" value="0"/>
+  <property name="blank-on-battery" type="int" value="0"/>
+  <property name="dpms-on-ac-sleep" type="int" value="0"/>
+  <property name="dpms-on-battery-sleep" type="int" value="0"/>
+  <property name="dpms-enabled" type="bool" value="false"/>
+</channel>

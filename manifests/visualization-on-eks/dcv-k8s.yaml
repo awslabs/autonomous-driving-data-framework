@@ -9,18 +9,12 @@ parameters:
         group: dcv-image
         name: dcv-image
         key: DCVImageUri
-  - name: app-image-uri
-    valueFrom:
-      moduleMetadata:
-        group: dcv-image
-        name: app-image
-        key: AppImageUri
   - name: eks-cluster-admin-role-arn
     valueFrom:
       moduleMetadata:
         group: core
         name: eks
-        key: EksClusterAdminRoleArn
+        key: EksClusterMasterRoleArn
   - name: eks-handler-role-arn
     valueFrom:
       moduleMetadata:

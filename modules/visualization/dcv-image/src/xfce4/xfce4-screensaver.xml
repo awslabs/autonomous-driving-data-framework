@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<channel name="xfce4-screensaver" version="1.0">
+  <property name="lock-enabled" type="bool" value="false"/>
+  <property name="idle-activation-enabled" type="bool" value="false"/>
+  <property name="idle-delay" type="int" value="0"/>
+</channel>

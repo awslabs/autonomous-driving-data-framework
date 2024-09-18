@@ -7,7 +7,7 @@ groups:
   - name: core
     path: manifests/visualization-on-eks/core-modules.yaml
   - name: integration
-    path: manifests/visualization-on-eks/integration-modules.yaml  
+    path: manifests/visualization-on-eks/integration-modules.yaml
   - name: dcv-image
     path: manifests/visualization-on-eks/dcv-image.yaml
   - name: dcv-service
@@ -22,6 +22,8 @@ targetAccountMappings:
     parametersGlobal:
       dockerCredentialsSecret: aws-addf-docker-credentials
       vizualizationNamespace: dcv
+      draImportPath: /ray/import/
+      draExportPath: /ray/export/
     regionMappings:
       - region: eu-central-1
         default: true
