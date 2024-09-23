@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### **Changed**
 
+- updated manifests to use `idf-modules` version `1.12.0`
 - updated `get-modules` workflow to only run tests against changed files in `modules/**`
 - security patching for 'opencv-python' in `ros-to-png` module
 - security patching for `apache-airflow`
