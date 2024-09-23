@@ -22,7 +22,7 @@ def _param(name: str) -> str:
 
 
 ecr_repo_name = os.getenv(_param("DCV_ECR_REPOSITORY_NAME"), "")
-
+dcv_sm_name = os.getenv(_param("DCV_SM_NAME"), "dcv-credentials")
 
 app = App()
 
@@ -34,6 +34,7 @@ dcv_image_pushing_stack = DcvImagePublishingStack(
     deployment_name=cast(str, deployment_name),
     repository_name=ecr_repo_name,
     module_name=cast(str, module_name),
+    dcv_sm_name=dcv_sm_name,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],

@@ -7,10 +7,10 @@ from typing import Any, Optional, cast
 
 import yaml
 from aws_cdk import Environment, Stack, Tags
-from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_eks as eks
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_ssm as ssm
+from aws_cdk.lambda_layer_kubectl_v29 import KubectlV29Layer
 from cdk_nag import NagPackSuppression, NagSuppressions
 from constructs import Construct, IConstruct
 
@@ -34,11 +34,12 @@ class DcvEksStack(Stack):
         dcv_image_uri: str,
         eks_cluster_name: str,
         eks_cluster_admin_role_arn: str,
+        eks_handler_role_arn: str,
         eks_oidc_arn: str,
         eks_cluster_open_id_connect_issuer: str,
         eks_cluster_security_group_id: str,
         eks_node_role_arn: str,
-        dcv_node_port: str,
+        fsx_pvc_name: str,
         env: Environment,
         **kwargs: Any,
     ) -> None:
@@ -75,41 +76,30 @@ class DcvEksStack(Stack):
             f"{dep_mod}-eks-cluster",
             cluster_name=eks_cluster_name,
             kubectl_role_arn=eks_cluster_admin_role_arn,
+            kubectl_lambda_role=iam.Role.from_role_arn(self, "KubectlHandlerArn", eks_handler_role_arn),
+            kubectl_layer=KubectlV29Layer(self, "KubectlV29Layer"),
             open_id_connect_provider=provider,
         )
 
-        namespace_manifest = {
-            "apiVersion": "v1",
-            "kind": "Namespace",
-            "metadata": {
-                "name": dcv_namespace,
-            },
-        }
-
-        # Create the KubernetesManifest resource
-        loop_iteration = 0
-        manifest_id = "DCVAgent" + str(loop_iteration)
-        k8s_namespace = eks_cluster.add_manifest(manifest_id, namespace_manifest)
-        loop_iteration += 1
-
-        t = Template(open(os.path.join(project_dir, "dcv-config/dcv-agent.yaml"), "r").read())
+        t = Template(open(os.path.join(project_dir, "k8s/dcv-deployment.yaml"), "r").read())
         dcv_agent_yaml_file = t.substitute(
             NAMESPACE=dcv_namespace,
             IMAGE=dcv_image_uri,
             REGION=env.region,
-            SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
-            DISPLAY_PARAMETER_NAME=self.display_parameter_name,
+            # SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
+            # DISPLAY_PARAMETER_NAME=self.display_parameter_name,
+            FSX_PVC_NAME=fsx_pvc_name,
         )
 
         dcv_agent_yaml = yaml.load(dcv_agent_yaml_file, Loader=yaml.FullLoader)
+        loop_iteration = 0
         manifest_id = "DCVAgent" + str(loop_iteration)
         loop_iteration += 1
         dcv_agent_resource = eks_cluster.add_manifest(manifest_id, dcv_agent_yaml)
 
-        t = Template(open(os.path.join(project_dir, "dcv-config/dcv-agent-setup.yaml"), "r").read())
+        t = Template(open(os.path.join(project_dir, "k8s/dcv-permissions-setup.yaml"), "r").read())
         dcv_agent_yaml_file = t.substitute(
             NAMESPACE=dcv_namespace,
-            NODEPORT=dcv_node_port,
             RUNTIME_ROLE_ARN=self.eks_admin_role.role_arn,
             SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
         )
@@ -118,10 +108,7 @@ class DcvEksStack(Stack):
             loop_iteration = loop_iteration + 1
             manifest_id = "DCVAgent" + str(loop_iteration)
             k8s_resource = eks_cluster.add_manifest(manifest_id, value)
-            k8s_resource.node.add_dependency(k8s_namespace)
             dcv_agent_resource.node.add_dependency(k8s_resource)
-
-        self.add_security_group_permissions(eks_cluster_security_group_id, dcv_node_port)
 
         NagSuppressions.add_stack_suppressions(
             self,
@@ -173,6 +160,7 @@ class DcvEksStack(Stack):
                 {"StringLike": {f"{eks_cluster_open_id_connect_issuer}:sub": "system:serviceaccount:*"}},
                 "sts:AssumeRoleWithWebIdentity",
             ),
+            managed_policies=[iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3ReadOnlyAccess")],
         )
 
         role.add_to_principal_policy(
@@ -182,7 +170,7 @@ class DcvEksStack(Stack):
                     "secretsmanager:GetSecretValue",
                     "secretsmanager:DescribeSecret",
                 ],
-                resources=[f"arn:aws:secretsmanager:{env.region}:{env.account}:secret:dcv-cred-*"],
+                resources=[f"arn:aws:secretsmanager:{env.region}:{env.account}:secret:dcv-cred*"],
             )
         )
 
@@ -209,19 +197,4 @@ class DcvEksStack(Stack):
                 ],
                 resources=[f"arn:aws:s3:::dcv-license.{region}/*"],
             )
-        )
-
-    def add_security_group_permissions(self, eks_cluster_security_group_id: str, dcv_node_port: str) -> None:
-        security_group = ec2.SecurityGroup.from_security_group_id(
-            self, "SG", eks_cluster_security_group_id, mutable=True
-        )
-        security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.tcp(int(dcv_node_port)),
-            "allow dcv NodePort from the everywhere around the world",
-        )
-        security_group.add_ingress_rule(
-            ec2.Peer.any_ipv4(),
-            ec2.Port.udp(int(dcv_node_port)),
-            "allow dcv NodePort from the everywhere around the world",
         )

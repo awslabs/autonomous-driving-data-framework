@@ -1,0 +1,21 @@
+name: networking
+path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk?ref=release/1.11.0&depth=1
+parameters:
+  - name: internet-accessible
+    value: true
+---
+name: dcv
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/ecr?ref=release/1.11.0&depth=1
+parameter:
+  - name: image-tag-mutability
+    value: "MUTABLE"
+  - name: removal-policy
+    value: DESTROY
+---
+name: s3bucket
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/buckets?ref=release/1.11.0&depth=1
+parameters:
+  - name: EncryptionType
+    value: SSE
+  - name: RetentionType
+    value: DESTROY

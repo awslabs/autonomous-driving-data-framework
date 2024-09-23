@@ -13,7 +13,6 @@ project_name = os.getenv("SEEDFARMER_PROJECT_NAME")
 deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME")
 module_name = os.getenv("SEEDFARMER_MODULE_NAME")
 DEFAULT_DCV_NAMESPACE = "dcv"
-DEFAULT_DCV_NODEPORT = "31980"
 
 
 if len(f"{project_name}-{deployment_name}") > 36:
@@ -25,18 +24,18 @@ def _param(name: str) -> str:
 
 
 dcv_namespace = os.getenv(_param("DCV_NAMESPACE"), DEFAULT_DCV_NAMESPACE)
-dcv_node_port = os.getenv(_param("DCV_NODEPORT"), DEFAULT_DCV_NODEPORT)
 dcv_image_uri = os.getenv(_param("DCV_IMAGE_URI"), "")
 eks_cluster_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"), "")
+eks_handler_role_arn = os.getenv(_param("EKS_HANDLER_ROLE_ARN"), "")
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"), "")
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"), "")
 eks_cluster_open_id_connect_issuer = os.getenv(_param("EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"), "")
 eks_cluster_security_group_id = os.getenv(_param("EKS_CLUSTER_SECURITY_GROUP_ID"), "")
 eks_node_role_arn = os.getenv(_param("EKS_NODE_ROLE_ARN"), "")
+fsx_pvc_name = os.getenv(_param("FSX_PVC_NAME"), "")
 
 app = App()
-for name, value in os.environ.items():
-    print("{0}: {1}".format(name, value))
+
 dcv_eks_stack = DcvEksStack(
     scope=app,
     id=f"{project_name}-{deployment_name}-{module_name}",
@@ -47,11 +46,12 @@ dcv_eks_stack = DcvEksStack(
     dcv_image_uri=dcv_image_uri,
     eks_cluster_name=eks_cluster_name,
     eks_cluster_admin_role_arn=eks_cluster_admin_role_arn,
+    eks_handler_role_arn=eks_handler_role_arn,
     eks_oidc_arn=eks_oidc_arn,
     eks_cluster_open_id_connect_issuer=eks_cluster_open_id_connect_issuer,
     eks_cluster_security_group_id=eks_cluster_security_group_id,
     eks_node_role_arn=eks_node_role_arn,
-    dcv_node_port=dcv_node_port,
+    fsx_pvc_name=fsx_pvc_name,
     env=Environment(
         account=os.environ["CDK_DEFAULT_ACCOUNT"],
         region=os.environ["CDK_DEFAULT_REGION"],
@@ -66,7 +66,6 @@ CfnOutput(
         {
             "DcvEksRoleArn": dcv_eks_stack.eks_admin_role.role_arn,
             "DcvNamespace": dcv_namespace,
-            "DcvNodeport": dcv_node_port,
             "DcvDisplayParameterName": dcv_eks_stack.display_parameter_name,
             "DcvSocketMountPathParameterName": dcv_eks_stack.socket_mount_path_parameter_name,
         }

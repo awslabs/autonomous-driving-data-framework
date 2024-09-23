@@ -1,0 +1,120 @@
+name: eks
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks/?ref=release/1.11.0
+dataFiles:
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.11.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.11.0
+parameters:
+  # - name: replicated-ecr-images-metadata-s3-path
+  #   valueFrom:
+  #     moduleMetadata:
+  #       group: replication
+  #       name: replication
+  #       key: s3_full_path
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: controlplane-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: dataplane-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: eks-admin-role-name
+    value: Admin
+  - name: eks-poweruser-role-name
+    value: PowerUser
+  - name: eks-read-only-role-name
+    value: ReadOnly
+  - name: eks-version
+    value: "1.29"
+    # valueFrom:
+    #   envVariable: GLOBAL_EKS_VERSION
+  - name: eks-compute
+    value:
+      eks_nodegroup_config:
+        - eks_ng_name: ng1
+          eks_node_quantity: 2
+          eks_node_max_quantity: 5
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 200
+          eks_node_instance_type: "m5.12xlarge"
+          eks_node_labels:
+            usage: core
+        - eks_ng_name: ng-gpu
+          eks_node_quantity: 1
+          eks_node_max_quantity: 10
+          eks_node_min_quantity: 1
+          eks_node_disk_size: 200
+          eks_node_instance_type: "g4dn.4xlarge"
+          eks_node_labels:
+            usage: gpu
+            nvidia.com/gpu.present: "true"
+          use_gpu_ami: True
+          eks_node_taints:
+            - key: "nvidia.com/gpu"
+              value: "true"
+              # operator: "Equal"
+              effect: "NoSchedule"
+          install_nvidia_device_plugin: True
+      eks_node_spot: False
+      eks_secrets_envelope_encryption: False
+      eks_api_endpoint_private: False
+  - name: eks-addons
+    value:
+      # Load balancer
+      deploy_aws_lb_controller: True 
+      # Autoscaling
+      deploy_cluster_autoscaler: True
+      deploy_metrics_server: True
+      # Observability
+      deploy_cloudwatch_observability_addon: True
+      # Storage
+      deploy_aws_fsx_csi: True
+---
+name: fsx-lustre
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.11.0&depth=1
+parameters:
+  - name: vpc-id
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: VpcId
+  - name: private-subnet-ids
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: networking
+        key: PrivateSubnetIds
+  - name: fs_deployment_type
+    value: SCRATCH_2
+  - name: storage_throughput
+    value: 50
+  - name: data_bucket_name
+    valueFrom:
+      moduleMetadata:
+        group: optionals
+        name: s3bucket
+        key: ArtifactsBucketName
+  - name: dra_export_path
+    valueFrom:
+      parameterValue: draExportPath
+  - name: dra_import_path
+    valueFrom:
+      parameterValue: draImportPath
+  - name:  fsx_version
+    value : "2.15" 
+  - name: Namespace
+    valueFrom:
+      parameterValue: vizualizationNamespace
+  - name: import_policy
+    value: "NEW_CHANGED_DELETED"

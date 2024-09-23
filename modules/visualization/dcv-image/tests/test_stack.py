@@ -34,6 +34,7 @@ def test_app(stack_defaults):
         repository_name="test-repo",
         deployment_name=dep_name,
         module_name=mod_name,
+        dcv_sm_name="test-dcv-session-manager",
         env=cdk.Environment(
             account=os.environ["CDK_DEFAULT_ACCOUNT"],
             region=os.environ["CDK_DEFAULT_REGION"],

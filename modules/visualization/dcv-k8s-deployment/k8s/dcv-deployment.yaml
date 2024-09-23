@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viz-deployment
+  namespace: $NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      env: dcv
+  template:
+    metadata:
+      labels:
+        env: dcv
+    spec:
+      restartPolicy: Always
+      serviceAccountName: dcv-agent-src-account
+      nodeSelector:
+        usage: gpu
+        nvidia.com/gpu.present: "true"
+      tolerations:
+        - key: nvidia.com/gpu
+          value: 'true'
+          effect: NoSchedule
+      containers:
+        - name: viz-container
+          image: $IMAGE
+          command: [ "/usr/local/bin/run_script.sh" ]
+          imagePullPolicy: "Always"
+          env:
+            - name: DCV_EKS_CONFIG_MAP_NAME
+              value: "dcv-agent-config-map"
+            - name: AWS_REGION
+              value: $REGION
+          ports:
+            - name: dcv-tcp
+              protocol: TCP
+              containerPort: 8443
+            - name: dcv-udp
+              protocol: UDP
+              containerPort: 8443
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "16Gi"
+              cpu: 4
+            limits:
+              memory: "32Gi"
+              cpu: 8
+          volumeMounts:
+            - name: fsx-persistent-storage
+              mountPath: /fsx
+          readinessProbe:
+            exec:
+              command:
+                - /usr/local/bin/check_healthy.sh
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 90
+          livenessProbe:
+            exec:
+              command:
+                - /usr/local/bin/check_healthy.sh
+            initialDelaySeconds: 120
+            periodSeconds: 10
+      volumes:
+        - name: fsx-persistent-storage
+          persistentVolumeClaim:
+            claimName: $FSX_PVC_NAME

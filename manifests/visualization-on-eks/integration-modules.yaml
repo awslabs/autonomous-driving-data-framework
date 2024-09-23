@@ -1,0 +1,68 @@
+name: lustre-on-eks
+path: git::https://github.com/awslabs/idf-modules.git//modules/integration/fsx-lustre-on-eks?ref=release/1.11.0&depth=1
+parameters:
+  - name: EksClusterAdminRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterMasterRoleArn
+  - name: EksHandlerRoleArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksHandlerRoleArn
+  - name: EksClusterName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterName
+  - name: EksOidcArn
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksOidcArn
+  - name: EksClusterSecurityGroupId
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: eks
+        key: EksClusterSecurityGroupId
+  - name: Namespace
+    valueFrom:
+      parameterValue: vizualizationNamespace
+  - name: FsxFileSystemId
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreFileSystemId
+  - name: FsxSecurityGroupId
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreSecurityGroup
+  - name: FsxMountName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreMountName
+  - name: FsxDnsName
+    valueFrom:
+      moduleMetadata:
+        group: core
+        name: fsx-lustre
+        key: FSxLustreAttrDnsName
+  - name: Cache
+    value: breaker
+  - name: dra_export_path
+    valueFrom:
+      parameterValue: draExportPath
+  - name: dra_import_path
+    valueFrom:
+      parameterValue: draImportPath
