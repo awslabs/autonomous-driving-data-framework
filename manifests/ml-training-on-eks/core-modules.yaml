@@ -1,8 +1,8 @@
 name: eks
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.11.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/eks?ref=release/1.12.0
 dataFiles:
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.11.0
-  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.11.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/1.29.yaml?ref=release/1.12.0
+  - filePath: git::https://github.com/awslabs/idf-modules.git//data/eks_dockerimage-replication/versions/default.yaml?ref=release/1.12.0
 parameters:
   # - name: replicated-ecr-images-metadata-s3-path
   #   valueFrom:
@@ -87,7 +87,7 @@ parameters:
       deploy_aws_fsx_csi: True
 ---
 name: fsx-lustre
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.11.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/fsx-lustre?ref=release/1.12.0
 parameters:
   - name: vpc-id
     valueFrom:
