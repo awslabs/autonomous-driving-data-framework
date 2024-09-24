@@ -4,7 +4,8 @@
 
 This module builds the DCV image that is runnable in EKS. In particular, the DCV image will first install following software:
 
-- AmazonLinux2
+- Nvidia drivers
+- X Server, Gnome and GL libs/dependencies
 - NiceDCV server
 - Kubernetes Python Client
 - AWSCli
