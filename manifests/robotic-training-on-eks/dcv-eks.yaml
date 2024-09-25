@@ -1,5 +1,5 @@
 name: dcv-eks
-path: modules/visualization/dcv-eks
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/visualization/dcv-eks?ref=release/3.6.0&depth=1
 parameters:
   - name: dcv-namespace
     value: dcv
