@@ -58,7 +58,7 @@ lane_detection_instance_type = get_arg_value("LANE_DETECTION_INSTANCE_TYPE", "ml
 
 file_suffix = get_arg_value("FILE_SUFFIX", ".bag")
 desired_encoding = get_arg_value("DESIRED_ENCODING", "bgr8")
-yolo_model = get_arg_value("YOLO_MODEL", "yolov10s")
+yolo_model = get_arg_value("YOLO_MODEL", "yolo11s")
 image_topics: List[str] = json.loads(get_arg_value("IMAGE_TOPICS"))
 sensor_topics: List[str] = json.loads(get_arg_value("SENSOR_TOPICS"))
 
