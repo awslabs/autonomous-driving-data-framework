@@ -44,7 +44,7 @@ lane_detection_instance_type = os.getenv(_param("LANE_DETECTION_INSTANCE_TYPE"),
 
 file_suffix = os.getenv(_param("FILE_SUFFIX"), ".bag")
 desired_encoding = os.getenv(_param("DESIRED_ENCODING"), "bgr8")
-yolo_model = os.getenv(_param("YOLO_MODEL"), "yolov10s")
+yolo_model = os.getenv(_param("YOLO_MODEL"), "yolo11s")
 image_topics = os.getenv(_param("IMAGE_TOPICS"))
 sensor_topics = os.getenv(_param("SENSOR_TOPICS"))
 

@@ -5,7 +5,7 @@ boto3
 
 # Base ----------------------------------------
 matplotlib>=3.2.2
-numpy>=1.18.5
+numpy<2
 opencv-python>=4.1.1
 Pillow>=7.1.2
 PyYAML>=5.3.1
@@ -15,7 +15,7 @@ torch>=1.7.0
 torchvision>=0.8.1
 tqdm>=4.41.0
 protobuf<=3.20.1  # https://github.com/ultralytics/yolov5/issues/8012
-ultralytics>=8.2.45
+ultralytics==8.3.12
 
 # Logging -------------------------------------
 tensorboard>=2.4.1
