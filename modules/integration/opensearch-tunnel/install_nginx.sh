@@ -1,7 +1,7 @@
+#!/bin/bash
+
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
-
-#!/bin/bash
 
 export OS_E=$1
 export PORT=$2
