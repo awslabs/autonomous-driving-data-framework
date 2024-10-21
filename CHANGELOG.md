@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - pin github action to hash instead of explicit version
 - update to yolo11 object detection model
+- fix `opensearch-tunnel` user data install script
 
 ### **Removed**
 

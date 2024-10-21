@@ -8,14 +8,14 @@ This module creates an EC2 instance to act as a proxy for the OpenSearch Cluster
 
 The EC2 instance is deployed in a private subnet that must have Internet Access configured via a NAT Gateway in th VPC.
 
-### Prerequisistes
+### Prerequisites
 
 A VPC with a NAT Gateway installed.
 The [AWS SSM Plugin for AWS CLI](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 
 ## Inputs/Outputs
 
-### Input Paramenters
+### Input Parameters
 
 #### Required
 
