@@ -12,7 +12,7 @@ groups:
     path: manifests/ros-image-demo/ros-image-demo-sfn/docker-image-modules.yaml
   - name: analysis
     path: manifests/ros-image-demo/ros-image-demo-sfn/aws-analysis-modules.yaml
-  - name : integration
+  - name: integration
     path: manifests/ros-image-demo/ros-image-demo-sfn/integration-modules.yaml
 targetAccountMappings:
   - alias: primary
