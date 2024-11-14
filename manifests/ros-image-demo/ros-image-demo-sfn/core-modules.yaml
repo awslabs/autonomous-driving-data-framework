@@ -1,5 +1,5 @@
 name: batch-compute
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=release/1.12.0
 parameters:
   - name: vpc-id
     valueFrom:
@@ -37,7 +37,7 @@ parameters:
           order: 1
 ---
 name: metadata-storage
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=main
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/core/metadata-storage/?ref=release/3.7.0
 parameters:
   - name: glue-db-suffix
     value: vsidata
@@ -47,7 +47,7 @@ parameters:
     value: Rosbag-Scene-Metadata
 ---
 name: opensearch
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=release/1.12.0
 parameters:
   - name: retention-type
     value: DESTROY
@@ -75,7 +75,7 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: emr-serverless
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=release/1.12.0
 parameters:
   - name: private-subnet-ids
     valueFrom:
