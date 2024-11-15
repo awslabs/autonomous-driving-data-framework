@@ -93,7 +93,7 @@ class TunnelStack(Stack):
 
         os_tunnel_role = iam.Role(
             self,
-            "os_tunnel_role",
+            f"{dep_mod}-os_tunnel_role",
             assumed_by=iam.CompositePrincipal(
                 iam.ServicePrincipal("ec2.amazonaws.com"),
             ),
@@ -106,7 +106,7 @@ class TunnelStack(Stack):
 
         instance = ec2.Instance(
             self,
-            "OSTunnel",
+            f"{dep_mod}-OSTunnel",
             instance_type=ec2.InstanceType("t2.micro"),
             require_imdsv2=True,
             machine_image=amzn_linux,
@@ -122,7 +122,7 @@ class TunnelStack(Stack):
             ],
         )
 
-        asset = Asset(self, "Asset", path=install_script)
+        asset = Asset(self, f"{dep_mod}-Asset", path=install_script)
         local_path = instance.user_data.add_s3_download_command(bucket=asset.bucket, bucket_key=asset.s3_object_key)
 
         args = opensearch_domain_endpoint + " " + str(port)
