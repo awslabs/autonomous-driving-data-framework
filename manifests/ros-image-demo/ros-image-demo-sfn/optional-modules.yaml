@@ -1,11 +1,11 @@
 name: networking
-path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk/?ref=main
+path: git::https://github.com/awslabs/idf-modules.git//modules/network/basic-cdk?release/1.12.0
 parameters:
   - name: internet-accessible
     value: true
 ---
 name: datalake-buckets
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/optionals/datalake-buckets/?ref=main
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/optionals/datalake-buckets?ref=release/3.7.0
 parameters:
   - name: encryption-type
     value: SSE
