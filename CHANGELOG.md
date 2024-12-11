@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 
 ### **Changed**
+- updating `typing-extensions` in the following:
+  - analysis/rosbag-image-pipeline-sfn/requirements.txt
+  - examples/eb-sf-batch/requirements.in
+  - examples/eb-sf-batch/requirements.txt
+  - examples/example-dags/requirements.txt
+  - examples/example-spark-dags/requirements.in
+  - examples/example-spark-dags/requirements.txt
 
 ### **Removed**
 

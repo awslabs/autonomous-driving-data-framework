@@ -73,7 +73,7 @@ typeguard==2.13.3
     #   aws-cdk-lib
     #   constructs
     #   jsii
-typing-extensions==4.7.1
+typing-extensions==4.12.2
     # via
     #   -r requirements.in
     #   cattrs
