@@ -44,6 +44,7 @@ class ProxyStack(Stack):
         # CDK Env Vars
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
+        partition: str = aws_cdk.Aws.PARTITION
 
         self.vpc_id = vpc_id
         self.vpc = ec2.Vpc.from_lookup(
@@ -82,12 +83,12 @@ class ProxyStack(Stack):
                         "logs:DescribeLogGroups",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:logs:{region}:{account}:log-group:*"],
+                    resources=[f"arn:{partition}:logs:{region}:{account}:log-group:*"],
                 ),
                 iam.PolicyStatement(
                     actions=["sts:AssumeRole"],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:iam::{account}:role/addf-*"],
+                    resources=[f"arn:{partition}:iam::{account}:role/addf-*"],
                 ),
             ]
         )

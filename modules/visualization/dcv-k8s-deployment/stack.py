@@ -170,7 +170,7 @@ class DcvEksStack(Stack):
                     "secretsmanager:GetSecretValue",
                     "secretsmanager:DescribeSecret",
                 ],
-                resources=[f"arn:aws:secretsmanager:{env.region}:{env.account}:secret:dcv-cred*"],
+                resources=[f"arn:{self.partition}:secretsmanager:{env.region}:{env.account}:secret:dcv-cred*"],
             )
         )
 
@@ -182,7 +182,7 @@ class DcvEksStack(Stack):
                     "ssm:PutParameter",
                     "ssm:GetParameter",
                 ],
-                resources=[f"arn:aws:ssm:{env.region}:{env.account}:parameter{ssm_parameter_prefix}/dcv-*"],
+                resources=[f"arn:{self.partition}:ssm:{env.region}:{env.account}:parameter{ssm_parameter_prefix}/dcv-*"],
             )
         )
         return role
@@ -195,6 +195,6 @@ class DcvEksStack(Stack):
                 actions=[
                     "s3:GetObject",
                 ],
-                resources=[f"arn:aws:s3:::dcv-license.{region}/*"],
+                resources=[f"arn:{self.partition}:s3:::dcv-license.{region}/*"],
             )
         )

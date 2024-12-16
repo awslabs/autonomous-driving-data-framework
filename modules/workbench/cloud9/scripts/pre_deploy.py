@@ -1,6 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import json
 import logging
 import os
@@ -17,6 +18,7 @@ iam_client = boto3.client("iam")
 
 role_name = "AWSCloud9SSMAccessRole"
 instance_profile_name = "AWSCloud9SSMInstanceProfile"
+partition = os.getenv("AWS_PARTITION", "aws")
 
 
 def attach_role_to_instance_profile(instance_profile_name: str, role_name: str) -> None:
@@ -85,7 +87,7 @@ def create_access_role(role_name: str) -> None:
         _logger.info(f"Attaching policy/AWSCloud9SSMInstanceProfile to {role_name}")
         iam_client.attach_role_policy(
             RoleName=role_name,
-            PolicyArn="arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile",
+            PolicyArn=f"arn:{partition}:iam::aws:policy/AWSCloud9SSMInstanceProfile",
         )
     except Exception as err:
         raise err

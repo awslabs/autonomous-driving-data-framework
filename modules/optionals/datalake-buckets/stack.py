@@ -34,6 +34,7 @@ class DataLakeBucketsStack(Stack):
         # CDK Env Vars
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
+        partition: str = aws_cdk.Aws.PARTITION
 
         dep_mod = f"{project_name}-{deployment_name}-{module_name}"
         # used to tag AWS resources. Tag Value length cant exceed 256 characters
@@ -168,7 +169,7 @@ class DataLakeBucketsStack(Stack):
                         "kms:DescribeKey",
                         "kms:GenerateDataKey",
                     ],
-                    resources=[f"arn:aws:kms::{account}:*"],
+                    resources=[f"arn:{partition}:kms::{account}:*"],
                 ),
                 aws_iam.PolicyStatement(
                     effect=aws_iam.Effect.ALLOW,
@@ -206,7 +207,7 @@ class DataLakeBucketsStack(Stack):
                         "kms:DescribeKey",
                         "kms:GenerateDataKey",
                     ],
-                    resources=[f"arn:aws:kms::{account}:*"],
+                    resources=[f"arn:{partition}:kms::{account}:*"],
                 ),
                 aws_iam.PolicyStatement(
                     effect=aws_iam.Effect.ALLOW,

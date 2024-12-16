@@ -77,7 +77,7 @@ class ImageExtraction(Stack):
             iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
+                resources=[f"arn:{self.partition}:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
             ),
             iam.PolicyStatement(
                 actions=["s3:ListAllMyBuckets"],
@@ -87,7 +87,7 @@ class ImageExtraction(Stack):
             iam.PolicyStatement(
                 actions=["s3:ListBucket", "s3:GetBucketLocation"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:s3:::{project_name}-*"],
+                resources=[f"arn:{self.partition}:s3:::{project_name}-*"],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -98,7 +98,7 @@ class ImageExtraction(Stack):
                     "s3:DeleteObject",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:s3:::{project_name}-*/*"],
+                resources=[f"arn:{self.partition}:s3:::{project_name}-*/*"],
             ),
         ]
         policy_document = iam.PolicyDocument(statements=policy_statements)

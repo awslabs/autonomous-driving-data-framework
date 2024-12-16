@@ -53,7 +53,7 @@ Resources:
               - "iam:CreateServiceLinkedRole"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
           # Wildcard use on the specfic resources created by SeedFarmer
         Version: 2012-10-17
       PolicyName: "addf-modulespecific-policy"
