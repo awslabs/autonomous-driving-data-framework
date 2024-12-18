@@ -126,8 +126,8 @@ class EurekaStack(Stack):
                     "s3:ListMultipartUploadParts",
                 ],
                 resources=[
-                    f"arn:{self.paritition}:s3:::${simulation_data_bucket_name}/*",
-                    f"arn:{self.paritition}:s3:::${simulation_data_bucket_name}",
+                    f"arn:{self.partition}:s3:::${simulation_data_bucket_name}/*",
+                    f"arn:{self.partition}:s3:::${simulation_data_bucket_name}",
                 ],
             )
         )
@@ -166,7 +166,9 @@ class EurekaStack(Stack):
                     "iam:AttachRolePolicy",
                     "iam:PutRolePolicy",
                 ],
-                resources=[f"arn:{self.paritition}:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"],
+                resources=[
+                    f"arn:{self.partition}:iam::*:role/aws-service-role/s3.data-source.lustre.fsx.amazonaws.com/*"
+                ],
             )
         )
         fsx_policy = iam.PolicyStatement(

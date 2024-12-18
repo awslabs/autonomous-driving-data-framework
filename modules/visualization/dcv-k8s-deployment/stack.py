@@ -182,7 +182,9 @@ class DcvEksStack(Stack):
                     "ssm:PutParameter",
                     "ssm:GetParameter",
                 ],
-                resources=[f"arn:{self.partition}:ssm:{env.region}:{env.account}:parameter{ssm_parameter_prefix}/dcv-*"],
+                resources=[
+                    f"arn:{self.partition}:ssm:{env.region}:{env.account}:parameter{ssm_parameter_prefix}/dcv-*"
+                ],
             )
         )
         return role

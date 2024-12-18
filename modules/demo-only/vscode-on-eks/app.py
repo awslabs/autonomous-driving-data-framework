@@ -12,7 +12,7 @@ from stack import VSCodeOnEKS
 
 account = os.environ["CDK_DEFAULT_ACCOUNT"]
 region = os.environ["CDK_DEFAULT_REGION"]
-partition = os.environ("AWS_PARTITION", "aws")
+partition = os.getenv("AWS_PARTITION", "aws")
 
 
 deployment_name = os.getenv("ADDF_DEPLOYMENT_NAME", "")

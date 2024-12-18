@@ -51,7 +51,7 @@ export class WebvizStack extends cdk.Stack {
   private getSubnetSelectionFromIds(subnetIds: string[]): ec2.SubnetSelection {
     return {
       subnets: subnetIds.map((subnetId) =>
-        ec2.Subnet.fromSubnetId(this, subnetId, subnetId)
+        ec2.Subnet.fromSubnetId(this, subnetId, subnetId),
       ),
     };
   }
@@ -59,7 +59,7 @@ export class WebvizStack extends cdk.Stack {
   constructor(
     scope: constructs.Construct,
     id: string,
-    props: WebvizStackProps
+    props: WebvizStackProps,
   ) {
     super(scope, id, props);
     const region = this.region;
@@ -70,7 +70,7 @@ export class WebvizStack extends cdk.Stack {
     const vpc = ec2.Vpc.fromLookup(this, "webviz-vpc", { vpcId: props.vpcId });
 
     let privateSubnetIds = this.getSubnetSelectionFromIds(
-      props.privateSubnetIds as string[]
+      props.privateSubnetIds as string[],
     );
 
     const appService = new ApplicationLoadBalancedFargateService(
@@ -83,7 +83,7 @@ export class WebvizStack extends cdk.Stack {
           containerPort: 8080,
         },
         vpc,
-      }
+      },
     );
 
     this.webvizUrl = `http://${appService.loadBalancer.loadBalancerDnsName}`;
@@ -91,13 +91,13 @@ export class WebvizStack extends cdk.Stack {
     this.targetBucket = s3.Bucket.fromBucketName(
       this,
       "bucketRef",
-      props.targetBucketName!
+      props.targetBucketName!,
     );
 
     this.rawBucket = s3.Bucket.fromBucketName(
       this,
       "rawbucketRef",
-      props.rawBucketName!
+      props.rawBucketName!,
     );
 
     this.corsLambda = new lambda.Function(this, "corsLambda", {
@@ -109,7 +109,7 @@ export class WebvizStack extends cdk.Stack {
       role: new iam.Role(this, "lambdaPutCorsRulesRole", {
         managedPolicies: [
           iam.ManagedPolicy.fromAwsManagedPolicyName(
-            "service-role/AWSLambdaBasicExecutionRole"
+            "service-role/AWSLambdaBasicExecutionRole",
           ),
         ],
         assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -149,10 +149,10 @@ export class WebvizStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName(
-          "service-role/AWSLambdaBasicExecutionRole"
+          "service-role/AWSLambdaBasicExecutionRole",
         ),
         iam.ManagedPolicy.fromAwsManagedPolicyName(
-          "service-role/AWSLambdaVPCAccessExecutionRole"
+          "service-role/AWSLambdaVPCAccessExecutionRole",
         ),
       ],
     });
@@ -169,7 +169,7 @@ export class WebvizStack extends cdk.Stack {
     const dynamoDb = dynamo.Table.fromTableName(
       this,
       "scenario-table-ref",
-      props.sceneMetadataTableName!
+      props.sceneMetadataTableName!,
     );
     dynamoDb.grantReadWriteData(generateUrlLambdaRole);
 
@@ -192,13 +192,13 @@ export class WebvizStack extends cdk.Stack {
           props.privateSubnetIds === undefined ? undefined : privateSubnetIds,
         privateDnsEnabled: true,
         securityGroups: [endpointSG],
-      }
+      },
     );
 
     const generateUrlLambdaName = `addf-${props.deploymentName}-${props.moduleName}-generate-ros-streaming-url`;
     this.generateUrlLambda = new lambda.Function(this, "generateUrlLambda", {
       code: lambda.Code.fromAsset(
-        path.join(__dirname, "lambda", "generate_url")
+        path.join(__dirname, "lambda", "generate_url"),
       ),
       handler: "main.lambda_handler",
       functionName:
@@ -220,7 +220,7 @@ export class WebvizStack extends cdk.Stack {
         effect: iam.Effect.ALLOW,
         actions: ["execute-api:Invoke"],
         resources: [`arn:${partition}:execute-api:*:${account}:*`],
-      })
+      }),
     );
 
     this.restApi = new apig.RestApi(this, "generateUrlRestAPI", {
@@ -347,17 +347,17 @@ export class WebvizStack extends cdk.Stack {
     addCfnSuppressToChildren(
       appService,
       [Rules.W2_PUBLIC_FACING_LB, Rules.W9_PUBLIC_FACING_LB],
-      "AWS::EC2::SecurityGroup"
+      "AWS::EC2::SecurityGroup",
     );
     addCfnSuppressToChildren(
       this,
       [Rules.W5_CDK_AUTO_GEN_SGS, Rules.W40_CDK_AUTO_GEN_SGS],
-      "AWS::EC2::SecurityGroup"
+      "AWS::EC2::SecurityGroup",
     );
     addCfnSuppressToChildren(
       this,
       [Rules.W92_CDK_AUTO_GEN_LAMBDA_FUNC, Rules.W89_CDK_AUTO_GEN_LAMBDA_FUNC],
-      "AWS::Lambda::Function"
+      "AWS::Lambda::Function",
     );
     if (this.corsLambda) {
       addCfnSuppressRules(this.corsLambda, [Rules.W58_VIA_MANAGED_POLICY]);
@@ -367,7 +367,7 @@ export class WebvizStack extends cdk.Stack {
       addCfnSuppressToChildren(
         this.corsProvider,
         [Rules.W58_CDK_AUTO_GEN_CUSTOM_PROVIDER],
-        "AWS::Lambda::Function"
+        "AWS::Lambda::Function",
       );
     }
   }

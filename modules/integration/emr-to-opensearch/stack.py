@@ -69,7 +69,9 @@ class EMRtoOpensearch(Stack):
                         "es:ESHttpPut",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:{self.partition}:es:{self.region}:{self.account}:domain/{opensearch_domain_name}*"],
+                    resources=[
+                        f"arn:{self.partition}:es:{self.region}:{self.account}:domain/{opensearch_domain_name}*"
+                    ],
                 ),
                 iam.PolicyStatement(
                     actions=[

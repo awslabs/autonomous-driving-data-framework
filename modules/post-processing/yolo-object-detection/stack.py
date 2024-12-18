@@ -61,7 +61,10 @@ class ObjectDetection(Stack):
             iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:{self.partition}:s3:::{project_name}-*", f"arn:{self.partition}:s3:::{project_name}-*/*"],
+                resources=[
+                    f"arn:{self.partition}:s3:::{project_name}-*",
+                    f"arn:{self.partition}:s3:::{project_name}-*/*",
+                ],
             ),
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)
