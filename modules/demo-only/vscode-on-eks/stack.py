@@ -42,6 +42,7 @@ class VSCodeOnEKS(Stack):
         # CDK Env Vars
         account: str = aws_cdk.Aws.ACCOUNT_ID
         region: str = aws_cdk.Aws.REGION
+        partition: str = aws_cdk.Aws.PARTITION
         NAMESPACE = "code-server"
 
         # Import EKS Cluster
@@ -62,7 +63,7 @@ class VSCodeOnEKS(Stack):
                     "es:ESGet*",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:es:{region}:{account}:domain/*"],
+                resources=[f"arn:{partition}:es:{region}:{account}:domain/*"],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -102,12 +103,12 @@ class VSCodeOnEKS(Stack):
                 ],
                 effect=iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:states:{region}:{account}:execution:*:*",
-                    f"arn:aws:states:{region}:{account}:stateMachine:*",
-                    f"arn:aws:states:{region}:{account}:activity:*",
-                    f"arn:aws:cloudformation:{region}:{account}:stackset/addf*:*",
-                    f"arn:aws:cloudformation:{region}:{account}:stack/addf*/*",
-                    "arn:aws:s3:::addf*",
+                    f"arn:{partition}:states:{region}:{account}:execution:*:*",
+                    f"arn:{partition}:states:{region}:{account}:stateMachine:*",
+                    f"arn:{partition}:states:{region}:{account}:activity:*",
+                    f"arn:{partition}:cloudformation:{region}:{account}:stackset/addf*:*",
+                    f"arn:{partition}:cloudformation:{region}:{account}:stack/addf*/*",
+                    f"arn:{partition}:s3:::addf*",
                 ],
             ),
             iam.PolicyStatement(
@@ -122,7 +123,7 @@ class VSCodeOnEKS(Stack):
                     "logs:DescribeLogGroups",
                 ],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:logs:{region}:{account}:log-group:*"],
+                resources=[f"arn:{partition}:logs:{region}:{account}:log-group:*"],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -135,18 +136,18 @@ class VSCodeOnEKS(Stack):
                 ],
                 effect=iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:cloudformation:{region}:{account}:stackset/addf*:*",
-                    f"arn:aws:cloudformation:{region}:{account}:stack/addf-/*",
-                    f"arn:aws:lambda:{region}:{account}:function:addf-",
-                    f"arn:aws:states:{region}:{account}:execution:*:*",
-                    f"arn:aws:states:{region}:{account}:stateMachine:*",
-                    f"arn:aws:states:{region}:{account}:activity:*",
+                    f"arn:{partition}:cloudformation:{region}:{account}:stackset/addf*:*",
+                    f"arn:{partition}:cloudformation:{region}:{account}:stack/addf-/*",
+                    f"arn:{partition}:lambda:{region}:{account}:function:addf-",
+                    f"arn:{partition}:states:{region}:{account}:execution:*:*",
+                    f"arn:{partition}:states:{region}:{account}:stateMachine:*",
+                    f"arn:{partition}:states:{region}:{account}:activity:*",
                 ],
             ),
             iam.PolicyStatement(
                 actions=["sts:AssumeRole"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:iam::{account}:role/addf-*"],
+                resources=[f"arn:{partition}:iam::{account}:role/addf-*"],
             ),
         ]
 

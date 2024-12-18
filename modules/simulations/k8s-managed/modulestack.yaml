@@ -41,12 +41,12 @@ Resources:
               - "s3:List*"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:s3:::${DagBucketName}/${DagPath}/*"
+              - !Sub "arn:${AWS::Partition}:s3:::${DagBucketName}/${DagPath}/*"
           - Effect: Allow
             Action:
               - "ecr:*"
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "sts:AssumeRole"

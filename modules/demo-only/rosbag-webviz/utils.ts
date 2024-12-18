@@ -14,13 +14,13 @@ export function createAlbLoggingBucket(
   scope: Construct,
   bucketId: string,
   loggingBucketProps: s3.BucketProps,
-  accountId: string
+  accountId: string,
 ): s3.Bucket {
   // Create the Logging Bucket
   const loggingBucket: s3.Bucket = new s3.Bucket(
     scope,
     bucketId,
-    loggingBucketProps
+    loggingBucketProps,
   );
 
   applySecureBucketPolicy(loggingBucket, accountId);
@@ -30,7 +30,7 @@ export function createAlbLoggingBucket(
 
 export function applySecureBucketPolicy(
   s3Bucket: s3.Bucket,
-  accountId: string
+  accountId: string,
 ): void {
   // Apply bucket policy to enforce encryption of data in transit
   s3Bucket.addToResourcePolicy(
@@ -45,7 +45,7 @@ export function applySecureBucketPolicy(
           "aws:SecureTransport": "false",
         },
       },
-    })
+    }),
   );
 }
 
