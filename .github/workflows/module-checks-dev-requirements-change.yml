@@ -97,4 +97,4 @@ jobs:
         run: cd $MODULE_PATH/ && pytest
       - name: NPM Test
         if: ${{ steps.determine-language.outputs.language == 'typescript' }}
-        run: cd $MODULE_PATH/ && npm test --passWithNoTests
+        run: cd $MODULE_PATH/ && npm test
