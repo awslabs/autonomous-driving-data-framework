@@ -29,12 +29,12 @@ def iam_policy() -> dict:
                         {
                             "Action": "dynamodb:*",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:dynamodb:us-east-1:111111111111:table/test-project-test-deployment-test-module*",
+                            "Resource": {'Fn::Join': ['', ['arn:', {'Ref': 'AWS::Partition'}, ':dynamodb:us-east-1:111111111111:table/test-project-test-deployment-test-module*']]}
                         },
                         {
                             "Action": "ecr:*",
                             "Effect": "Allow",
-                            "Resource": "arn:aws:ecr:us-east-1:111111111111:repository/test-project-test-deployment-test-module*",
+                            "Resource": {'Fn::Join': ['', ['arn:', {'Ref': 'AWS::Partition'}, ':ecr:us-east-1:111111111111:repository/test-project-test-deployment-test-module*']]}
                         },
                         {
                             "Action": [
@@ -52,7 +52,7 @@ def iam_policy() -> dict:
                                 "job-queue-2",
                                 "job-def-1",
                                 "job-def-2",
-                                "arn:aws:batch:us-east-1:111111111111:job/*",
+                                {'Fn::Join': ['', ['arn:', {'Ref': 'AWS::Partition'}, ':batch:us-east-1:111111111111:job/*']]}
                             ],
                         },
                         {
@@ -76,9 +76,9 @@ def iam_policy() -> dict:
                             ],
                             "Effect": "Allow",
                             "Resource": [
-                                "arn:aws:s3:::test-project-*",
-                                "arn:aws:s3:::test-project-*/*",
-                            ],
+                                 {'Fn::Join': ['', ['arn:', {'Ref': 'AWS::Partition'}, ':s3:::test-project-*']]},
+                                 {'Fn::Join': ['', ['arn:', {'Ref': 'AWS::Partition'}, ':s3:::test-project-*/*']]}
+                            ]
                         },
                     ]
                 }
@@ -115,6 +115,7 @@ def test_stack(stack_defaults):
         ),
     )
     template = Template.from_stack(rosbag_stack)
+    print(template.to_json())
 
     template.resource_count_is("AWS::DynamoDB::Table", 1)
 
