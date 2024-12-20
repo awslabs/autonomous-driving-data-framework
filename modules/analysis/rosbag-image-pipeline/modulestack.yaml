@@ -30,9 +30,9 @@ Resources:
             Effect: Allow
             Resource: 
               - !Sub 
-                - "arn:aws:s3:::${ProjectName}*"
+                - "arn:${AWS::Partition}:s3:::${ProjectName}*"
                 - ProjectName: !Ref ProjectName
-              - "arn:aws:s3:::cdk*"
+              - !Sub "arn:${AWS::Partition}:s3:::cdk*"
           - Effect: Allow
             Action:
               - "ecr:Describe*"
@@ -40,17 +40,17 @@ Resources:
               - "ecr:List*"
               - "ecr:BatchGetImage"
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - ecr:*
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Action:
               - "iam:CreateServiceLinkedRole"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/*.amazonaws.com/*"
         Version: 2012-10-17
       PolicyName: !Sub ${ProjectName}-modulespecific-policy
       Roles: [!Ref RoleName]

@@ -62,7 +62,7 @@ class EmrEksRbacStack(Stack):
         )
 
         self.emr_namespace = emr_namespace
-        self.emrsvcrolearn = f"arn:aws:iam::{self.account}:role/AWSServiceRoleForAmazonEMRContainers"
+        self.emrsvcrolearn = f"arn:{self.partition}:iam::{self.account}:role/AWSServiceRoleForAmazonEMRContainers"
 
         # Create namespaces for EMR to use
         namespace = eks_cluster.add_manifest(
@@ -223,7 +223,7 @@ class EmrEksRbacStack(Stack):
 
         self.job_role.add_to_policy(
             iam.PolicyStatement(
-                resources=["arn:aws:logs:*:*:*"],
+                resources=[f"arn:{self.partition}:logs:*:*:*"],
                 actions=[
                     "logs:PutLogEvents",
                     "logs:CreateLogStream",

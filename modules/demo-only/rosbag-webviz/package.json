@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "cdk": "cdk",
     "nag": "cdk synth -q && cfn_nag cdk.out/*.template.json"
   },

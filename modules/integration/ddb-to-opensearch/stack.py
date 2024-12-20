@@ -64,7 +64,9 @@ class DDBtoOpensearch(Stack):
                         "es:ESHttpPut",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:es:{self.region}:{self.account}:domain/{opensearch_domain_name}*"],
+                    resources=[
+                        f"arn:{self.partition}:es:{self.region}:{self.account}:domain/{opensearch_domain_name}*"
+                    ],
                 ),
                 iam.PolicyStatement(
                     actions=[
@@ -88,7 +90,7 @@ class DDBtoOpensearch(Stack):
                         "logs:DescribeLogGroups",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:logs:{self.region}:{self.account}:log-group:*"],
+                    resources=[f"arn:{self.partition}:logs:{self.region}:{self.account}:log-group:*"],
                 ),
                 iam.PolicyStatement(
                     actions=["ec2:Create*", "ec2:Delete*", "ec2:Describe*"],
@@ -98,7 +100,7 @@ class DDBtoOpensearch(Stack):
                 iam.PolicyStatement(
                     actions=["sts:AssumeRole"],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:iam::{self.account}:role/addf-*"],
+                    resources=[f"arn:{self.partition}:iam::{self.account}:role/addf-*"],
                 ),
             ]
         )

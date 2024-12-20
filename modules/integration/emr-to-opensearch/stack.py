@@ -69,14 +69,16 @@ class EMRtoOpensearch(Stack):
                         "es:ESHttpPut",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:es:{self.region}:{self.account}:domain/{opensearch_domain_name}*"],
+                    resources=[
+                        f"arn:{self.partition}:es:{self.region}:{self.account}:domain/{opensearch_domain_name}*"
+                    ],
                 ),
                 iam.PolicyStatement(
                     actions=[
                         "s3:ListBucket",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:s3:::{logs_bucket_name}"],
+                    resources=[f"arn:{self.partition}:s3:::{logs_bucket_name}"],
                 ),
                 iam.PolicyStatement(
                     actions=[
@@ -84,7 +86,7 @@ class EMRtoOpensearch(Stack):
                         "s3:GetObjectAcl",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:s3:::{logs_bucket_name}/{emr_logs_prefix}*"],
+                    resources=[f"arn:{self.partition}:s3:::{logs_bucket_name}/{emr_logs_prefix}*"],
                 ),
                 iam.PolicyStatement(
                     actions=[
@@ -98,7 +100,7 @@ class EMRtoOpensearch(Stack):
                         "logs:DescribeLogGroups",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:logs:{self.region}:{self.account}:log-group:*"],
+                    resources=[f"arn:{self.partition}:logs:{self.region}:{self.account}:log-group:*"],
                 ),
                 iam.PolicyStatement(
                     actions=["ec2:Create*", "ec2:Delete*", "ec2:Describe*"],

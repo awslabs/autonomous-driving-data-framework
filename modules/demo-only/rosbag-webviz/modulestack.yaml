@@ -24,4 +24,4 @@ Resources:
           - Action:
               - iam:CreateServiceLinkedRole
             Effect: Allow
-            Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/*
+            Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/*

@@ -64,6 +64,7 @@ export class WebvizStack extends cdk.Stack {
     super(scope, id, props);
     const region = this.region;
     const account = this.account;
+    const partition = this.partition;
     const elbname = `addf-${props.deploymentName}-${props.moduleName}`;
 
     const vpc = ec2.Vpc.fromLookup(this, "webviz-vpc", { vpcId: props.vpcId });
@@ -218,7 +219,7 @@ export class WebvizStack extends cdk.Stack {
         sid: "CloudAuthAPIGatewayInvokeFullAccess",
         effect: iam.Effect.ALLOW,
         actions: ["execute-api:Invoke"],
-        resources: [`arn:aws:execute-api:*:${account}:*`],
+        resources: [`arn:${partition}:execute-api:*:${account}:*`],
       })
     );
 

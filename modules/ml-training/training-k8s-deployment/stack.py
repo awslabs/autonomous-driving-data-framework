@@ -51,7 +51,7 @@ class TrainingPipeline(Stack):
                 actions=["ecr:*"],
                 effect=aws_iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{project_name}-{deployment_name}-{module_name}*"
+                    f"arn:{self.partition}:ecr:{self.region}:{self.account}:repository/{project_name}-{deployment_name}-{module_name}*"
                 ],
             ),
         ]
@@ -267,7 +267,7 @@ class TrainingPipeline(Stack):
 
         state_json = {
             "Type": "Task",
-            "Resource": "arn:aws:states:::eks:runJob.sync",
+            "Resource": f"arn:{self.partition}:states:::eks:runJob.sync",
             "Parameters": {
                 "ClusterName": eks_cluster_name,
                 "Namespace": training_namespace_name,
