@@ -16,7 +16,7 @@ export interface CfnNagSuppressRule {
  */
 export function addCfnSuppressRules(
   resource: cdk.Resource | cdk.CfnResource,
-  rules: CfnNagSuppressRule[],
+  rules: CfnNagSuppressRule[]
 ) {
   if (resource instanceof cdk.Resource) {
     resource = resource.node.defaultChild as cdk.CfnResource;
@@ -34,7 +34,7 @@ export function addCfnSuppressRules(
 export function addCfnSuppressToChildren(
   baseConstruct: constructs.Construct,
   rules: CfnNagSuppressRule[],
-  cfnTypeFilter = "*",
+  cfnTypeFilter = "*"
 ) {
   const constructs = baseConstruct.node.findAll();
   for (const child of constructs) {

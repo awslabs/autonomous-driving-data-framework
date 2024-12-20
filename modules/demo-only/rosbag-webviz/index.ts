@@ -16,7 +16,7 @@ const rawBucketName = process.env.ADDF_PARAMETER_RAW_BUCKET_NAME;
 const logsBucketName = process.env.ADDF_PARAMETER_LOGS_BUCKET_NAME;
 const vpcId = process.env.ADDF_PARAMETER_VPC_ID;
 const privateSubnetIds: string[] = JSON.parse(
-  process.env.ADDF_PARAMETER_PRIVATE_SUBNET_IDS as string,
+  process.env.ADDF_PARAMETER_PRIVATE_SUBNET_IDS as string
 );
 const sceneMetadataTableName =
   process.env.ADDF_PARAMETER_SCENE_METADATA_TABLE_NAME;
