@@ -115,7 +115,6 @@ def test_stack(stack_defaults):
         ),
     )
     template = Template.from_stack(rosbag_stack)
-    print(template.to_json())
 
     template.resource_count_is("AWS::DynamoDB::Table", 1)
 
