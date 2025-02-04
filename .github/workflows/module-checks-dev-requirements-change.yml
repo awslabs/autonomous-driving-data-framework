@@ -86,9 +86,11 @@ jobs:
         if: ${{ steps.determine-language.outputs.language == 'typescript' }}
         run: |
           set -x
+          pip install -r requirements-dev.txt # required for cfn-lint
           cd $MODULE_PATH
           npm install
       - name: Static checks and linting
+        if: ${{ steps.determine-language.outputs.language }}
         run: scripts/validate.sh --language ${{ steps.determine-language.outputs.language }} --path $MODULE_PATH/
       - name: Pytest
         if: ${{ steps.determine-language.outputs.language == 'python' }}

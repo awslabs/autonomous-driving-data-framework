@@ -64,7 +64,7 @@ class PipelineStack(Stack):
 
         # use default value for s3 bucket if not provided through 'cdk.json' file
         if not artifact_bucket_arn:
-            artifact_bucket_arn = f"arn:aws:s3:::sagemaker-{Stack.of(self).region}-{Stack.of(self).account}"
+            artifact_bucket_arn = f"arn:{self.partition}:s3:::sagemaker-{Stack.of(self).region}-{Stack.of(self).account}"
 
         artifact_bucket = s3.Bucket.from_bucket_arn(
             self,

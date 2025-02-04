@@ -36,7 +36,7 @@ Resources:
               - "ecr:Put*"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ECRRepoName}"
+              - !Sub "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${ECRRepoName}"
         Version: 2012-10-17
       PolicyName: "modulespecific-policy"
       Roles: [!Ref RoleName]

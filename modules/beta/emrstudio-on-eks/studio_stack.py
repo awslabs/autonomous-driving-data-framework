@@ -289,8 +289,8 @@ class StudioLiveStack(Stack):
             iam.PolicyStatement(
                 resources=[
                     role.role_arn,
-                    f"arn:aws:iam::{self.account}:role/EMR_DefaultRole",
-                    f"arn:aws:iam::{self.account}:role/EMR_EC2_DefaultRole",
+                    f"arn:{self.partition}:iam::{self.account}:role/EMR_DefaultRole",
+                    f"arn:{self.partition}:iam::{self.account}:role/EMR_EC2_DefaultRole",
                 ],
                 actions=["iam:PassRole"],
                 effect=iam.Effect.ALLOW,
@@ -298,7 +298,7 @@ class StudioLiveStack(Stack):
         )
         user_role.add_to_policy(
             iam.PolicyStatement(
-                resources=["arn:aws:s3:::*"],
+                resources=[f"arn:{self.partition}:s3:::*"],
                 actions=[
                     "s3:ListAllMyBuckets",
                     "s3:ListBucket",
@@ -310,9 +310,9 @@ class StudioLiveStack(Stack):
         user_role.add_to_policy(
             iam.PolicyStatement(
                 resources=[
-                    f"arn:aws:s3:::{bucket.bucket_name}",
-                    f"arn:aws:s3:::{bucket.bucket_name}/*",
-                    f"arn:aws:s3:::aws-logs-{self.account}-{self.region}/elasticmapreduce/*",
+                    f"arn:{self.partition}:s3:::{bucket.bucket_name}",
+                    f"arn:{self.partition}:s3:::{bucket.bucket_name}/*",
+                    f"arn:{self.partition}:s3:::aws-logs-{self.account}-{self.region}/elasticmapreduce/*",
                 ],
                 actions=["s3:GetObject"],
                 effect=iam.Effect.ALLOW,
@@ -388,8 +388,8 @@ class StudioLiveStack(Stack):
                     "Action": "iam:PassRole",
                     "Resource": [
                         role.role_arn,
-                        f"arn:aws:iam::{self.account}:role/EMR_DefaultRole",
-                        f"arn:aws:iam::{self.account}:role/EMR_EC2_DefaultRole",
+                        f"arn:{self.partition}:iam::{self.account}:role/EMR_DefaultRole",
+                        f"arn:{self.partition}:iam::{self.account}:role/EMR_EC2_DefaultRole",
                     ],
                     "Effect": "Allow",
                     "Sid": "PassRolePermission",
@@ -400,7 +400,7 @@ class StudioLiveStack(Stack):
                         "s3:ListBucket",
                         "s3:GetBucketLocation",
                     ],
-                    "Resource": "arn:aws:s3:::*",
+                    "Resource": f"arn:{self.partition}:s3:::*",
                     "Effect": "Allow",
                     "Sid": "AllowS3ListAndLocationPermissions",
                 },
@@ -413,9 +413,9 @@ class StudioLiveStack(Stack):
                         "s3:DeleteObject",
                     ],
                     "Resource": [
-                        f"arn:aws:s3:::{bucket.bucket_name}",
-                        f"arn:aws:s3:::{bucket.bucket_name}/*",
-                        f"arn:aws:s3:::aws-logs-{self.account}-{self.region}/elasticmapreduce/*",
+                        f"arn:{self.partition}:s3:::{bucket.bucket_name}",
+                        f"arn:{self.partition}:s3:::{bucket.bucket_name}/*",
+                        f"arn:{self.partition}:s3:::aws-logs-{self.account}-{self.region}/elasticmapreduce/*",
                     ],
                     "Effect": "Allow",
                     "Sid": "AllowS3ReadOnlyAccessToLogs",

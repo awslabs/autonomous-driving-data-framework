@@ -51,17 +51,20 @@ class LaneDetection(Stack):
             iam.PolicyStatement(
                 actions=["dynamodb:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:dynamodb:{self.region}:{self.account}:table/{project_name}*"],
+                resources=[f"arn:{self.partition}:dynamodb:{self.region}:{self.account}:table/{project_name}*"],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
+                resources=[f"arn:{self.partition}:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
             ),
             iam.PolicyStatement(
                 actions=["s3:GetObject", "s3:GetObjectAcl", "s3:ListBucket"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:s3:::{project_name}-*", f"arn:aws:s3:::{project_name}-*/*"],
+                resources=[
+                    f"arn:{self.partition}:s3:::{project_name}-*",
+                    f"arn:{self.partition}:s3:::{project_name}-*/*",
+                ],
             ),
         ]
         dag_document = iam.PolicyDocument(statements=policy_statements)

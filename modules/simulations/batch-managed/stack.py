@@ -61,12 +61,12 @@ class BatchDags(Stack):
             iam.PolicyStatement(
                 actions=["sqs:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:sqs:{self.region}:{self.account}:{dep_mod}*"],
+                resources=[f"arn:{self.partition}:sqs:{self.region}:{self.account}:{dep_mod}*"],
             ),
             iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=iam.Effect.ALLOW,
-                resources=[f"arn:aws:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
+                resources=[f"arn:{self.partition}:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
             ),
             iam.PolicyStatement(
                 actions=[
@@ -80,9 +80,9 @@ class BatchDags(Stack):
                 ],
                 effect=iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:batch:{self.region}:{self.account}:job-queue/addf*",
-                    f"arn:aws:batch:{self.region}:{self.account}:job-definition/*",
-                    f"arn:aws:batch:{self.region}:{self.account}:job/*",
+                    f"arn:{self.partition}:batch:{self.region}:{self.account}:job-queue/addf*",
+                    f"arn:{self.partition}:batch:{self.region}:{self.account}:job-definition/*",
+                    f"arn:{self.partition}:batch:{self.region}:{self.account}:job/*",
                 ],
             ),
             iam.PolicyStatement(
@@ -91,7 +91,7 @@ class BatchDags(Stack):
                 ],
                 effect=iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:iam::{self.account}:role/addf*",
+                    f"arn:{self.partition}:iam::{self.account}:role/addf*",
                 ],
             ),
             iam.PolicyStatement(
