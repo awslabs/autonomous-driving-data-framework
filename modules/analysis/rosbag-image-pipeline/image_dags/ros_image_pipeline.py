@@ -137,9 +137,9 @@ def validate_config(drives_to_process):
 
     for k, v in drives_to_process.items():
         assert isinstance(k, str), f"expecting config to be like {example_input}, received: {drives_to_process}"
-        assert (
-            "bucket" in v.keys() and "prefix" in v.keys()
-        ), f"expecting config to be like {example_input}, received: {drives_to_process}"
+        assert "bucket" in v.keys() and "prefix" in v.keys(), (
+            f"expecting config to be like {example_input}, received: {drives_to_process}"
+        )
         assert v["prefix"][-1] == "/"
 
 
