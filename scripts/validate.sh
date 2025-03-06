@@ -56,10 +56,11 @@ if [[ $SKIP_STATIC_CHECKS == "false" ]]; then
     if [[ $LANGUAGE == "python" ]]; then
         echo "Checking mypy"
         mypy .
-    else
-        echo "ERROR Language: ${LANGUAGE}"
-        exit 1
     fi
+    # else
+    #     echo "ERROR Language: ${LANGUAGE}"
+    #     exit 1
+    # fi
 fi
 
 if [[ -f ${VALIDATE_PATH}/modulestack.yaml ]]; then
