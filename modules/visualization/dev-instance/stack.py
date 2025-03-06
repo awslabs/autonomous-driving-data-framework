@@ -64,6 +64,8 @@ class DataServiceDevInstancesStack(Stack):
         )
         Tags.of(scope=cast(IConstruct, self)).add(key="DeploymentName", value=f"{project_name}-{deployment_name}")
 
+        partition = Stack.of(self).partition
+        account = Stack.of(self).account
         region = Stack.of(self).region
         dep_mod = f"{project_name}-{deployment_name}-{module_name}"
 
@@ -109,19 +111,19 @@ class DataServiceDevInstancesStack(Stack):
         dcv_license_policy_json = {
             "Effect": "Allow",
             "Action": ["s3:GetObject"],
-            "Resource": [f"arn:aws:s3:::dcv-license.{region}/*"],
+            "Resource": [f"arn:{partition}:s3:::dcv-license.{region}/*"],
         }
 
         s3_policy_json = {
             "Effect": "Allow",
             "Action": ["s3:Get*", "s3:List*", "s3:PutObject*", "s3:DeleteObject*"],
-            "Resource": [f"arn:aws:s3:::{project_name}*", f"arn:aws:s3:::{project_name}*/*"],
+            "Resource": [f"arn:{partition}:s3:::{project_name}*", f"arn:{partition}:s3:::{project_name}*/*"],
         }
 
         lambda_policy_json = {
             "Effect": "Allow",
             "Action": ["lambda:Invoke*"],
-            "Resource": [f"arn:aws:lambda:{self.region}:{self.account}:function:{project_name}-*"],
+            "Resource": [f"arn:{partition}:lambda:{region}:{account}:function:{project_name}-*"],
         }
 
         if s3_dataset_bucket:
@@ -129,8 +131,8 @@ class DataServiceDevInstancesStack(Stack):
                 "Effect": "Allow",
                 "Action": ["s3:Get*", "s3:List*"],
                 "Resource": [
-                    f"arn:aws:s3:::{s3_dataset_bucket}",
-                    f"arn:aws:s3:::{s3_dataset_bucket}/*",
+                    f"arn:{partition}:s3:::{s3_dataset_bucket}",
+                    f"arn:{partition}:s3:::{s3_dataset_bucket}/*",
                 ],
             }
 

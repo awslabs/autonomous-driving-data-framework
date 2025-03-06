@@ -36,4 +36,4 @@ Resources:
               - "ecr:PutImage"
             Resource:
               - !Ref EcrRepositoryArn
-              - "arn:aws:ecr:*:*:repository/pytorch-inference*"
+              - !Sub "arn:${AWS::Partition}:ecr:*:*:repository/pytorch-inference*"

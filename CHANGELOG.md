@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - examples/example-dags/requirements.txt
   - examples/example-spark-dags/requirements.in
   - examples/example-spark-dags/requirements.txt
+- replace hardcoded partitions
 
 ### **Removed**
 

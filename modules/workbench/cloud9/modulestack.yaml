@@ -32,7 +32,8 @@ Resources:
               - "iam:CreateInstanceProfile"
               - "iam:Get*"
               - "iam:RemoveRoleFromInstanceProfile"
-            Resource: "arn:aws:iam::*:instance-profile/cloud9/AWSCloud9SSMInstanceProfile"
+            Resource:
+              - !Sub "arn:${AWS::Partition}:iam::*:instance-profile/cloud9/AWSCloud9SSMInstanceProfile"
           - Effect: Allow
             Action:
               - "iam:AttachRolePolicy"
@@ -41,11 +42,13 @@ Resources:
               - "iam:Get*"
               - "iam:PassRole"
               - "iam:TagRole"
-            Resource: "arn:aws:iam::*:role/service-role/AWSCloud9SSMAccessRole"
+            Resource:
+              - !Sub "arn:${AWS::Partition}:iam::*:role/service-role/AWSCloud9SSMAccessRole"
           - Effect: Allow
             Action:
               - "ssm:GetParametersByPath"
-            Resource: "arn:aws:ssm:*::parameter/aws/service/cloud9"
+            Resource:
+              - !Sub "arn:${AWS::Partition}:ssm:*::parameter/aws/service/cloud9"
         Version: 2012-10-17
       PolicyName: "modulespecific-policy"
       Roles: [!Ref RoleName]

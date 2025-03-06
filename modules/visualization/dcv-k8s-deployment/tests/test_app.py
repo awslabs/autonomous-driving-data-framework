@@ -24,7 +24,7 @@ def stack_defaults():
     )
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_OPEN_ID_CONNECT_ISSUER"] = "test_open_id_connect_issuer"
     os.environ["SEEDFARMER_PARAMETER_EKS_CLUSTER_SECURITY_GROUP_ID"] = "sg-12345678"
-    os.environ["SEEDFARMER_PARAMETER_EKS_NODE_ROLE_ARN"] = "arn:aws:iam:us-east-1:1234567890:role/test-role"
+    os.environ["SEEDFARMER_PARAMETER_EKS_NODE_ROLE_ARN"] = "arn:us-east-1:iam:us-east-1:1234567890:role/test-role"
 
     if "app" in sys.modules:
         del sys.modules["app"]

@@ -51,26 +51,26 @@ Resources:
               - "iam:PassRole"
             Effect: Allow
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-${DeploymentName}-${ModuleName}*"
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/service-role/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "logs:CreateLogGroup"
               - "logs:Describe*"
               - "logs:DescribeLogGroups"
             Resource: 
-            - !Sub "arn:aws:logs::${AWS::AccountId}:log-group/*"
+            - !Sub "arn:${AWS::Partition}:logs::${AWS::AccountId}:log-group/*"
           - Effect: Allow
             Action:
               - "iam:Get*"
               - "iam:List*"
             Resource:
-              - !Sub "arn:aws:iam::${AWS::AccountId}:role/${ProjectName}-${DeploymentName}*"
+              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-${DeploymentName}*"
           - Effect: Allow
             Action:
               - cloudformation:*
             Resource:
-              - !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}-${DeploymentName}-${ModuleName}*"
+              - !Sub "arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "sts:AssumeRole"
@@ -82,13 +82,13 @@ Resources:
               - "eks:DescribeCluster"
               - "eks:DescribeNodegroup"
             Resource:
-              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:cluster/${ProjectName}-${DeploymentName}*"
-              - !Sub "arn:aws:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/${ProjectName}-${DeploymentName}*"
+              - !Sub "arn:${AWS::Partition}:eks:${AWS::Region}:${AWS::AccountId}:cluster/${ProjectName}-${DeploymentName}*"
+              - !Sub "arn:${AWS::Partition}:eks:${AWS::Region}:${AWS::AccountId}:nodegroup/${ProjectName}-${DeploymentName}*"
           - Effect: Allow
             Action:
               - "autoscaling:CreateOrUpdateTags"
             Resource:
-              - !Sub "arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
+              - !Sub "arn:${AWS::Partition}:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:*"
         Version: 2012-10-17
       PolicyName: "modulespecific-policy"
       Roles: [!Ref RoleName]

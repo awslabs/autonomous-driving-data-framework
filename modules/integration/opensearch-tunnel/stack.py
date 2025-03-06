@@ -81,12 +81,12 @@ class TunnelStack(Stack):
                         "logs:DescribeLogGroups",
                     ],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:logs:{region}:{account}:log-group:*"],
+                    resources=[f"arn:{self.partition}:logs:{region}:{account}:log-group:*"],
                 ),
                 iam.PolicyStatement(
                     actions=["sts:AssumeRole"],
                     effect=iam.Effect.ALLOW,
-                    resources=[f"arn:aws:iam::{account}:role/{project_name}-*"],
+                    resources=[f"arn:{self.partition}:iam::{account}:role/{project_name}-*"],
                 ),
             ]
         )

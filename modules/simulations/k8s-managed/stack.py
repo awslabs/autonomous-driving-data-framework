@@ -47,13 +47,15 @@ class SimulationDags(Stack):
             aws_iam.PolicyStatement(
                 actions=["sqs:*"],
                 effect=aws_iam.Effect.ALLOW,
-                resources=[f"arn:aws:sqs:{self.region}:{self.account}:{project_name}-{deployment_name}-{module_name}*"],
+                resources=[
+                    f"arn:{self.partition}:sqs:{self.region}:{self.account}:{project_name}-{deployment_name}-{module_name}*"
+                ],
             ),
             aws_iam.PolicyStatement(
                 actions=["ecr:*"],
                 effect=aws_iam.Effect.ALLOW,
                 resources=[
-                    f"arn:aws:ecr:{self.region}:{self.account}:repository/{project_name}-{deployment_name}-{module_name}*"
+                    f"arn:{self.partition}:ecr:{self.region}:{self.account}:repository/{project_name}-{deployment_name}-{module_name}*"
                 ],
             ),
         ]

@@ -64,12 +64,12 @@ class EventDrivenBatch(Stack):
                 iam.ManagedPolicy.from_managed_policy_arn(
                     self,
                     "MetricsAmazonEC2ContainerRegistryReadOnly",
-                    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+                    f"arn:{self.partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
                 ),
                 iam.ManagedPolicy.from_managed_policy_arn(
                     self,
                     "MetricsAmazonEC2ContainerServiceforEC2Role",
-                    "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role",
+                    f"arn:{self.partition}:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role",
                 ),
             ],
             inline_policies={

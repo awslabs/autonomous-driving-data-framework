@@ -23,7 +23,7 @@ Resources:
               - "s3:List*"
             Effect: Allow
             Resource: 
-            - !Sub "arn:aws:s3:::${ProjectName}*"
+            - !Sub "arn:${AWS::Partition}:s3:::${ProjectName}*"
         Version: 2012-10-17
       PolicyName: modulespecific-policy
       Roles: [!Ref RoleName]

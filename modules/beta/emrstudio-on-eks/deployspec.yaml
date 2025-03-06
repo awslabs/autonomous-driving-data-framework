@@ -9,7 +9,7 @@ deploy:
       commands:
         - aws iam create-service-linked-role --aws-service-name emr-containers.amazonaws.com || true
         - cdk deploy --require-approval never --progress events --app "python app.py" --outputs-file ./cdk-exports.json ${SEEDFARMER_PROJECT_NAME}-${SEEDFARMER_DEPLOYMENT_NAME}-${SEEDFARMER_MODULE_NAME}-rbac
-        - export EMR_SERVICE_ACCOUNT_ROLE=arn:aws:iam::${AWS_ACCOUNT_ID}:role/AWSServiceRoleForAmazonEMRContainers
+        - export EMR_SERVICE_ACCOUNT_ROLE=arn:${AWS_PARTITION}:iam::${AWS_ACCOUNT_ID}:role/AWSServiceRoleForAmazonEMRContainers
         # Assume the EKS_CLUSTER_ADMIN_ROLE and add our new service account role as a user in the aws_auth ConfigMap
         - eval $(aws sts assume-role --role-arn ${SEEDFARMER_PARAMETER_EKS_CLUSTER_ADMIN_ROLE_ARN} --role-session-name test | jq -r '.Credentials | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)\n"')
         - |
