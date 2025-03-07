@@ -1,5 +1,5 @@
 name: opensearch-tunnel
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/opensearch-tunnel/?ref=release/3.7.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/opensearch-tunnel/?ref=release/3.8.0
 parameters:
   - name: opensearch-domain-endpoint
     valueFrom:
@@ -21,7 +21,7 @@ parameters:
         key: VpcId
 ---
 name: rosbag-ddb-to-os
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/ddb-to-opensearch/?ref=release/3.7.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/integration/ddb-to-opensearch/?ref=release/3.8.0
 parameters:
   - name: opensearch-domain-name
     valueFrom:

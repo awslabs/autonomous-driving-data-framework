@@ -1,5 +1,5 @@
 name: rip
-path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/analysis/rosbag-image-pipeline-sfn/?ref=release/3.7.1
+path: git::https://github.com/awslabs/autonomous-driving-data-framework.git//modules/analysis/rosbag-image-pipeline-sfn/?ref=release/3.8.0
 parameters:
   - name: vpc-id
     valueFrom:
