@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         modules: ${{ fromJson(needs.get-modules.outputs.matrix) }}
-        python-version: [3.9]
+        python-version: ["3.10"]
         node-version: [18.x]
     runs-on: ubuntu-latest
     env:

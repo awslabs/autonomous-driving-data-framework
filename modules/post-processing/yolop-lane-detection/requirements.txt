@@ -19,9 +19,9 @@ aws-cdk-lib==2.82.0
     #   -r requirements.in
     #   cdk-ecr-deployment
     #   cdk-nag
-boto3==1.21.46
+boto3==1.40.46
     # via -r requirements.in
-botocore==1.24.46
+botocore==1.40.46
     # via
     #   boto3
     #   s3transfer
@@ -68,7 +68,7 @@ python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   jsii
-s3transfer==0.5.2
+s3transfer==0.14.0
     # via boto3
 six==1.16.0
     # via python-dateutil
@@ -80,11 +80,11 @@ typeguard==2.13.3
     #   aws-cdk-lib
     #   cdk-ecr-deployment
     #   jsii
-typing-extensions==4.12.2
+typing-extensions==4.15.0
     # via
     #   cattrs
     #   jsii
-urllib3==1.26.19
+urllib3==2.5.0
     # via
     #   -r requirements.in
     #   botocore

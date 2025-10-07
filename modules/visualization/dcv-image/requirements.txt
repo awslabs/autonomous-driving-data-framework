@@ -75,7 +75,7 @@ typeguard==2.13.3
     #   cdk-ecr-deployment
     #   constructs
     #   jsii
-typing-extensions==4.12.2
+typing-extensions==4.15.0
     # via
     #   cattrs
     #   jsii

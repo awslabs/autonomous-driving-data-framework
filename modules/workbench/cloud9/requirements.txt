@@ -59,7 +59,7 @@ typeguard==2.13.3
     #   aws-cdk-lib
     #   cdk-nag
     #   jsii
-typing-extensions==4.12.2
+typing-extensions==4.15.0
     # via
     #   -r requirements.in
     #   jsii

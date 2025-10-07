@@ -70,7 +70,7 @@ typeguard==2.13.3
     #   jsii
 types-pyyaml==6.0.12
     # via -r requirements.in
-typing-extensions==4.12.1
+typing-extensions==4.15.0
     # via
     #   cattrs
     #   jsii

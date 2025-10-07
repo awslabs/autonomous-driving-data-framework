@@ -23,9 +23,9 @@ aws-cdk-lib==2.155.0
     #   -r requirements.in
     #   aws-cdk-lambda-layer-kubectl-v29
     #   cdk-nag
-boto3==1.35.11
+boto3==1.40.46
     # via -r requirements.in
-botocore==1.35.11
+botocore==1.40.46
     # via
     #   boto3
     #   s3transfer
@@ -41,7 +41,7 @@ constructs==10.3.0
     #   aws-cdk-lambda-layer-kubectl-v29
     #   aws-cdk-lib
     #   cdk-nag
-cryptography==43.0.1
+cryptography==43.0.3
     # via
     #   -r requirements.in
     #   pyopenssl
@@ -80,7 +80,7 @@ python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   jsii
-s3transfer==0.10.2
+s3transfer==0.14.0
     # via boto3
 six==1.16.0
     # via python-dateutil
@@ -95,9 +95,9 @@ typeguard==2.13.3
     #   cdk-nag
     #   constructs
     #   jsii
-typing-extensions==4.12.2
+typing-extensions==4.15.0
     # via jsii
-urllib3==1.26.19
+urllib3==2.5.0
     # via
     #   -r requirements.in
     #   botocore

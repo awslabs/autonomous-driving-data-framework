@@ -21,9 +21,9 @@ aws-cdk-lib==2.126.0
     #   -r requirements.in
     #   aws-cdk-aws-lambda-python-alpha
     #   cdk-nag
-boto3==1.24.96
+boto3==1.40.46
     # via -r requirements.in
-botocore==1.27.96
+botocore==1.40.46
     # via
     #   boto3
     #   s3transfer
@@ -86,13 +86,13 @@ python-dateutil==2.9.0.post0
     # via
     #   botocore
     #   jsii
-requests==2.32.3
+requests==2.32.4
     # via
     #   -r requirements.in
     #   requests-aws4auth
 requests-aws4auth==1.2.3
     # via -r requirements.in
-s3transfer==0.6.2
+s3transfer==0.14.0
     # via boto3
 six==1.16.0
     # via
@@ -109,11 +109,11 @@ typeguard==2.13.3
     #   aws-cdk-lib
     #   constructs
     #   jsii
-typing-extensions==4.12.2
+typing-extensions==4.15.0
     # via
     #   cattrs
     #   jsii
-urllib3==1.26.19
+urllib3==2.5.0
     # via
     #   -r requirements.in
     #   botocore

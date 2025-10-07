@@ -2,8 +2,8 @@ aws-cdk-lib==2.126.0
 cdk-nag==2.12.29
 constructs==10.3.0
 aws-cdk.aws-lambda-python-alpha==2.126.0a0
-boto3~=1.24.0
-requests~=2.32.0
+boto3~=1.40.46
+requests~=2.32.4
 requests-aws4auth~=1.2.3
 pytest-mock~=3.10.0
-urllib3>=1.26.19
+urllib3>=2.5.0
