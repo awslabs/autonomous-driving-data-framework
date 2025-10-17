@@ -28,16 +28,21 @@ Resources:
           - Effect: Allow
             Action:
               - "ecr:DescribeRepositories"
+              - "ecr:GetAuthorizationToken"
+            Resource: '*'
+          - Effect: Allow
+            Action:
               - "ecr:BatchCheckLayerAvailability"
               - "ecr:BatchGetImage"
-              - "ecr:GetAuthorizationToken"
               - "ecr:CompleteLayerUpload"
               - "ecr:GetDownloadUrlForLayer"
               - "ecr:InitiateLayerUpload"
               - "ecr:PutImage"
               - "ecr:UploadLayerPart"
               - "ecr:CreateRepository"
-            Resource: '*'
+            Resource:
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryName}"
+              - !Sub "arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryName}/*"
           - Effect: Allow
             Action:
               - ecr:*
