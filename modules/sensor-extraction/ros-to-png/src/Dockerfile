@@ -19,4 +19,8 @@ COPY main.py .
 COPY entrypoint.sh .
 RUN which python
 ENV PYTHONPATH="/usr/bin/python"
+
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
 CMD ["bash"]

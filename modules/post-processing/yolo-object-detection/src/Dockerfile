@@ -18,5 +18,12 @@ ENV MODEL_PATH="/opt/ml/model"
 # Set up the program in the image
 COPY detect_objects.py /opt/program/detect_objects.py
 WORKDIR /opt/program
+
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /opt/program && \
+    mkdir -p /opt/ml/model /opt/ml/input /opt/ml/output && \
+    chown -R appuser:appuser /opt/ml
+USER appuser
+
 # /opt/ml and all subdirectories are utilized by SageMaker, use the /code subdirectory to store your user code.
 ENTRYPOINT ["python3", "detect_objects.py"]

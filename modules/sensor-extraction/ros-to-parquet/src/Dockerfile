@@ -12,4 +12,7 @@ COPY main.py /app/main.py
 COPY entrypoint.sh /app/entrypoint.sh
 WORKDIR /app
 
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
 CMD ["bash"]

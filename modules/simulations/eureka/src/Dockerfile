@@ -81,4 +81,7 @@ RUN chmod +x "/usr/local/bin/eureka_controller.sh" \
              "/usr/local/bin/eureka_worker.sh" \
              "/usr/local/bin/conda_setup.sh"
 
+RUN useradd -m -u 1000 appuser
+USER appuser
+
 CMD ["/bin/bash", "/usr/local/bin/conda_setup.sh"]
