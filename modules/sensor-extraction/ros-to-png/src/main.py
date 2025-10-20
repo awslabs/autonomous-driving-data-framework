@@ -131,7 +131,7 @@ def upload(client, bucket_name, drive_id, file_id, files):
 
 
 def get_log_path():
-    response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}")
+    response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}", timeout=10)
     task_region = response.json()["LogOptions"]["awslogs-region"]
     return task_region, response.json()["LogOptions"]["awslogs-stream"].replace("/", "$252F")
 

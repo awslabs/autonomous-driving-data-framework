@@ -49,7 +49,7 @@ def handler(event, _context) -> str:
             document = record["dynamodb"]["NewImage"]
             process_doc(records=document, doc=doc)
             try:
-                requests.put(get_url() + id_p, auth=awsauth, json=doc, headers=headers)
+                requests.put(get_url() + id_p, auth=awsauth, json=doc, headers=headers, timeout=30)
             except requests.exceptions.InvalidURL:
                 print("Error invoking endpoint - InvalidURL")
                 raise requests.exceptions.InvalidURL
