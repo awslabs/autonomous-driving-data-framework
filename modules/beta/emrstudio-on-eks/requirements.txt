@@ -74,7 +74,7 @@ publication==0.0.3
     #   jsii
 pycparser==2.22
     # via cffi
-pyopenssl==24.2.1
+pyopenssl==25.3.0
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via
