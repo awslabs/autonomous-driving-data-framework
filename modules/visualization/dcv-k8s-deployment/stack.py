@@ -110,6 +110,14 @@ class DcvEksStack(Stack):
             k8s_resource = eks_cluster.add_manifest(manifest_id, value)
             dcv_agent_resource.node.add_dependency(k8s_resource)
 
+        t = Template(open(os.path.join(project_dir, "k8s/dcv-network-policy.yaml"), "r").read())
+        dcv_network_policy_yaml_file = t.substitute(NAMESPACE=dcv_namespace)
+        dcv_network_policy_yaml = yaml.load(dcv_network_policy_yaml_file, Loader=yaml.FullLoader)
+        loop_iteration += 1
+        manifest_id = "DCVAgent" + str(loop_iteration)
+        network_policy_resource = eks_cluster.add_manifest(manifest_id, dcv_network_policy_yaml)
+        dcv_agent_resource.node.add_dependency(network_policy_resource)
+
         NagSuppressions.add_stack_suppressions(
             self,
             apply_to_nested_stacks=True,

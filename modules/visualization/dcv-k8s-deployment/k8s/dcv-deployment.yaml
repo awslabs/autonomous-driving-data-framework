@@ -15,6 +15,14 @@ spec:
     spec:
       restartPolicy: Always
       serviceAccountName: dcv-agent-src-account
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: false  # DCV requires root for system services
+        runAsUser: 0         # DCV system requirement
+        runAsGroup: 0
+        fsGroup: 0
+        seccompProfile:
+          type: RuntimeDefault
       nodeSelector:
         usage: gpu
         nvidia.com/gpu.present: "true"
@@ -40,7 +48,18 @@ spec:
               protocol: UDP
               containerPort: 8443
           securityContext:
-            privileged: true
+            privileged: true  # Required for DCV display server and GPU access
+            allowPrivilegeEscalation: true  # Required for DCV system services
+            readOnlyRootFilesystem: false   # DCV needs to write system files
+            runAsNonRoot: false             # DCV system requirement
+            runAsUser: 0                    # DCV system requirement
+            capabilities:
+              add:
+                - SYS_ADMIN  # Required for DCV
+              drop:
+                - NET_RAW    # Drop raw network access (not needed for DCV)
+            seccompProfile:
+              type: RuntimeDefault
           resources:
             requests:
               memory: "16Gi"
