@@ -20,7 +20,7 @@ RUN chgrp -R 0 /aws/pytorch-mnist \
 RUN pip install cloudml-hypertune
 RUN pip install boto3
 
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /aws && chown -R appuser:appuser /ml
+RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /aws && chown -R appuser:appuser /ml
 USER appuser
 
 ENTRYPOINT ["python3", "/aws/pytorch-mnist/mnist.py"]

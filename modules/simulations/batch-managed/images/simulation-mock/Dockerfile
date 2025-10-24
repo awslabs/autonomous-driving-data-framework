@@ -11,7 +11,7 @@ RUN cd /var/simulation-mock/ && \
 
 WORKDIR /var/simulation-mock/
 
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /var/simulation-mock
+RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /var/simulation-mock
 USER appuser
 
 CMD ["bash"]

@@ -19,7 +19,7 @@ ENV MODEL_PATH="/opt/ml/model"
 COPY detect_objects.py /opt/program/detect_objects.py
 WORKDIR /opt/program
 
-RUN useradd -m -u 1000 appuser && \
+RUN useradd -m -u 3141 appuser && \
     chown -R appuser:appuser /opt/program && \
     mkdir -p /opt/ml/model /opt/ml/input /opt/ml/output && \
     chown -R appuser:appuser /opt/ml
