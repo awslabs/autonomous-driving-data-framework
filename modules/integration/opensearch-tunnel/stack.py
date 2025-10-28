@@ -107,7 +107,7 @@ class TunnelStack(Stack):
         instance = ec2.Instance(
             self,
             f"{dep_mod}-OSTunnel",
-            instance_type=ec2.InstanceType("t2.micro"),
+            instance_type=ec2.InstanceType("t3.micro"),
             require_imdsv2=True,
             machine_image=amzn_linux,
             vpc=self.vpc,
