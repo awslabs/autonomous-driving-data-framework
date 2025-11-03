@@ -107,7 +107,7 @@ class RosToParquetBatchJob(Stack):
         self.batch_job = batch.EcsJobDefinition(
             self,
             "batch-job-def-from-ecr",
-            container=batch.EcsFargateContainerDefinition(  # type: ignore
+            container=batch.EcsFargateContainerDefinition(
                 self,
                 "batch-job-container-def",
                 image=ecs.ContainerImage.from_ecr_repository(repo, "latest"),

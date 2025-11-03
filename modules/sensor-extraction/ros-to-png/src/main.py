@@ -14,11 +14,10 @@ import zipfile
 import boto3
 import cv2
 import requests
-import rclpy
-from rosbag2_py import SequentialReader, StorageOptions, ConverterOptions
-from rclpy.serialization import deserialize_message
-from rosidl_runtime_py.utilities import get_message
 from cv_bridge import CvBridge
+from rclpy.serialization import deserialize_message
+from rosbag2_py import ConverterOptions, SequentialReader, StorageOptions
+from rosidl_runtime_py.utilities import get_message
 
 DEBUG_LOGGING_FORMAT = "[%(asctime)s][%(filename)-13s:%(lineno)3d][%(levelname)s][%(threadName)s] %(message)s"
 debug = os.environ.get("DEBUG", "False").lower() in [
@@ -41,7 +40,7 @@ class VideoFromBag:
     def __init__(self, topic, images_path):
         self.bridge = CvBridge()
         output_dir = os.path.join(images_path, topic.replace("/", "_"))
-        self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
+        self.video = f"/tmp/{topic.replace('/', '_')}/video.mp4"
         logger.info("Get video for topic {}".format(topic))
         logger.info(
             f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png \
@@ -69,22 +68,22 @@ class ImageFromBag:
         logger.info(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         files = []
-        
-        storage_options = StorageOptions(uri=ros2_path, storage_id='sqlite3')
-        converter_options = ConverterOptions('', '')
+
+        storage_options = StorageOptions(uri=ros2_path, storage_id="sqlite3")
+        converter_options = ConverterOptions("", "")
         reader = SequentialReader()
         reader.open(storage_options, converter_options)
-        
+
         topic_types = reader.get_all_topics_and_types()
         type_map = {topic_types[i].name: topic_types[i].type for i in range(len(topic_types))}
-        
+
         seq = 0
         while reader.has_next():
             (topic_name, data, timestamp) = reader.read_next()
             if topic_name == topic:
                 msg_type = get_message(type_map[topic_name])
                 msg = deserialize_message(data, msg_type)
-                
+
                 timestamp_str = str(timestamp)
                 seq_str = "{:07d}".format(seq)
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
@@ -107,7 +106,7 @@ class ImageFromBag:
                     }
                 )
                 seq += 1
-        
+
         reader.close()
         self.files = files
 
@@ -170,9 +169,7 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
 
     table.update_item(
         Key={"pk": drive_id, "sk": file_id},
-        UpdateExpression="SET "
-        "image_extraction_batch_job = :batch_url, "
-        "image_extraction_job_logs = :cloudwatch_logs",
+        UpdateExpression="SET image_extraction_batch_job = :batch_url, image_extraction_job_logs = :cloudwatch_logs",
         ExpressionAttributeValues={
             ":cloudwatch_logs": job_cloudwatch_logs,
             ":batch_url": job_url,
@@ -181,9 +178,7 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
 
     table.update_item(
         Key={"pk": batch_id, "sk": index},
-        UpdateExpression="SET "
-        "image_extraction_batch_job = :batch_url, "
-        "image_extraction_job_logs = :cloudwatch_logs",
+        UpdateExpression="SET image_extraction_batch_job = :batch_url, image_extraction_job_logs = :cloudwatch_logs",
         ExpressionAttributeValues={
             ":cloudwatch_logs": job_cloudwatch_logs,
             ":batch_url": job_url,
@@ -250,7 +245,7 @@ def main(table_name, index, batch_id, zip_path, images_path, topics, encoding, t
     s3.download_file(item["s3_bucket"], item["s3_key"], zip_path)
     logger.info(f"Zip downloaded to {zip_path}")
 
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(os.path.dirname(zip_path))
     logger.info(f"Extracted zip to {os.path.dirname(zip_path)}")
 

@@ -12,9 +12,8 @@ import boto3
 import fastparquet
 import pandas as pd
 import requests
-import rclpy
-from rosbag2_py import SequentialReader, StorageOptions, ConverterOptions
 from rclpy.serialization import deserialize_message
+from rosbag2_py import ConverterOptions, SequentialReader, StorageOptions
 from rosidl_runtime_py.utilities import get_message
 
 DEBUG_LOGGING_FORMAT = "[%(asctime)s][%(filename)-13s:%(lineno)3d][%(levelname)s][%(threadName)s] %(message)s"
@@ -42,14 +41,14 @@ class ParquetFromBag:
 
         local_parquet_name = os.path.join(output_dir, "data.parquet")
 
-        storage_options = StorageOptions(uri=ros2_path, storage_id='sqlite3')
-        converter_options = ConverterOptions('', '')
+        storage_options = StorageOptions(uri=ros2_path, storage_id="sqlite3")
+        converter_options = ConverterOptions("", "")
         reader = SequentialReader()
         reader.open(storage_options, converter_options)
-        
+
         topic_types = reader.get_all_topics_and_types()
         type_map = {topic_types[i].name: topic_types[i].type for i in range(len(topic_types))}
-        
+
         # Collect all messages for this topic
         messages = []
         while reader.has_next():
@@ -57,14 +56,14 @@ class ParquetFromBag:
             if topic_name == topic:
                 msg_type = get_message(type_map[topic_name])
                 msg = deserialize_message(data, msg_type)
-                
+
                 # Convert message to dict (this is simplified - you may need custom logic per message type)
                 msg_dict = self._message_to_dict(msg)
-                msg_dict['timestamp'] = timestamp
-                msg_dict['drive_id'] = drive_id
-                msg_dict['file_id'] = file_id
+                msg_dict["timestamp"] = timestamp
+                msg_dict["drive_id"] = drive_id
+                msg_dict["file_id"] = file_id
                 messages.append(msg_dict)
-        
+
         reader.close()
 
         self.file = {
@@ -87,11 +86,11 @@ class ParquetFromBag:
             try:
                 value = getattr(msg, field_name)
                 # Handle basic types - you may need to expand this for complex types
-                if hasattr(value, 'get_fields_and_field_types'):
+                if hasattr(value, "get_fields_and_field_types"):
                     result[field_name] = self._message_to_dict(value)
                 else:
                     result[field_name] = value
-            except:
+            except Exception:
                 result[field_name] = None
         return result
 
@@ -179,7 +178,7 @@ def main(table_name, index, batch_id, zip_path, local_output_path, topics, targe
     s3.download_file(item["s3_bucket"], item["s3_key"], zip_path)
     logger.info(f"Zip downloaded to {zip_path}")
 
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(os.path.dirname(zip_path))
     logger.info(f"Extracted zip to {os.path.dirname(zip_path)}")
 

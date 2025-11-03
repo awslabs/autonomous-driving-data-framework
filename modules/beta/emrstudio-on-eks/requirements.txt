@@ -41,7 +41,7 @@ constructs==10.3.0
     #   aws-cdk-lambda-layer-kubectl-v29
     #   aws-cdk-lib
     #   cdk-nag
-cryptography==44.0.1
+cryptography==45.0.7
     # via
     #   -r requirements.in
     #   pyopenssl
