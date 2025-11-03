@@ -1,26 +1,24 @@
-FROM public.ecr.aws/docker/library/ros:noetic-perception-focal
+FROM public.ecr.aws/docker/library/ros:humble-perception
 
 # install ros package
 RUN apt-get update && apt-get install -y \
-      ros-${ROS_DISTRO}-ros-tutorials \
+      ros-${ROS_DISTRO}-demo-nodes-cpp \
       ros-${ROS_DISTRO}-sensor-msgs \
-      ros-${ROS_DISTRO}-common-tutorials && \
+      ros-${ROS_DISTRO}-cv-bridge \
+      ros-${ROS_DISTRO}-rosbag2-py \
+      ros-${ROS_DISTRO}-rclpy \
+      ros-${ROS_DISTRO}-rosidl-runtime-py \
+      python3-pip \
+      ffmpeg && \
     rm -rf /var/lib/apt/lists/*
-RUN apt-get update -y 
-# RUN apt-get install -y software-properties-common ffmpeg
-# RUN add-apt-repository -y ppa:deadsnakes/ppa 
-RUN apt-get install -y python3-pip python-is-python3 ffmpeg
 
 WORKDIR /app
-RUN python --version
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 COPY main.py .
 COPY entrypoint.sh .
-RUN which python
-ENV PYTHONPATH="/usr/bin/python"
 
-RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /app
-USER appuser
+#RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /app
+#USER appuser
 
 CMD ["bash"]
