@@ -10,8 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## UNRELEASED
 
 ### **Added**
+- non-root user in all dockerfiles that don't require root
+- timeout on http requests in `ddb-to-opensearch`, `ros-to-parquet`, and `ros-to-png`
 
 ### **Changed**
+- version bumping for various CVEs and end-of-life dependencies
+- scope down IAM permissions in `emrstudio-on-eks` and `training-image`
+- rely on PyTorch auto memory pinning in `training-image`
+- various checkov k8s findings in `dcv-k8s-deployment`
+- upgrade retired ec2 type in `opensearch-tunnel`
+- ros 1 to ros 2 migration in `rosbag-image-pipeline-sfn`, `ros-to-parquet` and `ros-to-png`
 
 ### **Removed**
 
