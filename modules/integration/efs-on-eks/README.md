@@ -13,7 +13,7 @@ It creates ingress allowances for the EKS cluster via the Security Groups.
 
 
 #### Required
-- `eks-cluster-admin-role-arn` - the role that has kubectl access / admin access to the EKS clsuter
+- `eks-cluster-admin-role-arn` - the role that has kubectl access / admin access to the EKS cluster
 - `eks-cluster-name` - the name of the EKS cluster
 - `eks-oidc-arn` - the OpenID provider ARN of the cluster
 - `eks-cluster-security-group-id` - the EKS cluster security group to allow ingress to the EFS
