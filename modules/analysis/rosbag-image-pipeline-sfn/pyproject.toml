@@ -1,6 +1,6 @@
 [tool.ruff]
 line-length = 120
-target-version = "py38"
+target-version = "py310"
 exclude = [
     ".eggs",
     ".git",
@@ -33,7 +33,7 @@ omit = [
 ]
 
 [tool.mypy]
-python_version = 3.8
+python_version = "3.10"
 strict = true
 ignore_missing_imports = true
 allow_untyped_decorators = true
