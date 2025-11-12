@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as dcv
+FROM public.ecr.aws/ubuntu/ubuntu:22.04 as dcv
 
 USER root
 
