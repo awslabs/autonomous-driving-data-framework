@@ -116,3 +116,7 @@ urllib3==2.5.0
     # via
     #   -r requirements.in
     #   botocore
+pyyaml==6.0.1
+    # via -r requirements.in
+types-pyyaml==6.0.12
+    # via -r requirements.in
