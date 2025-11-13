@@ -18,6 +18,9 @@ Parameters:
   EcrRepositoryName:
     Type: String
     Description: The name of the ECR Repository
+  BaseImageEcrAccountId:
+    Type: String
+    Description: The ECR account ID for the base image
 
 Resources:
   Policy:
@@ -48,6 +51,14 @@ Resources:
               - ecr:*
             Resource:
               - !Sub "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/${EcrRepositoryName}"
+          - Effect: Allow
+            Action:
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "ecr:GetAuthorizationToken"
+            Resource:
+              - !Sub "arn:aws:ecr:*:${BaseImageEcrAccountId}:repository/*"
         Version: 2012-10-17
       PolicyName: modulespecific-policy
       Roles: [!Ref RoleName]
