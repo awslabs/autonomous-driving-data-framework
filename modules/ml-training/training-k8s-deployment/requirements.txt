@@ -70,3 +70,8 @@ typing-extensions==4.15.0
     # via
     #   cattrs
     #   jsii
+boto3==1.40.46
+    # via -r requirements.in
+botocore==1.40.46
+    # via
+    #   boto3
