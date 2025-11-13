@@ -141,20 +141,25 @@ class TrainingPipeline(Stack):
         )
         rbac_role_binding.node.add_dependency(service_account)
 
-        rbac_role = cluster.add_manifest(
+        rbac_role = aws_eks.KubernetesManifest(
+            self,
             "rbac-role-default",
-            {
-                "apiVersion": "rbac.authorization.k8s.io/v1",
-                "kind": "Role",
-                "metadata": {"name": "default-access", "namespace": "default"},
-                "rules": [
-                    {
-                        "apiGroups": ["*"],
-                        "resources": ["*"],
-                        "verbs": ["get", "list", "watch"],
-                    }
-                ],
-            },
+            cluster=cluster,
+            manifest=[
+                {
+                    "apiVersion": "rbac.authorization.k8s.io/v1",
+                    "kind": "Role",
+                    "metadata": {"name": "default-access", "namespace": "default"},
+                    "rules": [
+                        {
+                            "apiGroups": ["*"],
+                            "resources": ["*"],
+                            "verbs": ["get", "list", "watch"],
+                        }
+                    ],
+                }
+            ],
+            overwrite=True,
         )
         rbac_role.node.add_dependency(namespace)
 
