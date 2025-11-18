@@ -21,7 +21,7 @@ setup(
     author_email="aws-proserve-opensource@amazon.com",
     project_urls={"Org Site": "https://aws.amazon.com/professional-services/"},
     packages=find_packages(include=["simulation_mock", "simulation_mock.*"]),
-    python_requires=">=3.7, <3.9",
-    install_requires=["boto3~=1.21.19", "platonic-sqs~=1.2.8"],
+    python_requires=">=3.7, <3.14",
+    install_requires=["boto3~=1.21.19", "platonic-sqs==1.0.1"],
     include_package_data=True,
 )

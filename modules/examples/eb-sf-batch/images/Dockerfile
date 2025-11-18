@@ -1,4 +1,4 @@
-FROM python:3.8.13-slim-buster as base
+FROM public.ecr.aws/docker/library/python:3.10-slim-buster as base
 
 COPY requirements.txt .
 RUN pip install -r /requirements.txt

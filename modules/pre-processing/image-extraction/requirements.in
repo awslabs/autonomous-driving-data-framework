@@ -1,4 +1,4 @@
-aws-cdk-lib==2.126.0
+aws-cdk-lib==2.189.1
 cdk-ecr-deployment==3.0.48
 constructs>=10.0.0,<11.0.0
 aws_solutions_constructs.aws_s3_stepfunctions==2.45.0

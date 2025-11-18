@@ -10,7 +10,7 @@ attrs==23.2.0
     #   jsii
 aws-cdk-aws-batch-alpha==2.20.0a0
     # via -r requirements.in
-aws-cdk-lib==2.20.0
+aws-cdk-lib==2.189.1
     # via
     #   -r requirements.in
     #   aws-cdk-aws-batch-alpha
@@ -39,7 +39,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-jsii==1.100.0
+jsii==1.110.0
     # via
     #   aws-cdk-aws-batch-alpha
     #   aws-cdk-lib
