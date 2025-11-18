@@ -116,7 +116,7 @@ class TemplateStack(cdk.Stack):
             "CreateBatchOfDrivesFunction",
             code=aws_lambda.Code.from_asset("lambda/create-batch-of-drives/src"),
             handler="lambda_function.lambda_handler",
-            runtime=aws_lambda.Runtime.PYTHON_3_9,
+            runtime=aws_lambda.Runtime.PYTHON_3_10,
             environment={
                 "DYNAMODB_TABLE": tracking_table.table_name,
                 "FILE_SUFFIX": file_suffix,
