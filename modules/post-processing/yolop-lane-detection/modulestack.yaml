@@ -26,7 +26,7 @@ Resources:
               - "ecr:BatchGetImage"
             Resource:
               - !Ref EcrRepositoryArn
-              - "arn:${AWS::Partition}:ecr:*:*:repository/pytorch-inference*"
+              - !Sub "arn:${AWS::Partition}:ecr:*:763104351884:repository/pytorch-inference*"
           - Effect: Allow
             Action:
               - ecr:*
