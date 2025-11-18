@@ -12,14 +12,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### **Added**
 - non-root user in all dockerfiles that don't require root
 - timeout on http requests in `ddb-to-opensearch`, `ros-to-parquet`, and `ros-to-png`
+- add missing yaml packages in `eureka`
+- add missing boto3 dependency in `training-k8s-deployment`
 
 ### **Changed**
-- version bumping for various CVEs and end-of-life dependencies
+- version bumping for various CVEs and end-of-life dependencies (npm / pypi / apt-get / docker image / lambda runtime / ec2 instance type / etc.)
 - scope down IAM permissions in `emrstudio-on-eks` and `training-image`
 - rely on PyTorch auto memory pinning in `training-image`
 - various checkov k8s findings in `dcv-k8s-deployment`
 - upgrade retired ec2 type in `opensearch-tunnel`
 - ros 1 to ros 2 migration in `rosbag-image-pipeline-sfn`, `ros-to-parquet` and `ros-to-png`
+- fix outdated env var reading patterns in `efs-on-eks`
+- replace dockerhub images to public ECR equivalent for better free-tier rate limit   
+- fix type checking and use the correct arn for fargate job queue output in `batch-managed`
+- fix cross account ecr permission and the missing required base image inputs in `mnist`
+- use overwrite to handle incremental deployments in `training-k8s-deployment`
+- fix ecr iam policy in `yolo-object-detection` and `yolop-object-detection`. account id cannot be wildcard in ecr iam policy. use sagemaker public ecr account.
 
 ### **Removed**
 

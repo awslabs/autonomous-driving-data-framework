@@ -59,13 +59,13 @@ CfnOutput(
         {
             "DagRoleArn": stack.dag_role.role_arn,
             "OnDemandJobQueueArn": stack.on_demand_jobqueue.job_queue_arn
-            if hasattr(stack, 'on_demand_jobqueue')
+            if hasattr(stack, "on_demand_jobqueue")
             else "QUEUE NOT CREATED",
             "SpotJobQueueArn": stack.spot_jobqueue.job_queue_arn
-            if hasattr(stack, 'spot_jobqueue')
+            if hasattr(stack, "spot_jobqueue")
             else "QUEUE NOT CREATED",
             "FargateJobQueueArn": stack.fargate_jobqueue.job_queue_arn
-            if hasattr(stack, 'fargate_jobqueue')
+            if hasattr(stack, "fargate_jobqueue")
             else "QUEUE NOT CREATED",
         }
     ),

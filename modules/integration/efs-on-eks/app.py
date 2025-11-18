@@ -17,6 +17,7 @@ module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 def _param(name: str) -> str:
     return f"SEEDFARMER_PARAMETER_{name}"
 
+
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"))
 eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"))
 eks_oidc_arn = os.getenv(_param("EKS_OIDC_ARN"))
