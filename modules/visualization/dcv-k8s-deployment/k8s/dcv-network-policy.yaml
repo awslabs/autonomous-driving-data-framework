@@ -1,0 +1,52 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dcv-network-policy
+  namespace: $NAMESPACE
+spec:
+  podSelector:
+    matchLabels:
+      env: dcv
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow DCV client connections
+  - from: []  # Allow from any source (DCV clients)
+    ports:
+    - protocol: TCP
+      port: 8443  # DCV web interface
+    - protocol: UDP
+      port: 8443  # DCV streaming protocol
+  egress:
+  # DNS resolution
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # AWS API access (EKS, ConfigMaps, etc.)
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+  # FSx NFS access
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 111   # NFS portmapper
+    - protocol: UDP
+      port: 111
+    - protocol: TCP
+      port: 2049  # NFS
+    - protocol: UDP
+      port: 2049
+  # Container registry access
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 80    # HTTP registry
+    - protocol: TCP
+      port: 443   # HTTPS registry

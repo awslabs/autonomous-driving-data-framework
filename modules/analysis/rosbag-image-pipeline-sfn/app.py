@@ -56,7 +56,7 @@ lane_detection_role = get_arg_value("LANE_DETECTION_IAM_ROLE")
 lane_detection_job_concurrency = int(get_arg_value("LANE_DETECTION_JOB_CONCURRENCY", "5"))
 lane_detection_instance_type = get_arg_value("LANE_DETECTION_INSTANCE_TYPE", "ml.p3.2xlarge")
 
-file_suffix = get_arg_value("FILE_SUFFIX", ".bag")
+file_suffix = get_arg_value("FILE_SUFFIX", ".zip")
 desired_encoding = get_arg_value("DESIRED_ENCODING", "bgr8")
 yolo_model = get_arg_value("YOLO_MODEL", "yolo11s")
 image_topics: List[str] = json.loads(get_arg_value("IMAGE_TOPICS"))

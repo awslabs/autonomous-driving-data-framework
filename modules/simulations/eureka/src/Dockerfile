@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 as dcv
+FROM public.ecr.aws/ubuntu/ubuntu:22.04 as dcv
 
 USER root
 
@@ -80,5 +80,8 @@ RUN chmod +x "/usr/local/bin/eureka_controller.sh" \
              "/usr/local/bin/check_healthy.sh" \
              "/usr/local/bin/eureka_worker.sh" \
              "/usr/local/bin/conda_setup.sh"
+
+RUN useradd -m -u 3141 appuser
+USER appuser
 
 CMD ["/bin/bash", "/usr/local/bin/conda_setup.sh"]

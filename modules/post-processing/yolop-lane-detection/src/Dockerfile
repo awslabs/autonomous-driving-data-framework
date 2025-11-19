@@ -14,4 +14,8 @@ RUN pip install boto3 awscli
 COPY detect_lanes.py tools/detect_lanes.py
 
 WORKDIR /YOLOP
+
+RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /YOLOP
+USER appuser
+
 ENTRYPOINT ["python3", "tools/detect_lanes.py"]

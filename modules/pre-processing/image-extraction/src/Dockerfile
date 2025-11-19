@@ -13,5 +13,8 @@ ADD entrypoint.sh /opt/entrypoint.sh
 ADD extract_images_from_jseq.py /opt/extract_images_from_jseq.py
 RUN chmod +x /opt/entrypoint.sh
 
+RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /opt
+USER appuser
+
 ENTRYPOINT ["/opt/entrypoint.sh"]
 

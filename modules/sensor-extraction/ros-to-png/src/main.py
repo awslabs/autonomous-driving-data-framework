@@ -9,13 +9,15 @@ import os
 import shutil
 import sys
 import time
+import zipfile
 
 import boto3
 import cv2
 import requests
-import rosbag
-import rospy
 from cv_bridge import CvBridge
+from rclpy.serialization import deserialize_message
+from rosbag2_py import ConverterOptions, SequentialReader, StorageOptions
+from rosidl_runtime_py.utilities import get_message
 
 DEBUG_LOGGING_FORMAT = "[%(asctime)s][%(filename)-13s:%(lineno)3d][%(levelname)s][%(threadName)s] %(message)s"
 debug = os.environ.get("DEBUG", "False").lower() in [
@@ -38,7 +40,7 @@ class VideoFromBag:
     def __init__(self, topic, images_path):
         self.bridge = CvBridge()
         output_dir = os.path.join(images_path, topic.replace("/", "_"))
-        self.video = f'/tmp/{topic.replace("/", "_")}/video.mp4'
+        self.video = f"/tmp/{topic.replace('/', '_')}/video.mp4"
         logger.info("Get video for topic {}".format(topic))
         logger.info(
             f"""ffmpeg -r 20 -f image2 -i {output_dir}/frame_%06d.png \
@@ -51,7 +53,7 @@ class ImageFromBag:
         self,
         topic,
         encoding,
-        bag_path,
+        ros2_path,
         output_path,
         resized_width=None,
         resized_height=None,
@@ -66,29 +68,46 @@ class ImageFromBag:
         logger.info(output_dir)
         os.makedirs(output_dir, exist_ok=True)
         files = []
-        with rosbag.Bag(bag_path) as bag:
-            for idx, (topic, msg, t) in enumerate(bag.read_messages(topics=[topic])):
-                timestamp = "{}_{}".format(msg.header.stamp.secs, msg.header.stamp.nsecs)
-                seq = "{:07d}".format(msg.header.seq)
+
+        storage_options = StorageOptions(uri=ros2_path, storage_id="sqlite3")
+        converter_options = ConverterOptions("", "")
+        reader = SequentialReader()
+        reader.open(storage_options, converter_options)
+
+        topic_types = reader.get_all_topics_and_types()
+        type_map = {topic_types[i].name: topic_types[i].type for i in range(len(topic_types))}
+
+        seq = 0
+        while reader.has_next():
+            (topic_name, data, timestamp) = reader.read_next()
+            if topic_name == topic:
+                msg_type = get_message(type_map[topic_name])
+                msg = deserialize_message(data, msg_type)
+
+                timestamp_str = str(timestamp)
+                seq_str = "{:07d}".format(seq)
                 cv_image = self.bridge.imgmsg_to_cv2(msg, desired_encoding=encoding)
                 if resize:
                     cv_image = cv2.resize(cv_image, (resized_width, resized_height))
-                local_image_name = "frame_{}.png".format(seq)
-                s3_image_name = "frame_{}_{}.png".format(seq, timestamp)
+                local_image_name = "frame_{}.png".format(seq_str)
+                s3_image_name = "frame_{}_{}.png".format(seq_str, timestamp_str)
                 im_out_path = os.path.join(output_dir, local_image_name)
                 logger.info("Write image: {} to {}".format(local_image_name, im_out_path))
                 cv2.imwrite(im_out_path, cv_image)
 
-                topic = topic + f"_resized_{resized_width}_{resized_height}" if resize else topic
+                topic_name = topic_name + f"_resized_{resized_width}_{resized_height}" if resize else topic_name
                 files.append(
                     {
                         "local_image_path": im_out_path,
-                        "timestamp": timestamp,
-                        "seq": seq,
-                        "topic": topic,
+                        "timestamp": timestamp_str,
+                        "seq": seq_str,
+                        "topic": topic_name,
                         "s3_image_name": s3_image_name,
                     }
                 )
+                seq += 1
+
+        reader.close()
         self.files = files
 
 
@@ -131,7 +150,7 @@ def upload(client, bucket_name, drive_id, file_id, files):
 
 
 def get_log_path():
-    response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}")
+    response = requests.get(f"{os.environ['ECS_CONTAINER_METADATA_URI_V4']}", timeout=10)
     task_region = response.json()["LogOptions"]["awslogs-region"]
     return task_region, response.json()["LogOptions"]["awslogs-stream"].replace("/", "$252F")
 
@@ -150,9 +169,7 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
 
     table.update_item(
         Key={"pk": drive_id, "sk": file_id},
-        UpdateExpression="SET "
-        "image_extraction_batch_job = :batch_url, "
-        "image_extraction_job_logs = :cloudwatch_logs",
+        UpdateExpression="SET image_extraction_batch_job = :batch_url, image_extraction_job_logs = :cloudwatch_logs",
         ExpressionAttributeValues={
             ":cloudwatch_logs": job_cloudwatch_logs,
             ":batch_url": job_url,
@@ -161,9 +178,7 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
 
     table.update_item(
         Key={"pk": batch_id, "sk": index},
-        UpdateExpression="SET "
-        "image_extraction_batch_job = :batch_url, "
-        "image_extraction_job_logs = :cloudwatch_logs",
+        UpdateExpression="SET image_extraction_batch_job = :batch_url, image_extraction_job_logs = :cloudwatch_logs",
         ExpressionAttributeValues={
             ":cloudwatch_logs": job_cloudwatch_logs,
             ":batch_url": job_url,
@@ -171,12 +186,12 @@ def save_job_url_and_logs(table, drive_id, file_id, batch_id, index):
     )
 
 
-def extract_images(bag_path, topic, resized_width, resized_height, encoding, images_path):
+def extract_images(ros2_path, topic, resized_width, resized_height, encoding, images_path):
     all_files = []
     logger.info(f"Getting images from topic: {topic} with encoding {encoding}")
     try:
-        bag_obj = ImageFromBag(topic, encoding, bag_path, images_path)
-        all_files += bag_obj.files
+        ros2_obj = ImageFromBag(topic, encoding, ros2_path, images_path)
+        all_files += ros2_obj.files
         logger.info(f"Raw Images extracted from topic: {topic} with encoding {encoding}")
 
         if resized_width and resized_height:
@@ -184,20 +199,20 @@ def extract_images(bag_path, topic, resized_width, resized_height, encoding, ima
                 f"Resized Images extracted from topic: {topic} with encoding {encoding}"
                 f" with new size {resized_width} x {resized_height}"
             )
-            bag_obj = ImageFromBag(topic, encoding, bag_path, images_path, resized_width, resized_height)
-            all_files += bag_obj.files
+            ros2_obj = ImageFromBag(topic, encoding, ros2_path, images_path, resized_width, resized_height)
+            all_files += ros2_obj.files
             logger.info(f"Images extracted from topic: {topic} with encoding {encoding}")
 
-    except rospy.ROSInterruptException:
-        pass
+    except Exception as e:
+        logger.error(f"Error processing ROS2 data: {e}")
     return all_files
 
 
-def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, target_bucket) -> int:
+def main(table_name, index, batch_id, zip_path, images_path, topics, encoding, target_bucket) -> int:
     logger.info("batch_id: %s", batch_id)
     logger.info("index: %s", index)
     logger.info("table_name: %s", table_name)
-    logger.info("bag_path: %s", bag_path)
+    logger.info("zip_path: %s", zip_path)
     logger.info("images_path: %s", images_path)
     logger.info("topics: %s", topics)
     logger.info("encoding: %s", encoding)
@@ -226,13 +241,21 @@ def main(table_name, index, batch_id, bag_path, images_path, topics, encoding, t
 
     save_job_url_and_logs(table, drive_id, file_id, batch_id, index)
 
-    logger.info("Downloading Bag")
-    s3.download_file(item["s3_bucket"], item["s3_key"], bag_path)
-    logger.info(f"Bag downloaded to {bag_path}")
+    logger.info("Downloading zip file")
+    s3.download_file(item["s3_bucket"], item["s3_key"], zip_path)
+    logger.info(f"Zip downloaded to {zip_path}")
+
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(os.path.dirname(zip_path))
+    logger.info(f"Extracted zip to {os.path.dirname(zip_path)}")
+
+    file_name = item["file_id"].replace(".zip", "")
+    ros2_path = f"{os.path.dirname(zip_path)}/{file_name}"
+    logger.info(f"ROS2 directory at {ros2_path}")
 
     uploaded_directories = []
     for topic in topics:
-        all_files = extract_images(bag_path, topic, resized_width, resized_height, encoding, images_path)
+        all_files = extract_images(ros2_path, topic, resized_width, resized_height, encoding, images_path)
         logger.info(f"Uploading results - {target_bucket}")
         topic_uploaded_directories = upload(s3, target_bucket, drive_id, file_id, all_files)
         uploaded_directories += topic_uploaded_directories
@@ -315,7 +338,7 @@ if __name__ == "__main__":
             batch_id=args.batchid,
             index=args.index,
             table_name=args.tablename,
-            bag_path=f"{local_dir}/ros.bag",
+            zip_path=f"{local_dir}/ros.zip",
             images_path=f"{local_dir}/images/",
             topics=json.loads(args.imagetopics),
             encoding=args.desiredencoding,

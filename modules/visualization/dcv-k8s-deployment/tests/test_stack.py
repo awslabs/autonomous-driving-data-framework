@@ -32,7 +32,7 @@ def test_app(stack_defaults):
         deployment_name="test_deploy",
         module_name="test_module",
         dcv_namespace="dcv",
-        dcv_image_uri="docker.ecr.test_image_uri:dcv-latest",
+        dcv_image_uri="docker.ecr.test_image_uri:dcv-v1.0.0",
         eks_cluster_name="test_cluster",
         eks_cluster_admin_role_arn="arn:aws:iam:us-east-1:1234567890:role/test-role",
         eks_oidc_arn="arn:aws:eks:us-east-1:1234567890:oidc-provider/oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/test-ocid",
@@ -49,4 +49,4 @@ def test_app(stack_defaults):
     template = Template.from_stack(stack)
     template.resource_count_is("AWS::IAM::Role", 1)
     template.resource_count_is("AWS::IAM::Policy", 3)
-    template.resource_count_is("Custom::AWSCDK-EKS-KubernetesResource", 6)
+    template.resource_count_is("Custom::AWSCDK-EKS-KubernetesResource", 7)

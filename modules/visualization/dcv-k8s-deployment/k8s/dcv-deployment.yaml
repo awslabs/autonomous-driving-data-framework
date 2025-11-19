@@ -15,6 +15,10 @@ spec:
     spec:
       restartPolicy: Always
       serviceAccountName: dcv-agent-src-account
+      automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       nodeSelector:
         usage: gpu
         nvidia.com/gpu.present: "true"
@@ -41,6 +45,11 @@ spec:
               containerPort: 8443
           securityContext:
             privileged: true
+            capabilities:
+              drop:
+                - NET_RAW
+            seccompProfile:
+              type: RuntimeDefault
           resources:
             requests:
               memory: "16Gi"

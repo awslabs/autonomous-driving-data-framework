@@ -1,15 +1,22 @@
-FROM public.ecr.aws/docker/library/python:3.7.13-slim-buster
-RUN apt-get update -y
-RUN apt-get upgrade -y
-RUN apt-get -qq install gcc
+FROM public.ecr.aws/docker/library/ros:humble-perception
 
-RUN mkdir /app
-COPY requirements.txt /requirements.txt
-RUN pip install numba
-RUN pip install -r requirements.txt
+# install ros package
+RUN apt-get update && apt-get install -y \
+      ros-${ROS_DISTRO}-rosbag2-py \
+      ros-${ROS_DISTRO}-rclpy \
+      ros-${ROS_DISTRO}-rosidl-runtime-py \
+      python3-pip \
+      gcc && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY main.py /app/main.py
-COPY entrypoint.sh /app/entrypoint.sh
 WORKDIR /app
+COPY requirements.txt .
+RUN pip3 install numba
+RUN pip3 install -r requirements.txt
+COPY main.py .
+COPY entrypoint.sh .
+
+#RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /app
+#USER appuser
 
 CMD ["bash"]

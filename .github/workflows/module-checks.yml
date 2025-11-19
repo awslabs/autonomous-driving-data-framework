@@ -63,7 +63,7 @@ jobs:
       matrix:
         modules: ${{ fromJson(needs.get-modules.outputs.matrix) }}
         python-version: ["3.10"]
-        node-version: [18.x]
+        node-version: [20.x]
     runs-on: ubuntu-latest
     env:
       MODULE_PATH: 'modules/${{ matrix.modules.module_name }}'

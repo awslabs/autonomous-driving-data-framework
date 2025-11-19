@@ -253,7 +253,7 @@ def main():
         print("Using distributed PyTorch with {} backend".format(args.backend))
         dist.init_process_group(backend=args.backend)
 
-    kwargs = {"num_workers": 1, "pin_memory": True} if use_cuda else {}
+    kwargs = {"num_workers": 1} if use_cuda else {}
 
     dataset_exists = check_dataset_exists(
         data_path=INPUT_DATASET_PATH, dataset_name="FashionMNIST"

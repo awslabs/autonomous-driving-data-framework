@@ -9,19 +9,14 @@ from aws_cdk import App, CfnOutput
 
 from stack_efs_eks import EFSFileStorageOnEKS
 
-project_name = os.getenv("AWS_CODESEEDER_NAME", "addf")
-
-
-def _proj(name: str) -> str:
-    return f"{project_name.upper()}_{name}"
+project_name = os.getenv("SEEDFARMER_PROJECT_NAME", "")
+deployment_name = os.getenv("SEEDFARMER_DEPLOYMENT_NAME", "")
+module_name = os.getenv("SEEDFARMER_MODULE_NAME", "")
 
 
 def _param(name: str) -> str:
-    return f"{project_name.upper()}_PARAMETER_{name}"
+    return f"SEEDFARMER_PARAMETER_{name}"
 
-
-deployment_name = os.getenv(_proj("DEPLOYMENT_NAME"))
-module_name = os.getenv(_proj("MODULE_NAME"))
 
 eks_cluster_name = os.getenv(_param("EKS_CLUSTER_NAME"))
 eks_admin_role_arn = os.getenv(_param("EKS_CLUSTER_ADMIN_ROLE_ARN"))
@@ -37,8 +32,8 @@ app = App()
 efs_stack = EFSFileStorageOnEKS(
     scope=app,
     id=f"addf-{deployment_name}-{module_name}",
-    deployment_name=cast(str, deployment_name),
-    module_name=cast(str, module_name),
+    deployment_name=deployment_name,
+    module_name=module_name,
     efs_file_system_id=cast(str, efs_file_system_id),
     efs_security_group_id=cast(str, efs_security_group_id),
     eks_cluster_name=cast(str, eks_cluster_name),

@@ -32,7 +32,7 @@ class NotificationsStack(Stack):
         get_metadata_function = lambda_.Function(
             self,
             f"{prefix}-model-lambda",
-            runtime=lambda_.Runtime.PYTHON_3_9,
+            runtime=lambda_.Runtime.PYTHON_3_10,
             handler="lambda.handler",
             function_name=f"{project_short_name}-mpg-state-change-{env_name}",
             code=lambda_.Code.from_asset("lambda/get_model_metadata"),

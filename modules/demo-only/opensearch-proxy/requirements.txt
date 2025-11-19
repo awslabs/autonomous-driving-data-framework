@@ -8,7 +8,7 @@ attrs==23.2.0
     # via
     #   cattrs
     #   jsii
-aws-cdk-lib==2.20.0
+aws-cdk-lib==2.189.1
     # via
     #   -r requirements.in
     #   cdk-nag
@@ -35,7 +35,7 @@ jmespath==1.0.1
     # via
     #   boto3
     #   botocore
-jsii==1.100.0
+jsii==1.110.0
     # via
     #   aws-cdk-lib
     #   cdk-nag
