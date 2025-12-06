@@ -8,6 +8,12 @@ attrs==23.2.0
     # via
     #   cattrs
     #   jsii
+aws-cdk-asset-awscli-v1==2.2.230
+    # via aws-cdk-lib
+aws-cdk-asset-node-proxy-agent-v6==2.1.0
+    # via aws-cdk-lib
+aws-cdk-cloud-assembly-schema==41.2.0
+    # via aws-cdk-lib
 aws-cdk-lib==2.189.1
     # via
     #   -r requirements.in
@@ -37,11 +43,17 @@ jmespath==1.0.1
     #   botocore
 jsii==1.110.0
     # via
+    #   aws-cdk-asset-awscli-v1
+    #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-cloud-assembly-schema
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
 publication==0.0.3
     # via
+    #   aws-cdk-asset-awscli-v1
+    #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-cloud-assembly-schema
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
@@ -55,12 +67,17 @@ s3transfer==0.14.0
 six==1.16.0
     # via python-dateutil
 typeguard==2.13.3
-    # via jsii
+    # via
+    #   aws-cdk-asset-awscli-v1
+    #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-cloud-assembly-schema
+    #   aws-cdk-lib
+    #   jsii
 typing-extensions==4.15.0
     # via
     #   cattrs
     #   jsii
-urllib3==2.5.0
+urllib3==2.6.0
     # via
     #   -r requirements.in
     #   botocore
