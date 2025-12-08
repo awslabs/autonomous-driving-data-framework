@@ -3,4 +3,4 @@ constructs==10.0.91
 cdk-nag==2.12.29
 boto3~=1.40.46
 typing-extensions>=4.6.3
-urllib3>=2.5.0
+urllib3>=2.6.0

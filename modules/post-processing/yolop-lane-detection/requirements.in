@@ -3,4 +3,4 @@ cdk-ecr-deployment==3.0.42
 cdk-nag==2.12.29
 constructs==10.0.91
 boto3~=1.40.46
-urllib3>=2.5.0
+urllib3>=2.6.0

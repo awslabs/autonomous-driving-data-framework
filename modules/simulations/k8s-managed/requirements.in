@@ -5,4 +5,4 @@ constructs~=10.3.0
 boto3~=1.40.46
 python-dotenv~=1.0.1
 typing-extensions~=4.12.2
-urllib3~=2.5.0
+urllib3~=2.6.0
