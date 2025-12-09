@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix cross account ecr permission and the missing required base image inputs in `mnist`
 - use overwrite to handle incremental deployments in `training-k8s-deployment`
 - fix ecr iam policy in `yolo-object-detection` and `yolop-object-detection`. account id cannot be wildcard in ecr iam policy. use sagemaker public ecr account.
+- update module role's permission to no longer allow updating its own permission in `training-k8s-deployment`
+- use longer log retention in `training-k8s-deployment`
+- use safe yaml load in `dcv-k8s-deployment`
 
 ### **Removed**
 
