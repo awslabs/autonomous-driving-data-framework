@@ -18,7 +18,7 @@ RUN pip3 install -r requirements.txt
 COPY main.py .
 COPY entrypoint.sh .
 
-#RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /app
-#USER appuser
+RUN useradd -m -u 3141 appuser && chown -R appuser:appuser /app
+USER appuser
 
 CMD ["bash"]

@@ -71,17 +71,18 @@ RUN rosdep init && \
 # Environment setup
 RUN echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc
 
-COPY eureka_controller.sh /usr/local/bin
-COPY check_healthy.sh /usr/local/bin
-COPY eureka_worker.sh /usr/local/bin
-COPY conda_setup.sh /usr/local/bin
+RUN useradd -m -u 3141 appuser
+
+COPY --chown=appuser:appuser eureka_controller.sh /usr/local/bin
+COPY --chown=appuser:appuser check_healthy.sh /usr/local/bin
+COPY --chown=appuser:appuser eureka_worker.sh /usr/local/bin
+COPY --chown=appuser:appuser conda_setup.sh /usr/local/bin
+
+USER appuser
 
 RUN chmod +x "/usr/local/bin/eureka_controller.sh" \
              "/usr/local/bin/check_healthy.sh" \
              "/usr/local/bin/eureka_worker.sh" \
              "/usr/local/bin/conda_setup.sh"
-
-RUN useradd -m -u 3141 appuser
-USER appuser
 
 CMD ["/bin/bash", "/usr/local/bin/conda_setup.sh"]
