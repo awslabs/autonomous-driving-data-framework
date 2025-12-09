@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update module role's permission to no longer allow updating its own permission in `training-k8s-deployment`
 - use longer log retention in `training-k8s-deployment`
 - use safe yaml load in `dcv-k8s-deployment`
+- stronger password in `scripts/setup-secrets-example`
 
 ### **Removed**
 
