@@ -51,14 +51,13 @@ Resources:
               - "iam:PassRole"
             Effect: Allow
             Resource:
-              - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${ProjectName}-${DeploymentName}-${ModuleName}*"
               - !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/${ProjectName}-${DeploymentName}-${ModuleName}*"
           - Effect: Allow
             Action:
               - "logs:CreateLogGroup"
               - "logs:Describe*"
               - "logs:DescribeLogGroups"
-            Resource: 
+            Resource:
             - !Sub "arn:${AWS::Partition}:logs::${AWS::AccountId}:log-group/*"
           - Effect: Allow
             Action:

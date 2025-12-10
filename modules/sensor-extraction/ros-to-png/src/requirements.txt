@@ -94,7 +94,7 @@ six==1.16.0
     # via python-dateutil
 std-msgs==0.5.13.post0
     # via rospy
-urllib3==2.5.0
+urllib3==2.6.0
     # via
     #   botocore
     #   requests

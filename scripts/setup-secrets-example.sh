@@ -12,7 +12,7 @@ then
 fi
 
 ## Install the VSCode random password
-export VSCODEPWD=$(echo `aws secretsmanager get-random-password --password-length 6 --exclude-punctuation --require-each-included-type  | jq '.RandomPassword'`)
+export VSCODEPWD=$(echo `aws secretsmanager get-random-password --password-length 12 --require-each-included-type  | jq '.RandomPassword'`)
 if [[ -z "${VSCODEPWD}" ]]; then
     echo "Error creating vscode credentials, make sure your AWS_DEFAULT_REGION is set and you have proper permissions"
     echo "   "
@@ -25,7 +25,7 @@ else
 fi
 
 ## Install the JupyterHub random password
-export JHPWD=$(echo `aws secretsmanager get-random-password --password-length 6 --exclude-punctuation --require-each-included-type  | jq '.RandomPassword'`)
+export JHPWD=$(echo `aws secretsmanager get-random-password --password-length 12 --require-each-included-type  | jq '.RandomPassword'`)
 if [[ -z "${JHPWD}" ]]; then
     echo "Error creating jupyterhub credentials, make sure your AWS_DEFAULT_REGION is set and you have proper permissions"
     echo "   "
@@ -38,7 +38,7 @@ else
 fi
 
 ## Install the OpenSearch random password
-export OSPWD=$(echo `aws secretsmanager get-random-password --password-length 6 --exclude-punctuation --require-each-included-type  | jq '.RandomPassword'`)
+export OSPWD=$(echo `aws secretsmanager get-random-password --password-length 12 --require-each-included-type  | jq '.RandomPassword'`)
 if [[ -z "${OSPWD}" ]]; then
     echo "Error creating opensearch credentials, make sure your AWS_DEFAULT_REGION is set and you have proper permissions"
     echo "   "
@@ -51,4 +51,3 @@ else
 fi
 
 
-    

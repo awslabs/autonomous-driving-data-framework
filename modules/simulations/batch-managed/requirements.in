@@ -3,4 +3,4 @@ aws-cdk.aws-batch-alpha==2.20.0a0
 cdk-nag==2.12.29
 constructs==10.0.91
 boto3~=1.40.46
-urllib3>=2.5.0
+urllib3>=2.6.0

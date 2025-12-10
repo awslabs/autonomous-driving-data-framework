@@ -286,7 +286,9 @@ class TrainingPipeline(Stack):
         # custom state which represents a task to insert data into DynamoDB
         custom = sfn.CustomState(self, "eks-training", state_json=state_json)
 
-        log_group = logs.LogGroup(self, "TrainingOnEKSLogGroup")
+        log_group = logs.LogGroup(
+            self, "TrainingOnEKSLogGroup", retention=logs.RetentionDays.TEN_YEARS
+        )
 
         sm = sfn.StateMachine(  # noqa: F841
             self,

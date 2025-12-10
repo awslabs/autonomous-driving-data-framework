@@ -6,4 +6,4 @@ boto3~=1.40.46
 requests~=2.32.4
 requests-aws4auth~=1.2.3
 pytest-mock~=3.10.0
-urllib3>=2.5.0
+urllib3>=2.6.0

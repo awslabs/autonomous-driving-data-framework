@@ -91,7 +91,7 @@ class DcvEksStack(Stack):
             FSX_PVC_NAME=fsx_pvc_name,
         )
 
-        dcv_agent_yaml = yaml.load(dcv_agent_yaml_file, Loader=yaml.FullLoader)
+        dcv_agent_yaml = yaml.safe_load(dcv_agent_yaml_file)
         loop_iteration = 0
         manifest_id = "DCVAgent" + str(loop_iteration)
         loop_iteration += 1
@@ -103,7 +103,7 @@ class DcvEksStack(Stack):
             RUNTIME_ROLE_ARN=self.eks_admin_role.role_arn,
             SOCKET_PATH=ADDF_DISPLAY_SOCKET_PATH,
         )
-        dcv_agent_yaml = list(yaml.load_all(dcv_agent_yaml_file, Loader=yaml.FullLoader))
+        dcv_agent_yaml = list(yaml.safe_load_all(dcv_agent_yaml_file))
         for value in dcv_agent_yaml:
             loop_iteration = loop_iteration + 1
             manifest_id = "DCVAgent" + str(loop_iteration)
@@ -112,7 +112,7 @@ class DcvEksStack(Stack):
 
         t = Template(open(os.path.join(project_dir, "k8s/dcv-network-policy.yaml"), "r").read())
         dcv_network_policy_yaml_file = t.substitute(NAMESPACE=dcv_namespace)
-        dcv_network_policy_yaml = yaml.load(dcv_network_policy_yaml_file, Loader=yaml.FullLoader)
+        dcv_network_policy_yaml = yaml.safe_load(dcv_network_policy_yaml_file)
         loop_iteration += 1
         manifest_id = "DCVAgent" + str(loop_iteration)
         network_policy_resource = eks_cluster.add_manifest(manifest_id, dcv_network_policy_yaml)
