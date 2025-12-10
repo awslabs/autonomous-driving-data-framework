@@ -10,9 +10,9 @@ attrs==23.1.0
     #   jsii
 aws-cdk-asset-awscli-v1==2.2.229
     # via aws-cdk-lib
-aws-cdk-asset-kubectl-v20==2.1.2
-    # via aws-cdk-lib
 aws-cdk-asset-node-proxy-agent-v6==2.1.0
+    # via aws-cdk-lib
+aws-cdk-cloud-assembly-schema==41.2.0
     # via aws-cdk-lib
 aws-cdk-lib==2.189.1
     # via
@@ -44,16 +44,16 @@ jmespath==1.0.1
 jsii==1.110.0
     # via
     #   aws-cdk-asset-awscli-v1
-    #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-cloud-assembly-schema
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
 publication==0.0.3
     # via
     #   aws-cdk-asset-awscli-v1
-    #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-cloud-assembly-schema
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
@@ -69,8 +69,8 @@ six==1.16.0
 typeguard==2.13.3
     # via
     #   aws-cdk-asset-awscli-v1
-    #   aws-cdk-asset-kubectl-v20
     #   aws-cdk-asset-node-proxy-agent-v6
+    #   aws-cdk-cloud-assembly-schema
     #   aws-cdk-lib
     #   cdk-nag
     #   constructs
