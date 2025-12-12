@@ -135,8 +135,11 @@ RUN chmod a+x "/usr/local/bin/run_script.sh" \
              "/usr/local/bin/check_healthy.sh"
 
 
-# Add ubuntu to sudoers, needed to run window manager within init_session.sh
-RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+# Grant specific capabilities to binaries
+RUN setcap cap_sys_admin+ep /usr/bin/metacity && \
+    setcap cap_dac_override+ep /usr/bin/xhost && \
+    setcap cap_sys_admin+ep /usr/bin/systemctl
+
 EXPOSE 8443
 
 CMD ["/usr/local/bin/run_script.sh"]
