@@ -4,6 +4,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cr from "aws-cdk-lib/custom-resources";
 import * as lambda from "aws-cdk-lib/aws-lambda";
@@ -83,10 +84,12 @@ export class WebvizStack extends cdk.Stack {
           containerPort: 8080,
         },
         vpc,
+        protocol: elbv2.ApplicationProtocol.HTTPS,
+        redirectHTTP: true,
       }
     );
 
-    this.webvizUrl = `http://${appService.loadBalancer.loadBalancerDnsName}`;
+    this.webvizUrl = `https://${appService.loadBalancer.loadBalancerDnsName}`;
 
     this.targetBucket = s3.Bucket.fromBucketName(
       this,
@@ -104,7 +107,7 @@ export class WebvizStack extends cdk.Stack {
       code: lambda.Code.fromAsset(path.join(__dirname, "lambda", "put_cors")),
       functionName: `addf-${props.deploymentName}-${props.moduleName}-cors-lambda`,
       handler: "main.lambda_handler",
-      runtime: lambda.Runtime.PYTHON_3_8,
+      runtime: lambda.Runtime.PYTHON_3_10,
       reservedConcurrentExecutions: 1,
       role: new iam.Role(this, "lambdaPutCorsRulesRole", {
         managedPolicies: [
