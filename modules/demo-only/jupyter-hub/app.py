@@ -52,6 +52,7 @@ stack = JupyterHubStack(
     eks_cluster_name=eks_cluster_name,
     eks_admin_role_arn=eks_admin_role_arn,
     eks_oidc_arn=eks_oidc_arn,
+    secrets_manager_name=secrets_manager_name,
     jh_username=jh_username,
     jh_password=jh_password,
     jh_image_name=jh_image_name,  # type: ignore

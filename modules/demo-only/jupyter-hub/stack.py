@@ -1,7 +1,6 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
 import logging
 import os
 from typing import Any, cast
@@ -30,6 +29,7 @@ class JupyterHubStack(Stack):
         eks_cluster_name: str,
         eks_admin_role_arn: str,
         eks_oidc_arn: str,
+        secrets_manager_name: str,
         jh_username: str,
         jh_password: str,
         jh_image_name: str,
@@ -72,15 +72,22 @@ class JupyterHubStack(Stack):
             "jupyterhub", name="jupyterhub", namespace="jupyter-hub"
         )
 
-        jupyterhub_policy_statement_json_path = os.path.join(project_dir, "addons-iam-policies", "jupyterhub-iam.json")
-        with open(jupyterhub_policy_statement_json_path) as json_file:
-            jupyterhub_policy_statement_json = json.load(json_file)
+        secret_arn = f"arn:{self.partition}:secretsmanager:{self.region}:{self.account}:secret:{secrets_manager_name}*"
+        jupyterhub_policy_document = iam.PolicyDocument(
+            statements=[
+                iam.PolicyStatement(
+                    effect=iam.Effect.ALLOW,
+                    actions=["secretsmanager:GetSecretValue"],
+                    resources=[secret_arn],
+                )
+            ]
+        )
 
         # Attach the necessary permissions
         jupyterhub_policy = iam.Policy(
             self,
             "jupyterhubpolicy",
-            document=iam.PolicyDocument.from_json(jupyterhub_policy_statement_json),
+            document=jupyterhub_policy_document,
         )
         jupyterhub_service_account.role.attach_inline_policy(jupyterhub_policy)
 
