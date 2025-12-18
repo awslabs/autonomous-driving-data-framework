@@ -28,18 +28,23 @@ Resources:
               - !Ref EksClusterAdminRoleArn
           - Effect: Allow
             Action:
-            # Permissions to cleanup EMR Virtual Cluster resources
-            # These permissions doesnt support Resource level
+            # List/Describe permissions require wildcard - no resource-level support
               - "emr-containers:List*"
               - "emr-containers:Describe*"
-              - "emr-containers:DeleteVirtualCluster"
-              - "emr-containers:DeleteManagedEndpoint"
               - "elasticmapreduce:Describe*"
               - "elasticmapreduce:List*"
-              - "elasticmapreduce:DeleteStudio"
               - "sso:DeleteManagedApplicationInstance"
             Resource:
               - "*"
+          - Effect: Allow
+            Action:
+            # Delete permissions scoped to specific resources
+              - "emr-containers:DeleteVirtualCluster"
+              - "emr-containers:DeleteManagedEndpoint"
+              - "elasticmapreduce:DeleteStudio"
+            Resource:
+              - !Sub "arn:aws:emr-containers:${AWS::Region}:${AWS::AccountId}:virtualcluster/*"
+              - !Sub "arn:aws:elasticmapreduce:${AWS::Region}:${AWS::AccountId}:studio/*"
           - Effect: Allow
             Action:
               - "ec2:RevokeSecurityGroupEgress"
