@@ -35,6 +35,7 @@ class EmrEksRbacStack(Stack):
         eks_oidc_arn: str,
         eks_openid_issuer: str,
         emr_namespace: str,
+        artifact_bucket_name: str,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -215,7 +216,11 @@ class EmrEksRbacStack(Stack):
 
         self.job_role.add_to_policy(
             iam.PolicyStatement(
-                resources=["*"],
+                resources=[
+                    f"arn:{self.partition}:s3:::{artifact_bucket_name}",
+                    f"arn:{self.partition}:s3:::{artifact_bucket_name}/*",
+                    f"arn:{self.partition}:s3:::aws-logs-{self.account}-{self.region}/elasticmapreduce/*",
+                ],
                 actions=["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
                 effect=iam.Effect.ALLOW,
             )
@@ -223,7 +228,10 @@ class EmrEksRbacStack(Stack):
 
         self.job_role.add_to_policy(
             iam.PolicyStatement(
-                resources=[f"arn:{self.partition}:logs:*:*:*"],
+                resources=[
+                    f"arn:{self.partition}:logs:{self.region}:{self.account}:log-group:/aws/emr-containers/*",
+                    f"arn:{self.partition}:logs:{self.region}:{self.account}:log-group:/aws/emr-serverless/*",
+                ],
                 actions=[
                     "logs:PutLogEvents",
                     "logs:CreateLogStream",
