@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - stronger password in `scripts/setup-secrets-example`
 - use capabilities instead of passwordless sudo in `dcv-image`
 - use https in `demo-only/rosbag-webviz`
+- scope down over-privileged roles in `emrstudio-on-eks`
 
 ### **Removed**
 

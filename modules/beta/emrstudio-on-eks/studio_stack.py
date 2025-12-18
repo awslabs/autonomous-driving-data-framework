@@ -61,34 +61,12 @@ class StudioLiveStack(Stack):
             name=f"{dep_mod}-EMRCluster",
         )
 
-        # policy to let Lambda invoke the api
-        custom_policy_document = iam.PolicyDocument(
-            statements=[
-                iam.PolicyStatement(
-                    effect=iam.Effect.ALLOW,
-                    actions=[
-                        "ec2:CreateSecurityGroup",
-                        "ec2:RevokeSecurityGroupEgress",
-                        "ec2:CreateSecurityGroup",
-                        "ec2:DeleteSecurityGroup",
-                        "ec2:AuthorizeSecurityGroupEgress",
-                        "ec2:AuthorizeSecurityGroupIngress",
-                        "ec2:RevokeSecurityGroupIngress",
-                        "ec2:DeleteSecurityGroup",
-                    ],
-                    resources=["*"],
-                )
-            ]
-        )
-        managed_policy = iam.ManagedPolicy(self, f"{id}-ManagedPolicy", document=custom_policy_document)
-
         self.role = iam.Role(
             scope=self,
             id=f"{id}-LambdaRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             managed_policies=[
                 iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
-                managed_policy,
             ],
         )
 
@@ -176,12 +154,32 @@ class StudioLiveStack(Stack):
             self,
             "StudioServiceRole",
             assumed_by=iam.ServicePrincipal("elasticmapreduce.amazonaws.com"),
-            managed_policies=[iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess")],
         )
         Tags.of(role).add("for-use-with-amazon-emr-managed-policies", "true")
         role.add_to_policy(
             iam.PolicyStatement(
-                resources=["*"],
+                resources=[
+                    f"arn:aws:s3:::{artifact_bucket_name}",
+                    f"arn:aws:s3:::{artifact_bucket_name}/*",
+                ],
+                actions=[
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject",
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation",
+                ],
+                effect=iam.Effect.ALLOW,
+            )
+        )
+        role.add_to_policy(
+            iam.PolicyStatement(
+                resources=[
+                    f"arn:aws:ec2:{self.region}:{self.account}:vpc/{vpc_id}",
+                    f"arn:aws:ec2:{self.region}:{self.account}:subnet/*",
+                    f"arn:aws:ec2:{self.region}:{self.account}:security-group/*",
+                    f"arn:aws:ec2:{self.region}:{self.account}:network-interface/*",
+                ],
                 actions=[
                     "ec2:AuthorizeSecurityGroupEgress",
                     "ec2:AuthorizeSecurityGroupIngress",
@@ -200,6 +198,17 @@ class StudioLiveStack(Stack):
                     "ec2:DescribeInstances",
                     "ec2:DescribeSubnets",
                     "ec2:DescribeVpcs",
+                ],
+                effect=iam.Effect.ALLOW,
+            )
+        )
+        role.add_to_policy(
+            iam.PolicyStatement(
+                resources=[
+                    f"arn:aws:elasticmapreduce:{self.region}:{self.account}:cluster/*",
+                    f"arn:aws:emr-containers:{self.region}:{self.account}:/virtualclusters/*",
+                ],
+                actions=[
                     "elasticmapreduce:ListInstances",
                     "elasticmapreduce:DescribeCluster",
                     "elasticmapreduce:ListSteps",
