@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - examples/example-spark-dags/requirements.in
   - examples/example-spark-dags/requirements.txt
 - replace hardcoded partitions
+- uodated manifests to idf 1.14.0
 
 ### **Removed**
 
