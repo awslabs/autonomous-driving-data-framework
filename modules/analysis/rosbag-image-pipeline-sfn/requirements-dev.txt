@@ -104,6 +104,7 @@ packaging==24.0
     #   build
     #   pyroma
     #   pytest
+    #   wheel
 pathspec==0.12.1
     # via black
 pbr==6.0.0
@@ -204,7 +205,7 @@ urllib3==2.6.0
     # via
     #   botocore
     #   requests
-wheel==0.43.0
+wheel==0.46.2
     # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:
