@@ -1,5 +1,5 @@
 name: batch-compute
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=release/1.12.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/aws-batch/?ref=release/1.14.0
 parameters:
   - name: vpc-id
     valueFrom:
@@ -47,7 +47,7 @@ parameters:
     value: Rosbag-Scene-Metadata
 ---
 name: opensearch
-path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=release/1.12.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/storage/opensearch/?ref=release/1.14.0
 parameters:
   - name: retention-type
     value: DESTROY
@@ -75,7 +75,7 @@ parameters:
         key: PrivateSubnetIds
 ---
 name: emr-serverless
-path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=release/1.12.0
+path: git::https://github.com/awslabs/idf-modules.git//modules/compute/emr-serverless/?ref=release/1.14.0
 parameters:
   - name: private-subnet-ids
     valueFrom:
