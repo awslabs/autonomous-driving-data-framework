@@ -53,6 +53,7 @@ eks_stack = EmrEksRbacStack(
     eks_oidc_arn=eks_oidc_arn,
     eks_openid_issuer=eks_openid_issuer,
     emr_namespace=emr_eks_namespace,
+    artifact_bucket_name=artifact_bucket_name,
 )
 
 emr_studio = StudioLiveStack(

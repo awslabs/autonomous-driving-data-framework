@@ -75,14 +75,32 @@ class AwsBatchPipeline(Stack):
         # Create Dag IAM Role and policy
         policy_statements = [
             iam.PolicyStatement(
-                actions=["dynamodb:*"],
+                actions=[
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem", 
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem"
+                ],
                 effect=iam.Effect.ALLOW,
                 resources=[f"arn:{self.partition}:dynamodb:{self.region}:{self.account}:table/{dep_mod}*"],
             ),
             iam.PolicyStatement(
-                actions=["ecr:*"],
+                actions=[
+                    "ecr:BatchCheckLayerAvailability",
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage"
+                ],
                 effect=iam.Effect.ALLOW,
                 resources=[f"arn:{self.partition}:ecr:{self.region}:{self.account}:repository/{dep_mod}*"],
+            ),
+            iam.PolicyStatement(
+                actions=["ecr:GetAuthorizationToken"],
+                effect=iam.Effect.ALLOW,
+                resources=["*"],  # GetAuthorizationToken doesn't support resource-level permissions
             ),
             iam.PolicyStatement(
                 actions=[
@@ -142,11 +160,24 @@ class AwsBatchPipeline(Stack):
                 iam.ManagedPolicy.from_managed_policy_arn(
                     self, id="fullaccess", managed_policy_arn=self.bucket_access_policy
                 ),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSageMakerFullAccess"),
             ],
             role_name=dag_role_name,
             max_session_duration=Duration.hours(12),
             path="/",
+        )
+
+        # Add minimal SageMaker permissions
+        self.dag_role.add_to_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "sagemaker:CreateProcessingJob",
+                    "sagemaker:DescribeProcessingJob",
+                    "sagemaker:StopProcessingJob",
+                    "sagemaker:ListProcessingJobs"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[f"arn:{self.partition}:sagemaker:{self.region}:{self.account}:processing-job/{dep_mod}*"],
+            )
         )
 
         # Sagemaker Security Group

@@ -210,7 +210,10 @@ class TemplateStack(cdk.Stack):
             "Object Detection",
             service="sagemaker",
             action="createProcessingJob",
-            iam_resources=["*"],
+            iam_resources=[
+                f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/step-*-yolo*",
+                f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/{dep_mod}*"
+            ],
             # integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # not supported in CDK (as of 2024-02-08)
             additional_iam_statements=[
                 iam.PolicyStatement(
@@ -287,7 +290,10 @@ class TemplateStack(cdk.Stack):
             "Lane Detection",
             service="sagemaker",
             action="createProcessingJob",
-            iam_resources=["*"],
+            iam_resources=[
+                f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/step-*-lane*",
+                f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/{dep_mod}*"
+            ],
             # integration_pattern=sfn.IntegrationPattern.RUN_JOB,  # not supported in CDK (as of 2024-02-08)
             additional_iam_statements=[
                 iam.PolicyStatement(
@@ -462,7 +468,10 @@ class TemplateStack(cdk.Stack):
             f"Get {id} Status",
             service="sagemaker",
             action="describeProcessingJob",
-            iam_resources=["*"],
+            iam_resources=[
+                f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/step-*",
+                f"arn:aws:sagemaker:{self.region}:{self.account}:processing-job/{dep_mod}*"
+            ],
             parameters={
                 "ProcessingJobName": sfn.JsonPath.array_get_item(
                     sfn.JsonPath.string_split(sfn.JsonPath.string_at("$.ProcessingJobArn"), "/"),
